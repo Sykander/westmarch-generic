@@ -1,0 +1,10 @@
+{
+    "gvars": {
+        "00000000-0000-0000-0000-000000000001": {
+            "filePath": "src/gvars/env.dev.gvar"
+        },
+        "11111111-1111-1111-1111-111111111111": {
+            "filePath": "src/gvars/example/example.gvar"
+        }
+    }
+}

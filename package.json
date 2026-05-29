@@ -1,0 +1,17 @@
+{
+  "name": "westmarch-generic",
+  "version": "0.1.0",
+  "description": "Configurable westmarch-style Avrae workshop — server setup via svars and config gvars",
+  "main": "index.js",
+  "scripts": {
+    "deploy": "node utils/deploy.js",
+    "generate-env": "node utils/generate-env.js",
+    "generate-vars": "node utils/generate-vars.js",
+    "test-sourcemaps": "node utils/sourcemap-test.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "publish-avrae": "^1.0.3"
+  }
+}

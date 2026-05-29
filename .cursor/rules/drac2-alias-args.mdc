@@ -1,0 +1,18 @@
+---
+description: Avrae drac2 alias patterns — args, character(), avoid brittle parsing.
+globs: "**/src/aliases/**/*.alias"
+alwaysApply: false
+---
+
+Help embed requirements ( **`f"""`** copy, roll-flag docs) and the **preferred help gate** **`if len(argslist) == 0 or argslist[0] in ["help", "?"]:`**: see **`drac2-alias-help.mdc`**.
+
+# Drac2 alias arguments
+
+- Use **`argparse(&ARGS&)`** and **`args.last("flagname", default)`** (or the project’s usual argparse helpers) for optional flags like `-author` / `-a` — do not hand-roll long `while` loops over `argslist` to split “roll flags” from content unless there is a documented reason.
+- For a **single leading subject** (e.g. `read` book title or `library` topic string), prefer **`argslist[0]`** (quote in Discord for spaces) instead of accumulating tokens until a sentinel set.
+- If behaviour needs to change, extend argparse usage or help text rather than duplicating Avrae’s flag parsing in Python loops.
+
+# Active character
+
+- **`character()`** throws when there is **no** active character on the sheet — it does **not** return a falsy value you can test with `if not ch:` after assignment.
+- Resolve the active character with **`try: ch = character()` / `except: return embed(...)`** (or equivalent), and set up **`title` / `embed`** before the try so the error embed can be returned cleanly. Match **`read.alias`** as the reference pattern.

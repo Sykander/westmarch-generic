@@ -1,0 +1,64 @@
+---
+description: Fast Avrae statement-budget probing for any util *-perf stress tests (single-test + bounded search)
+globs:
+  - "**/*-perf.alias-test"
+  - "**/*-perf.alias"
+  - "**/.cursor/scripts/probe_perf_boundaries.py"
+  - "**/_probe*.alias-test"
+alwaysApply: false
+---
+
+# Gvar performance boundary analysis
+
+Use this when re-tuning **stress / perf** `.alias-test` files for **any** `src/gvars/utils/<name>/` util (not only regex). The idea is the same everywhere Avrae enforces a **per-invocation statement cap** and your tests expose tunable load (`-loops`, `-compiles`, haystack size, depth, etc.).
+
+## `avrae-ls` and the statement cap
+
+`avrae-ls --run-tests` drives the **`draconic`** interpreter (default **`DraconicConfig`**, including **`max_statements`**). That is the same statement-budget machinery production Avrae uses for Drac2; **`avrae-ls`** supplies mocks for Discord/context, not a different counter. So probing via **`probe_perf_boundaries.py`** (which shells to **`avrae-ls`**) is an appropriate way to see how close code gets to **“too many statements”** without running the full bot. Pin **`avrae-ls`** (and thus bundled **`draconic`**) to the bot’s versions when you need strict parity.
+
+## Goal
+
+Find the **largest** parameter values that still **pass**, without brute-forcing thousands of full-suite runs.
+
+## Why the full `*-perf.alias-test` is slow
+
+`avrae-ls --run-tests <path-to-full-perf-file>` runs **every** case in that file. If you bump one boundary on every trial, you pay for **all** benchmarks each time.
+
+## Fast approach (same for every util)
+
+1. **Single-test probe file** — For each trial, write a **minimal** `.alias-test` (often one `!<stress-alias> …` block) under `src/gvars/utils/<name>/` that exercises **only** the benchmark you are tuning. Run `avrae-ls --run-tests` on **that file’s path** only, not on `src` or the whole perf pack.
+
+2. **Bounded search (few `avrae-ls` runs per dimension)** — Do not linear-scan `N`, `N+1`, … for large ranges.
+   - **Try a generous `cap` once** — If it passes, you may be capped by your script, not Avrae; raise `cap` and re-probe. If it fails quickly, you have an upper bound to narrow.
+   - **Exponential gallop** — From last known good `lo`, grow `hi` (e.g. double, clamp to `cap`) while passes; cap gallop steps (e.g. ≤ 8).
+   - **Binary search** — Between last pass and first fail, bisect (e.g. ≤ 6–10 iterations). Total runs per dimension stays on the order of **log(range)**, not **range**.
+
+3. **Realistic `cap`s** — High enough to find the real plateau; low enough that one failing run does not hang the machine (huge loops on heavy inputs can run a long time before failing).
+
+4. **Apply results** — Copy maxima into the **committed** `*-perf.alias-test`. Keep **titles / `name:` lines and numeric flags in sync** so failures are readable in CI.
+
+5. **Verify** — After editing the real perf file:
+   - `avrae-ls --run-tests src/gvars/utils/<name>/<name>-perf.alias-test` (or whatever the pack is called)
+   - `avrae-ls --run-tests src`
+
+6. **Hygiene** — **Gitignore** ephemeral `_probe.*.alias-test` (or similar) under `src/gvars/utils/<name>/`. Prefer scripts that **delete** the probe file when done. Do not commit probe artifacts.
+
+## Prerequisites in the util’s artifacts
+
+- A **stress alias** (e.g. `<name>-perf.alias`) that branches on **`testcase`** (or equivalent) so a single `.alias-test` block can target one scenario.
+- Flags or embedded limits your probe script can rewrite each run (`-loops`, `-compiles`, pattern length, etc.).
+
+If perf is only in the main `<name>.alias` testcases, you can still use a **one-block** `.alias-test` that hits a single branch; the important part is **one scenario per `avrae-ls` invocation**.
+
+## Tooling and reference harnesses
+
+- **Script:** **`python3 .cursor/scripts/probe_perf_boundaries.py`** — **`--preset regex`**, **`--preset rolls`**, or **`--preset performance_examples`**, or **`--alias-dir`**, **`--stress-alias`**, and **`--dimension`** / **`--dimensions-file`** (see **`--help`** and **`.cursor/README.md`**). Each **dimension row** is one **`find_max`** for that testcase title; list **any number of rows** in one run (same **`--extra-suffix`** and/or different **5th-field** extras per row as needed). Preset **`performance_examples`** baselines track **`performance_examples-perf.alias-test`**; use **`--max-binary 20`** when re-probing from already-high committed values. Counter **`+=`** vs assign with **`-reps`**: two **`--dimension`** lines (5th field **`-reps "…"`**) or a local **`--dimensions-file`**—see script **`--help`** epilog.
+- **Regex:** **`regex-perf.alias`** + **`regex-perf.alias-test`**; preset **`regex`** baselines track committed **`regex-perf.alias-test`**; ephemeral probe files under **`src/gvars/utils/**/_probe.*.alias-test`** are gitignored.
+- **Rolls (`get_roll`):** **`rolls-perf.alias`** + **`rolls-perf.alias-test`** (same gitignore pattern).
+- **Statement-pattern microbenches:** **`performance_examples-perf.alias`** + **`performance_examples-perf.alias-test`**, backed by **`performance_examples.gvar`**; preset **`performance_examples`** on the probe script.
+
+## Anti-patterns
+
+- Editing the full perf pack on every binary step and running **`--run-tests src`**.
+- Treating **`try(cap)` failure** as the definitive max without bisecting from a **known-good** committed value.
+- Leaving **probe** files unignored or committed.

@@ -1,0 +1,41 @@
+---
+description: Drac2 language limits on Avrae, file roles, and avrae-ls — aligned with drac2-tools reference material
+globs:
+  - "**/*.gvar"
+  - "**/*.alias"
+  - "**/*.snippet"
+alwaysApply: false
+---
+
+# Drac2 on Avrae (westmarch)
+
+Drac2 (Draconic) is a **Python subset** Avrae runs for workshop gvars and for logic inside **`<drac2>…</drac2>`** in aliases/snippets. **Do not assume full CPython** — builtins and stdlib pieces are often missing or differ.
+
+## Builtins and patterns that often break
+
+- **`type(...)`** — not defined in many Drac2 builds; use length checks, `try`/`except`, or small helpers instead of `type(x) == list`.
+- **`ord(...)`** — not defined; derive ints from strings with an explicit loop and a lookup alphabet / `.find()`, or a small rolling hash (historical example lived in the pre-stub `library.gvar`).
+- **`sum(x for x in …)`** — generator expressions inside **`sum`** can be unreliable; prefer an explicit **`for`** loop accumulating an int.
+- **Statement budget** — Avrae may raise **`TooManyStatements`**; avoid **O(inner × outer × search)** (e.g. don’t re-walk a long seed string **per word** inside a binary search). Pre-fold keys once per pass, cap search iterations, and use a cheaper path for very long text.
+- **`isinstance`** / other stdlib — verify in-repo patterns or test on Avrae before relying on them.
+
+When behaviour is unclear, prefer **existing westmarch `*.gvar` patterns** and, if you have it checked out, the **drac2-tools** repo (see below).
+
+## File roles
+
+- **`.gvar`** — entire file is Drac2; imported via `using` / env.
+- **`.alias` / `.snippet`** — Drac2 only inside **`drac2`** blocks; return output with **`return`** for standalone blocks when you need visible substitution (see Avrae aliasing docs).
+
+## avrae-ls
+
+- **`.alias-test`** files drive **`avrae-ls --run-tests`**; they are not deployed to Discord.
+- **`varFiles` / `.varfile.json`** — generated in some workflows; see avrae-ls configuration docs.
+- **Workshop gvars** — `avrae-ls` resolves and **caches** remote gvar bodies used by `get_gvar` / `using` / `env` references. You do **not** need to maintain or refresh separate local copies of those gvars in this repo for the language server.
+
+## Fuller reference (drac2-tools repo)
+
+This westmarch repo does not duplicate all upstream docs. When you need canonical detail (RST mirrors, alias-test format, maintainer workflow):
+
+- Clone or open the **drac2-tools** repo alongside westmarch if you use it as the reference implementation.
+- Read **`drac2-tools/.cursor/rules/drac2-avrae-sources.mdc`** for Drac2/Avrae file roles, aliasing and automation notes, alias-test and `.avraels.json` conventions, markdown fences in docs, and “when behaviour surprises you” triage.
+- Read **`drac2-tools/.cursor/rules/drac2-tools-maintainer.mdc`** if you touch sourcemaps, generated `env.*.gvar`, or workshop UUIDs.

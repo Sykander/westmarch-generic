@@ -1,0 +1,102 @@
+---
+description: Drac2/Avrae conventions for .gvar, .alias, .snippet, and .alias-test files
+globs:
+  - "**/*.gvar"
+  - "**/*.alias"
+  - "**/*.alias-test"
+  - "**/*.snippet"
+  - docs/**/*.md
+  - .cursor/avrae-reference/**
+  - .cursor/avrae-ls-reference/**
+  - .cursor/reference-cache.json
+  - .cursor/scripts/refresh_upstream_reference_cache.py
+alwaysApply: false
+---
+
+# Drac2 / Avrae — file roles
+
+## Extensions
+
+- **`.gvar`** — Entire file is **Drac2** (Draconic): a **Python subset** Avrae runs as workshop/global library code (`def`, maps, constants). Imported via `using` / env; not a `!command` entrypoint.
+- **`.alias` / `.snippet`** — May mix non-Drac2 alias/snippet text with logic blocks; **Drac2 only inside** `<drac2></drac2>` (or equivalent drac2 tags). Same language as gvars inside those blocks.
+- **`.alias`** roles — See **test harness vs production** below.
+
+## Drac2 language (Avrae)
+
+- Prefer **normal Python style** (readability, structure) **where Drac2 allows**; it is not full Python, so some patterns or stdlib pieces will not exist—verify against **cached upstream** (below), then live docs, then existing repo code—never assume full CPython behavior.
+- **Automations** (attacks, spells, effects) are usually **YAML or JSON** trees of automation nodes—separate artifact type from Drac2 files, but part of the same Avrae ecosystem when you touch them.
+
+### Cached Avrae documentation (Cursor-adjacent, not product docs)
+
+Official Read the Docs **RST sources** live next to Cursor rules under **`.cursor/avrae-reference/`** (not under `docs/`):
+
+- **Drac2 & aliasing:** `.cursor/avrae-reference/aliasing-api.rst.txt`
+- **Automation:** `.cursor/avrae-reference/automation-reference.rst.txt`
+- **Canonical HTML URLs, download URLs, last fetch:** **`.cursor/reference-cache.json`** → **`avrae_rst`**
+- **Refresh:** **`.cursor/avrae-reference/refresh-avrae-docs.sh`** (runs **`.cursor/scripts/refresh_upstream_reference_cache.py` `avrae-rst`**)
+
+**When behavior surprises you:** (1) Search those `.rst.txt` files. (2) Open **canonical HTML** URLs from **`reference-cache.json`**—if live text differs from the cache, run **`refresh-avrae-docs.sh`** (updates **`last_fetch`** in JSON), then commit. (3) If the cache matches live docs but **`avrae-ls`** or local runs still disagree, treat it as **tooling**; if the **Discord bot** disagrees with published docs, treat it as **Avrae** upstream—do not “fix” repo Drac2 to match a guess.
+
+**When URLs break** (404, moved `_sources/` paths): edit **`source_url`** / **`canonical_html`** in **`reference-cache.json`**, then run **`refresh-avrae-docs.sh`**.
+
+### Cached avrae-ls documentation (Cursor-adjacent)
+
+The **[avrae-ls](https://github.com/1drturtle/avrae-ls)** language server and **`avrae-ls --run-tests`** behavior are documented upstream in Markdown. Cached copies live under **`.cursor/avrae-ls-reference/upstream/`** (not under product **`docs/`**):
+
+- **Alias tests format, metadata (`name`, `vars`, `character`), expectations:** `upstream/docs/alias-tests.md`
+- **`.avraels.json`**, profiles, `varFiles`, tokens, mock runtime:** `upstream/docs/configuration.md`
+- **Overview (install, VS Code, CLI, testing, troubleshooting):** `upstream/README.md`
+- **Blob links, raw URLs, last fetch, tracked `avrae-ls` version:** **`.cursor/reference-cache.json`** → **`avrae_ls_upstream`**
+- **Refresh:** **`.cursor/avrae-ls-reference/refresh-avrae-ls-docs.sh`** (runs **`refresh_upstream_reference_cache.py` `avrae-ls`**)
+
+**When `.alias-test` / `.avraels.json` / `.varfile.json` behavior surprises you:** (1) Read the cached **`alias-tests.md`** and **`configuration.md`**. (2) Compare with **`github_blob`** URLs in **`reference-cache.json`**. If upstream changed, run **`refresh-avrae-ls-docs.sh`** (updates **`last_fetch`**), bump **`tracked_avrae_ls_version`** when you validate a new release, commit. (3) If the cache matches upstream but local **`avrae-ls --version`** differs from **`tracked_avrae_ls_version`**, align or note the drift.
+
+**`.varfile.json`** in this repo is **generated** (see **`drac2-tools-maintainer.mdc`**); how Avrae LS consumes **`varFiles`** is described in **`upstream/docs/configuration.md`**.
+
+## `.alias-test` files
+
+- **Not deployed** — Inputs for **`avrae-ls --run-tests`** only (see `.github/workflows/test.yaml`, **`AGENTS.md`**, **`.cursor/README.md`**, **`.cursor/reference-cache.json`**). Full format, metadata YAML, and embed expectations: **`.cursor/avrae-ls-reference/upstream/docs/alias-tests.md`**.
+- **Shape** — Blocks like `!pairedalias -testcase "unique case title"` (often separated by `---`); that string is the testcase id.
+- **Contract** — Paired **`.alias`** uses `testcase = args.last("testcase", None)` (or equivalent) and **`elif testcase == "exact same title":`** branches; titles must match **exactly**.
+
+## Test-harness `.alias` vs workshop / production `.alias`
+
+| | **Test harness** | **Workshop / real alias** |
+|--|--|--|
+| **Signals** | Same basename **`.alias-test`** (e.g. `lists.alias` + `lists.alias-test`) | No `.alias-test`; listed in publish/sourcemap / workshop as a live command |
+| **Purpose** | **`expect`** against a `.gvar` (or thin integration); long `elif testcase == …` chains are normal | Player-facing args; avoid testcase-only branches unless deliberately dual-purpose |
+
+When editing an **`.alias`**, decide which role it plays before copying structure from another file.
+
+## Live Avrae **`<drac2>`** blocks (Discord bot)
+
+Per **`.cursor/avrae-reference/aliasing-api.rst.txt`** (*Draconic Blocks*): a **`<drac2>…</drac2>`** segment is replaced by a **non-`None` value returned with the `return` keyword**, stringified. A **bare trailing expression** (no **`return`**) is **not** documented as the block’s output there—side-effect code can run, but for **standalone** blocks (e.g. copy-paste Discord tests), **always `return ...`** if you need visible substitution. **`{{ … }}`** *expressions* are a different mechanism (evaluated value replaces the braces). **`avrae-ls`** runs **`.alias`** bodies in a harness; do not assume its implicit “last value” behavior matches the **Discord bot** if a snippet fails to print until you add **`return`**.
+
+## Avrae aliases, snippets, and multiline (execution limits)
+
+- **Multiline** — A `multiline` return queues **native Avrae commands** only (e.g. `embed`, `i`, …). **Multiline cannot invoke workshop aliases**; do not put `!yourAlias` lines in a multiline sequence and expect them to run as another alias.
+- **Alias → alias** — **Aliases cannot call other aliases.** One alias run is one user command; Drac2 cannot dispatch or “invoke” a separate workshop alias as a nested command.
+- **Snippets vs aliases** — **Snippet expansion runs before the alias’s Drac2.** Snippets can alter what the alias sees (e.g. injected args or text), but alias Drac2 **cannot** change how snippets were already evaluated for that message.
+
+Design table flows accordingly: multiline follow-ups must be **built-in commands** (e.g. `embed …`, `i begin …`), not `!zilch …` unless Avrae explicitly documents otherwise.
+
+## Conventions in this repo (Drac2 code)
+
+- **Raw strings** — **`r"..."`** and **`r'...'`** are valid in Drac2 (Python-style: backslashes stay literal except before the closing quote). Prefer them for **backslash-heavy** literals (e.g. regex patterns: **`r"\d+"`** vs **`"\\d+"`**) so source stays readable. Covered by **`avrae-ls --run-tests`** in **`regex.alias`** (“compile should accept raw string pattern with backslashes”).
+- **`None`**, not `null`. **`err(...)`** for intentional hard failures.
+- **Avrae builtins — do not shadow** — Drac2 injects engine callables/globals (see **`.cursor/avrae-reference/aliasing-api.rst.txt`**). **Do not assign to their names** or use them as loop/target variables. Example: **`time = "2 hours"`** fails because **`time()`** is the UNIX-epoch builtin (`aliasing-api.rst.txt` → `time()`). Prefer descriptive names (`travel_txt`, `epoch_secs`, `route_hours`). Other names easy to collide with: **`character()`**, **`combat()`**, **`argparse()`**, **`vroll()`**, **`err()`**, **`randint()`**, **`randchoice()`**.
+- **Types** — Mirror the surrounding file (hints vs untyped).
+- **Naming** — `snake_case`; Avrae string keys (`"melee"`, `"sleightOfHand"`, …) stay consistent with domain maps.
+- **`== None` / `!= None`** — Match the dominant style in the file you are editing.
+- **Comments** — Short headers / non-obvious rationale only.
+
+## Testing (when a `.alias-test` exists)
+
+- Use **`env.gvars.expect`** and **`expect(...).to.have.property`**, **`.to.be`**, **`.raise_exception`** via lambdas, consistent with `expect.alias-test`.
+- Prefer deterministic rolls (**`1d1`**, seeded random helpers) when totals must be stable.
+
+## Docs
+
+- Keep **`docs/**/*.md`** consistent with the artifacts it describes (API, parameters, return shapes, deployment). Today most module pages are under **`docs/gvars/`**; add other paths under `docs/` when you document aliases, snippets, or workshops. **`docs/gvars/`** pages are for **library consumers**—do not add test-runner, CI, or **`avrae-ls`** how-to there (see **`drac2-tools-maintainer.mdc`** and **`AGENTS.md`**).
+- **Fenced Drac2 in markdown** — Snippets are **Drac2**, but in **`docs/`**, **`README.md`**, **`DEVELOPMENT.md`**, and **`public/articles/`** use a **triple-backtick fence tagged `py`** (i.e. **` ```py `** … **` ``` `**), **not** **` ```drac2 `**. Most Markdown renderers (GitHub, VS Code, Discord, etc.) do not highlight **`drac2`**; **`py`** is close enough for readability. **`.gvar`**, **`.alias`**, and **`.alias-test`** stay real Drac2 / harness sources—this rule is only for prose markdown.
+- **Drac2 snippets in markdown** — Prefer **attribute access** (`obj.field`, `obj.fullmatch(...)`) over **bracket dict keys** (`obj["field"]`) when the key is a valid identifier and the snippet is meant to run in Drac2 (Avrae allows attribute-style access on dicts). Keep brackets for list/tuple indexing, non-identifier keys, or when documenting literal JSON shapes. For **pattern strings** or other literals with many backslashes, prefer **raw strings** **`r"..."`** / **`r'...'`** in examples when that keeps the snippet clearer than doubled **`\\`** (see **Conventions** above).

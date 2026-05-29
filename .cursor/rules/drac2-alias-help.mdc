@@ -1,0 +1,52 @@
+---
+description: Required help embeds, syntax notation, and snippet docs for src/aliases.
+globs:
+  - "**/src/aliases/**/*.alias"
+  - "**/src/gvars/utils/library.gvar"
+alwaysApply: false
+---
+
+# Help embed (required)
+
+- Every alias under **`src/aliases`** MUST expose a **help** response when the user runs with **no args**, or **`help`** or **`?`** as the first token after the command (see **`read.alias`** / **`library.alias`**).
+- **Preferred help gate (single conditional):** use exactly **`if len(argslist) == 0 or argslist[0] in ["help", "?"]:`** before branching into the main command (short-circuits safely: no **`argslist[0]`** read when the list is empty). Keep the list order **`["help", "?"]`**.
+- Build copy as an **`f"""…"""` multiline** string (e.g. **`help_text = f"""…"""`**) passed to **`embed(..., desc=help_text)`**.
+
+# Syntax notation (document in **Usage** and examples)
+
+In help text, always use **`{ctx.prefix}`** inside backticks (never bare `!`). Use **angle brackets** for required placeholders and **square brackets** for optional tail content:
+
+- **`{ctx.prefix}command <text>`** — **`<text>`** is **required** at **argument position 0** (first Discord token after the command name; quote that token if it contains spaces).
+- **`{ctx.prefix}command <text> [more]`** — **`<text>`** required at position 0; **`[more]`** is **optional** after it (extra tokens and/or argparse flags, per that alias).
+
+Optional **named** flags (e.g. **`-author`**) can sit in the usage line or get their own one-line explanations under **Usage** — see **`hunt.alias`** (backtick labels under the usage line) and **`library.alias`** / **`read.alias`**.
+
+# **Usage** layout (repo standard)
+
+1. Optional bold lead: **what / when** to use the command.
+2. **`Usage:`** then backtick lines: **first line is the primary / normal invocation** (the thing players should run day-to-day). Do **not** burn the first line on “show this help” or `?` / `help` — zero-args / `?` / `help` still **must** be implemented in code, but the help **embed** does not need to document that meta-flow.
+3. **Whitespace (readability):** follow **`hunt.alias`** as the default — **one** blank line after the main usage code line, then **stack** placeholder / flag lines **back-to-back** with **no** blank line between each (like `creature` / `party_size` / `bonuses` in hunt). Avoid the “blank line after every row” pattern. **`enc.alias`** is fine for denser blocks (usage + next line + section headers with minimal gaps). Do **not** start **`help_text`** with a stray leading newline inside the `f"""`.
+4. Short lines: backtick label then prose on the same line. On the **primary** usage line, keep **`<placeholders>`** and **`[optional]`** notation; in the **stacked** explanation rows under it, use **plain names** only (`` `topic` ``, `` `bonuses` ``, `` `title` ``, `` `author` `` for the **-author** flag, etc.) — do **not** repeat `<>` / `[]` on those rows, and do **not** nest another inline-code span for the same flag inside parentheses (breaks Markdown; use **-author** in prose or point at **Examples**). Keep token / snippet rows in that same stack unless several tokens need real subheadings.
+5. **`Examples:`** when the flow is easy to get wrong — same tight spacing: header, blank line, then consecutive backtick lines.
+
+# What help should say (briefly)
+
+- How to use, when to use, snippets/tokens that matter, examples only if needed.
+
+# What help should not say
+
+- **How to open help** inside the help embed’s **Usage** section (e.g. “`{ctx.prefix}foo` shows this message”) — redundant; keep **Usage** for real command shapes only.
+- **Hidden implementation** (including pointing users at **repo paths**, **internal gvar / module names**, **`utils/…`**, **`src/…`**, **`drac2-tools/…`**, workshop IDs, etc.) — players only have the bot in Discord; describe behaviour in plain, in-character terms when needed, or omit.
+- Exact **DCs**, numeric **breakpoints**, or long irrelevant flag lists.
+- **Extra player-facing invoke tokens** — do not add shorthands, alternate spellings, or parallel magic words for the same behaviour (in help, examples, or **`library.gvar`** internal flag parsing such as language-comprehend tokens) unless the user explicitly asked for that public surface.
+
+# `rolls.get_roll` and bonuses
+
+- Mention only flags that apply to the **`roll_type`**s this alias uses (per drac2-tools **`rolls`**).
+- **Skill checks** → `adv`, `dis`, `eadv`, `-b`, `guidance`, `-int`, … as relevant.
+- Do **not** push **`bless`** (etc.) for aliases that **only** run **skill checks**.
+
+# Style
+
+- Bold section headers at minimum **Usage:** and **Examples:** when present; add **Snippets / tokens** (or similar) only when several tokens need separate subheadings — otherwise fold single-token notes into the usage stack (**hunt** style).
+- Skimmable; backtick examples over walls of prose.

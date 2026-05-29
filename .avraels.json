@@ -1,0 +1,7 @@
+{
+  "enableGvarFetch": true,
+  "avraeService": {
+    "token": "$AVRAE_TOKEN"
+  },
+  "varFiles": [".varfile.json"]
+}

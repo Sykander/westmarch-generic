@@ -1,0 +1,11 @@
+---
+description: Avrae Drac2 is a Python subset; avoid unavailable builtins and defensive “corruption” guards
+globs: "**/*.{gvar,alias,alias-test}"
+alwaysApply: false
+---
+
+# Drac2 (Avrae automation)
+
+- **No `type()`** — it is not available in Drac2; do not use it or add fallbacks that assume it exists.
+- **Trust static / authored data** — comprehension pools, book rows, and similar structures are defined in-repo. Prefer writing valid data over `try`/`except` or extra checks that only mask bad entries.
+- **Let real bugs surface** — avoid broad exception handlers that hide programming errors or bad cvar JSON; fix the source or validate at boundaries only when the product explicitly requires it.

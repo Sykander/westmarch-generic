@@ -1,0 +1,8 @@
+<drac2>
+using(env="00000000-0000-0000-0000-000000000001")
+using(
+    example = env.gvars.example,
+)
+
+return f"Example sub command ran on {example.SERVER_NAME}."
+</drac2>

@@ -1,0 +1,528 @@
+name	level	school
+Abi-Dalzim's Horrid Wilting	8	Necromancy
+Absorb Elements	1	Abjuration
+Acid Splash	0	Conjuration
+Aganazzar's Scorcher	2	Evocation
+Aid	2	Abjuration
+Air Bubble	2	Conjuration
+Alarm	1	Abjuration
+Alter Self	2	Transmutation
+Animal Friendship	1	Enchantment
+Animal Messenger	2	Enchantment
+Animal Shapes	8	Transmutation
+Animate Dead	3	Necromancy
+Animate Objects	5	Transmutation
+Antagonize	3	Enchantment
+Antilife Shell	5	Abjuration
+Antimagic Field	8	Abjuration
+Antipathy/Sympathy	8	Enchantment
+Arcane Eye	4	Divination
+Arcane Gate	6	Conjuration
+Arcane Lock	2	Abjuration
+Armor of Agathys	1	Abjuration
+Arms of Hadar	1	Conjuration
+Ashardalon's Stride	3	Transmutation
+Astral Projection	9	Evocation
+Augury	2	Divination
+Aura of Life	4	Abjuration
+Aura of Purity	4	Abjuration
+Aura of Vitality	3	Evocation
+Awaken	5	Transmutation
+Bane	1	Enchantment
+Banishing Smite	5	Abjuration
+Banishment	4	Abjuration
+Barkskin	2	Transmutation
+Beacon of Hope	3	Abjuration
+Beast Bond	1	Divination
+Beast Sense	2	Divination
+Bestow Curse	3	Necromancy
+Bigby's Hand	5	Evocation
+Blade Barrier	6	Evocation
+Blade of Disaster	9	Conjuration
+Blade Ward	0	Abjuration
+Bless	1	Enchantment
+Blight	4	Necromancy
+Blinding Smite	3	Evocation
+Blindness/Deafness	2	Necromancy
+Blink	3	Transmutation
+Blur	2	Illusion
+B1s of the Earth	6	Transmutation
+Booming Blade	0	Evocation
+Borrowed Knowledge	2	Divination
+Branding Smite	2	Evocation
+Burning Hands	1	Evocation
+Call Lightning	3	Conjuration
+Calm Emotions	2	Enchantment
+Catapult	1	Transmutation
+Catnap	3	Enchantment
+Cause Fear	1	Necromancy
+Ceremony	1	Evocation
+Chain Lightning	6	Evocation
+Chaos Bolt	1	Evocation
+Charm Monster	4	Enchantment
+Charm Person	1	Enchantment
+Chill Touch	0	Necromancy
+Chromatic Orb	1	Evocation
+Circle of Death	6	Necromancy
+Circle of Power	5	Abjuration
+Clairvoyance	3	Divination
+Cl1	8	Necromancy
+Cloud of Daggers	2	Conjuration
+Cloudkill	5	Conjuration
+Color Spray	1	Illusion
+Command	1	Enchantment
+Commune	5	Divination
+Commune with Nature	5	Divination
+Compelled Duel	1	Enchantment
+Comprehend Languages	1	Divination
+Compulsion	4	Enchantment
+C1 of Cold	5	Evocation
+Confusion	4	Enchantment
+Conjure Animals	3	Conjuration
+Conjure Barrage	3	Conjuration
+Conjure Celestial	7	Conjuration
+Conjure Elemental	5	Conjuration
+Conjure Fey	6	Conjuration
+Conjure Minor Elementals	4	Conjuration
+Conjure Volley	5	Conjuration
+Conjure Woodland Beings	4	Conjuration
+Contact Other Plane	5	Divination
+Contagion	5	Necromancy
+Contingency	6	Evocation
+Continual Flame	2	Evocation
+Control Flames	0	Transmutation
+Control Water	4	Transmutation
+Control Weather	8	Transmutation
+Control Winds	5	Transmutation
+Cordon of Arrows	2	Transmutation
+Counterspell	3	Abjuration
+Create Bonfire	0	Conjuration
+Create Food and Water	3	Conjuration
+Create Homunculus	6	Transmutation
+Create Magen	7	Transmutation
+Create or Destroy Water	1	Transmutation
+Create Spelljamming Helm	5	Transmutation
+Create Undead	6	Necromancy
+Creation	5	Illusion
+Crown of Madness	2	Enchantment
+Crown of Stars	7	Evocation
+Crusader's Mantle	3	Evocation
+Cure Wounds	1	Evocation
+Dancing Lights	0	Evocation
+Danse Macabre	5	Necromancy
+Dark Star	8	Evocation DG
+Darkness	2	Evocation
+Darkvision	2	Transmutation
+Dawn	5	Evocation
+Daylight	3	Evocation
+Death Ward	4	Abjuration
+Delayed Blast Fireball	7	Evocation
+Demiplane	8	Conjuration
+Destructive Wave	5	Evocation
+Detect Evil and Good	1	Divination
+Detect Magic	1	Divination
+Detect Poison and Disease	1	Divination
+Detect Thoughts	2	Divination
+Dimension Door	4	Conjuration
+Disguise Self	1	Illusion
+Disintegrate	6	Transmutation
+Dispel Evil and Good	5	Abjuration
+Dispel Magic	3	Abjuration
+Dissonant Whispers	1	Enchantment
+Distort Value	1	Illusion
+Divination	4	Divination
+Divine Favor	1	Evocation
+Divine Word	7	Evocation
+Dominate Beast	4	Enchantment
+Dominate Monster	8	Enchantment
+Dominate Person	5	Enchantment
+Draconic Transformation	7	Transmutation
+Dragon's Breath	2	Transmutation
+Drawmij's Instant Summons	6	Conjuration
+Dream	5	Illusion
+Dream of the Blue Veil	7	Conjuration
+Druid Grove	6	Abjuration
+Druidcraft	0	Transmutation
+Dust Devil	2	Conjuration
+Earth Tremor	1	Evocation
+Earthbind	2	Transmutation
+Earthquake	8	Evocation
+Eldritch Blast	0	Evocation
+Elemental Bane	4	Transmutation
+Elemental Weapon	3	Transmutation
+Encode Thoughts	0	Enchantment
+Enemies Abound	3	Enchantment
+Enervation	5	Necromancy
+Enhance Ability	2	Transmutation
+Enlarge/Reduce	2	Transmutation
+Ensnaring Strike	1	Conjuration
+Entangle	1	Conjuration
+Enthrall	2	Enchantment
+Erupting Earth	3	Transmutation
+Etherealness	7	Transmutation
+Evard's Black Tentacles	4	Conjuration
+Expeditious Retreat	1	Transmutation
+Eyebite	6	Necromancy
+Fabricate	4	Transmutation
+Faerie Fire	1	Evocation
+False Life	1	Necromancy
+Far Step	5	Conjuration
+Fast Friends	3	Enchantment
+Fear	3	Illusion
+Feather Fall	1	Transmutation
+Feeblemind	8	Enchantment
+Feign Death	3	Necromancy
+Find Familiar	1	Conjuration
+Find Greater Steed	4	Conjuration
+Find Steed	2	Conjuration
+Find the Path	6	Divination
+Find Traps	2	Divination
+Finger of Death	7	Necromancy
+Fire Bolt	0	Evocation
+Fire Shield	4	Evocation
+Fire Storm	7	Evocation
+Fireball	3	Evocation
+Fizban's Platinum Shield	6	Abjuration
+Flame Arrows	3	Transmutation
+Flame Blade	2	Evocation
+Flame Strike	5	Evocation
+Flaming Sphere	2	Conjuration
+Flesh to St1	6	Transmutation
+Flock of Familiars	2	Conjuration
+Fly	3	Transmutation
+Fog Cloud	1	Conjuration
+Forbiddance	6	Abjuration
+Forcecage	7	Evocation
+Foresight	9	Divination
+Fortune's Favor	2	Divination D
+Freedom of Movement	4	Abjuration
+Freedom of the Waves	3	Enchantment
+Freedom of the Winds	5	Enchantment
+Friends	0	Enchantment
+Frost Fingers	1	Evocation
+Frostbite	0	Evocation
+Galder's Speedy Courier	4	Conjuration
+Galder's Tower	3	Conjuration
+Gaseous Form	3	Transmutation
+Gate	9	Conjuration
+Gate Seal	4	Abjuration
+Geas	5	Enchantment
+Gentle Repose	2	Necromancy
+Giant Insect	4	Transmutation
+Gift of Alacrity	1	Divination DC
+Gift of Gab	2	Enchantment
+Glibness	8	Transmutation
+Globe of Invulnerability	6	Abjuration
+Glyph of Warding	3	Abjuration
+Goodberry	1	Transmutation
+Grasping Vine	4	Conjuration
+Gravity Fissure	6	Evocation DG
+Gravity Sinkhole	4	Evocation DG
+Grease	1	Conjuration
+Greater Invisibility	4	Illusion
+Greater Restoration	5	Abjuration
+Green-Flame Blade	0	Evocation
+Guardian of Faith	4	Conjuration
+Guardian of Nature	4	Transmutation
+Guards and Wards	6	Abjuration
+Guidance	0	Divination
+Guiding Bolt	1	Evocation
+Gust	0	Transmutation
+Gust of Wind	2	Evocation
+Hail of Thorns	1	Conjuration
+Hallow	5	Evocation
+Hallucinatory Terrain	4	Illusion
+Harm	6	Necromancy
+Haste	3	Transmutation
+Heal	6	Evocation
+Healing Spirit	2	Conjuration
+Healing Word	1	Evocation
+Heat Metal	2	Transmutation
+Hellish Rebuke	1	Evocation
+Heroes' Feast	6	Conjuration
+Heroism	1	Enchantment
+Hex	1	Enchantment
+Hold Monster	5	Enchantment
+Hold Person	2	Enchantment
+Holy Aura	8	Abjuration
+Holy Weapon	5	Evocation
+Hunger Of Hadar	3	Conjuration
+Hunter's Mark	1	Divination
+Hypnotic Pattern	3	Illusion
+Ice Knife	1	Conjuration
+Ice Storm	4	Evocation
+Identify	1	Divination
+Illusory Dragon	8	Illusion
+Illusory Script	1	Illusion
+Immolation	5	Evocation
+Immovable Object	2	Transmutation DG
+Imprisonment	9	Abjuration
+Incendiary Cloud	8	Conjuration
+Incite Greed	3	Enchantment
+Infernal Calling	5	Conjuration
+Infestation	0	Conjuration
+Inflict Wounds	1	Necromancy
+Insect Plague	5	Conjuration
+Intellect Fortress	3	Abjuration
+Investiture of Flame	6	Transmutation
+Investiture of Ice	6	Transmutation
+Investiture of St1	6	Transmutation
+Investiture of Wind	6	Transmutation
+Invisibility	2	Illusion
+Invulnerability	9	Abjuration
+Jim's Glowing Coin	2	Enchantment
+Jim's Magic Missile	1	Evocation
+Jump	1	Transmutation
+Kinetic Jaunt	2	Transmutation
+Knock	2	Transmutation
+Legend Lore	5	Divination
+Leomund's Secret Chest	4	Conjuration
+Leomund's Tiny Hut	3	Evocation
+Lesser Restoration	2	Abjuration
+Levitate	2	Transmutation
+Life Transference	3	Necromancy
+Light	0	Evocation
+Lightning Arrow	3	Transmutation
+Lightning Bolt	3	Evocation
+Lightning Lure	0	Evocation
+Locate Animals or Plants	2	Divination
+Locate Creature	4	Divination
+Locate Object	2	Divination
+Longstrider	1	Transmutation
+Maddening Darkness	8	Evocation
+Maelstrom	5	Evocation
+Mage Armor	1	Abjuration
+Mage Hand	0	Conjuration
+Magic Circle	3	Abjuration
+Magic Jar	6	Necromancy
+Magic Missile	1	Evocation
+Magic Mouth	2	Illusion
+Magic St1	0	Transmutation
+Magic Weapon	2	Transmutation
+Magnify Gravity	1	Transmutation DG
+Major Image	3	Illusion
+Mass Cure Wounds	5	Evocation
+Mass Heal	9	Evocation
+Mass Healing Word	3	Evocation
+Mass Polymorph	9	Transmutation
+Mass Suggestion	6	Enchantment
+Maximillian's Earthen Grasp	2	Transmutation
+Maze	8	Conjuration
+Meld into St1	3	Transmutation
+Melf's Acid Arrow	2	Evocation
+Melf's Minute Meteors	3	Evocation
+Mend Plants	0	Transmutation
+Mending	0	Transmutation
+Mental Prison	6	Illusion
+Message	0	Transmutation
+Meteor Swarm	9	Evocation
+Mighty Fortress	8	Conjuration
+Mind Blank	8	Abjuration
+Mind Sliver	0	Enchantment
+Mind Spike	2	Divination
+Minor Illusion	0	Illusion
+Mirage Arcane	7	Illusion
+Mirror Image	2	Illusion
+Mislead	5	Illusion
+Misty Step	2	Conjuration
+Modify Memory	5	Enchantment
+Mold Earth	0	Transmutation
+Moonbeam	2	Evocation
+Mordenkainen's Faithful Hound	4	Conjuration
+Mordenkainen's Magnificent Mansion	7	Conjuration
+Mordenkainen's Private Sanctum	4	Abjuration
+Mordenkainen's Sword	7	Evocation
+Motivational Speech	3	Enchantment
+Move Earth	6	Transmutation
+Nathair's Mischief	2	Illusion
+Negative Energy Flood	5	Necromancy
+Nondetection	3	Abjuration
+Nystul's Magic Aura	2	Illusion
+Otiluke's Freezing Sphere	6	Evocation
+Otiluke's Resilient Sphere	4	Evocation
+Otto's Irresistible Dance	6	Enchantment
+Pass Without Trace	2	Abjuration
+Passwall	5	Transmutation
+Phantasmal Force	2	Illusion
+Phantasmal Killer	4	Illusion
+Phantom Steed	3	Illusion
+Planar Ally	6	Conjuration
+Planar Binding	5	Abjuration
+Plane Shift	7	Conjuration
+Plant Growth	3	Transmutation
+Poison Spray	0	Conjuration
+Polymorph	4	Transmutation
+Power Word: Heal	9	Evocation
+Power Word: Kill	9	Enchantment
+Power Word: Pain	7	Enchantment
+Power Word: Stun	8	Enchantment
+Prayer of Healing	2	Evocation
+Prestidigitation	0	Transmutation
+Primal Savagery	0	Transmutation
+Primordial Ward	6	Abjuration
+Prismatic Spray	7	Evocation
+Prismatic Wall	9	Abjuration
+Produce Flame	0	Conjuration
+Programmed Illusion	6	Enchantment
+Project Image	7	Illusion
+Protection from Energy	3	Abjuration
+Protection from Evil and Good	1	Abjuration
+Protection from Poison	2	Abjuration
+Psychic Scream	9	Enchantment
+Pulse Wave	3	Evocation D
+Purify Food and Drink	1	Transmutation
+Pyrotechnics	2	Transmutation
+Raise Dead	5	Necromancy
+Rary's Telepathic Bond	5	Divination
+Raulothim's Psychic Lance	4	Enchantment
+Ravenous Void	9	Evocation DG
+Ray of Enfeeblement	2	Necromancy
+Ray of Frost	0	Evocation
+Ray of Sickness	1	Necromancy
+Reality Break	8	Conjuration DC
+Regenerate	7	Transmutation
+Reincarnate	5	Transmutation
+Remove Curse	3	Abjuration
+Resistance	0	Abjuration
+Resurrection	7	Necromancy
+Reverse Gravity	7	Transmutation
+Revivify	3	Necromancy
+Rime's Binding Ice	2	Evocation
+Rope Trick	2	Transmutation
+Sacred Flame	0	Evocation
+Sanctuary	1	Abjuration
+Sapping Sting	0	Necromancy D
+Scatter	6	Conjuration
+Scorching Ray	2	Evocation
+Scrying	5	Divination
+Searing Smite	1	Evocation
+See Invisibility	2	Divination
+Seeming	5	Illusion
+Sending	3	Evocation
+Sequester	7	Transmutation
+Shadow Blade	2	Illusion
+Shadow Of Moil	4	Necromancy
+Shape Water	0	Transmutation
+Shapechange	9	Transmutation
+Shatter	2	Evocation
+Shield	1	Abjuration
+Shield of Faith	1	Abjuration
+Shillelagh	0	Transmutation
+Shocking Grasp	0	Evocation
+Sickening Radiance	4	Evocation
+Silence	2	Illusion
+Silent Image	1	Illusion
+Silvery Barbs	1	Enchantment
+Simulacrum	7	Illusion
+Skill Empowerment	5	Transmutation
+Skywrite	2	Transmutation
+Sleep	1	Enchantment
+Sleet Storm	3	Conjuration
+Slow	3	Transmutation
+Snare	1	Abjuration
+Snilloc's Snowball Swarm	2	Evocation
+Soul Cage	6	Necromancy
+Spare the Dying	0	Necromancy
+Speak with Animals	1	Divination
+Speak with Dead	3	Necromancy
+Speak with Plants	3	Transmutation
+Spider Climb	2	Transmutation
+Spike Growth	2	Transmutation
+Spirit Guardians	3	Conjuration
+Spirit Of Death	4	Necromancy
+Spirit Shroud	3	Necromancy
+Spiritual Weapon	2	Evocation
+Spray Of Cards	2	Conjuration
+Staggering Smite	4	Evocation
+Steel Wind Strike	5	Conjuration
+Stinking Cloud	3	Conjuration
+St1 Shape	4	Transmutation
+St1skin	4	Abjuration
+Storm of Vengeance	9	Conjuration
+Storm Sphere	4	Evocation
+Suggestion	2	Enchantment
+Summon Aberration	4	Conjuration
+Summon Beast	2	Conjuration
+Summon Celestial	5	Conjuration
+Summon Construct	4	Conjuration
+Summon Draconic Spirit	5	Conjuration
+Summon Elemental	4	Conjuration
+Summon Fey	3	Conjuration
+Summon Fiend	6	Conjuration
+Summon Greater Demon	4	Conjuration
+Summon Lesser Demons	3	Conjuration
+Summon Shadowspawn	3	Conjuration
+Summon Undead	3	Necromancy
+Sunbeam	6	Evocation
+Sunburst	8	Evocation
+Swift Quiver	5	Transmutation
+Sword Burst	0	Conjuration
+Symbol	7	Abjuration
+Synaptic Static	5	Enchantment
+Tasha's Caustic Brew	1	Evocation
+Tasha's Hideous Laughter	1	Enchantment
+Tasha's Mind Whip	2	Enchantment
+Tasha's Otherworldly Guise	6	Transmutation
+Telekinesis	5	Transmutation
+Telepathy	8	Evocation
+Teleport	7	Conjuration
+Teleportation Circle	5	Conjuration
+Temple of the Gods	7	Conjuration
+Temporal Shunt	5	Transmutation DC
+Tenser's Floating Disk	1	Conjuration
+Tenser's Transformation	6	Transmutation
+Tether Essence	7	Necromancy D
+Thaumaturgy	0	Transmutation
+Thorn Whip	0	Transmutation
+Thunder Step	3	Conjuration
+Thunderclap	0	Evocation
+Thunderous Smite	1	Evocation
+Thunderwave	1	Evocation
+Tidal Wave	3	Conjuration
+Time Ravage	9	Necromancy DC
+Time Stop	9	Transmutation
+Tiny Servant	3	Transmutation
+Toll the Dead	0	Necromancy
+Tongues	3	Divination
+Transmute Rock	5	Transmutation
+Transport via Plants	6	Conjuration
+Tree Stride	5	Conjuration
+True Polymorph	9	Transmutation
+True Resurrection	9	Necromancy
+True Seeing	6	Divination
+True Strike	0	Divination
+Tsunami	8	Conjuration
+Unseen Servant	1	Conjuration
+Vampiric Touch	3	Necromancy
+Vicious Mockery	0	Enchantment
+Vitriolic Sphere	4	Evocation
+Vortex Warp	2	Conjuration
+Wall of Fire	4	Evocation
+Wall of Force	5	Evocation
+Wall of Ice	6	Evocation
+Wall of Light	5	Evocation
+Wall of Sand	3	Evocation
+Wall of St1	5	Evocation
+Wall of Thorns	6	Conjuration
+Wall of Water	3	Evocation
+Warding Bond	2	Abjuration
+Warding Wind	2	Evocation
+Warp Sense	2	Divination
+Water Breathing	3	Transmutation
+Water Walk	3	Transmutation
+Watery Sphere	4	Conjuration
+Web	2	Conjuration
+Weird	9	Illusion
+Whirlwind	7	Evocation
+Wind Walk	6	Transmutation
+Wind Wall	3	Evocation
+Wish	9	Conjuration
+Witch Bolt	1	Evocation
+Wither and Bloom	2	Necromancy
+Word of Radiance	0	Evocation
+Word of Recall	6	Conjuration
+Wrath Of Nature	5	Evocation
+Wrathful Smite	1	Evocation
+Wristpocket	2	Conjuration D
+Zephyr Strike	1	Transmutation
+Z1 of Truth	2	Enchantment

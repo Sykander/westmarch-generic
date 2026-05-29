@@ -1,0 +1,36 @@
+{
+  "workshop": {
+    "id": "000000000000000000000001",
+    "environment": "00000000-0000-0000-0000-000000000001"
+  },
+  "aliases": [
+    {
+      "name": "example",
+      "file": "src/aliases/example/example.alias",
+      "sub_aliases": [
+        {
+          "name": "sub",
+          "file": "src/aliases/example/sub.alias"
+        }
+      ]
+    }
+  ],
+  "snippets": [
+    {
+      "name": "example",
+      "file": "src/snippets/example.snippet"
+    }
+  ],
+  "gvars": [
+    {
+      "name": "env",
+      "file": "src/gvars/env.dev.gvar",
+      "id": "00000000-0000-0000-0000-000000000001"
+    },
+    {
+      "name": "example",
+      "file": "src/gvars/example/example.gvar",
+      "id": "11111111-1111-1111-1111-111111111111"
+    }
+  ]
+}

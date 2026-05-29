@@ -1,0 +1,72 @@
+---
+description: Docs, tests, workshop UUIDs, sourcemaps, and generated env/var files
+alwaysApply: true
+---
+
+# drac2-tools maintenance
+
+## Gvar imports (`using`) vs documentation
+
+In Draconic / Avrae, **`using(...)`** binds a gvar module by the names it defines **without** a leading **`_`**. Names that start with **`_`** are **not** accessible from aliases (e.g. **`regex._compile_program`** is rejected). **Do not document `_*` symbols in `docs/`**—they are implementation details in **`.gvar`** sources for maintainers reading code, not a consumer API.
+
+**Drac2 reserved / builtin names:** Do not assign to **`time`** ( **`time()`** is Avrae’s epoch builtin) or shadow other engine names such as **`character`**, **`combat`**, **`argparse`**, **`vroll`**, **`err`**. Use names like **`travel_txt`** instead. Details: **`.cursor/rules/drac2-avrae-sources.mdc`** → **Avrae builtins — do not shadow**.
+
+## Documentation surfaces (keep in sync)
+
+When behavior or user-facing surfaces change, update prose as needed in:
+
+- **`docs/`** — library consumers (API, behavior, workshop/deploy notes that affect them).
+- **`README.md`** — project overview, how to find deeper docs, high-level orientation.
+- **`DEVELOPMENT.md`** — local setup, envs, sourcemaps, deploy flow, contributor-facing workflow.
+- **`.cursor/README.md`** — Cursor-adjacent: orientation, perf probe workflow, how to run reference refresh.
+- **`.cursor/reference-cache.json`** — Upstream download URLs, canonical links, **`last_fetch`**, **`tracked_avrae_ls_version`** (edit URLs / version here; refresh scripts update **`last_fetch`**).
+
+Treat **`README.md`**, **`DEVELOPMENT.md`**, **`.cursor/README.md`**, and **`.cursor/reference-cache.json`** (when Cursor tooling, upstream URLs, or tracked versions change) as first-class alongside **`docs/`**, not “out of scope” for edits when the change warrants it.
+
+## `docs/` style
+
+- **Forward-looking only:** describe what exists and how to use it. **Do not** document removed APIs, old names, or “we used to …” history—noise for readers.
+- **Clarity first:** short top-level explanation; push edge cases and detail into later subsections.
+- **Examples:** prefer **working Drac2 snippets** in fenced blocks (see **`drac2-avrae-sources.mdc`** → Docs for attribute vs bracket style on dicts, and **raw strings** **`r"..."`** for backslash-heavy literals such as regex patterns).
+- **Code fence language:** in **`docs/`** and other **product markdown** (**`README.md`**, **`DEVELOPMENT.md`**, **`public/articles/`**), tag Drac2 blocks as **` ```py `**, not **` ```drac2 `**—see **`drac2-avrae-sources.mdc`** → Docs (**Fenced Drac2 in markdown**).
+
+---
+
+When you change **behavior or public API** (not typo-only or formatting):
+
+1. **Documentation** — Update any **markdown under `docs/`** that documents the changed surface (signatures, parameters, return shapes, edge cases, workshop or deploy notes). If you add a new public surface, add or extend the right doc path and link it from **`docs/README.md`** when appropriate (not only under `docs/gvars/`). Update **`README.md`** / **`DEVELOPMENT.md`** when the change affects onboarding, envs, sourcemaps, deploy, or general discovery. Update **`.cursor/README.md`** when **`.cursor/`** probe workflow or refresh commands change. Update **`.cursor/reference-cache.json`** when upstream URLs or **`tracked_avrae_ls_version`** change (refresh scripts set **`last_fetch`** automatically).
+
+   In Drac2 snippets under product markdown (**`docs/`**, **`README.md`**, **`DEVELOPMENT.md`**, **`public/articles/`**), use **` ```py `** fences (see **`drac2-avrae-sources.mdc`** → Docs). Prefer attribute access (e.g. **`rx.fullmatch(...)`**, **`hit.start`**) over **`rx["fullmatch"]`** when the key is a valid identifier. For regex **pattern** literals with many backslashes, prefer **`r"..."`** over doubled escapes when it keeps the snippet readable (same **`drac2-avrae-sources.mdc`** → Conventions / Docs).
+
+   **Audience — `docs/` is for people using the artifacts** (imports, public API, runtime behavior, deploy/workshop notes that affect consumers). **Do not** put maintainer-only material in `docs/`, especially under **`docs/gvars/`**: how to run tests, **`avrae-ls`** / **`.alias-test`** mechanics, CI, mock profiles, coverage, or “where tests live.” Keep that in **`AGENTS.md`**, **`.cursor/README.md`**, **`.cursor/reference-cache.json`** (upstream URL metadata), **`DEVELOPMENT.md`** (env/sourcemaps/deploy), workflow files, or next to the tests themselves.
+2. **Tests** — For each `src/gvars/utils/<name>/` util, keep the trio aligned: `<name>.gvar` (logic), `<name>.alias` (testcase branches + `expect` assertions), `<name>.alias-test` (one `!name -testcase "..."` block per case). Add or adjust cases when behavior changes.
+3. **Verify** — After gvar or alias test edits, run `avrae-ls --run-tests src` from the repo root (requires `avrae-ls` on PATH). For **avrae-ls** semantics (`.alias-test` metadata, `.avraels.json`, `varFiles`), read **`.cursor/avrae-ls-reference/`** (see **`drac2-avrae-sources.mdc`**) instead of inventing behavior.
+
+## Sourcemaps vs generated files (single source of truth)
+
+**Hand-edit:** `utils/sourcemap.dev.json`, `utils/sourcemap.prod.json`, gvar sources under **`src/gvars/utils/**`** (and their `.alias` / `.alias-test`), `unused_gvars.md`, tests, docs, `Makefile`, `package.json`, and the generator scripts under **`utils/*.js`** (`generate-env.js`, `generate-vars.js`, `sourcemap-test.js`, `deploy.js`, etc.).
+
+**Do not hand-edit (regenerate instead):** `src/gvars/env.dev.gvar`, `src/gvars/env.prod.gvar`, and **`.varfile.json`** — they are outputs of the table below.
+
+**Generated — do not edit directly.** These are overwritten by Node scripts that read the sourcemaps (and `package.json` where noted):
+
+| Output | Generator | Typical command |
+|--------|-----------|-------------------|
+| `src/gvars/env.dev.gvar`, `src/gvars/env.prod.gvar` | `utils/generate-env.js` | `npm run generate-env` |
+| `.varfile.json` | `utils/generate-vars.js` | `npm run generate-vars` |
+
+After you change **which gvars exist or their ids/paths** in the sourcemaps, **regenerate** env (and dev var file) instead of patching `env.*.gvar` or `.varfile.json` by hand:
+
+- **`make rebuild`** — runs **`make rebuild_dev`** (`ENVIRONMENT=Development npm run generate-env`, then `npm run generate-vars`) and **`make rebuild_prod`** (`ENVIRONMENT=Production npm run generate-env` only). See the **`Makefile`** for the exact recipe.
+- **`ENVIRONMENT`** — optional for scripts: set to **`Development`** or **`Production`** so `generate-env.js` / `generate-vars.js` / `deploy.js` pick the matching sourcemap (see each script; `generate-env` defaults to Development when unset).
+
+Also run **`npm run test-sourcemaps`** after sourcemap edits. **`npm run deploy`** (`utils/deploy.js`) consumes the sourcemap for publish-avrae; same **`ENVIRONMENT`** idea applies.
+
+## Workshop gvar UUIDs (`unused_gvars.md`)
+
+**Never invent UUIDs.** Each workshop gvar slot has a real id; reusing or guessing an id can **overwrite** the wrong gvar in Avrae.
+
+- When you **add** a gvar, edit **`utils/sourcemap.dev.json`** and **`utils/sourcemap.prod.json`** (name, `file`, `id`). Take the **`id`** from the **top** line of **`unused_gvars.md`**, then **delete** that line. Regenerate env/var files with **`make rebuild`** / **`npm run generate-env`** / **`npm run generate-vars`** — do **not** paste ids into **`env.*.gvar`** manually.
+- When you **remove** a gvar from the sourcemaps, **append** its UUID as a new line at the **bottom** of **`unused_gvars.md`**.
+
+Do not leave “docs later” as a follow-up unless the user explicitly asks to split work.

@@ -1,0 +1,59 @@
+---
+description: Drac2 statement-budget performance + Python-style patterns (subset-aware); cross-ref drac2-avrae-sources
+globs:
+  - "**/*.gvar"
+  - "**/*-perf.alias"
+  - "**/*-perf.alias-test"
+alwaysApply: false
+---
+
+# Python style in Drac2 (and why “performance” means statements)
+
+## Performance on Avrae / Drac2
+
+**More performant** Drac2 code, in this repo and on Avrae, means code that can run **more work inside a single alias or gvar invocation** before the engine raises **“too many statements”** (per-invocation **statement budget**). It is **not** wall-clock CPU in the CPython sense.
+
+- Prefer **fewer statements per unit of work** (shorter hot loops, cheaper conditionals, avoid redundant work).
+- **Validate** guesses with **`performance_examples`** (micro-benchmarks + **`performance_examples-perf`**) and **`.cursor/scripts/probe_perf_boundaries.py --preset performance_examples`** — Drac2 is not full CPython; ordering can differ.
+
+## “Python expert” stance (Drac2-aware)
+
+Drac2 is a **Python subset** with Avrae-specific limits. Treat idioms from **`.cursor/rules/drac2-avrae-sources.mdc`** and cached **`.cursor/avrae-reference/`** as authoritative for **what exists**; treat normal Python docs as **style inspiration**, not guaranteed-available APIs.
+
+- Prefer **clear control flow** and **small helpers** when it **reduces** duplicated statements.
+- Prefer **readable** table-driven dispatch (`list[index]`, small `dict` maps) when probes show it **wins** or ties under Drac2.
+- **List / dict access**, indexing, comprehensions (where supported), and string ops are usually fair game; **stdlib**, decorators, and exotic metaprogramming usually are not—check Drac2 docs.
+
+## Measured pattern alternatives (`performance_examples` gvar, probed max loop counts)
+
+Each row is **equivalent checksum** for the same `loops`; higher `loops` max = more statements left under the cap (better). Last full probe: **``-loops``** in **``performance_examples-perf.alias-test``** match these maxima, cap **120000**, **`--max-binary 20`** (**`--preset performance_examples`** on **``.cursor/scripts/probe_perf_boundaries.py``**; baselines live in that script’s **`PRESETS`**).
+
+| Pattern | Alternative | Probed max `loops` (higher = better) |
+| --- | --- | --- |
+| List index (`["1d20",…][adv_int]`) | `if` / `elif` / `else` same branches | **4313** vs **3420** |
+| List index three-way token | `if` / `elif` / `else` three-way | **4509** vs **3968** |
+| `dict.get("a", 0)` (key present) | `"a" in m` then `m["a"]` | **6612** vs **5834** |
+| `a.get("key", 1)` (**key absent**) | `a["key"] if "key" in a else 1` | **7085** vs **7084** (tie) |
+| `a.get("key")` (key present, one-arg) | `a["key"]` same value | **7627** vs **8262** |
+| `d["k"]` (key always present) | `d.get("k", 0)` same value | **7628** vs **6610** |
+| `i = i + 1` | `i += 1` | **10000** vs **10000** at ``reps`` 1 (``max_loops`` plateau); **805** vs **877** outer ``loops`` at **``-reps`` 10** in **``performance_examples-perf``** |
+| `s = s + "x"` | `s += "x"` | **9013** vs **9914** |
+| `needle in (1,…,5)` tuple literal | same with list literal | **4508** vs **4508** (tie) |
+
+**Takeaways for this runtime:** **list index** dispatch beats **if-chains**; when the key is **always present**, **`d["k"]`** beats **`d.get("k", 0)`** (two-arg default path costs statements); for the same present key, **`a["key"]`** slightly beats **`a.get("key")`** (one-arg). When probes **tie** or differ by a negligible margin, this repo prefers **`.get(...)`** for readability and consistent “mapping read” style unless a bracket read is clearly cheaper and hot. When the key is **often absent** with a default, **`.get("k", 1)`** and **`a["k"] if "k" in a else 1`** are **within one loop** of each other—prefer **`.get`** for clarity and safe semantics. **`i += 1` vs `i = i + 1`**: at **``reps``** 1 both probe **10000** because **`max_loops`** caps first; with **``-reps``** 10–100 on **``performance_examples-perf``**, **`i += 1`** allows **more** outer **``loops``** than **`i = i + 1`** (one dimension row per counter testcase, same **``-reps``**; example **`--dimension`** flags in **``.cursor/scripts/probe_perf_boundaries.py``** epilog). **`s += "x"`** beat **`s = s + "x"`** for repeated one-char append (see **`regex.gvar`** hot paths like `out += …`).
+
+**Regex `mc`:** with **zero capture groups**, annotation skips and **`"mc"` is absent** on nodes—use **`.get("mc", 0)`** (correctness). Performance matches the **missing-key / default** pattern above: **no reason** to switch to **`in` + subscript** for speed.
+
+## Rev DB `argparse.adv()` → dice string trick
+
+```py
+dice = ["1d20", "2d20kh1", "3d20kh1", "2d20kl1"][a.adv()]
+```
+
+This maps `adv()`’s integer encoding to the correct base d20 expression. It is **clean** (one dispatch site) and, under our probes, **more statement-efficient** than a long `if`/`elif` ladder for the same mapping.
+
+## When optimizing
+
+1. **Measure** with **`performance_examples-perf`** or a dedicated `*-perf` harness; use **`.cursor/rules/gvar-perf-boundaries.mdc`** (single-test probe + gallop + binary search).
+2. **Do not** sacrifice correctness or clarity for a tiny win unless the hot path is proven dominant.
+3. Re-run **`python3 .cursor/scripts/probe_perf_boundaries.py --preset performance_examples`** when you **edit the bodies** of **`bench_*`** in **`performance_examples.gvar`**, or when **avrae-ls / Avrae** updates might change how statements are counted—then refresh the **``-loops``** values in **`performance_examples-perf.alias-test`** (kept at **probed maxima**) and the table in this file.

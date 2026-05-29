@@ -1,0 +1,10 @@
+!example
+---
+|
+  Example command for Example Server.
+
+  Usage: `!example`
+  Use `!example sub` for the subcommand.
+---
+---
+name: example shows help with no args
