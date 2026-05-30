@@ -23,7 +23,7 @@ This repo is the **generic engine**. Per-server content lives in workshop gvars 
 | `utils/*.js` | Env/var generation, sourcemap tests, deploy; **planned** TSV → catalogue shards ([utils/README.md](utils/README.md)) |
 | `public/assets/` | TSV catalogues — input to **`utils/generate-*`** ([content-pipeline](docs/internal/projects/westmarch-statement/content-pipeline.md)) |
 | `docs/` | Design and consumer documentation |
-| `.cursor/rules/` | Cursor agent rules (from westmarch + drac2-tools) |
+| `.cursor/` | Agent rules, cached Avrae/avrae-ls docs, refresh and perf scripts |
 
 ### Configuration model (planned)
 

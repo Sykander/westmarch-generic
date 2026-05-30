@@ -1,6 +1,360 @@
-"""config.gvar — placeholder.
+"""config.gvar — load owner server config from svar, merge engine DEFAULTS.
 
 See docs/internal/projects/westmarch-statement/gvars/config.md
 """
 
-# TODO: implement config module
+SVAR_NAME = "westmarch_config"
+
+# Keep in sync with src/gvars/configs/starter.gvar and data-shapes § Server policies.
+DEFAULTS = {
+    "config_version": None,
+    "rules_version": None,
+    "display": {},
+    "subsystems": {
+        "exploration": {
+            "enabled": False,
+            "commands": {
+                "enc": False,
+                "forage": False,
+                "fish": False,
+                "mine": False,
+                "lumber": False,
+                "hunt": False,
+                "loot": False,
+            },
+            "config": {
+                "enc_biome_source": "auto",
+                "distribution_policy": "random",
+                "distribution": {
+                    "combat": 25,
+                    "quest": 25,
+                    "gather": 50,
+                },
+                "repeat_exclude_window": 5,
+            },
+        },
+        "travel": {
+            "enabled": False,
+            "commands": {
+                "travel": False,
+                "location": False,
+                "time": False,
+                "weather": False,
+            },
+        },
+        "downtime": {
+            "enabled": False,
+        },
+        "crafting": {
+            "enabled": False,
+            "commands": {
+                "craft": False,
+                "brew": False,
+                "enchant": False,
+                "scribe": False,
+            },
+        },
+        "economy": {
+            "enabled": False,
+            "commands": {
+                "job": False,
+                "buy": False,
+                "sell": False,
+                "wallet": False,
+            },
+        },
+        "content": {
+            "enabled": False,
+            "commands": {
+                "library": False,
+                "read": False,
+            },
+            "config": {
+                "library_topic_source": "manual",
+                "allowed_topics": [],
+            },
+        },
+        "misc": {
+            "enabled": False,
+            "commands": {
+                "quest": False,
+                "recipe": False,
+            },
+        },
+    },
+    "policies": {
+        "auth": {"require_character": True},
+        "time": {"mode": "manual"},
+        "travel": {
+            "apply_path_costs": False,
+            "consume_rations": False,
+            "rations_item": "Rations",
+        },
+        "downtime": {
+            "mode": "manual",
+            "max_workdays": None,
+            "acquisition": "manual",
+        },
+        "crafting": {
+            "require_downtime_before_roll": True,
+            "auto_deduct_materials": False,
+            "auto_deduct_gold": False,
+        },
+        "economy": {
+            "enforce_cooldowns": True,
+            "enforce_wallet_caps": False,
+            "starting_gold": None,
+        },
+        "inventory": {
+            "track_encumbrance": False,
+            "enforce_encumbrance": False,
+            "attunement_limit": None,
+            "enforce_attunement": False,
+            "magic_items_carry_limit": None,
+            "enforce_magic_item_limit": False,
+        },
+        "exploration": {
+            "enforce_cooldowns": True,
+            "avoid_repeat_encounters": "off",
+        },
+        "combat": {
+            "scale_encounters_to_level": False,
+            "roll_monster_hp": True,
+            "scale_mode": "party_average",
+            "max_cr_delta": None,
+            "min_cr": None,
+        },
+        "quest": {
+            "self_assign": False,
+            "max_active": None,
+        },
+        "content": {
+            "enforce_read_cooldowns": False,
+            "enforce_library_cooldowns": True,
+        },
+        "languages": {"allowed": []},
+        "display": {
+            "footer_behaviour": "balanced",
+            "helpful_tips": [],
+            "credits": None,
+        },
+    },
+    "admin_roles": None,
+    "channel_policy": {
+        "admin_any_channel": True,
+        "mode": "any",
+        "whitelist": [],
+        "blocklist": [],
+        "rp_channel_ids": [],
+        "rp_parent_ids": [],
+        "commands_channel_id": None,
+    },
+}
+
+OWNER_TOP_LEVEL_KEYS = [
+    "config_version",
+    "rules_version",
+    "display",
+    "subsystems",
+    "policies",
+    "admin_roles",
+    "channel_policy",
+    "world_data",
+    "extensions",
+    "currencies",
+    "shops",
+]
+
+
+def _is_dict(value) -> bool:
+    try:
+        return value == dict(value)
+    except:
+        return False
+
+
+def _deep_merge_defaults(owner, defaults):
+    if defaults == None:
+        return owner
+    if owner == None:
+        return defaults
+    if not _is_dict(defaults):
+        if owner != None:
+            return owner
+        return defaults
+    if not _is_dict(owner):
+        owner = {}
+    merged = {}
+    seen = {}
+    for key in defaults:
+        seen[key] = True
+        default_val = defaults[key]
+        owner_val = None
+        if key in owner:
+            owner_val = owner[key]
+        if _is_dict(default_val):
+            merged[key] = _deep_merge_defaults(owner_val, default_val)
+        elif owner_val != None:
+            merged[key] = owner_val
+        else:
+            merged[key] = default_val
+    for key in owner:
+        if seen.get(key, False):
+            continue
+        merged[key] = owner[key]
+    return merged
+
+
+def _read_mod_field(mod, key):
+    try:
+        if key == "config_version":
+            return mod.config_version
+    except:
+        pass
+    try:
+        if key == "rules_version":
+            return mod.rules_version
+    except:
+        pass
+    try:
+        if key == "display":
+            return mod.display
+    except:
+        pass
+    try:
+        if key == "subsystems":
+            return mod.subsystems
+    except:
+        pass
+    try:
+        if key == "policies":
+            return mod.policies
+    except:
+        pass
+    try:
+        if key == "admin_roles":
+            return mod.admin_roles
+    except:
+        pass
+    try:
+        if key == "channel_policy":
+            return mod.channel_policy
+    except:
+        pass
+    try:
+        if key == "world_data":
+            return mod.world_data
+    except:
+        pass
+    try:
+        if key == "extensions":
+            return mod.extensions
+    except:
+        pass
+    try:
+        if key == "currencies":
+            return mod.currencies
+    except:
+        pass
+    try:
+        if key == "shops":
+            return mod.shops
+    except:
+        pass
+    return None
+
+
+def _collect_owner_fields(mod):
+    fields = {}
+    for key in OWNER_TOP_LEVEL_KEYS:
+        val = _read_mod_field(mod, key)
+        if val != None:
+            fields[key] = val
+    return fields
+
+
+def _apply_defaults(mod):
+    owner = _collect_owner_fields(mod)
+    merged = {}
+    for key in DEFAULTS:
+        default_val = DEFAULTS[key]
+        owner_val = None
+        if key in owner:
+            owner_val = owner[key]
+        if _is_dict(default_val):
+            merged[key] = _deep_merge_defaults(owner_val, default_val)
+        elif owner_val != None:
+            merged[key] = owner_val
+        else:
+            merged[key] = default_val
+    for key in owner:
+        if key in DEFAULTS:
+            continue
+        merged[key] = owner[key]
+    return merged
+
+
+def _load_config_gvar(uuid):
+    if uuid == None:
+        return None
+    addr = str(uuid).strip()
+    if addr == "":
+        return None
+    body = get_gvar(addr)
+    if body == None:
+        return None
+    if str(body).strip() == "":
+        return None
+    using(_owner=addr)
+    return _owner
+
+
+def _avrae_rules_edition():
+    # Phase 0 — Avrae guild rules exposure TBD; return None to fall through to "2014".
+    try:
+        g = ctx.guild
+        if g != None:
+            rv = g.dnd_version
+            if rv == "2024" or rv == "2014":
+                return rv
+    except:
+        pass
+    return None
+
+
+def get_config():
+    return cfg
+
+
+def get_rules_edition():
+    if cfg != None:
+        rv = None
+        try:
+            rv = cfg.rules_version
+        except:
+            rv = None
+        if rv == "2024" or rv == "2014":
+            return rv
+    avrae = _avrae_rules_edition()
+    if avrae == "2024" or avrae == "2014":
+        return avrae
+    return "2014"
+
+
+def get_policies():
+    if cfg == None:
+        return None
+    try:
+        return cfg.policies
+    except:
+        return None
+
+
+_cfg_uuid = get_svar(SVAR_NAME)
+_owner_mod = None
+if _cfg_uuid != None and str(_cfg_uuid).strip() != "":
+    _owner_mod = _load_config_gvar(_cfg_uuid)
+
+cfg = None
+if _owner_mod != None:
+    cfg = _apply_defaults(_owner_mod)

@@ -9,17 +9,21 @@ using(
 ok, msg = auth.is_allowed()
 get_embed = display.get_display()
 
+cmd_name = auth.command_name()
+if cmd_name == None:
+    cmd_name = "command"
+
 if not ok:
     return get_embed(desc=msg)
 
 args = argparse(&ARGS&)
 argslist = &ARGS&
 
-if argslist[0] in ["help", "?"]:
-    return get_embed(desc = f"{ctx.command.name} help is not implemented")
+if len(argslist) > 0 and argslist[0] in ["help", "?"]:
+    return get_embed(desc = f"{cmd_name} help is not implemented")
 
 return get_embed(
-    desc=f"{ctx.command.name} is not implemented",
+    desc=f"{cmd_name} is not implemented",
 )
 </drac2>
 

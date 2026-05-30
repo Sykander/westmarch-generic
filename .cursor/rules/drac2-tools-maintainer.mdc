@@ -3,7 +3,7 @@ description: Docs, tests, workshop UUIDs, sourcemaps, and generated env/var file
 alwaysApply: true
 ---
 
-# drac2-tools maintenance
+# westmarch-generic maintenance
 
 ## Gvar imports (`using`) vs documentation
 
@@ -39,12 +39,15 @@ When you change **behavior or public API** (not typo-only or formatting):
    In Drac2 snippets under product markdown (**`docs/`**, **`README.md`**, **`DEVELOPMENT.md`**, **`public/articles/`**), use **` ```py `** fences (see **`drac2-avrae-sources.mdc`** → Docs). Prefer attribute access (e.g. **`rx.fullmatch(...)`**, **`hit.start`**) over **`rx["fullmatch"]`** when the key is a valid identifier. For regex **pattern** literals with many backslashes, prefer **`r"..."`** over doubled escapes when it keeps the snippet readable (same **`drac2-avrae-sources.mdc`** → Conventions / Docs).
 
    **Audience — `docs/` is for people using the artifacts** (imports, public API, runtime behavior, deploy/workshop notes that affect consumers). **Do not** put maintainer-only material in `docs/`, especially under **`docs/gvars/`**: how to run tests, **`avrae-ls`** / **`.alias-test`** mechanics, CI, mock profiles, coverage, or “where tests live.” Keep that in **`AGENTS.md`**, **`.cursor/README.md`**, **`.cursor/reference-cache.json`** (upstream URL metadata), **`DEVELOPMENT.md`** (env/sourcemaps/deploy), workflow files, or next to the tests themselves.
-2. **Tests** — For each `src/gvars/utils/<name>/` util, keep the trio aligned: `<name>.gvar` (logic), `<name>.alias` (testcase branches + `expect` assertions), `<name>.alias-test` (one `!name -testcase "..."` block per case). Add or adjust cases when behavior changes.
-3. **Verify** — After gvar or alias test edits, run `avrae-ls --run-tests src` from the repo root (requires `avrae-ls` on PATH). For **avrae-ls** semantics (`.alias-test` metadata, `.avraels.json`, `varFiles`), read **`.cursor/avrae-ls-reference/`** (see **`drac2-avrae-sources.mdc`**) instead of inventing behavior.
+2. **Tests** — Pair gvars with tests when behaviour changes:
+   - **Engine gvars** — **`.gvar-test`** next to **`src/gvars/<area>/<name>.gvar`** (preferred for pure modules), or **`.alias`** + **`.alias-test`** when testing via a command surface.
+   - **Aliases** — **`.alias-test`** next to the **`.alias`** file.
+   Add or adjust cases when behaviour changes.
+3. **Verify** — After gvar or alias test edits, run `avrae-ls --run-tests src` from the repo root (requires `avrae-ls` on PATH). For **avrae-ls** semantics (`.alias-test`, `.gvar-test`, `.avraels.json`, `varFiles`), read **`.cursor/avrae-ls-reference/`** (see **`drac2-avrae-sources.mdc`**) instead of inventing behavior.
 
 ## Sourcemaps vs generated files (single source of truth)
 
-**Hand-edit:** `utils/sourcemap.dev.json`, `utils/sourcemap.prod.json`, gvar sources under **`src/gvars/utils/**`** (and their `.alias` / `.alias-test`), `unused_gvars.md`, tests, docs, `Makefile`, `package.json`, and the generator scripts under **`utils/*.js`** (`generate-env.js`, `generate-vars.js`, `sourcemap-test.js`, `deploy.js`, etc.).
+**Hand-edit:** `utils/sourcemap.dev.json`, `utils/sourcemap.prod.json`, sources under **`src/`** (aliases, snippets, gvars and their tests), `unused_gvars.md`, docs, `Makefile`, `package.json`, and generator scripts under **`utils/`** (`generate-env.js`, `generate-vars.js`, `generate-*.js`, `sourcemap-test.js`, `deploy.js`, etc.).
 
 **Do not hand-edit (regenerate instead):** `src/gvars/env.dev.gvar`, `src/gvars/env.prod.gvar`, and **`.varfile.json`** — they are outputs of the table below.
 

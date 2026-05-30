@@ -8,6 +8,7 @@ Workshop **global modules** deployed with the westmarch-generic engine. Aliases 
 |------|---------|
 | `env.dev.gvar` / `env.prod.gvar` | Generated UUID map — run `make rebuild` after sourcemap changes |
 | `core/` | Vendored drac2-tools helpers |
+| `config/config.gvar` | Server config loader (eager `cfg` + defaults merge) |
 | `config/`, `display/`, `auth/`, … | Engine domain modules (placeholders) |
 | `configs/starter.gvar` | Minimal server config template (not in engine sourcemap) |
 | `configs/biomes/` | Preset biome pool modules |

@@ -1,0 +1,3 @@
+"""Owner config with rules_version override."""
+
+rules_version = "2024"

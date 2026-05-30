@@ -1,0 +1,29 @@
+a = display.get_display()
+b = display.get_display()
+return a == b
+---
+True
+---
+name: get_display cache returns same callable
+
+get_embed = display.get_display()
+return get_embed(desc="hello")
+---
+re:-title Westmarch
+---
+name: default branding produces embed with westmarch title
+
+get_embed = display.get_display()
+return get_embed(desc="hello")
+---
+re:My Test World
+---
+name: base display name becomes embed title
+vars:
+  svars:
+    westmarch_config: "22222222-2222-2222-2222-222222222222"
+  gvars:
+    22222222-2222-2222-2222-222222222222: |
+      display = {
+          "name": "My Test World",
+      }

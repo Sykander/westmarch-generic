@@ -1,0 +1,11 @@
+return auth.is_allowed()[0]
+---
+False
+---
+name: unknown ctx alias is denied
+
+return auth.is_allowed()[1]
+---
+"Unknown command."
+---
+name: unknown ctx alias message

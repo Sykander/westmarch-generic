@@ -1,0 +1,129 @@
+return config.get_config() == None
+---
+True
+---
+name: svar unset returns None
+
+return config.cfg == None
+---
+True
+---
+name: cfg is None when svar unset
+
+return config.get_config() is config.cfg
+---
+True
+---
+name: get_config returns cfg
+
+a = config.get_config()
+b = config.get_config()
+return a == b
+---
+True
+---
+name: repeated get_config same object
+
+return config.get_config() == config.get_config()
+---
+True
+---
+name: second get_config identical object
+
+return config.get_policies() == None
+---
+True
+---
+name: get_policies None without config
+
+return config.get_rules_edition()
+---
+"2014"
+---
+name: rules edition defaults to 2014
+
+return config.cfg.subsystems.exploration.enabled
+---
+False
+---
+name: empty owner merges exploration subsystem defaults
+vars:
+  svars:
+    westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"
+  gvars:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1: |
+      # owner body intentionally empty
+
+return config.cfg.subsystems.exploration.config.distribution.combat
+---
+25
+---
+name: empty owner merges nested exploration config
+vars:
+  svars:
+    westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"
+  gvars:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1: |
+      # owner body intentionally empty
+
+return config.cfg.policies.languages.allowed
+---
+[]
+---
+name: empty owner merges policies defaults
+vars:
+  svars:
+    westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"
+  gvars:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1: |
+      # owner body intentionally empty
+
+return config.cfg.subsystems.exploration.enabled
+---
+True
+---
+name: owner subsystem values win over defaults
+vars:
+  svars:
+    westmarch_config: "cccccccc-cccc-cccc-cccc-ccccccccccc3"
+  gvars:
+    cccccccc-cccc-cccc-cccc-ccccccccccc3: |
+      subsystems = {
+          "exploration": {"enabled": True},
+      }
+
+return config.get_rules_edition()
+---
+"2024"
+---
+name: rules_version 2024 on owner config
+vars:
+  svars:
+    westmarch_config: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2"
+  gvars:
+    bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2: |
+      rules_version = "2024"
+
+return config.cfg.rules_version
+---
+"2024"
+---
+name: owner rules_version preserved after merge
+vars:
+  svars:
+    westmarch_config: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2"
+  gvars:
+    bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2: |
+      rules_version = "2024"
+
+return config.get_policies().travel.consume_rations
+---
+False
+---
+name: get_policies returns merged policies
+vars:
+  svars:
+    westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"
+  gvars:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1: |
+      # owner body intentionally empty

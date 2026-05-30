@@ -1,2 +1,3 @@
 node_modules/
-src/gvars/utils/**/_probe.*.alias-test
+src/gvars/**/_probe.*.alias-test
+src/gvars/**/_probe.*.gvar-test

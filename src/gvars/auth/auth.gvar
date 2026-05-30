@@ -1,6 +1,458 @@
-"""auth.gvar — placeholder.
+"""auth.gvar — permission, config, character, and channel gate.
 
 See docs/internal/projects/westmarch-statement/gvars/auth.md
 """
 
-# TODO: implement auth module
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(
+    config = env.gvars.config,
+)
+
+DEFAULT_ADMIN_ROLES = ["Dragonspeaker", "Server Aliaser"]
+
+MSG_UNKNOWN = "Unknown command."
+MSG_NO_GUILD = "This command cannot be run in DMs."
+MSG_NOT_CONFIGURED = (
+    "This server is not configured yet. A GM must set the **westmarch_config** svar "
+    "to your config gvar UUID. See **!westmarch setup**."
+)
+MSG_SUBSYSTEM_DISABLED = "This feature is disabled on this server."
+MSG_NO_CHARACTER = "Select a character first."
+MSG_ALLOWED = "Command allowed."
+
+COMMAND_MAP = {
+    "enc": ("exploration", "enc", False),
+    "forage": ("exploration", "forage", False),
+    "fish": ("exploration", "fish", False),
+    "mine": ("exploration", "mine", False),
+    "lumber": ("exploration", "lumber", False),
+    "hunt": ("exploration", "hunt", False),
+    "loot": ("exploration", "loot", False),
+    "travel": ("travel", "travel", False),
+    "location": ("travel", "location", False),
+    "time": ("travel", "time", False),
+    "weather": ("travel", "weather", False),
+    "downtime": ("downtime", None, False),
+    "craft": ("crafting", "craft", False),
+    "brew": ("crafting", "brew", False),
+    "enchant": ("crafting", "enchant", False),
+    "scribe": ("crafting", "scribe", False),
+    "job": ("economy", "job", False),
+    "buy": ("economy", "buy", False),
+    "sell": ("economy", "sell", False),
+    "wallet": ("economy", "wallet", False),
+    "library": ("content", "library", False),
+    "read": ("content", "read", False),
+    "quest": ("misc", "quest", False),
+    "recipe": ("misc", "recipe", False),
+    "westmarch": ("admin", None, True),
+    "setup": ("admin", "setup", True),
+    "check": ("admin", "check", True),
+    "show": ("admin", "show", True),
+}
+
+
+def _is_dict(value) -> bool:
+    try:
+        return value == dict(value)
+    except:
+        return False
+
+
+def _alias_name():
+    candidates = []
+    try:
+        candidates.append(ctx.command.name)
+    except:
+        pass
+    try:
+        candidates.append(ctx.alias)
+    except:
+        pass
+    try:
+        candidates.append(get_uvar("_wm_command"))
+    except:
+        pass
+    for raw in candidates:
+        if raw == None:
+            continue
+        text = str(raw).strip().lower()
+        if text != "" and text in COMMAND_MAP:
+            return text
+    return ""
+
+
+def command_name():
+    """Resolved MVP command key for this invocation (for display footer help)."""
+    name = _alias_name()
+    if name == "":
+        return None
+    return name
+
+
+def _resolve_invocation():
+    alias = _alias_name()
+    if alias == "":
+        return None, None, False
+    if alias in COMMAND_MAP:
+        return COMMAND_MAP[alias]
+    return None, None, False
+
+
+def resolve_invocation():
+    """Public ctx → (subsystem, command, requires_admin) for display.gvar and tests."""
+    return _resolve_invocation()
+
+
+def _author_is_admin():
+    try:
+        if ctx.author.guild_permissions.administrator:
+            return True
+    except:
+        pass
+    roles = DEFAULT_ADMIN_ROLES
+    cfg = config.cfg
+    if cfg != None:
+        try:
+            custom = cfg.admin_roles
+            if custom != None:
+                roles = custom
+        except:
+            pass
+    try:
+        author_roles = ctx.author.roles
+    except:
+        author_roles = []
+    if author_roles == None:
+        author_roles = []
+    for role in author_roles:
+        try:
+            name = role.name
+            if name == "Administrator":
+                return True
+            for allowed in roles:
+                if name == allowed:
+                    return True
+        except:
+            pass
+    return False
+
+
+def _check_admin_roles():
+    if _author_is_admin():
+        return True, MSG_ALLOWED
+    roles = DEFAULT_ADMIN_ROLES
+    cfg = config.cfg
+    if cfg != None:
+        try:
+            custom = cfg.admin_roles
+            if custom != None:
+                roles = custom
+        except:
+            pass
+    label = ", ".join(roles)
+    return False, f"You need Administrator or an aliasing role ({label})."
+
+
+def _read_subsystem(cfg, subsystem):
+    try:
+        subs = cfg.subsystems
+    except:
+        return None
+    if subs == None:
+        return None
+    try:
+        return subs[subsystem]
+    except:
+        pass
+    try:
+        if subsystem == "exploration":
+            return subs.exploration
+        if subsystem == "travel":
+            return subs.travel
+        if subsystem == "downtime":
+            return subs.downtime
+        if subsystem == "crafting":
+            return subs.crafting
+        if subsystem == "economy":
+            return subs.economy
+        if subsystem == "content":
+            return subs.content
+        if subsystem == "misc":
+            return subs.misc
+    except:
+        pass
+    return None
+
+
+def _command_toggle(commands, command):
+    if commands == None:
+        return None
+    try:
+        return commands[command]
+    except:
+        pass
+    try:
+        if command == "enc":
+            return commands.enc
+        if command == "forage":
+            return commands.forage
+        if command == "fish":
+            return commands.fish
+        if command == "mine":
+            return commands.mine
+        if command == "lumber":
+            return commands.lumber
+        if command == "hunt":
+            return commands.hunt
+        if command == "loot":
+            return commands.loot
+        if command == "travel":
+            return commands.travel
+        if command == "location":
+            return commands.location
+        if command == "time":
+            return commands.time
+        if command == "weather":
+            return commands.weather
+        if command == "craft":
+            return commands.craft
+        if command == "brew":
+            return commands.brew
+        if command == "enchant":
+            return commands.enchant
+        if command == "scribe":
+            return commands.scribe
+        if command == "job":
+            return commands.job
+        if command == "buy":
+            return commands.buy
+        if command == "sell":
+            return commands.sell
+        if command == "wallet":
+            return commands.wallet
+        if command == "library":
+            return commands.library
+        if command == "read":
+            return commands.read
+        if command == "quest":
+            return commands.quest
+        if command == "recipe":
+            return commands.recipe
+    except:
+        pass
+    return None
+
+
+def _command_disabled_message(command):
+    if command == None or str(command).strip() == "":
+        return MSG_SUBSYSTEM_DISABLED
+    return f"**!{command}** is disabled on this server."
+
+
+def _check_config_enabled(subsystem, command):
+    cfg = config.cfg
+    if cfg == None:
+        return False, MSG_NOT_CONFIGURED
+    block = _read_subsystem(cfg, subsystem)
+    if block == None:
+        return False, MSG_SUBSYSTEM_DISABLED
+    enabled = False
+    try:
+        enabled = block.enabled
+    except:
+        enabled = False
+    if enabled != True:
+        return False, MSG_SUBSYSTEM_DISABLED
+    if command == None:
+        return True, MSG_ALLOWED
+    commands = None
+    try:
+        commands = block.commands
+    except:
+        commands = None
+    if commands == None:
+        return True, MSG_ALLOWED
+    on = _command_toggle(commands, command)
+    if on != True:
+        return False, _command_disabled_message(command)
+    return True, MSG_ALLOWED
+
+
+def _require_character_enabled():
+    cfg = config.cfg
+    if cfg == None:
+        return True
+    try:
+        policies = cfg.policies
+    except:
+        return True
+    if policies == None:
+        return True
+    try:
+        auth_policy = policies.auth
+    except:
+        return True
+    if auth_policy == None:
+        return True
+    try:
+        return auth_policy.require_character == True
+    except:
+        return True
+
+
+def _check_character():
+    if not _require_character_enabled():
+        return True, MSG_ALLOWED
+    try:
+        ch = character()
+        if ch == None:
+            return False, MSG_NO_CHARACTER
+    except:
+        return False, MSG_NO_CHARACTER
+    return True, MSG_ALLOWED
+
+
+def _channel_policy(cfg):
+    if cfg == None:
+        return None
+    try:
+        return cfg.channel_policy
+    except:
+        return None
+
+
+def _channel_id_str(value):
+    if value == None:
+        return None
+    s = str(value).strip()
+    if s == "":
+        return None
+    return s
+
+
+def _list_channel_ids(items):
+    out = []
+    if items == None:
+        return out
+    for item in items:
+        sid = _channel_id_str(item)
+        if sid != None:
+            out.append(sid)
+    return out
+
+
+def _current_channel_id():
+    try:
+        return _channel_id_str(ctx.channel.id)
+    except:
+        return None
+
+
+def _current_parent_id():
+    try:
+        parent = ctx.channel.parent
+    except:
+        return None
+    if parent == None:
+        return None
+    try:
+        return _channel_id_str(parent.id)
+    except:
+        return None
+
+
+def _is_rp_channel(policy):
+    cid = _current_channel_id()
+    pid = _current_parent_id()
+    rp_ids = _list_channel_ids(policy.rp_channel_ids)
+    parent_ids = _list_channel_ids(policy.rp_parent_ids)
+    if cid != None and cid in rp_ids:
+        return True
+    if pid != None and pid in parent_ids:
+        return True
+    return False
+
+
+def _commands_channel_hint(policy):
+    try:
+        cid = policy.commands_channel_id
+    except:
+        cid = None
+    sid = _channel_id_str(cid)
+    if sid == None:
+        return "Run bot commands in a commands channel, not in RP channels."
+    return f"Run bot commands in <#{sid}>, not in RP channels."
+
+
+def _check_channel(subsystem, requires_admin):
+    cfg = config.cfg
+    policy = _channel_policy(cfg)
+    if policy == None:
+        return True, MSG_ALLOWED
+    admin_any = True
+    try:
+        admin_any = policy.admin_any_channel
+    except:
+        admin_any = True
+    if requires_admin and admin_any == True:
+        return True, MSG_ALLOWED
+    mode = "any"
+    try:
+        mode = policy.mode
+    except:
+        mode = "any"
+    if mode == None or mode == "":
+        mode = "any"
+    mode = str(mode).strip().lower()
+    cid = _current_channel_id()
+    if mode == "any":
+        return True, MSG_ALLOWED
+    if mode == "whitelist":
+        allowed = _list_channel_ids(policy.whitelist)
+        if cid != None and cid in allowed:
+            return True, MSG_ALLOWED
+        return False, "This command is not allowed in this channel."
+    if mode == "blocklist":
+        blocked = _list_channel_ids(policy.blocklist)
+        if cid != None and cid in blocked:
+            return False, "This command is not allowed in this channel."
+        return True, MSG_ALLOWED
+    if mode == "rp_only_commands":
+        if requires_admin:
+            return True, MSG_ALLOWED
+        if _is_rp_channel(policy):
+            return False, _commands_channel_hint(policy)
+        return True, MSG_ALLOWED
+    return True, MSG_ALLOWED
+
+
+def is_allowed():
+    subsystem, command, requires_admin = _resolve_invocation()
+    if subsystem == None:
+        return False, MSG_UNKNOWN
+
+    try:
+        guild = ctx.guild
+    except:
+        guild = None
+    if guild == None:
+        return False, MSG_NO_GUILD
+
+    if requires_admin:
+        ok, msg = _check_admin_roles()
+        if not ok:
+            return False, msg
+    else:
+        ok, msg = _check_config_enabled(subsystem, command)
+        if not ok:
+            return False, msg
+        ok, msg = _check_character()
+        if not ok:
+            return False, msg
+
+    ok, msg = _check_channel(subsystem, requires_admin)
+    if not ok:
+        return False, msg
+
+    return True, MSG_ALLOWED

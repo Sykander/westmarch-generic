@@ -11,7 +11,12 @@ Rules are copied from **westmarch** and **drac2-tools**:
 - **westmarch:** `drac2-alias-help.mdc`, `drac2-alias-args.mdc`, `drac2-subset.mdc`, `drac2-avrae-and-avrae-ls.mdc`
 - **drac2-tools:** `drac2-avrae-sources.mdc`, `drac2-tools-maintainer.mdc`, `python-drac2-style.mdc`, `gvar-perf-boundaries.mdc`
 
-For full upstream reference caches and perf probe scripts, see the **drac2-tools** repo (`.cursor/avrae-reference/`, `.cursor/scripts/`).
+Cached upstream Avrae / avrae-ls docs, refresh scripts, and perf probes live in **`.cursor/`** — see **`.cursor/README.md`** and **`.cursor/reference-cache.json`**.
+
+```bash
+./.cursor/avrae-reference/refresh-avrae-docs.sh
+./.cursor/avrae-ls-reference/refresh-avrae-ls-docs.sh
+```
 
 ## What to do when changing behavior
 

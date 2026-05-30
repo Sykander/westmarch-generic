@@ -2,7 +2,7 @@
 
 **Path:** `src/gvars/config/config.gvar` · **Phase:** 0
 
-Load the server’s config gvar via svar **once per alias invocation**, **merge schema defaults**, cache, return the same object on every call.
+Load the server’s config gvar via svar **once when `config.gvar` is bound**, **merge schema defaults** into module-level **`cfg`**, and expose thin helpers.
 
 ## Svar
 
@@ -15,11 +15,10 @@ Load the server’s config gvar via svar **once per alias invocation**, **merge 
 ## API
 
 ```py
+cfg = None  # merged owner config after defaults; None when svar unset or gvar unloadable
+
 def get_config():
-    """
-    Lazy-load server config on first call; apply defaults; return cached module.
-    None if svar unset or gvar unloadable.
-    """
+    """Return cfg — same object on every call (no lazy load)."""
 
 def get_rules_edition():
     """
@@ -35,11 +34,11 @@ def get_policies():
 
 Embed branding → [display.gvar](display.md) — **`display.get_display()`** returns **`embeds.configure_get_embed(...)`** for the running command.
 
-No `key` argument — always the full config module (or `None`) from **`get_config()`**.
+No `key` argument — always the full merged config (or `None`) from **`cfg`** / **`get_config()`**.
 
 ### Defaults at load time
 
-Owner gvars may omit keys. On first load, **`_apply_defaults(cfg)`** fills in any missing top-level fields (and nested **`subsystems`** shape) from engine **`DEFAULTS`**, so later access does not hit missing attributes:
+Owner gvars may omit keys. When the module loads, **`_apply_defaults(owner)`** fills in any missing top-level fields (and nested **`subsystems`** shape) from engine **`DEFAULTS`**, so later access does not hit missing attributes:
 
 ```py
 cfg = config.get_config()
@@ -77,39 +76,34 @@ World data (`areas`, catalogues, …) stays absent until the owner adds it — d
 **Idiom:**
 
 ```py
-using(config = env.gvars.config, display = env.gvars.display)
-
-cfg = config.get_config()
+cfg = config.cfg   # preferred after using(config=…)
 cfg.subsystems.exploration.enabled
 edition = config.get_rules_edition()
 get_embed = display.get_display()
 ```
 
-### Per-invocation cache
+### Eager load on bind
+
+Gvar modules run once per alias invocation when first bound. **`config.gvar`** loads the owner module at import time — no `_state` cache needed:
 
 ```py
 SVAR_NAME = "westmarch_config"
-_state = {"cfg": None, "loaded": False}
+
+_cfg_uuid = get_svar(SVAR_NAME)
+_owner_mod = _load_config_gvar(_cfg_uuid) if _cfg_uuid else None
+cfg = _apply_defaults(_owner_mod) if _owner_mod else None
 
 def get_config():
-    if not _state["loaded"]:
-        _state["loaded"] = True
-        uuid = get_svar(SVAR_NAME)
-        if uuid:
-            raw = _load_config_gvar(uuid)
-            _state["cfg"] = _apply_defaults(raw) if raw else None
-        else:
-            _state["cfg"] = None
-    return _state["cfg"]
+    return cfg
 ```
 
 `_apply_defaults` implementation: iterate `DEFAULTS`; for dict values (e.g. `subsystems`, `policies`, `display`), deep-merge missing keys including nested **`config`** objects.
 
-| State | `get_config()` |
-|-------|----------------|
-| Svar unset | `None` (cached) |
-| Svar set, gvar loads | merged config module (cached) |
-| Svar set, gvar missing | `None` (cached) |
+| State | `cfg` / `get_config()` |
+|-------|------------------------|
+| Svar unset | `None` |
+| Svar set, gvar loads | merged config dict (attribute access) |
+| Svar set, gvar missing | `None` |
 
 ## Usage
 
@@ -128,7 +122,7 @@ edition = config.get_rules_edition()
 get_embed = display.get_display()
 ```
 
-**auth.gvar** calls **`get_config()`** — same cache, same merged object.
+**auth.gvar** reads **`config.cfg`** / **`get_config()`** — same merged object for the invocation.
 
 **`!westmarch check`** ([check_config.gvar](check_config.md)) may still **warn** when optional world data is missing even though schema defaults exist.
 
@@ -140,9 +134,12 @@ get_embed = display.get_display()
 
 ## Tests
 
-- Second `get_config()` returns identical object.
-- Partial fixture gvar (empty body except comment) → `get_config().subsystems.exploration` present after defaults merge.
-- `rules_version = "2024"` on fixture → `get_rules_edition()` returns `"2024"`.
+Direct **`config.gvar-test`** (avrae-ls — no alias wrapper). See `src/gvars/config/config.gvar-test`.
+
+- **`get_config()`** and **`cfg`** are the same object; repeated calls identical.
+- Empty owner body → **`cfg.subsystems.exploration`** present after defaults merge.
+- Owner **`rules_version = "2024"`** → **`get_rules_edition()`** returns **`"2024"`**.
+- Owner subsystem override wins over engine defaults (deep merge).
 
 ## Related
 

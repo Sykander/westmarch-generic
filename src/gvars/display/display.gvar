@@ -1,6 +1,430 @@
-"""display.gvar — placeholder.
+"""display.gvar — command-scoped embed branding from merged config display layers.
 
 See docs/internal/projects/westmarch-statement/gvars/display.md
 """
 
-# TODO: implement display module
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(
+    config = env.gvars.config,
+    auth = env.gvars.auth,
+    embeds = env.gvars.embeds,
+)
+
+DEFAULT_COLOUR = "5865F2"
+DEFAULT_CREDITS = "Powered by westmarch-generic."
+DEFAULT_HELPFUL_TIPS = [
+    "Tip: Run !westmarch show to see which commands are enabled on this server.",
+    "Tip: Use !location before rolling exploration commands when travel is on.",
+]
+
+COMMAND_TITLES = {
+    "enc": "Encounter",
+    "forage": "Forage",
+    "fish": "Fish",
+    "mine": "Mine",
+    "lumber": "Lumber",
+    "hunt": "Hunt",
+    "loot": "Loot",
+    "travel": "Travel",
+    "location": "Location",
+    "time": "Time",
+    "weather": "Weather",
+    "downtime": "Downtime",
+    "craft": "Craft",
+    "brew": "Brew",
+    "enchant": "Enchant",
+    "scribe": "Scribe",
+    "job": "Job",
+    "buy": "Buy",
+    "sell": "Sell",
+    "wallet": "Wallet",
+    "library": "Library",
+    "read": "Read",
+    "quest": "Quest",
+    "recipe": "Recipe",
+    "setup": "Setup",
+    "check": "Check",
+    "show": "Show",
+    "westmarch": "Westmarch",
+}
+
+SUBSYSTEM_TITLES = {
+    "exploration": "Exploration",
+    "travel": "Travel",
+    "downtime": "Downtime",
+    "crafting": "Crafting",
+    "economy": "Economy",
+    "content": "Content",
+    "misc": "Misc",
+    "admin": "Westmarch",
+}
+
+_cached_get_embed = None
+_display_cache = {"value": None}
+
+
+def _is_dict(value) -> bool:
+    try:
+        return value == dict(value)
+    except:
+        return False
+
+
+def _dict_copy(obj):
+    if obj == None or not _is_dict(obj):
+        return {}
+    out = {}
+    for k in obj:
+        out[k] = obj[k]
+    return out
+
+
+def _normalize_colour(raw):
+    if raw == None:
+        return None
+    s = str(raw).strip()
+    if s == "":
+        return None
+    if s.startswith("#"):
+        s = s[1:]
+    return s
+
+
+def _resolve_from_ctx():
+    return auth.resolve_invocation()
+
+
+def _read_subsystem_display(cfg, subsystem):
+    if cfg == None or subsystem == None or subsystem == "admin":
+        return {}
+    try:
+        subs = cfg.subsystems
+    except:
+        return {}
+    if subs == None:
+        return {}
+    block = None
+    try:
+        block = subs[subsystem]
+    except:
+        pass
+    if block == None:
+        try:
+            if subsystem == "exploration":
+                block = subs.exploration
+            elif subsystem == "travel":
+                block = subs.travel
+            elif subsystem == "content":
+                block = subs.content
+        except:
+            block = None
+    if block == None:
+        return {}
+    try:
+        return _dict_copy(block.display)
+    except:
+        return {}
+
+
+def _read_command_display(cfg, subsystem, command):
+    if cfg == None or subsystem == None or command == None:
+        return {}
+    try:
+        subs = cfg.subsystems
+    except:
+        return {}
+    if subs == None:
+        return {}
+    block = None
+    try:
+        block = subs[subsystem]
+    except:
+        pass
+    if block == None:
+        return {}
+    cmd_disp = None
+    try:
+        cmd_disp = block.command_display
+    except:
+        return {}
+    if cmd_disp == None:
+        return {}
+    try:
+        return _dict_copy(cmd_disp[command])
+    except:
+        pass
+    try:
+        if command == "enc":
+            return _dict_copy(cmd_disp.enc)
+        if command == "library":
+            return _dict_copy(cmd_disp.library)
+    except:
+        pass
+    return {}
+
+
+def _base_display_layer(cfg):
+    layer = {}
+    if cfg == None:
+        return layer
+    try:
+        base = cfg.display
+    except:
+        base = None
+    if base == None or not _is_dict(base):
+        return layer
+    layer = _dict_copy(base)
+    try:
+        name = base.name
+        if name != None and str(name).strip() != "":
+            layer["title"] = str(name)
+    except:
+        pass
+    return layer
+
+
+def _merge_display_layers(cfg, subsystem, command):
+    merged = {}
+    layers = [
+        _base_display_layer(cfg),
+        _read_subsystem_display(cfg, subsystem),
+        _read_command_display(cfg, subsystem, command),
+    ]
+    for layer in layers:
+        for k in layer:
+            v = layer[k]
+            if v != None:
+                merged[k] = v
+    return merged
+
+
+def _title_for_command(command):
+    if command == None:
+        return None
+    key = str(command)
+    if key in COMMAND_TITLES:
+        return COMMAND_TITLES[key]
+    if key == "":
+        return None
+    return key[0].upper() + key[1:]
+
+
+def _title_for_subsystem(subsystem):
+    if subsystem == None:
+        return None
+    if subsystem in SUBSYSTEM_TITLES:
+        return SUBSYSTEM_TITLES[subsystem]
+    key = str(subsystem)
+    if key == "":
+        return None
+    return key[0].upper() + key[1:]
+
+
+def _resolve_title(merged, subsystem, command):
+    try:
+        title = merged.title
+        if title != None and str(title).strip() != "":
+            return str(title)
+    except:
+        pass
+    cmd_title = _title_for_command(command)
+    if cmd_title != None:
+        return cmd_title
+    sub_title = _title_for_subsystem(subsystem)
+    if sub_title != None:
+        return sub_title
+    cfg = config.cfg
+    if cfg != None:
+        try:
+            name = cfg.display.name
+            if name != None and str(name).strip() != "":
+                return str(name)
+        except:
+            pass
+    try:
+        gname = ctx.guild.name
+        if gname != None and str(gname).strip() != "":
+            return str(gname)
+    except:
+        pass
+    return "Westmarch"
+
+
+def _display_policy(cfg):
+    if cfg == None:
+        return None
+    try:
+        policies = cfg.policies
+    except:
+        return None
+    if policies == None:
+        return None
+    try:
+        return policies.display
+    except:
+        return None
+
+
+def _owner_tips(cfg):
+    policy = _display_policy(cfg)
+    if policy == None:
+        return []
+    try:
+        tips = policy.helpful_tips
+    except:
+        return []
+    if tips == None:
+        return []
+    return tips
+
+
+def _owner_credits(cfg):
+    policy = _display_policy(cfg)
+    if policy == None:
+        return None
+    try:
+        return policy.credits
+    except:
+        return None
+
+
+def _footer_behaviour(cfg):
+    policy = _display_policy(cfg)
+    if policy == None:
+        return "balanced"
+    try:
+        mode = policy.footer_behaviour
+    except:
+        return "balanced"
+    if mode == None or str(mode).strip() == "":
+        return "balanced"
+    return str(mode).strip().lower()
+
+
+def _pick_balanced_mode():
+    modes = ["helpful_tips", "string", "help", "credits"]
+    idx = randint(0, len(modes) - 1)
+    return modes[idx]
+
+
+def _footer_helpful_tips(cfg):
+    tips = _owner_tips(cfg)
+    pool = tips
+    if pool == None or len(pool) == 0:
+        pool = DEFAULT_HELPFUL_TIPS
+    if len(pool) == 0:
+        return None
+    idx = randint(0, len(pool) - 1)
+    return pool[idx]
+
+
+def _footer_string(merged, subsystem, command):
+    try:
+        footer = merged.footer
+        if footer != None and str(footer).strip() != "":
+            return str(footer)
+    except:
+        pass
+    title = _resolve_title(merged, subsystem, command)
+    if title != None and str(title).strip() != "":
+        return str(title)
+    cfg = config.cfg
+    if cfg != None:
+        try:
+            name = cfg.display.name
+            if name != None and str(name).strip() != "":
+                return str(name)
+        except:
+            pass
+    return None
+
+
+def _footer_help(command):
+    prefix = "!"
+    try:
+        prefix = ctx.prefix
+    except:
+        prefix = "!"
+    cmd = command
+    if cmd == None or str(cmd).strip() == "":
+        cmd = auth.command_name()
+    if cmd == None or str(cmd).strip() == "":
+        cmd = "command"
+    return f"Use {prefix}{cmd} help for options."
+
+
+def _footer_credits(cfg):
+    credits = _owner_credits(cfg)
+    if credits == None or str(credits).strip() == "":
+        return DEFAULT_CREDITS
+    return str(credits)
+
+
+def _resolve_footer(mode, cfg, merged, subsystem, command):
+    if mode == "balanced":
+        mode = _pick_balanced_mode()
+    if mode == "helpful_tips":
+        return _footer_helpful_tips(cfg)
+    if mode == "string":
+        return _footer_string(merged, subsystem, command)
+    if mode == "help":
+        return _footer_help(command)
+    if mode == "credits":
+        return _footer_credits(cfg)
+    return _footer_helpful_tips(cfg)
+
+
+def _branding_kwargs(subsystem, command):
+    cfg = config.cfg
+    merged = _merge_display_layers(cfg, subsystem, command)
+    title = _resolve_title(merged, subsystem, command)
+    footer_mode = _footer_behaviour(cfg)
+    footer = _resolve_footer(footer_mode, cfg, merged, subsystem, command)
+    desc = None
+    image = None
+    thumb = None
+    colour = None
+    try:
+        desc = merged.description
+    except:
+        desc = None
+    try:
+        image = merged.image
+    except:
+        image = None
+    try:
+        thumb = merged.logo
+    except:
+        thumb = None
+    try:
+        colour = _normalize_colour(merged.colour)
+    except:
+        colour = None
+    if colour == None:
+        colour = DEFAULT_COLOUR
+    out = {
+        "title": title,
+        "footer": footer,
+        "color": colour,
+    }
+    if desc != None and str(desc).strip() != "":
+        out["desc"] = str(desc)
+    if image != None and str(image).strip() != "":
+        out["image"] = str(image)
+    if thumb != None and str(thumb).strip() != "":
+        out["thumb"] = str(thumb)
+    return out
+
+
+def get_display():
+    cached = _display_cache["value"]
+    if cached != None:
+        return cached
+    subsystem, command, _requires_admin = _resolve_from_ctx()
+    if subsystem == None:
+        subsystem = "admin"
+        command = None
+    branding = _branding_kwargs(subsystem, command)
+    built = embeds.configure_get_embed(**branding)
+    _display_cache["value"] = built
+    return built

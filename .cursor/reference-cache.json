@@ -1,0 +1,38 @@
+{
+  "avrae_rst": {
+    "last_fetch": "2026-05-30",
+    "entries": [
+      {
+        "repo_path": ".cursor/avrae-reference/aliasing-api.rst.txt",
+        "canonical_html": "https://avrae.readthedocs.io/en/latest/aliasing/api.html",
+        "source_url": "https://avrae.readthedocs.io/en/latest/_sources/aliasing/api.rst.txt"
+      },
+      {
+        "repo_path": ".cursor/avrae-reference/automation-reference.rst.txt",
+        "canonical_html": "https://avrae.readthedocs.io/en/latest/automation_ref.html",
+        "source_url": "https://avrae.readthedocs.io/en/latest/_sources/automation_ref.rst.txt"
+      }
+    ]
+  },
+  "avrae_ls_upstream": {
+    "tracked_avrae_ls_version": "0.10.0",
+    "last_fetch": "2026-05-30",
+    "entries": [
+      {
+        "repo_path": ".cursor/avrae-ls-reference/upstream/README.md",
+        "github_blob": "https://github.com/1drturtle/avrae-ls/blob/main/README.md",
+        "source_url": "https://raw.githubusercontent.com/1drturtle/avrae-ls/main/README.md"
+      },
+      {
+        "repo_path": ".cursor/avrae-ls-reference/upstream/docs/alias-tests.md",
+        "github_blob": "https://github.com/1drturtle/avrae-ls/blob/main/docs/alias-tests.md",
+        "source_url": "https://raw.githubusercontent.com/1drturtle/avrae-ls/main/docs/alias-tests.md"
+      },
+      {
+        "repo_path": ".cursor/avrae-ls-reference/upstream/docs/configuration.md",
+        "github_blob": "https://github.com/1drturtle/avrae-ls/blob/main/docs/configuration.md",
+        "source_url": "https://raw.githubusercontent.com/1drturtle/avrae-ls/main/docs/configuration.md"
+      }
+    ]
+  }
+}
