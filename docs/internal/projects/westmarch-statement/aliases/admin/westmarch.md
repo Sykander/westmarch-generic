@@ -61,7 +61,7 @@ src/aliases/westmarch/
   show.alias           # sub-alias
 ```
 
-Shared logic in **[gvars/config.md](../../gvars/config.md)** and **[gvars/auth.md](../../gvars/auth.md)**. Starter template: [templates/config/starter.gvar](../../../../../templates/config/starter.gvar).
+Shared logic in **[gvars/config.md](../../gvars/config.md)** and **[gvars/auth.md](../../gvars/auth.md)**. Starter template: [src/gvars/configs/starter.gvar](../../../../../src/gvars/configs/starter.gvar).
 
 ## Related
 

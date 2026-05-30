@@ -24,7 +24,7 @@ def merge_sources(config):
     """Optional — index config recipes + infer craft bands for items without recipe rows."""
 ```
 
-Character **known recipes** (notebook from recipe encounters) may filter results later — storage via drac2-tools **notes** or [pc.md](pc.md); MVP may show all config recipes.
+Character **known recipes** (notebook from recipe encounters) may filter results later — storage via [pc.md](pc.md) cvars or vendored **`core/notes.gvar`** when ported; MVP may show all config recipes.
 
 ## Related
 

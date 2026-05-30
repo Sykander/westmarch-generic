@@ -35,7 +35,7 @@ flowchart LR
 | Spell catalogue | — | **[spells.gvar](../../gvars/spells.md)** |
 | DC / cost tables | **`crafting.gvar`** or config | scroll costs in config |
 | Tool prof cvars | **[pc.gvar](../../gvars/pc.md)** constants (or dedicated keys doc) | same |
-| drac2-tools | `rolls`, `embeds`, `strings` | same |
+| **`core/`** | `rolls`, `embeds`, `strings` via `env.gvars.*` | [core.md](../../gvars/core.md) |
 
 ### westmarch honour system
 

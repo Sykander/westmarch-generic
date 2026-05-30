@@ -6,11 +6,14 @@ Fourth in this doc sequence; was the other candidate for Tier A alongside **enc*
 
 ## Player-facing behaviour
 
-```
-!forage <location> [bonuses]
-```
+Biome resolution follows **`exploration.config.enc_biome_source`** (same as **enc** — see [README.md](README.md)):
 
-Foraging-flavoured encounter at the given area code. Cooldown: 120s (`bags.forage_cooldown_code`).
+| Mode | Usage |
+|------|-------|
+| Manual (`argument` / **`auto`** without locations) | `!forage <biome> [bonuses]` |
+| Inferred (`location` / **`auto`** with locations) | `!forage [bonuses]` |
+
+Foraging-flavoured encounter from **`pools.forage[kind]`** on the resolved biome gvar. Cooldown: **120s** via **[stats.gvar](../../gvars/stats.md)** + **`pc.check_cooldown(ch, "forage")`**.
 
 ## westmarch reference
 
@@ -19,25 +22,27 @@ Foraging-flavoured encounter at the given area code. Cooldown: 120s (`bags.forag
 | Alias | `westmarch/src/aliases/exploration/forage.alias` |
 | Alias tests | `westmarch/src/aliases/exploration/forage.alias-test` |
 
-Uses `forage_encounters` via `get_encounter_list(code, "forage")`.
+westmarch used **`get_encounter_list(code, "forage")`** on inline pools — **not** ported. Generic: **`biomes.resolve_biome("forage", …)`** → **`encounter_lists.get_encounter(biome, "forage", …)`**.
 
 ## Why forage after enc/mine/lumber
 
-Validates that the list builder activity dispatch works for multiple pool types after the reference **enc** port. Functionally equivalent diff to mine/lumber — order here is **documentation sequencing**, not technical dependency.
+Validates activity dispatch on shared pipeline after the reference **enc** port. Functionally equivalent diff to mine/lumber.
 
 ## Prerequisites
 
 - [enc.md](enc.md) Phase 0 engine complete
-- Config includes `forage_encounters` pools
+- Biome gvar includes **`pools.forage.gather`** (and other kinds per **`distribution`**) for test biomes
 
 ## Implementation checklist
 
-- [ ] `src/aliases/exploration/forage.alias`
+- [ ] Clone generic **enc** alias → `src/aliases/exploration/forage.alias`
+- [ ] **`display.get_display()`** opener
+- [ ] **`biomes.resolve_biome("forage", args, ch, cfg)`**
+- [ ] **`encounter_lists.get_encounter(biome, "forage", ch, cfg)`**
+- [ ] **`stats.add_log(ch, extras={ biome, encounter_kind })`**
 - [ ] Toggle `exploration.commands.forage`
 - [ ] `forage.alias-test`
-- [ ] Config pools + toggle
 
 ## Related
 
-- [lumber.md](lumber.md) — prior port
-- [fish.md](fish.md) — next in sequence
+- [lumber.md](lumber.md) · [fish.md](fish.md) · [README.md](README.md)

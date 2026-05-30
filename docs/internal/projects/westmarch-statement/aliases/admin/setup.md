@@ -28,13 +28,15 @@ Embed sections in order:
 
 ### 1 — Subscribe to the engine
 
-- Subscribe to the **westmarch-generic** workshop on [Avrae](https://avrae.io/dashboard/workshop) (link from public setup doc when published).
+- Subscribe to the **westmarch-generic** workshop on [Avrae](https://avrae.io/dashboard/workshop) (see [docs/setup.md](../../../../../docs/setup.md)).
 - Ensure your account has **Dragonspeaker** or **Server Aliaser** (or Discord Administrator) on this server.
 
 ### 2 — Create a config gvar
 
-**Option A — duplicate template *(recommended when published)***
-- Open the template config gvar in the workshop (UUID in public `docs/setup.md` / engine env `TEMPLATE_CONFIG_GVAR`).
+**Option A — duplicate template *(recommended)***
+- Minimal: [src/gvars/configs/starter.gvar](../../../../src/gvars/configs/starter.gvar)
+- Prefab worlds: [gvars/configs.md](../../gvars/configs.md) — Forgotten Realms, generic fantasy, Spelljammer (duplicate published UUID or paste from repo)
+- Open the template or preset in the workshop (UUID in [docs/setup.md](../../../../../docs/setup.md) when published / engine env `TEMPLATE_CONFIG_GVAR`).
 - **Duplicate** it into your workshop, then edit subsystem toggles.
 
 **Option B — create from scratch**
@@ -67,7 +69,7 @@ subsystems = {
             "loot": False,
         },
         "config": {
-            "enc_biome_source": "argument",
+            "enc_biome_source": "auto",
             "distribution_policy": "random",
             "distribution": {"combat": 25, "quest": 25, "gather": 50},
         },
@@ -106,6 +108,10 @@ subsystems = {
             "library": False,
             "read": False,
         },
+        "config": {
+            "library_topic_source": "manual",
+            "allowed_topics": [],
+        },
     },
     "misc": {
         "enabled": False,
@@ -117,7 +123,7 @@ subsystems = {
 }
 ```
 
-Optional **`policies`** — house rules: [data-shapes.md § Server policies](../../data-shapes.md#server-policies). **`subsystems.*.config`** — per-subsystem behaviour (e.g. exploration encounter mix): [data-shapes.md § exploration.config](../../data-shapes.md#explorationconfig). Omitted keys use engine defaults ([starter.gvar](../../../../templates/config/starter.gvar)).
+Optional **`policies`** — house rules: [data-shapes.md § Server policies](../../data-shapes.md#server-policies). **`subsystems.*.config`** — per-subsystem behaviour (e.g. exploration encounter mix, library topic source): [data-shapes.md § Subsystem entry](../../data-shapes.md#subsystem-entry). Omitted keys use engine defaults ([starter.gvar](../../../../src/gvars/configs/starter.gvar)).
 
 Replace starter **`subsystems`** toggles for your server. Enable subsystems and add world data (`locations`, tables, etc.) as you port each vertical — see [server-config.md](../../server-config.md).
 
@@ -156,7 +162,7 @@ Fix any errors in your config gvar, then re-run **`check`**. Player commands sta
 
 ## Implementation notes
 
-- **`setup.alias`** — build onboarding embeds from [templates/config/starter.gvar](../../../../../templates/config/starter.gvar)
+- **`setup.alias`** — build onboarding embeds from [src/gvars/configs/starter.gvar](../../../../../src/gvars/configs/starter.gvar)
 - **`TEMPLATE_CONFIG_GVAR`** in **`env`** — optional link to published duplicate template
 - Do **not** auto-substitute the invoker’s gvar UUID in step 3 unless svar is already set (then show current value for confirmation).
 

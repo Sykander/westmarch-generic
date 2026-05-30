@@ -16,10 +16,10 @@ def process_encounter(encounter, character, args):
 
 ## Pipeline
 
-1. **Rolls** — for each entry in `encounter["rolls"]`, call drac2-tools `rolls.get_roll(...)` with `args` bonuses.
+1. **Rolls** — for each entry in `encounter["rolls"]`, call **`env.gvars.rolls`** **`get_roll(...)`** with `args` bonuses.
 2. **Build `ectx`** — `{ character, rolls, args, encounter }` ([Encounter context](../data-shapes.md#encounter-context--ectx)).
 3. **Resolve fields** — `name`, `description`, `cr`, `difficulty`, `monsters`, media — str or `callable(ectx)`.
-4. **Combat** — if `cr > 0`, build combat block via monsters helper (port with **hunt**; stub in earliest **enc** slice if needed).
+4. **Combat** — if `cr > 0`, build combat block via monsters helper; honour **`policies.combat.roll_monster_hp`** ([data-shapes § combat](../data-shapes.md#combat-post-mvp-scaling--schema-reserved)).
 5. **Outcomes** — resolve `outcomes` (static list or `callable(ectx)`), then **`_apply_outcomes(outcomes, character)`** internally.
 6. **Return** — [encounter_result](../data-shapes.md#encounter-result--encounter_result) dict (`outcome_text` included).
 
@@ -35,11 +35,11 @@ Not exported to aliases. MVP types:
 | `item` | `name`, `total`, optional `bag` | **`pc.modify_bag(...)`** |
 | `currency` | `id`, `total` | **`pc.modify_wallet(ch, id, total)`** |
 
-Defer: `recipe`, `quest`. All mutators return **`(success, message)`** — see [pc.md](pc.md).
+Defer: `recipe`. **`quest`** — when outcome includes **`quest_id`**, call **`quests.activate_from_encounter`** if **`policies.quest.self_assign`** ([quests.md](quests.md)). All mutators return **`(success, message)`** — see [pc.md](pc.md).
 
 ## Dependencies
 
-- drac2-tools: `rolls`, `strings`, `lists`
+- **`core/`** — `rolls`, `strings`, `lists` via `env.gvars.*` ([core.md](core.md))
 - Engine: [pc.md](pc.md) (outcomes), [monsters.md](monsters.md) (when combat encounters enabled)
 
 ## Usage

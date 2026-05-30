@@ -2,20 +2,23 @@
 
 **Subsystem:** exploration · **Toggle:** `subsystems.exploration.commands.enc` · **Phase:** 0 (Tier A anchor)
 
-First port in westmarch-generic. Proves [config](../../gvars/config.md), [auth](../../gvars/auth.md), encounter list builder, and encounter engine gvars end-to-end. Shapes: [data-shapes.md](../../data-shapes.md).
+First port in westmarch-generic. Proves [config](../../gvars/config.md), [auth](../../gvars/auth.md), [display](../../gvars/display.md), [biomes](../../gvars/biomes.md), encounter list builder, encounter engine, and [stats](../../gvars/stats.md) end-to-end. Shapes: [data-shapes.md](../../data-shapes.md).
 
 ## Player-facing behaviour
 
-Generate a **general exploration** encounter for a biome pool — kind (combat / quest / gather) then a specific encounter.
+Generate a **general exploration** encounter — kind (combat / quest / gather) then a specific encounter from the biome pool.
 
 ### Biome source (`enc_biome_source`)
 
-| Value | Usage | Help lists |
-|-------|-------|------------|
-| **`argument`** *(default)* | `!enc <biome> [bonuses]` — westmarch style | Biome codes from config pools |
-| **`location`** | `!enc [bonuses]` — biome from character’s current place | Locations + note that biome is inferred |
+Applies to **all** exploration activity commands; **`enc`** is the reference implementation.
 
-**`location`** requires travel + **`locations`** config — [data-shapes.md § exploration.config](../../data-shapes.md#explorationconfig).
+| Value | Mode | Usage | Help lists |
+|-------|------|-------|------------|
+| **`auto`** *(default)* | Adapts to server | Manual when no location data; inferred when travel + locations configured | Biome codes **or** locations note |
+| **`argument`** | Manual | `!enc <biome> [bonuses]` | Biome codes from **`world_data.biomes`** |
+| **`location`** | Inferred | `!enc [bonuses]` — biome from character location | Locations; biome inferred |
+
+**Inferred** requires travel + **`world_data.locations`** + character location — [data-shapes.md § exploration.config](../../data-shapes.md#explorationconfig).
 
 ### Encounter kind mix (`distribution_policy` + `distribution`)
 
@@ -26,19 +29,11 @@ Generate a **general exploration** encounter for a biome pool — kind (combat /
 
 | `distribution_policy` | Player experience |
 |-----------------------|-------------------|
-| **`random`** | Each **`!enc`** independently rolls kind by weight (true pseudo-random). |
-| **`balanced`** | Engine tracks recent kinds per character; favours under-represented kinds so mix matches **`distribution`** without long streaks. |
+| **`random`** | Each roll independently picks kind by weight. |
+| **`balanced`** | Engine tracks recent kinds via **[stats.gvar](../../gvars/stats.md)**; favours under-represented kinds. |
 
-Example owner config (combat-light tables):
-
-```py
-"distribution_policy": "balanced",
-"distribution": { "combat": 20, "quest": 20, "gather": 60 },
-```
-
-Pool entries should set **`encounter["kind"]`** (`combat` \| `quest` \| `gather`) or rely on inference (`cr > 0` → combat). **`!westmarch check`** validates percentages sum to 100.
-
-- **Cooldown:** `policies.exploration.enforce_cooldowns`; skipped in Development env.
+- **Cooldown:** **`policies.exploration.enforce_cooldowns`**; **`command_config.enc.cooldown_seconds`** (default **120**); **`pc.check_cooldown`** reads **`stats`** **`last_used_at`**; skipped in Development env.
+- **Repeat avoidance:** **`policies.exploration.avoid_repeat_encounters`** — see [encounter_lists.md](../../gvars/encounter_lists.md).
 - **Bonuses:** passed through to **`encounters.process_encounter`**.
 
 ## westmarch reference
@@ -52,48 +47,54 @@ Pool entries should set **`encounter["kind"]`** (`combat` \| `quest` \| `gather`
 Key call path:
 
 ```text
-resolve biome (argument or location)
-  → pick kind (distribution_policy + distribution)
-  → pick encounter from biome pool for that kind
+display.get_display() + auth
+  → biomes.resolve_biome("enc", args, ch, cfg)
+  → encounter_lists.get_encounter(biome, "enc", ch, cfg)
   → encounters.process_encounter(...)
+  → stats.add_log(ch, extras={ biome, encounter_kind })
 ```
 
 ## Generic architecture
 
 ```mermaid
 flowchart TD
-  A[!enc alias] --> B{auth.is_allowed}
-  B --> C{exploration.commands.enc?}
-  C --> D[resolve biome]
-  D --> E{distribution_policy}
-  E -->|random| F[weighted PRNG kind]
-  E -->|balanced| G[history-adjusted kind]
-  F --> H[pick encounter from pool]
-  G --> H
-  H --> I[encounters.process_encounter]
-  I --> J[Embed + cooldown]
+  A[!enc alias] --> B{display.get_display}
+  B --> C{auth.is_allowed}
+  C --> D{pc.check_cooldown}
+  D --> E[biomes.resolve_biome]
+  E --> F{distribution_policy}
+  F -->|random| G[weighted PRNG kind]
+  F -->|balanced| H[stats kind history]
+  G --> I[encounter_lists.get_encounter]
+  H --> I
+  I --> J[encounters.process_encounter]
+  J --> K[stats.add_log]
+  K --> L[Embed]
 ```
 
 ### Config loader integration
 
-1. `auth.is_allowed()`
-2. `cfg = config.get_config()`
-3. Read **`cfg.subsystems.exploration.config`** — biome source, distribution policy, distribution mix
-4. **`encounter_lists.get_encounter(..., config=cfg)`** — returns one encounter dict
+1. **`display.get_display()`** + **`auth.is_allowed()`**
+2. **`cfg = config.get_config()`**
+3. **`biomes.resolve_biome("enc", args, ch, cfg)`**
+4. **`encounter_lists.get_encounter(biome, "enc", ch, cfg)`**
+5. **`encounters.process_encounter(...)`**
+6. **`stats.add_log(ch, extras={...})`**
 
 ## Implementation checklist
 
 ### Phase 0
 
-- [ ] Defaults + **`!westmarch check`** (distribution sum, cross-subsystem rules)
-- [ ] **`enc.alias-test`** — **`random`** mode with fixture pools per kind
-- [ ] Minimal pools: at least one combat, gather encounter each
+- [ ] Defaults + **`!westmarch check`** (distribution sum, **`enc_biome_source`** cross-subsystem rules)
+- [ ] **`enc.alias-test`** — **`random`** mode with fixture biome gvar **`pools.enc.*`**
+- [ ] Minimal pools: at least one gather encounter (combat optional until Tier C)
 
 ### Phase 1
 
-- [ ] **`balanced`** mode + per-character kind history cvar
+- [ ] **`balanced`** mode via stats kind counters
 - [ ] Quest-tagged encounters when **`misc.quest`** ships
 
 ## Related
 
 - [README.md](README.md) · [data-shapes.md § exploration.config](../../data-shapes.md#explorationconfig)
+- [gvars/biomes.md](../../gvars/biomes.md) · [gvars/stats.md](../../gvars/stats.md)

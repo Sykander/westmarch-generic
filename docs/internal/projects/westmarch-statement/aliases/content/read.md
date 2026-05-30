@@ -32,7 +32,7 @@ Same loader path as library; toggle `content.commands.read`.
 search_by_name → read_book(deep_read) → read_display
 ```
 
-Book corpus from config (shared with **library**).
+**`!read`** is not affected by **`library_topic_source`** — it always uses title/author search ([read.md](read.md)).
 
 ## Prerequisites
 

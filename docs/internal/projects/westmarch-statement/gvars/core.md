@@ -119,6 +119,14 @@ using(
 return embeds.get_embed(title="Found loot", desc=rolls.format_roll(result))
 ```
 
+**`embeds.configure_get_embed`** — partial application for aliases with many exit points. Returns a callable with baked-in **`-title`**, **`-footer`**, **`-color`**, etc. Player-facing aliases obtain a pre-configured instance from **`display.get_display()`** ([display.md](display.md)) rather than calling **`configure_get_embed`** directly:
+
+```py
+get_embed = display.get_display()
+return get_embed(desc=body)
+return get_embed(title="Custom", desc=body)  # per-call overrides
+```
+
 **Inside `pc.gvar`:**
 
 ```py

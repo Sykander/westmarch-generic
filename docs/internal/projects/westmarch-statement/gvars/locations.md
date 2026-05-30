@@ -2,7 +2,7 @@
 
 **Path:** `src/gvars/world/locations.gvar` · **Phase:** 1 (Tier C)
 
-Look up [locations](../data-shapes.md#location) from server config and format them for embeds. Config owns **`locations`** and **`default_location`**; this module owns resolution and display.
+Look up [locations](../data-shapes.md#location) from **`world_data.locations`**. Config owns **`world_data`**; this module owns resolution and display.
 
 ## API
 

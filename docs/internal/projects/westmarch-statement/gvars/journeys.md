@@ -74,7 +74,7 @@ flowchart LR
   F -->|proceed| E
 ```
 
-**Policies** ([data-shapes.md](../data-shapes.md#server-policies)): when **`policies.travel.apply_path_costs`** or **`consume_rations`** is on, **`next_step`** deducts via [pc.md](pc.md).
+**Policies** ([data-shapes.md](../data-shapes.md#server-policies)): when **`policies.travel.apply_path_costs`** or **`consume_rations`** is on, **`next_step`** deducts via [pc.md](pc.md). Rations use **`policies.travel.rations_item`** (default **`"Rations"`**) with **`pc.modify_bag`**.
 
 ## Not in this module
 

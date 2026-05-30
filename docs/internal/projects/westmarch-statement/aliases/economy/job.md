@@ -14,9 +14,9 @@ Work for pay using a skill check; gp is rolled from a payout table based on chec
 
 - **Help** (`!job`, `!job help`, `!job ?`): usage + skill hint.
 - **Skill:** prefix match against allowed skills (all 5e skills by default, or config allow-list).
-- **Bonuses:** `adv`, `guidance`, `-b …` via drac2-tools `rolls.get_roll`.
-- **Cooldown:** 8 hours per character (westmarch default); config `JOB.cooldown_seconds`.
-- **Payout:** tiered dice by check total; credit via `ch.coinpurse.modify_coins(gp=…)`.
+- **Bonuses:** `adv`, `guidance`, `-b …` via **`env.gvars.rolls`** **`get_roll`** ([core.md](../../gvars/core.md)).
+- **Payout:** tiered dice by check total; credit via **`pc.modify_gold(ch, payout)`**.
+- **Cooldown:** via **`stats.add_log`** / **`pc.check_cooldown(ch, "job")`** — default 8 hours (28800s); config **`JOB.cooldown_seconds`**.
 
 ## westmarch reference
 
@@ -36,7 +36,7 @@ westmarch keeps payout bands and cooldown **hard-coded** in the alias:
 | ≤ 20 | `1d8+2` |
 | > 20 | `1d8+3` |
 
-Cooldown cvar: see **[pc.gvar](../../gvars/pc.md)** cooldown constants.
+Cooldown: **`policies.economy.enforce_cooldowns`**; duration from **`subsystems.economy.command_config.job.cooldown_seconds`** (default **28800**). Workdays: **`workdays_cost`** on same entry when downtime is **tracked** — westmarch default is cooldown-only (**`workdays_cost: 0`**).
 
 No separate job gvar in westmarch; logic is entirely in the alias.
 
@@ -51,7 +51,7 @@ flowchart TD
   C -->|on| E[Resolve skill prefix]
   E --> F[rolls.get_roll check]
   F --> G[economy.job_payout from config bands]
-  G --> H[coinpurse.modify_coins + cooldown cvar]
+  G --> H[pc.modify_gold + stats.add_log]
   H --> I[Embed]
 ```
 
@@ -61,10 +61,10 @@ flowchart TD
 |------|-------|-------|
 | Roll + embed wiring | **Alias** or thin **`economy.gvar`** | Extract payout loop to gvar if alias grows |
 | `JOB.payout_bands` | **Config** | Mirrors westmarch tiers; servers can rebalance |
-| `JOB.cooldown_seconds` | **Config** | Default 28800 |
+| `JOB.cooldown_seconds` | **`command_config.job`** | Default **28800** — see [Command config](../../data-shapes.md#command-config) |
 | `JOB.allowed_skills` | **Config** | Optional restrict list |
-| Cooldown cvar key | **Engine** `bags` | Add `job_cooldown_code` |
-| Skill names / edition | **Engine** `get_rules_edition()` | Use drac2-tools rolls; branch if 2024 skill renames apply |
+| Cooldown | **stats.gvar** + **pc.check_cooldown** | Key **`"job"`** |
+| Skill names / edition | **Engine** `get_rules_edition()` | **`core/rolls`**; branch if 2024 skill renames apply |
 
 ### Config loader integration
 

@@ -2,7 +2,7 @@
 
 Tab-separated value (`.tsv`) catalogues used to build config gvars and seed server workshops. Format matches [westmarch](https://github.com/Sykander/westmarch) `public/*.tsv` exports (Google Sheets → **Download → Tab-separated values**).
 
-Future tooling (e.g. `utils/generate-*.js`) will read these files and emit gvar JSON or config modules under `src/gvars/`.
+**Build pipeline:** [content-pipeline.md](../../docs/internal/projects/westmarch-statement/content-pipeline.md) · **Scripts:** [utils/README.md](../../utils/README.md) — `npm run generate:*` *(planned)* reads TSV and writes **split JSON shard** gvars under `src/gvars/catalogues/` (letter shards for monsters, type splits for items, etc.). Runtime facades lazy-load one shard per lookup.
 
 ## Files
 
@@ -63,7 +63,7 @@ The repo ships three **example** rows (one per `brew` / `craft` / `enchant`). Ow
 
 **`craft`** mundane items may also use gp value bands from config ([CRAFT_PRICE_BANDS](../../docs/internal/projects/westmarch-statement/aliases/crafting/craft.md)) without a **`recipes.tsv`** row.
 
-At config/build time, load **`recipes.tsv`** into config **`recipes`** (list or dict by `id`) alongside catalogues from **`items.tsv`**.
+At config/build time, load **`recipes.tsv`** into config **`recipes`** (list or dict by `id`) alongside catalogues from **`items.tsv`**. Use **`npm run generate:recipes`** when the script lands — see [content-pipeline.md](../../docs/internal/projects/westmarch-statement/content-pipeline.md).
 
 ## Updating from westmarch
 
@@ -81,5 +81,6 @@ Do **not** copy `westmarch/public/books.tsv` into this repo — use `books-ficti
 
 ## Related
 
+- [content-pipeline.md](../../docs/internal/projects/westmarch-statement/content-pipeline.md) — TSV → shard gvars
 - [mvp-commands.md](../../docs/internal/projects/westmarch-statement/mvp-commands.md) — which commands consume each catalogue
 - [westmarch library architecture](https://github.com/Sykander/westmarch/blob/main/docs/library/library-architecture.md) — book engine behaviour

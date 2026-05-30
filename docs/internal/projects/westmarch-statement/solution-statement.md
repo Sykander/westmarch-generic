@@ -140,7 +140,7 @@ How a server gets engine aliases ([US-1.1](user-stories.md)):
 | Engine distribution | **E1 (+ E3)** | Matches publish-avrae pipeline already in repo |
 | Shared utilities | **Vendored `src/gvars/core/`** (from drac2-tools) + domain ports (westmarch / drac2-tools) | Reuse community implementations ([US-7.3](user-stories.md)) without a second workshop subscription; `env` lists westmarch-generic UUIDs only |
 | westmarch long-term | **Reference server becomes first config consumer** | Monolithic westmarch repo enters maintenance; generic engine + extracted config gvar becomes canonical for that community ([US-5.*](user-stories.md)) |
-| **Rules edition** | **Config field + optional Avrae inference** | See § Rules edition below; default `"2014"` |
+| **Rules edition** | **Optional `rules_version` on config** + Avrae inference + default `"2014"` | See § Rules edition; `get_rules_edition()` |
 
 ---
 
@@ -168,42 +168,36 @@ subsystems = {
 # World data added as verticals port, e.g. locations, paths, encounter pools
 ```
 
-Exact keys per subsystem documented under `docs/` as each vertical lands ([US-2.2](user-stories.md)). **`!westmarch check`** validates structure and required data for enabled subsystems ([US-7.2](user-stories.md) at P2+).
+Exact keys per subsystem documented under `docs/` as each vertical lands ([US-2.2](user-stories.md)). **`!westmarch check`** calls [check_config.gvar](gvars/check_config.md) to validate structure and required data for enabled subsystems ([US-7.2](user-stories.md) at P2+).
 
 ### Rules edition *(2014 vs 2024)*
 
 Many westmarch mechanics depend on **which D&D 5e rules revision** the table uses: skill lists, crafting DC bands, language tables, spell availability, monster/stat assumptions, etc. westmarch reference data is largely **2014-era**; [drac2-tools](https://github.com/Sykander/drac2-tools) **languages** is explicitly 2014-aligned.
 
-Server owners should not duplicate Avrae’s rules setting on the config gvar—the engine resolves edition at runtime.
-
 #### Decision
 
-**Infer from Avrae** (with test fallback), not an owner config field.
+**Optional config override**, then Avrae inference, then default **`"2014"`**.
 
-1. **`config.get_rules_edition()`** reads guild/server rules from Avrae when Drac2 exposes it (Phase 0 spike).
-2. If unavailable or ambiguous, **default `"2014"`** (westmarch reference + drac2-tools).
-3. Alias-tests mock the resolved edition via varfile / test hooks—not a config gvar key.
+1. **`config.get_rules_edition()`** returns **`cfg.rules_version`** when set on the owner config gvar (`"2014"` \| `"2024"`).
+2. Else reads guild/server rules from Avrae when Drac2 exposes it (Phase 0 spike).
+3. Else **`"2014"`**.
+4. Alias-tests mock the resolved edition via varfile / test hooks or fixture **`rules_version`**.
 
 #### Engine behaviour
 
-- Aliases call **`config.get_rules_edition()`** — not a field on the loaded config module.
+- Aliases call **`config.get_rules_edition()`** — prefer this over reading **`cfg.rules_version`** directly so resolution stays consistent.
 - Edition affects **engine branch points** (DC tables, skill names, validation) and **which config slice** to read when tables are edition-keyed.
-- Config authors can structure data as:
-  - **Flat + edition tag** on entries,
-  - **Nested by edition** — `CRAFTING["2014"]`, `CRAFTING["2024"]`, or
-  - **Separate extension gvars** per edition (only if size demands it).
-
-Prefer **nested or tagged catalogues** over hard-coded edition branches in aliases.
+- Config authors can structure data as nested or tagged catalogues — see [data-shapes.md § Rules edition](data-shapes.md#rules-edition-catalogues).
 
 #### What server owners do
 
 | Situation | Action |
 |-----------|--------|
-| 2014 table / SRD-style | Set Avrae server to 2014 rules (or rely on engine default) |
-| 2024 revised rules | Set Avrae server to 2024 rules; use 2024-aligned config tables |
-| Tables vs Avrae mismatch | Fix Avrae rules setting or retag config catalogues — no separate config toggle |
+| 2014 table / SRD-style | Omit **`rules_version`** or set **`"2014"`**; align Avrae rules setting |
+| 2024 revised rules | Set **`rules_version: "2024"`** and use 2024-aligned catalogues |
+| Config override vs Avrae mismatch | **`!westmarch check`** warns; config override wins at runtime |
 
-Document in public setup guide: *align Avrae rules setting with your config table revision.*
+Document in public setup guide: *set **`rules_version`** or align Avrae rules with your catalogues.*
 
 #### Out of scope (for now)
 
@@ -215,8 +209,10 @@ Document in public setup guide: *align Avrae rules setting with your config tabl
 Introduce engine modules under `src/gvars/` — see [gvars/README.md](gvars/README.md):
 
 - **`config.gvar`** — `get_config()` ([config.md](gvars/config.md))
+- **`display.gvar`** — **`get_display()`** — returns configured **`embeds.get_embed`** for ctx ([display.md](gvars/display.md))
+- **`check_config.gvar`** — `validate()` for admin check ([check_config.md](gvars/check_config.md))
 - **`auth.gvar`** — `is_allowed()` — zero-arg; `(success, message)` ([auth.md](gvars/auth.md))
-- Standard not-configured / disabled embeds (inline in aliases or small helpers on `config`)
+- Standard not-configured / disabled embeds (inline via **`embeds.get_embed`**, or branded via **`display.get_display()`** when config loads)
 
 All ported aliases use **config** + **auth**; no alias reads svars directly with ad hoc strings ([US-4.2](user-stories.md)).
 
@@ -249,7 +245,8 @@ westmarch-generic (engine repo)
 ├── src/gvars/
 │   ├── env.*.gvar         # Engine workshop ids (this repo only)
 │   ├── core/              # Vendored drac2-tools helpers (commands, embeds, rolls, …)
-│   ├── config/            # Loader, validation, status embeds
+│   ├── config/            # Loader, defaults merge
+│   ├── check_config/      # validate() for !westmarch check
 │   ├── auth/, pc/, …      # Domain engine modules (ports from westmarch + core)
 │   └── …                  # Subsystem gvars (encounters, world, catalogues, …)
 ├── docs/                  # Server-owner + consumer docs (public)
@@ -273,7 +270,7 @@ Steps for a server owner ([US-1.1](user-stories.md), [US-1.2](user-stories.md)):
 4. **Enable** subsystems in config (`subsystems.*.enabled`) as desired.
 5. **Verify** with a smoke command (e.g. exploration or help) — no engine redeploy needed for content edits ([US-3.1](user-stories.md)).
 
-Document svar name, template link, and smoke commands in public `docs/setup.md` *(to write in Phase 1)*.
+Document svar name, template link, and smoke commands in public [docs/setup.md](../../../setup.md).
 
 ---
 
@@ -301,7 +298,7 @@ Three viable approaches; **recommended: phased extraction (M2)**.
 | Env generation | `env.*.gvar` lists westmarch-generic gvars only (including vendored `core/`) | US-4.1 |
 | Alias tests | `.alias-test` with `vars.svars.westmarch_config` + fixture config gvar in `.varfile.json` | US-4.3 |
 | CI | Sourcemap tests + `avrae-ls --run-tests src` (existing) | US-4.4 |
-| Config template | `templates/config/` or documented gvar in examples workshop | US-2.3 |
+| Config template | `src/gvars/configs/starter.gvar` + example presets in `src/gvars/configs/` ([configs.md](gvars/configs.md)) | US-2.3 |
 | Schema docs | Per-subsection under `docs/config/` as verticals ship | US-2.2 |
 
 ---
@@ -314,12 +311,12 @@ Three viable approaches; **recommended: phased extraction (M2)**.
 
 | Work | Deliverables | Stories |
 |------|--------------|---------|
-| Config loader gvar + helpers | [config.gvar](gvars/config.md), [auth.gvar](gvars/auth.md) | US-4.2, US-1.3, US-2.5, US-6.2 |
+| Config loader gvar + helpers | [config.gvar](gvars/config.md), [display.gvar](gvars/display.md), [check_config.gvar](gvars/check_config.md), [auth.gvar](gvars/auth.md) | US-4.2, US-1.3, US-2.5, US-6.2, US-1.6 |
 | Admin commands | **`!westmarch`** hub — [aliases/admin/](aliases/admin/README.md) | US-1.1, US-1.2, US-1.6, US-1.7 |
 | Encounter engine | [encounter_templates](gvars/encounter_templates.md), [encounters](gvars/encounters.md), [data-shapes.md](data-shapes.md) | US-6.1 (partial) |
 | Svar + config v0 | `westmarch_config`, `subsystems` | US-1.4, US-2.2 |
 | One ported vertical | One activity command (**forage** or **enc**) — see [mvp-commands.md](mvp-commands.md) Tier A | US-6.1 (partial) |
-| Template config gvar | [templates/config/starter.gvar](../../../../templates/config/starter.gvar) + `!westmarch setup` copy | US-2.3 |
+| Template config gvar | [src/gvars/configs/starter.gvar](../../../../src/gvars/configs/starter.gvar) + `!westmarch setup` copy | US-2.3 |
 | Tests | Loader + vertical alias-tests with mocked svar/config | US-4.3 |
 | Public setup doc | Adoption steps | US-1.1, US-1.2 |
 
@@ -353,7 +350,7 @@ Three viable approaches; **recommended: phased extraction (M2)**.
 | Extension gvars (if needed) | Option C for oversized tables | US-2.6 |
 | House rules in config | Rates, caps, strings | US-3.4 |
 | Internal docs + rules | Engine/config boundary in AGENTS + Cursor | US-4.6 |
-| Config validation | Structural checks in `!westmarch check`; migration notes on engine upgrade | US-7.2 |
+| Config validation | [check_config.gvar](gvars/check_config.md) — structural checks via `!westmarch check`; migration notes on engine upgrade | US-7.2 |
 
 ---
 
@@ -400,14 +397,14 @@ MVP scope is fixed in [mvp-commands.md](mvp-commands.md). Order within and after
 5. **hunt**, **loot** — Tier C; [aliases/exploration/](aliases/exploration/README.md)
 6. **downtime** — Tier D; [downtime/](downtime/README.md)
 7. **craft**, **brew**, **scribe**, **enchant** — Tier E; [crafting/](crafting/README.md)
-8. **job**, **buy**, **sell** — Tier F; [economy/](economy/README.md)
+8. **job**, **wallet**, **buy**, **sell** — Tier F; [economy/](economy/README.md)
 9. **library**, **read** — Tier G; [content/](content/README.md)
 10. **quest**, **recipe** — Tier H; [misc/](misc/README.md)
 
 ### After MVP (Phase 2+)
 
-10. **Dungeons** — floor/setup/begin; extension gvars likely
-11. **Nexus / remaining** — most westmarch-specific
+11. **Dungeons** — floor/setup/begin; extension gvars likely
+12. **Nexus / remaining** — most westmarch-specific
 
 Reorder if reference server priorities differ; document rationale when changing.
 
@@ -451,7 +448,7 @@ Reorder if reference server priorities differ; document rationale when changing.
 
 | Document | Purpose |
 |----------|---------|
-| `docs/setup.md` *(planned, public)* | Server-owner adoption guide from § Adoption path |
+| [docs/setup.md](../../../setup.md) | Server-owner adoption guide from § Adoption path |
 | `docs/config/schema.md` *(planned, public)* | Versioned config gvar reference — see [server-config.md](server-config.md) |
 
 ---

@@ -18,14 +18,15 @@
 
 | Section | Content |
 |---------|---------|
-| **Wiring** | Svar name, config gvar UUID (truncated ok), load status |
+| **Wiring** | Svar name, config gvar UUID (truncated ok), load status, optional **`config_version`** |
+| **World** | **`display.get_display()`** default title/footer/colour from base **`display`**; **`cfg.display`** fields for show copy ([display.gvar](../../gvars/display.md)) |
 | **Subsystems** | Table: subsystem → enabled/disabled; per-command toggles; non-default **`config`** keys |
-| **Policies** | Summary of `policies.*` modes (time, travel costs, downtime, crafting automation, inventory limits) — [data-shapes.md](../../data-shapes.md#server-policies) |
-| **Runtime** | Resolved rules edition (Avrae / engine default); Discord guild name when in guild |
+| **Policies** | Summary of `policies.*` — auth, time, travel, downtime, crafting, economy, exploration, combat, quest, content, inventory, **`languages.allowed`**, **`display.footer_behaviour`** — [data-shapes.md § Server policies](../../data-shapes.md#server-policies) |
+| **Runtime** | **`get_rules_edition()`** — **`rules_version`** override, else Avrae, else 2014 |
 | **Data overview** | Counts where cheap: e.g. N areas, N shops, N books, catalogue sizes |
 | **Pointers** | Link to public schema docs; suggest `!westmarch check` if issues suspected |
 
-Each section includes a **one-line explanation** where helpful (e.g. resolved rules edition from Avrae, not stored in config).
+Each section includes a **one-line explanation** where helpful (e.g. when **`rules_version`** overrides Avrae).
 
 ### Explicit non-goals
 
@@ -45,7 +46,7 @@ flowchart TD
   E --> F[Embed with field glossary]
 ```
 
-Footer may note validation warnings from the same rules as **`check`** when useful.
+Footer may note validation warnings from **`check_config.validate()`** (same rules as **`check`**) when useful.
 
 ## Implementation checklist
 

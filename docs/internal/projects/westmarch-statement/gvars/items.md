@@ -2,9 +2,9 @@
 
 **Path:** `src/gvars/catalogues/items.gvar` · **Phase:** 1 (Tier E/F)
 
-Search **item catalogues** from config — mundane **Item**, **Potion**, and **Magic Item** pools (westmarch had three lists; one module, typed search).
+Search **item catalogues** from engine shards — mundane **Item**, **Potion**, and **Magic Item** pools (three generated files from [items.tsv](../../../../public/assets/items.tsv) **`type`** column).
 
-Source TSV: [public/assets/items.tsv](../../../../public/assets/items.tsv) (`type` column).
+Built by **`utils/generate-items.js`** — [content-pipeline.md](../content-pipeline.md). **Lazy-load:** fetch only the shard for the requested **`kind`** (westmarch loaded all three at import — generic avoids that).
 
 ## API
 
@@ -28,7 +28,15 @@ Item dict *(from catalogue)*:
 { "name": str, "value": str, "tier": str, "type": "Item" | "Potion" | "Magic Item", "rarity": str, ... }
 ```
 
-Config may inline lists or use **`extensions.items`**, **`extensions.potions`**, **`extensions.magic_items`** UUIDs — loader caches per **`get_config()`** invocation.
+Config may override via **`extensions.items`** / **`potions`** / **`magic_items`** UUIDs — same lazy shard pattern.
+
+## Shards
+
+| File | `type` filter |
+|------|----------------|
+| `catalogues/items/items_list.gvar` | Item |
+| `catalogues/items/potions_list.gvar` | Potion |
+| `catalogues/items/magic_items_list.gvar` | Magic Item |
 
 ## Used by
 
@@ -44,9 +52,11 @@ Crafting DC tables stay in config or optional **`crafting.gvar`** helpers — no
 
 ## westmarch reference
 
-`westmarch/src/gvars/utils/items.gvar` + `items_list` / `potions_list` / `magic_items_list` extension gvars.
+`westmarch/src/gvars/utils/items.gvar` + `utils/generate-items.js` — port three-way split; **lazy** per-type load.
 
 ## Related
+
+- [content-pipeline.md](../content-pipeline.md) · [utils/README.md](../../../../utils/README.md)
 
 - [spells.md](spells.md) · [recipe.md](recipe.md) · [shops.md](shops.md)
 - [aliases/crafting/README.md](../aliases/crafting/README.md)

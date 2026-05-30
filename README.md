@@ -20,8 +20,8 @@ This repo is the **generic engine**. Per-server content lives in workshop gvars 
 | `src/snippets/` | Snippet expansions |
 | `src/gvars/` | Workshop globals (`env`, shared utils, per-server config gvars) |
 | `utils/sourcemap.*.json` | Deploy source of truth (aliases, snippets, gvar ids) |
-| `utils/*.js` | Env/var generation, sourcemap tests, deploy |
-| `public/assets/` | TSV catalogues (monsters, items, spells, books) for config generation |
+| `utils/*.js` | Env/var generation, sourcemap tests, deploy; **planned** TSV → catalogue shards ([utils/README.md](utils/README.md)) |
+| `public/assets/` | TSV catalogues — input to **`utils/generate-*`** ([content-pipeline](docs/internal/projects/westmarch-statement/content-pipeline.md)) |
 | `docs/` | Design and consumer documentation |
 | `.cursor/rules/` | Cursor agent rules (from westmarch + drac2-tools) |
 
@@ -37,6 +37,7 @@ Bootstrap only: example alias (with sub-alias), snippet, gvar, template sourcema
 
 ## Documentation
 
+- [docs/setup.md](docs/setup.md) — server-owner adoption guide
 - [docs/README.md](docs/README.md) — concept and configuration model
 - [DEVELOPMENT.md](DEVELOPMENT.md) — local setup, sourcemaps, deploy workflow
 - [unused_gvars.md](unused_gvars.md) — spare workshop gvar UUIDs (empty until you allocate real ids)

@@ -46,7 +46,7 @@ Optional later: config **`LOOT_RULES`** overrides CR→gp bands and type→skill
 
 - [monsters.md](monsters.md) — creature lookup
 - [pc.md](pc.md) — sheet changes
-- drac2-tools **`rolls`**
+- **`core/rolls.gvar`** via `env.gvars.rolls`
 
 ## Related
 

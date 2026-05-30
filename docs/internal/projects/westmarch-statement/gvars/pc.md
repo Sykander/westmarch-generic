@@ -49,9 +49,9 @@ ok, msg = pc.modify_wallet(ch, "shards", 2)
 | Function | Purpose |
 |----------|---------|
 | **`modify_gold(ch, gp)`** | Add/remove Avrae **gp** via coinpurse. Fails if debit would go negative. |
-| **`modify_wallet(ch, currency_id, delta)`** | Add/remove a config **wallet** currency ([Currency](../data-shapes.md#currency)). Validates **`currency_id`** against **`get_config().currencies`**. |
+| **`modify_wallet(ch, currency_id, delta)`** | Add/remove a config **wallet** currency. Validates **`currency_id`** against **`get_config().currencies`**. When **`policies.economy.enforce_wallet_caps`**, rejects grants above **`currencies[id].max_balance`**. |
 | **`modify_bag(ch, item, count, bag="Equipment")`** | Add/remove item stacks. Wraps **`core/bags`** **`modify_bag`**; same failure semantics when removal exceeds stock. |
-| **`modify_downtime(ch, workdays)`** | Add (positive) or spend (negative) workdays when **`policies.downtime.mode == "tracked"`**. Fails if spend would go negative. |
+| **`modify_downtime(ch, workdays)`** | Add (positive) or spend (negative) workdays when **`policies.downtime.mode == "tracked"`**. Fails if spend would go negative or exceed **`policies.downtime.max_workdays`** cap on grant. |
 | **`modify_hp(ch, delta)`** | Optional wrapper around **`ch.modify_hp`** for consistent messaging in encounter outcomes. |
 
 ### Examples
@@ -85,14 +85,16 @@ ok, msg = pc.modify_downtime(ch, -3)
 | **`get_bag_count(ch, item, bag="Equipment")`** | Stack count (via **`core/bags`** / sheet) |
 | **`format_wallet_embed(ch, config)`** | Embed-ready string for **`!wallet`** — display only |
 
-Cooldown helpers (exploration, library, job, …) — same module, stable cvar key constants:
+Command usage and exploration cooldowns — **[stats.gvar](stats.md)** stores **`wg_stats`**; **`pc`** reads **`last_used_at`** for cooldown gates:
 
 | Function | Purpose |
 |----------|---------|
-| **`check_cooldown(ch, key)`** | `(allowed, seconds_remaining)` |
-| **`set_cooldown(ch, key, seconds)`** | Start cooldown; returns `(True, message)` |
+| **`check_cooldown(ch, command_key, config=None)`** | `(allowed, seconds_remaining)` — reads **`wg_stats[command_key].last_used_at`**; duration from **`command_config[command_key].cooldown_seconds`** (see [Command config](../data-shapes.md#command-config)) |
+| **`cooldown_seconds(command_key, config=None)`** | Resolved seconds for command — **`command_config`** override, else engine default map (exploration activities → **120**, **`job`** → **28800**) |
 
-Cvar keys live as module constants (generic prefix, not westmarch-branded):
+Aliases call **`stats.add_log(ch, …)`** after success to update **`last_used_at`** — no separate cooldown cvar per command.
+
+Cvar keys for non-stats sheet state:
 
 ```py
 CVAR_DOWNTIME_START = "wg_downtime_start"
@@ -100,8 +102,7 @@ CVAR_DOWNTIME_USED = "wg_downtime_used"
 CVAR_WALLET_PREFIX = "wg_wallet_"   # + currency id
 CVAR_TOOL_PROF = "wg_ptools"
 CVAR_TOOL_EXP = "wg_etools"
-CVAR_ENC_COOLDOWN = "wg_enc_cooldown"
-# …
+# Command usage + cooldown timestamps → stats.gvar CVAR_STATS = "wg_stats"
 ```
 
 ---
@@ -142,6 +143,7 @@ Crafting success paths — **`modify_bag`** (when **`policies.crafting.auto_dedu
 ## Not in this module
 
 - Permission / config gates → [auth.md](auth.md)
+- Command usage writes → [stats.md](stats.md) **`add_log`**
 - World location / journey cvars → **`journeys.gvar`** (planned)
 - Quest notebook storage → **`quests.gvar`** (planned)
 

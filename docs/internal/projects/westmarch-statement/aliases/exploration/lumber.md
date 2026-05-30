@@ -2,15 +2,18 @@
 
 **Subsystem:** exploration · **Toggle:** `subsystems.exploration.commands.lumber` · **Phase:** 1 (Tier B)
 
-Third port in the exploration sequence. Activity key `"lumber"`.
+Third port in the exploration sequence. Activity key **`"lumber"`**.
 
 ## Player-facing behaviour
 
-```
-!lumber <location> [bonuses]
-```
+Biome resolution follows **`exploration.config.enc_biome_source`** (same as **enc** — see [README.md](README.md)):
 
-Lumbering-flavoured encounter at the given area code. Cooldown: 120s (`bags.lumber_cooldown_code`).
+| Mode | Usage |
+|------|-------|
+| Manual | `!lumber <biome> [bonuses]` |
+| Inferred | `!lumber [bonuses]` |
+
+Lumbering-flavoured encounter from **`pools.lumber[kind]`** on the resolved biome gvar. Cooldown: **120s** via **[stats.gvar](../../gvars/stats.md)** + **`pc.check_cooldown(ch, "lumber")`**.
 
 ## westmarch reference
 
@@ -19,22 +22,22 @@ Lumbering-flavoured encounter at the given area code. Cooldown: 120s (`bags.lumb
 | Alias | `westmarch/src/aliases/exploration/lumber.alias` |
 | Alias tests | `westmarch/src/aliases/exploration/lumber.alias-test` |
 
-Uses `lumber_encounters` pool via `get_encounter_list(code, "lumber")`. Otherwise identical structure to [mine.md](mine.md) / [enc.md](enc.md).
+westmarch **`get_encounter_list(code, "lumber")`** → generic **`biomes.resolve_biome("lumber", …)`** + **`encounter_lists.get_encounter(biome, "lumber", …)`**.
 
 ## Prerequisites
 
 - Shared encounter engine from **enc** Phase 0
-- Config biome includes `lumber_encounters` for test areas
+- Biome gvar **`pools.lumber`** for test biomes
 
 ## Implementation checklist
 
-- [ ] `src/aliases/exploration/lumber.alias` from generic enc template
+- [ ] Clone **enc** alias → `src/aliases/exploration/lumber.alias`
+- [ ] **`biomes.resolve_biome("lumber", args, ch, cfg)`**
+- [ ] **`encounter_lists.get_encounter(biome, "lumber", ch, cfg)`**
+- [ ] **`stats.add_log`**
 - [ ] Toggle `exploration.commands.lumber`
-- [ ] `get_encounter_list(code, "lumber")`
-- [ ] `lumber.alias-test` + config fixture pools
-- [ ] Template config `"lumber": True`
+- [ ] `lumber.alias-test`
 
 ## Related
 
-- [mine.md](mine.md) — prior port
-- [forage.md](forage.md) — next in sequence
+- [mine.md](mine.md) · [forage.md](forage.md)

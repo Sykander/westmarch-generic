@@ -6,11 +6,14 @@ Fifth activity port; completes the Tier B activity cluster (before **hunt** / **
 
 ## Player-facing behaviour
 
-```
-!fish <location> [bonuses]
-```
+Biome resolution follows **`exploration.config.enc_biome_source`** (same as **enc** — see [README.md](README.md)):
 
-Fishing-flavoured encounter at the given area code. Cooldown: 120s (`bags.fish_cooldown_code`).
+| Mode | Usage |
+|------|-------|
+| Manual | `!fish <biome> [bonuses]` |
+| Inferred | `!fish [bonuses]` |
+
+Fishing-flavoured encounter from **`pools.fish[kind]`** on the resolved biome gvar. Cooldown: **120s** via **[stats.gvar](../../gvars/stats.md)** + **`pc.check_cooldown(ch, "fish")`**.
 
 ## westmarch reference
 
@@ -19,19 +22,21 @@ Fishing-flavoured encounter at the given area code. Cooldown: 120s (`bags.fish_c
 | Alias | `westmarch/src/aliases/exploration/fish.alias` |
 | Alias tests | `westmarch/src/aliases/exploration/fish.alias-test` |
 
-Uses `fish_encounters` via `get_encounter_list(code, "fish")`.
+westmarch **`get_encounter_list(code, "fish")`** → generic **`biomes.resolve_biome("fish", …)`** + **`encounter_lists.get_encounter(biome, "fish", …)`**.
 
 ## Prerequisites
 
-- All shared engine gvars from **enc** Phase 0
-- Config biome pools include `fish_encounters` (westmarch often uses **river** / **sea** areas heavily — include at least one water area in fixture)
+- Shared engine gvars from **enc** Phase 0
+- Biome gvar **`pools.fish`** for at least one water-adjacent biome in fixture (e.g. river/sea codes)
 
 ## Implementation checklist
 
-- [ ] `src/aliases/exploration/fish.alias`
+- [ ] Clone **enc** alias → `src/aliases/exploration/fish.alias`
+- [ ] **`biomes.resolve_biome("fish", args, ch, cfg)`**
+- [ ] **`encounter_lists.get_encounter(biome, "fish", ch, cfg)`**
+- [ ] **`stats.add_log`**
 - [ ] Toggle `exploration.commands.fish`
-- [ ] `fish.alias-test` with river or sea area fixture
-- [ ] Mark Tier B exploration cluster complete in tracking
+- [ ] `fish.alias-test`
 
 ## Tier B cluster exit criteria
 
@@ -39,12 +44,11 @@ When **fish** lands with mine/lumber/forage:
 
 | Criterion | Status |
 |-----------|--------|
-| All five activities call shared list builder | Required |
+| All five activities use **`biomes.resolve_biome`** + shared list builder | Required |
 | Per-command toggles independent | Required |
 | One alias-test per command in CI | Required |
 | Quest/journey overlays still deferred | OK for MVP |
 
 ## Related
 
-- [forage.md](forage.md) — prior port
-- [hunt.md](hunt.md) — next subsystem command (Tier C)
+- [forage.md](forage.md) · [hunt.md](hunt.md) · [README.md](README.md)

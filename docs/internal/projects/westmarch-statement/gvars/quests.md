@@ -20,6 +20,9 @@ def get_quest(journal, quest_id_or_name):
 def append_entry(ch, config, quest_id, text):
     """Add journal line under quest. Returns (success, message)."""
 
+def activate_from_encounter(ch, config, quest_id, title=None, category=None):
+    """When policies.quest.self_assign — create or activate quest from encounter outcome."""
+
 def format_list_embed(journal, config):
 def format_quest_embed(journal, quest_id, config):
 ```
@@ -41,7 +44,7 @@ Journal shape *(illustrative)*:
 
 Config **`quests`** may supply categories, display labels, optional template quests — not player write path.
 
-Future: encounter outcome **`type: quest`** may call **`append_entry`** or unlock quest ids — defer with [encounters.md](encounters.md).
+Future: encounter outcome **`type: quest`** calls **`activate_from_encounter`** when **`policies.quest.self_assign`** — [encounters.md](encounters.md).
 
 ## Related
 

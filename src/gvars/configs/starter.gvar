@@ -1,0 +1,187 @@
+"""Starter westmarch-generic server config — copy into your workshop gvar.
+
+Point your server's svar at this gvar's UUID after publishing:
+  !svar westmarch_config <your-gvar-uuid>
+
+See docs/internal/projects/westmarch-statement/aliases/admin/setup.md
+"""
+
+# Optional — owner version label for this config module
+# config_version = "1.0"
+
+# Optional — "2014" | "2024"; overrides Avrae rules setting when set
+# rules_version = "2014"
+
+# Optional — world branding for embeds and !westmarch show (base layer)
+# display = {
+#     "name": "My Westmarch",
+#     "description": "A short campaign blurb.",
+#     "image": "https://…/banner.png",
+#     "logo": "https://…/logo.png",
+#     "footer": "My Westmarch",
+#     "colour": "#5865F2",
+# }
+
+subsystems = {
+    "exploration": {
+        "enabled": False,
+        # Optional — subsystem embed branding (inherits from display above)
+        # "display": {"title": "Exploration", "colour": "#2ECC71"},
+        "commands": {
+            "enc": False,
+            "forage": False,
+            "fish": False,
+            "mine": False,
+            "lumber": False,
+            "hunt": False,
+            "loot": False,
+        },
+        # Optional — per-command embed overrides (keys match commands)
+        # "command_display": {"enc": {"title": "Encounter"}},
+        "config": {
+            "enc_biome_source": "auto",
+            "distribution_policy": "random",
+            "distribution": {
+                "combat": 25,
+                "quest": 25,
+                "gather": 50,
+            },
+            "repeat_exclude_window": 5,
+        },
+        # Optional — per-command cooldowns (seconds); see data-shapes § Command config
+        # "command_config": {
+        #     "enc": {"cooldown_seconds": 120},
+        #     "forage": {"cooldown_seconds": 120},
+        # },
+    },
+    "travel": {
+        "enabled": False,
+        "commands": {
+            "travel": False,
+            "location": False,
+            "time": False,
+            "weather": False,
+        },
+    },
+    "downtime": {
+        "enabled": False,
+        # "config": {
+        #     "workday_hours": 8,
+        #     "workweek_days": 5,
+        #     "labels": {"singular": "workday", "plural": "workdays"},
+        # },
+        # "command_config": {"downtime": {"cooldown_seconds": 0}},
+    },
+    "crafting": {
+        "enabled": False,
+        "commands": {
+            "craft": False,
+            "brew": False,
+            "enchant": False,
+            "scribe": False,
+        },
+    },
+    "economy": {
+        "enabled": False,
+        "commands": {
+            "job": False,
+            "buy": False,
+            "sell": False,
+            "wallet": False,
+        },
+        # "command_config": {
+        #     "job": {"cooldown_seconds": 28800, "workdays_cost": 0},
+        # },
+    },
+    "content": {
+        "enabled": False,
+        "commands": {
+            "library": False,
+            "read": False,
+        },
+        "config": {
+            "library_topic_source": "manual",
+            "allowed_topics": [],
+        },
+        # "command_config": {
+        #     "library": {"cooldown_seconds": 120},
+        #     "read": {"cooldown_seconds": 0},
+        # },
+    },
+    "misc": {
+        "enabled": False,
+        "commands": {
+            "quest": False,
+            "recipe": False,
+        },
+    },
+}
+
+# World data — add when enabling travel, location, exploration, or world clock
+# world_data = {
+#     "default_location": "nexus",
+#     "locations": { … },
+#     "paths": [ … ],
+#     "transport": { "walk": {"name": "On foot", "default": True}, "horse": {"name": "Riding horse"} },
+#     "calendars": { "primary": { "epoch_unix": …, "tick_rate": 86400.0, … } },
+#     "biomes": { "forest": {"gvar_id": "engine:configs/biomes/forest", "name": "Forest"} },
+# }
+
+# House rules — see docs/internal/projects/westmarch-statement/data-shapes.md § Server policies
+policies = {
+    "auth": {"require_character": True},
+    "time": {"mode": "manual"},
+    "travel": {
+        "apply_path_costs": False,
+        "consume_rations": False,
+        "rations_item": "Rations",
+    },
+    "downtime": {
+        "mode": "manual",
+        "max_workdays": None,
+        "acquisition": "manual",
+    },
+    "crafting": {
+        "require_downtime_before_roll": True,
+        "auto_deduct_materials": False,
+        "auto_deduct_gold": False,
+    },
+    "economy": {
+        "enforce_cooldowns": True,
+        "enforce_wallet_caps": False,
+        "starting_gold": None,
+    },
+    "inventory": {
+        "track_encumbrance": False,
+        "enforce_encumbrance": False,
+        "attunement_limit": None,
+        "enforce_attunement": False,
+        "magic_items_carry_limit": None,
+        "enforce_magic_item_limit": False,
+    },
+    "exploration": {
+        "enforce_cooldowns": True,
+        "avoid_repeat_encounters": "off",
+    },
+    "combat": {
+        "scale_encounters_to_level": False,
+        "roll_monster_hp": True,
+        "scale_mode": "party_average",
+        "max_cr_delta": None,
+        "min_cr": None,
+    },
+    "quest": {
+        "self_assign": False,
+        "max_active": None,
+    },
+    "content": {
+        "enforce_read_cooldowns": False,
+        "enforce_library_cooldowns": True,
+    },
+    "languages": {"allowed": []},
+    "display": {
+        "footer_behaviour": "balanced",
+        "helpful_tips": [],
+        "credits": None,
+    },
+}

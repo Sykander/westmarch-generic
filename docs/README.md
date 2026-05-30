@@ -28,7 +28,7 @@ flowchart LR
 
 ### Rules edition (2014 vs 2024)
 
-**Not** stored on the config gvar. The engine resolves edition from **Avrae server settings** when available (`config.get_rules_edition()`), else defaults to **`"2014"`**. Align your Avrae rules setting with your config catalogues. Details: [westmarch-statement / solution](internal/projects/westmarch-statement/solution-statement.md#rules-edition-2014-vs-2024).
+**Not** stored only on Avrae — optional **`rules_version`** on the config gvar overrides server rules when set. The engine resolves edition from **`config.get_rules_edition()`** (config → Avrae → `"2014"`). Align catalogues with your chosen revision. Details: [westmarch-statement / solution](internal/projects/westmarch-statement/solution-statement.md#rules-edition-2014-vs-2024).
 
 ### Design principles
 
@@ -40,9 +40,11 @@ flowchart LR
 
 | Area | Role |
 |------|------|
-| `public/assets/` | TSV catalogues (monsters, items, spells, books) → config/gvar source data |
+| `public/assets/` | TSV catalogues — **`utils/generate-*`** → split shard gvars ([content-pipeline.md](internal/projects/westmarch-statement/content-pipeline.md)) |
 | `src/aliases/` | Commands players invoke in Discord |
 | `src/snippets/` | Text expansion before alias logic runs |
+| `src/gvars/` | Engine workshop globals — see [src/gvars/README.md](../src/gvars/README.md) |
+| `src/gvars/configs/` | Example server config presets (FR, generic, Spelljammer) — [configs.md](internal/projects/westmarch-statement/gvars/configs.md) |
 | `src/gvars/core/` | Vendored drac2-tools helpers (commands, embeds, rolls, …) — see [core.md](internal/projects/westmarch-statement/gvars/core.md) |
 | `src/gvars/example/` | Placeholder config gvar (bootstrap only) |
 
@@ -58,6 +60,7 @@ These are **not** production game content; they exist to validate tooling and do
 
 ## Further reading
 
+- [setup.md](setup.md) — server-owner adoption guide
 - [README.md](../README.md) — project overview and outline
 - [DEVELOPMENT.md](../DEVELOPMENT.md) — setup, tests, deploy
 - [internal/](internal/) — developer-only docs (project framing, design notes)
@@ -68,5 +71,4 @@ These are **not** production game content; they exist to validate tooling and do
 
 - Svar naming convention and registry
 - Config gvar schema (areas, encounters, economy, etc.) — see [westmarch-statement MVP](internal/projects/westmarch-statement/mvp-commands.md)
-- Server-owner setup guide
 - Migration notes from monolithic westmarch

@@ -21,20 +21,32 @@ Work-for-pay, shops, and server currencies. Matches [mvp-commands.md](../../mvp-
     "commands": { "job": True, "buy": True, "sell": True, "wallet": True },
 },
 
-# Optional — owner-defined currencies (not gp)
 currencies = {
     "shards": { "name": "Arcane Shard", "plural": "Arcane Shards" },
+},
+
+shops = {
+    "general_store": {
+        "id": "general_store",
+        "name": "General Store",
+        "location_id": "nexus",
+        "accepts_sells": True,
+        "buyback": 0.5,
+        "stock": [
+            { "item": "Rope", "price": { "gold": 1 } },
+        ],
+    },
 }
 ```
 
-Shape: [data-shapes.md § Currency](../../data-shapes.md#currency).
+Shapes: [data-shapes.md § Currency](../../data-shapes.md#currency), [Shop](../../data-shapes.md#shop).
 
-Shared engines: **`shops.gvar`**, **[pc.gvar](../../gvars/pc.md)** (wallet + gp). Job payouts: **`JOB`** config block.
+Shared engines: **[shops.gvar](../../gvars/shops.md)** (transactions via **`pc`**), **[pc.gvar](../../gvars/pc.md)** (gp, wallet, bags). Job payouts: **`JOB`** config block.
 
-Planned aliases: `src/aliases/economy/` (westmarch sources live under `src/aliases/misc/`).
+Planned aliases: `src/aliases/economy/`.
 
 ## Related
 
-- [travel/travel.md](../travel/travel.md) — optional shop location gates  
+- [travel/travel.md](../travel/travel.md) — optional shop **`location_id`** gates  
 - [server-config.md](../../server-config.md) — config layers  
 - [public/assets/items.tsv](../../../../public/assets/items.tsv) — shop stock names

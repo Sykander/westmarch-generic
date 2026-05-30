@@ -10,13 +10,18 @@ Shared **engine workshop** modules under `src/gvars/`. Aliases `using()` these v
 |------|-----|-------|------|
 | **core/** *(commands, embeds, rolls, …)* | [core.md](core.md) | 0–1 | Vendored drac2-tools helpers — one workshop, no external `env` UUIDs |
 | **config** | [config.md](config.md) | 0 | `get_config()` — lazy cache + defaults merge |
+| **display** | [display.md](display.md) | 0 | `get_display()` → configured **`embeds.get_embed`** for ctx |
+| **check_config** | [check_config.md](check_config.md) | 0–1 | `validate()` — schema + svar checks for `!westmarch check` |
+| **world_data** | [world_data.md](world_data.md) | — | Config shape doc (owner gvar, not engine module) |
 | **auth** | [auth.md](auth.md) | 0 | `is_allowed()` — roles, `subsystems`, channel policy |
-| **pc** | [pc.md](pc.md) | 0–1 | Player character state — gp, wallet, bags, downtime, cooldowns |
+| **pc** | [pc.md](pc.md) | 0–1 | Player character state — gp, wallet, bags, downtime; cooldown reads from stats |
+| **stats** | [stats.md](stats.md) | 0–1 | **`add_log()`** — per-command usage, cooldown timestamps, exploration aggregates |
 | **encounter_templates** | [encounter_templates.md](encounter_templates.md) | 0–1 | Build [encounter](../data-shapes.md#encounter-input) dicts |
-| **encounter_lists** | [encounter_lists.md](encounter_lists.md) | 0–1 | Pick kind + encounter from config pools |
+| **encounter_lists** | [encounter_lists.md](encounter_lists.md) | 0–1 | Kind-first pick + random encounter from biome pools |
 | **encounters** | [encounters.md](encounters.md) | 0–1 | Rolls, `ectx` callables, outcomes, `encounter_result` |
-| **locations** | [locations.md](locations.md) | 1 | Config location lookup + `display_location` |
-| **paths** | [paths.md](paths.md) | 1 | Path edge lookup, cost, steps, single-leg display |
+| **biomes** | [biomes.md](biomes.md) | 0–1 | Lazy-load biome gvar bodies from **`world_data.biomes`** |
+| **locations** | [locations.md](locations.md) | 1 | **`world_data.locations`** lookup + `display_location` |
+| **paths** | [paths.md](paths.md) | 1 | **`world_data.paths`**, transport-aware steps |
 | **journeys** | [journeys.md](journeys.md) | 1 | Shortest route, journey/location cvars, `next_step` |
 | **clock** | [clock.md](clock.md) | 1 | In-world calendar/clock for `!time` |
 | **weather** | [weather.md](weather.md) | 1 | Regional weather for `!weather` |
@@ -28,6 +33,7 @@ Shared **engine workshop** modules under `src/gvars/`. Aliases `using()` these v
 | **library** | [library.md](library.md) | 1 | Book search, comprehension, read display |
 | **quests** | [quests.md](quests.md) | 1 | Quest journal cvars |
 | **recipe** | [recipe.md](recipe.md) | 1 | Recipe search / format for `!recipe` |
+| **configs/** *(example server configs)* | [configs.md](configs.md) | 1+ | Prefab setting modules — FR, generic, Spelljammer; tests + onboarding |
 
 Shared shapes: [data-shapes.md](../data-shapes.md).
 
@@ -44,22 +50,27 @@ src/gvars/
     lists.gvar
     …
   config/config.gvar
+  display/display.gvar
+  check_config/check_config.gvar
   auth/auth.gvar
   pc/pc.gvar
+  pc/stats.gvar
   encounters/
     encounter_templates.gvar
     encounter_lists.gvar
     encounters.gvar
   world/
+    biomes.gvar
     locations.gvar
     paths.gvar
     journeys.gvar
     clock.gvar
     weather.gvar
   catalogues/
-    items.gvar
-    spells.gvar
-    monsters.gvar
+    monsters/              # generate-monsters.js → {a-z}_monsters.gvar
+    items/                 # generate-items.js → *_list.gvar
+    spells/
+    books/
   exploration/
     loot.gvar
   economy/
@@ -69,18 +80,28 @@ src/gvars/
   misc/
     quests.gvar
     recipe.gvar
+  configs/                 # example server configs + preset bodies — see configs.md
+    starter.gvar             # minimal empty schema
+    biomes/                  # preset biome pool modules — engine:configs/biomes/<code>
+    forgotten_realms_2014.gvar
+    generic_fantasy_2014.gvar
+    …
 ```
 
 ## Principles
 
 - **Minimal surface** — small functions, no extra layers until a second caller needs them.
-- **Server data stays in config gvar** — engine gvars are behaviour only.
+- **Server data stays in config gvar** — engine gvars are behaviour only; example bodies live in **`configs/`** ([configs.md](configs.md)).
 - **Vendored core** — copy drac2-tools utilities into `core/`; one workshop subscription for adopters ([core.md](core.md)).
 - **Domain ports** — westmarch-specific modules copy relevant upstream code, then wire **`config`**, **`auth`**, **`pc`** ([pc.md](pc.md)).
-- **westmarch reference** — world modules port from `westmarch/src/gvars/areas/`; encounters from `process_encounters.gvar`.
+- **Catalogue data** — TSV → JSON shards via **`utils/generate-*`**; facades lazy-load shards ([content-pipeline.md](../content-pipeline.md)).
+- **westmarch reference** — world modules port from `westmarch/src/gvars/areas/`; encounters from `process_encounters.gvar`; catalogue generators from westmarch **`utils/`**.
 
 ## Related
 
+- [content-pipeline.md](../content-pipeline.md) — TSV → split catalogue gvars
+- [check_config.md](check_config.md) — `validate()` for `!westmarch check`
+- [configs.md](configs.md) — example server presets (`src/gvars/configs/`)
 - [core.md](core.md) — vendoring drac2-tools / westmarch into `src/gvars/core/` and domain modules
 - [data-shapes.md](../data-shapes.md)
 - [server-config.md](../server-config.md)

@@ -2,103 +2,100 @@
 
 **Subsystem:** economy · **Toggle:** `subsystems.economy.commands.sell` · **Phase:** 1 (Tier F)
 
-**Greenfield** — pairs with [buy.md](buy.md). Uses the same **`shops.gvar`** and **`SHOPS`** config.
+**Greenfield** — pairs with [buy.md](buy.md). Uses **[shops.gvar](../../gvars/shops.md)** and config **`shops`**.
 
 ## Player-facing behaviour *(MVP outline)*
 
-Sell items from inventory to a configured vendor; credit gp to coinpurse.
+Sell items from inventory to a configured vendor; credit gp or wallet currencies.
 
 ```
 !sell [shop] <item> [qty]
 ```
 
-Mirror **buy** argument shape for a single learned interface ([US-6.4](../../user-stories.md)).
+Mirror **buy** argument shape ([US-6.4](../../user-stories.md)).
 
-- **Help:** shops that accept player goods (`buys_from_players`), usage, examples.
-- **Acceptance:** shop must allow sell (`buys_from_players: True`) and optionally restrict item categories (defer categories in v1 — any listed stock name or generic acceptance).
-- **Price:** default `buyback_rate × list price` from matching stock entry; per-item `sell_price_gp` override optional in config.
-- **Inventory:** remove from character bag via drac2-tools `modify_bag` negative count; verify player holds enough qty.
+- **Help:** shops with **`accepts_sells: True`**, usage, examples.
+- **Acceptance:** shop must allow sell; item must match a stock row (MVP — no generic fence vendor).
+- **Price:** shop **`buyback`** × list **`price`**, unless row **`sell_price`** override ([data-shapes § StockEntry](../../data-shapes.md#stockentry)).
+- **Inventory:** **`shops.sell`** → **`pc.modify_bag`** remove; verify player holds enough qty.
 
 ## westmarch reference
 
-None. Reuse coinpurse / bag patterns from **job** and **loot**.
+None. **`shops.sell`** credits via **`pc.modify_gold`** / **`pc.modify_wallet`**.
 
 ## Generic architecture
 
 ```mermaid
 flowchart TD
-  A[!sell alias] --> B{get_config}
-  B --> C{economy.commands.sell?}
-  C --> D[shops.resolve_shop]
-  D --> E[shops.find_sellable_item]
-  E --> F{Player has qty?}
-  F -->|no| G[Error embed]
-  F -->|yes| H[shops.price_for_sell]
-  H --> I[modify_bag remove + coinpurse credit]
-  I --> J[Success embed]
+  A[!sell alias] --> B{display.get_display}
+  B --> C{auth + economy.commands.sell?}
+  C --> D[shops.find_shop]
+  D --> E[shops.find_stock_item + inventory check]
+  E --> F[shops.sell via pc mutators]
+  F --> G[Success embed]
 ```
 
-### Engine: `shops.gvar` (shared with buy)
+### Engine: [shops.gvar](../../gvars/shops.md)
 
 | Function | Responsibility |
 |----------|----------------|
-| `shop_accepts_sells(shop)` | Check `buys_from_players` |
-| `find_sellable_item(shop, item_query, character)` | Match player inventory to shop buy rules |
-| `price_for_sell(shop, item_entry, qty)` | gp offer (buyback rate or override) |
-| `execute_sell(character, shop, item_entry, qty)` | Remove items + credit gp |
+| `find_shop` | Same as buy |
+| `find_stock_item` | Match stock row + player holds item |
+| `price_for_sell(shop, stock_entry, qty)` | Payout dict |
+| `sell(ch, config, shop, item_query, qty=1)` | **`pc`** bag remove + credit; `(success, message)` |
 
-Implement **`execute_buy`** and **`execute_sell`** in the same module so pricing rules stay consistent.
-
-### Config fields (sell-specific)
+### Config example
 
 ```py
-"general_store": {
-    "name": "General Store",
-    "buys_from_players": True,
-    "buyback_rate": 0.5,
-    "stock": [
-        { "item": "Rope", "price_gp": 1, "sell_price_gp": None },  # None → 1 × 0.5 gp
-    ],
+shops = {
+    "general_store": {
+        "id": "general_store",
+        "name": "General Store",
+        "accepts_sells": True,
+        "buyback": 0.5,
+        "stock": [
+            { "item": "Rope", "price": { "gold": 1 } },
+        ],
+    },
 }
 ```
 
+Full shape: [data-shapes.md § Shop](../../data-shapes.md#shop).
+
 ## Prerequisites
 
-- [buy.md](buy.md) — **`shops.gvar`** skeleton and `SHOPS` fixture exist
-- Player inventory available in alias-tests (varfile character with rope, etc.)
+- [buy.md](buy.md) — **`shops.gvar`** skeleton and **`shops`** fixture
+- Player inventory in alias-tests (varfile character with rope, etc.)
 
 ## Implementation checklist
 
-- [ ] Extend **`shops.gvar`** — sell resolution, buyback pricing, inventory check
+- [ ] **`shops.gvar`** — **`sell`** via **`pc`**
 - [ ] **`sell.alias`** — loader, toggle, help
 - [ ] **`sell.alias-test`** — help, item not held, shop won't buy, success smoke
-- [ ] Cross-test: buy item then sell it (optional combined alias-test file or manual QA doc)
 
 ### MVP deferrals
 
-- Sell items not in shop stock list (generic “fence” vendor)
-- Partial stack / charged items / magic item attunement
+- Sell items not in shop stock list
+- Partial stack / attunement
 - Location gates (same as buy)
 
 ## Exit criteria
 
 | Criterion | Verification |
 |-----------|----------------|
-| Sell held item credits gp per buyback rate | Alias-test |
-| Shop with `buys_from_players: False` rejects | Alias-test |
-| Toggle off / unset svar | Alias-test |
-| Tier F economy cluster complete with job + buy | Tracking |
+| Sell held item credits gp per buyback | Alias-test |
+| Shop with **`accepts_sells: False`** rejects | Alias-test |
+| Tier F cluster: job + wallet + buy + sell | Tracking |
 
-## Tier F exit criteria (job + buy + sell)
+## Tier F exit criteria (job + wallet + buy + sell)
 
 | Criterion | Status |
 |-----------|--------|
-| All three economy commands gated independently | Required |
-| Config drives job payouts + shop stock | Required |
-| Coinpurse + bag mutations covered in tests | Required |
-| Location-aware shops documented as follow-up when **travel** lands | OK deferred |
+| All four economy commands gated independently | Required |
+| Config drives job payouts, **`currencies`**, and **`shops`** | Required |
+| **`pc`** mutations (gp, wallet, bags) in **`shops.gvar`** only | Required |
+| Location-aware shops when **travel** lands | OK deferred |
 
 ## Related
 
-- [buy.md](buy.md) — paired command; implement first
-- [README.md](README.md) — shared config schema
+- [buy.md](buy.md) · [README.md](README.md)

@@ -18,7 +18,7 @@ Finalize syntax during design (IDs vs slug names, nested sub-quests).
 - **Add entry:** player-authored journal text under an existing quest bucket.
 - **Storage:** character cvar JSON — engine **[quests.gvar](../../gvars/quests.md)**; config may define quest templates/categories only.
 
-Optional later: GM-assigned quests, sub-quest nesting, link to exploration quest-weighted encounters (deferred in [exploration/README.md](../exploration/README.md)).
+Optional later: link to exploration quest-weighted encounters via **`policies.quest.self_assign`** — auto-activate journal entries from encounter outcomes ([data-shapes § quest policy](../../data-shapes.md#quest)).
 
 ## westmarch reference
 
@@ -43,12 +43,18 @@ flowchart TD
 
 ### Config surface
 
+**Policy** ([data-shapes § quest](../../data-shapes.md#quest)):
+
+| Key | Default | Meaning |
+|-----|---------|---------|
+| **`self_assign`** | **`False`** | Encounter quest outcomes auto-add to journal |
+| **`max_active`** | **`None`** | Cap active quests per character |
+
 ```py
-QUESTS = {
+"config": {
     "categories": ["main", "side", "personal"],
     "display_labels": { "main": "Main Quests" },
-    # optional template quests server pre-seeds
-}
+},
 ```
 
 ### Cvar schema *(sketch)*

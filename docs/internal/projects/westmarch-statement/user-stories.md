@@ -71,7 +71,8 @@ Day-to-day changes after the server is live.
 | **US-3.2** | As a **server owner**, I want to swap my config svar to a different gvar UUID (e.g. new season), **so that** I can run an alternate world or rollback quickly. |
 | **US-3.3** | As a **content author**, I want engine commands to read the **current** gvar body after I publish an update, **so that** I do not need to restart the bot or redeploy aliases for data changes. |
 | **US-3.4** | As a **GM**, I want house-rule toggles in config (rates, caps, flavour strings), **so that** my table's feel differs from another server on the same engine version. |
-| **US-3.5** | As a **server owner**, I want to leave the engine svar unset for features my server does not use, **so that** those commands stay inert or explain that the feature is not configured. |
+| **US-3.5** | As a **server owner**, I want **`westmarch_config` unset** to produce a clear “not configured” response (not crashes or default world data), **so that** I can subscribe to the engine first and wire my config gvar when ready. |
+| **US-3.5a** | As a **server owner**, I want to disable subsystems or individual commands via **`subsystems.*.enabled`** and **`commands.*`** in my config gvar (while the svar stays set), **so that** players see “feature disabled” rather than errors and I do not need separate svars per feature. |
 
 ---
 

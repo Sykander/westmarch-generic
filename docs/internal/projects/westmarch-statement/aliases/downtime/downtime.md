@@ -1,6 +1,6 @@
 # downtime — MVP implementation
 
-**Subsystem:** character · **Toggle:** `subsystems.downtime.enabled` · **Phase:** 1 (Tier D)
+**Subsystem:** downtime · **Toggle:** `subsystems.downtime.enabled` · **Phase:** 1 (Tier D)
 
 Single subsystem toggle (no per-command flags). westmarch tracks **workdays** in character cvars; crafting aliases assume players spend downtime manually before rolling.
 
@@ -35,17 +35,27 @@ flowchart TD
 
 ### Config surface
 
-**Policy** ([data-shapes.md](../../data-shapes.md#server-policies)): `policies.downtime.mode` — use **`tracked`** for cvar enforcement.
+**Policy** ([data-shapes.md § downtime](../../data-shapes.md#downtime)):
+
+| Key | MVP |
+|-----|-----|
+| **`mode`** | **`tracked`** — cvar enforcement; **`manual`** — honour system; **`off`** — no cvar use |
+| **`max_workdays`** | Cap on accumulated workdays per character; **`None`** = unlimited |
+| **`acquisition`** | **`manual`** only in MVP — **`!downtime <amount>`** or GM grants |
+
+**Requires:** when **`mode == "tracked"`**, **`subsystems.downtime.enabled`** must be **`True`** — **`!westmarch check`** **errors** otherwise.
+
+**Labels** (not policy) — **`subsystems.downtime.config`**:
 
 ```py
-DOWNTIME = {
+"config": {
     "workday_hours": 8,
     "workweek_days": 5,
     "labels": { "singular": "workday", "plural": "workdays" },
-}
+},
 ```
 
-Optional rates/labels for [US-3.4](../../user-stories.md) house rules.
+Optional **`command_config.downtime.cooldown_seconds`** (usually **0**).
 
 ## Prerequisites
 

@@ -2,7 +2,7 @@
 
 **Path:** `src/gvars/world/paths.gvar` · **Phase:** 1 (Tier C)
 
-Look up [paths](../data-shapes.md#path) from server config and resolve **per-edge** costs and steps. Config owns the **`paths`** list; this module owns edge helpers used by [journeys.md](journeys.md) routing and display.
+Look up [paths](../data-shapes.md#path) from **`world_data.paths`** and resolve **per-edge** costs and steps. Transport modes from **`world_data.transport`**. Edge helpers used by [journeys.md](journeys.md).
 
 **Shortest-path search** lives in **`journeys.gvar`** — not here.
 
@@ -15,11 +15,11 @@ def get_edge(config, from_id, to_id):
 def get_edges_from(config, from_id):
     """All path dicts where path.from == from_id."""
 
-def get_path_cost(path, horse=False, boat=False):
+def get_path_cost(path, transport_id="walk"):
     """Numeric cost for one edge — used by journeys.find_journey (lower = cheaper)."""
 
-def get_path_steps(path, horse=False, boat=False):
-    """Resolved step list for one edge."""
+def get_path_steps(path, transport_id="walk"):
+    """Resolved step list — uses steps_by_transport[transport_id] when present."""
 
 def display_path(path, config, mode="short", horse=False, boat=False, prefix="!"):
     """One leg — markdown string (linked names via [locations.md](locations.md))."""
@@ -32,8 +32,8 @@ westmarch compares the **cheapest travel mode** available on the edge:
 | Source on path | Cost formula *(westmarch)* | Generic target |
 |----------------|---------------------------|----------------|
 | Encounter steps | `len(steps)` | `len(get_path_steps(...))` |
-| Horse variant | shorter horse step list when `horse=True` | `steps_horse` or tagged steps |
-| Boat variant | shorter boat step list when `boat=True` | `steps_boat` or tagged steps |
+| Horse variant | **`steps_by_transport.horse`** when **`transport_id == "horse"`** |
+| Boat variant | **`steps_by_transport.boat`** |
 | Gold only | `gold / 25` | `cost.gold / 25` |
 | Free hop | `0` | no steps and no cost |
 

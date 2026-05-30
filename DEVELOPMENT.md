@@ -50,7 +50,14 @@ After sourcemap changes:
 make rebuild
 ```
 
-This writes `src/gvars/env.dev.gvar`, `src/gvars/env.prod.gvar`, and `.varfile.json`. Do not hand-edit those outputs.
+After **TSV catalogue** changes *(when generate scripts land)*:
+
+```bash
+npm run generate:catalogues   # planned — see utils/README.md
+make rebuild                  # if new shard gvars were added to sourcemaps
+```
+
+This writes `src/gvars/env.dev.gvar`, `src/gvars/env.prod.gvar`, and `.varfile.json`. Do not hand-edit those outputs. Shard bodies under `src/gvars/catalogues/` are **committed JSON** produced by generate scripts — see [content-pipeline.md](docs/internal/projects/westmarch-statement/content-pipeline.md).
 
 ### 4. Verify
 

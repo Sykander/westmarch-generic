@@ -2,15 +2,18 @@
 
 **Subsystem:** exploration · **Toggle:** `subsystems.exploration.commands.mine` · **Phase:** 1 (Tier B)
 
-Second port in the exploration sequence (after **enc**). Same pipeline; activity key `"mine"`.
+Second port in the exploration sequence (after **enc**). Same pipeline; activity key **`"mine"`**.
 
 ## Player-facing behaviour
 
-```
-!mine <location> [bonuses]
-```
+Biome resolution follows **`exploration.config.enc_biome_source`** (same as **enc** — see [README.md](README.md)):
 
-Mining-flavoured encounter at the given area code. Cooldown: 120s (`bags.mine_cooldown_code`).
+| Mode | Usage |
+|------|-------|
+| Manual | `!mine <biome> [bonuses]` |
+| Inferred | `!mine [bonuses]` |
+
+Mining-flavoured encounter from **`pools.mine[kind]`** on the resolved biome gvar. Cooldown: **120s** via **[stats.gvar](../../gvars/stats.md)** + **`pc.check_cooldown(ch, "mine")`**.
 
 ## westmarch reference
 
@@ -19,36 +22,35 @@ Mining-flavoured encounter at the given area code. Cooldown: 120s (`bags.mine_co
 | Alias | `westmarch/src/aliases/exploration/mine.alias` |
 | Alias tests | `westmarch/src/aliases/exploration/mine.alias-test` |
 
-Diff from **enc** only:
+Diff from **enc**:
 
 | Aspect | enc | mine |
 |--------|-----|------|
-| Activity passed to list builder | `"enc"` | `"mine"` |
-| Pool field on biome gvar | `enc_encounters` | `mine_encounters` |
-| Cooldown cvar | `bags.enc_cooldown_code` | `bags.mine_cooldown_code` |
-| Title/footer copy | Exploration theme | Mining theme |
+| Activity | `"enc"` | `"mine"` |
+| Pool on biome gvar | **`pools.enc[kind]`** | **`pools.mine[kind]`** |
+| Cooldown key | **`"enc"`** | **`"mine"`** |
+| Title/footer | **`command_display.enc`** | **`command_display.mine`** — via **`display.get_display()`** |
 
 No journey integration in westmarch (enc-only).
 
 ## Prerequisites
 
-- [enc.md](enc.md) Phase 0 complete — shared `encounter_lists`, `encounters`, config loader
-- Fixture config includes `mine_encounters` for at least one `AREA_CODES` entry
+- [enc.md](enc.md) Phase 0 complete
+- Biome gvar includes **`pools.mine`** for fixture biomes
 
 ## Implementation checklist
 
-- [ ] Copy generic **enc** alias pattern → `src/aliases/exploration/mine.alias`
-- [ ] Gate on `exploration.commands.mine`
-- [ ] Call `get_encounter_list(code, "mine")`
-- [ ] Port `mine.alias-test` from westmarch (adjust svar/config fixtures)
-- [ ] Enable toggle in template config: `"mine": True`
-- [ ] Add mine pool entries to fixture biome config
+- [ ] Clone **enc** alias → `src/aliases/exploration/mine.alias`
+- [ ] **`biomes.resolve_biome("mine", args, ch, cfg)`**
+- [ ] **`encounter_lists.get_encounter(biome, "mine", ch, cfg)`**
+- [ ] **`stats.add_log(ch, extras={ biome, encounter_kind })`**
+- [ ] Toggle `exploration.commands.mine`
+- [ ] `mine.alias-test` + biome **`pools.mine`** fixture
 
 ## Exit criteria
 
-Same as [enc.md](enc.md) per-command checks: help, valid area, toggle off, CI green.
+Same as [enc.md](enc.md): help, valid biome, toggle off, CI green.
 
 ## Related
 
-- [enc.md](enc.md) — reference port
-- [lumber.md](lumber.md) — next in sequence
+- [enc.md](enc.md) · [lumber.md](lumber.md)

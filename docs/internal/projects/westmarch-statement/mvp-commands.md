@@ -12,7 +12,7 @@ Twenty-five top-level commands (twenty-four player-facing + GM hub **`westmarch`
 
 | Command | Subsystem | Enable via config | Primary config data | Source |
 |---------|-----------|-------------------|---------------------|--------|
-| **enc** | exploration | `subsystems.exploration.commands.enc` | Area codes, encounter pools (general) | westmarch |
+| **enc** | exploration | `subsystems.exploration.commands.enc` | **`world_data.biomes`**, lazy biome pools | westmarch |
 | **forage** | exploration | `…commands.forage` | Same pipeline, `forage` activity | westmarch |
 | **fish** | exploration | `…commands.fish` | Same pipeline, `fish` activity | westmarch |
 | **mine** | exploration | `…commands.mine` | Same pipeline, `mine` activity | westmarch |
@@ -20,10 +20,10 @@ Twenty-five top-level commands (twenty-four player-facing + GM hub **`westmarch`
 | **hunt** | exploration | `…commands.hunt` | Monster catalogue | westmarch |
 | **loot** | exploration | `…commands.loot` | Monster loot tables | westmarch |
 | **travel** | travel | `subsystems.travel.commands.travel` | Areas, paths, journeys | westmarch |
-| **location** | travel | `…commands.location` | Areas, default location, display metadata | **new** |
-| **time** | travel | `…commands.time` | In-world calendar/clock, epoch, display format | **new** |
+| **location** | travel | `…commands.location` | **`world_data.locations`**, default location | **new** |
+| **time** | travel | `…commands.time` | **`world_data.calendars`**, epoch, tick rate | **new** |
 | **weather** | travel | `…commands.weather` | Weather by region/location, seasons | **new** |
-| **downtime** | character | `subsystems.downtime.enabled` | Labels, cooldowns, optional rates | westmarch |
+| **downtime** | downtime | `subsystems.downtime.enabled` | Labels, cooldowns, optional rates | westmarch |
 | **craft** | crafting | `subsystems.crafting.commands.craft` | Item catalogue, price/workday tables | westmarch |
 | **brew** | crafting | `…commands.brew` | Potion recipes, ingredients | westmarch |
 | **enchant** | crafting | `…commands.enchant` | Magic item recipes, ingredients | westmarch |
@@ -42,13 +42,13 @@ Twenty-five top-level commands (twenty-four player-facing + GM hub **`westmarch`
 
 **Exploration** — **enc**, **forage**, **fish**, **mine**, and **lumber** share one encounter engine. Subsystem **`config`**: biome source (**`enc_biome_source`**), encounter-kind mix (**`distribution`**, **`distribution_policy`**) — [data-shapes.md § exploration.config](data-shapes.md#explorationconfig). **hunt** → **loot** is the combat/loot loop.
 
-**Travel** — **travel** handles movement, routes, and journeys. **location** is a read-only status command for current place (subset of bare `!travel` in westmarch). **time** and **weather** read shared **world state** config (clock/calendar and regional weather). Ship **location** with journeys engine; **time** / **weather** once areas config exists. Do not shadow Avrae’s **`time()`** builtin — engine module is **`clock.gvar`**; player command remains **`!time`**.
+**Travel** — **travel** handles movement, routes, and journeys. **location** reads **`world_data.locations`**. **time** uses **`world_data.calendars`** (unix-derived MVP). **transport** modes (horse, boat, …) gate paths via **`requirements.transport`**. Ship **location** with journeys engine; **time** / **weather** once **`world_data`** exists.
 
 **Crafting** — **craft**, **brew**, **enchant** use **items** config and **downtime**; **scribe** uses **spells** config.
 
 **Economy** — **job** ports from westmarch (skill check → gp). **buy** and **sell** are shop commands. **`!wallet`** is the single command for all **owner-configured currencies** (shards, favour, etc.) — not Avrae gp; no per-currency commands. See [aliases/economy/wallet.md](aliases/economy/wallet.md).
 
-**Content** — **library** and **read** share the westmarch book engine (`library.gvar`): topic search + quick skim vs title/author deep read with comprehension, decay, and cooldowns. Book catalogue lives in config (may warrant an extension gvar for large corpora).
+**Content** — **library** and **read** share the westmarch book engine (`library.gvar`). **`!library`** topic behaviour is set in **`subsystems.content.config.library_topic_source`**: **`inferred`**, **`balanced`**, **`manual`**, or **`restricted`** ([data-shapes.md § content.config](data-shapes.md#contentconfig)). **`!read`** searches by title/author only.
 
 **Misc** — **quest** and **recipe** are new player utilities. **quest** surfaces a structured quest log (view active quests, browse entries, add journal notes under a quest). **recipe** searches and displays recipes the character knows or can access from crafting catalogues—complements **craft** / **brew** / **enchant** without replacing them.
 
@@ -65,7 +65,7 @@ subsystems = {
     "exploration": {
         "enabled": False,
         "commands": { "enc": False, ... },
-        "config": { "enc_biome_source": "argument", "distribution_policy": "random", "distribution": { "combat": 25, "quest": 25, "gather": 50 } },
+        "config": { "enc_biome_source": "auto", "distribution_policy": "random", "distribution": { "combat": 25, "quest": 25, "gather": 50 } },
     },
     ...
 }
@@ -78,22 +78,22 @@ policies = { ... }
 
 World data (`locations`, `paths`, encounter pools, catalogues) is **owner-defined** — shapes in [data-shapes.md](data-shapes.md).
 
-When a subsystem `enabled` is `False`, all its commands respect the global off state. When `enabled` is `True`, individual `commands.*` flags control each command ([US-2.4](user-stories.md), [US-3.5](user-stories.md)).
+When a subsystem `enabled` is `False`, all its commands respect the global off state. When `enabled` is `True`, individual `commands.*` flags control each command ([US-2.4](user-stories.md), [US-3.5a](user-stories.md)). Unset **`westmarch_config`** is separate — [US-3.5](user-stories.md).
 
 **Naming:** subsystem keys match alias folders. Each subsystem may define **`config`** — [data-shapes.md § Subsystem entry](data-shapes.md#subsystem-entry).
 
-**Exploration example:** **`enc_biome_source`** — argument vs location. **`distribution_policy`** — `random` (independent weighted rolls) vs `balanced` (session mix tracking). **`distribution`** — `{ combat, quest, gather }` percentages summing to 100.
+**Exploration example:** **`enc_biome_source`** — **`auto`** (default: inferred when travel/locations exist, else manual biome arg), **`argument`**, or **`location`**. Applies to **all** activity commands. **`distribution_policy`** — `random` vs `balanced` (kind history via **[stats.gvar](gvars/stats.md)**). **`distribution`** — percentages summing to 100.
 
-**Rules edition** is **not** a config field — see [solution-statement.md § Rules edition](solution-statement.md#rules-edition-2014-vs-2024).
+**Rules edition:** optional **`rules_version`** on the config gvar (`"2014"` \| `"2024"`) — aliases call **`config.get_rules_edition()`** (Avrae inference when unset). See [data-shapes.md § rules_version](data-shapes.md#rules_version) and [solution-statement.md § Rules edition](solution-statement.md#rules-edition-2014-vs-2024).
 
 ## Shared config modules *(MVP)*
 
 | Config module | Replaces / new | Commands |
 |---------------|----------------|----------|
-| **Areas & journeys** | `locations`, `paths`, `default_location` | travel, **location**; encounter context — [data-shapes.md](data-shapes.md) |
-| **World clock** | *(new)* `WORLD_CLOCK` | time |
-| **Weather** | *(new)* `WEATHER` | weather; keys off location + optional season from time |
-| **Encounter registry** | `encounter_lists`, biome gvars, … | enc, forage, fish, mine, lumber |
+| **`world_data`** | **`locations`**, **`paths`**, **`transport`**, **`calendars`**, **`biomes`** registry | travel, location, time, enc, activities — [data-shapes § World data](data-shapes.md#world-data) |
+| **World clock** | **`world_data.calendars`** | time |
+| **Weather** | *(new)* regional tables | weather; keys off location + season from clock |
+| **Biome gvars** | **`world_data.biomes.*.gvar_id`** → lazy load [src/gvars/configs/biomes/](../../../../src/gvars/configs/biomes/README.md) | enc, forage, fish, mine, lumber |
 | **Encounter processing** | `encounter_templates`, `encounters` | activity commands — [gvars/](gvars/README.md), [data-shapes.md](data-shapes.md) |
 | **Monsters & loot** | `monsters` (+ shards) | hunt, loot |
 | **Items & recipes** | `items` catalogues + **`recipes`** list | craft, brew, enchant, buy, sell — [recipes.tsv](../../../../public/assets/recipes.tsv) |
@@ -103,10 +103,13 @@ When a subsystem `enabled` is `False`, all its commands respect the global off s
 | **Quest journal** | *(new)* optional categories, display labels | quest |
 | **Recipe index** | **`recipes`** + item/potion/magic catalogues | recipe |
 | **Admin access** | *(optional)* `admin_roles` | `!westmarch` hub (`setup`, `check`, `show`) |
+| **Display / identity** | *(optional)* base **`display`**; per-subsystem **`display`** + **`command_display`**; **`policies.display.footer_behaviour`** | Help embeds, command embeds, `!westmarch show`, default embed accent |
+| **Config metadata** | *(optional)* `config_version`, `rules_version` | Owner versioning; rules override |
+| **Language policy** | `policies.languages.allowed` | Setting-valid languages |
 | **Channel policy** | *(optional)* `channel_policy` | [auth `is_allowed()`](gvars/auth.md) |
 | **Server policies** | *(optional)* `policies` | All — enforcement vs manual house rules ([data-shapes.md](data-shapes.md#server-policies)) |
 
-Rules edition and Discord display name are **engine-resolved**, not owner config fields.
+Rules edition and embed branding: **`config.get_rules_edition()`** and **`display.get_display()`** — [display.gvar](gvars/display.md), [data-shapes § Embed display inheritance](data-shapes.md#embed-display-inheritance).
 
 Large catalogues may require **extension gvars** ([solution-statement.md](solution-statement.md) Option C).
 
@@ -115,8 +118,12 @@ Large catalogues may require **extension gvars** ([solution-statement.md](soluti
 | Module | Doc | Used by |
 |--------|-----|---------|
 | **config** | [gvars/config.md](gvars/config.md) | All aliases |
+| **display** | [gvars/display.md](gvars/display.md) | All aliases that build embeds — `get_display()` |
+| **`check_config`** | [gvars/check_config.md](gvars/check_config.md) | `!westmarch check` |
+| **biomes** | [gvars/biomes.md](gvars/biomes.md) | Lazy-load biome pools |
 | **auth** | [gvars/auth.md](gvars/auth.md) | All aliases |
-| **pc** | [gvars/pc.md](gvars/pc.md) | Sheet mutations, wallet, downtime, cooldowns |
+| **pc** | [gvars/pc.md](gvars/pc.md) | Sheet mutations, wallet, downtime |
+| **stats** | [gvars/stats.md](gvars/stats.md) | **`add_log()`** — command usage, cooldown timestamps |
 | **encounter_templates** | [gvars/encounter_templates.md](gvars/encounter_templates.md) | Activity commands |
 | **encounter_lists** | [gvars/encounter_lists.md](gvars/encounter_lists.md) | enc, forage, … |
 | **encounters** | [gvars/encounters.md](gvars/encounters.md) | Activity commands |
