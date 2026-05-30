@@ -1,0 +1,91 @@
+"""Starter westmarch-generic server config — copy into your workshop gvar.
+
+Point your server's svar at this gvar's UUID after publishing:
+  !svar westmarch_config <your-gvar-uuid>
+
+See docs/internal/projects/westmarch-statement/aliases/admin/setup.md
+"""
+
+subsystems = {
+    "exploration": {
+        "enabled": False,
+        "commands": {
+            "enc": False,
+            "forage": False,
+            "fish": False,
+            "mine": False,
+            "lumber": False,
+            "hunt": False,
+            "loot": False,
+        },
+        "config": {
+            "enc_biome_source": "argument",
+            "distribution_policy": "random",
+            "distribution": {
+                "combat": 25,
+                "quest": 25,
+                "gather": 50,
+            },
+        },
+    },
+    "travel": {
+        "enabled": False,
+        "commands": {
+            "travel": False,
+            "location": False,
+            "time": False,
+            "weather": False,
+        },
+    },
+    "downtime": {"enabled": False},
+    "crafting": {
+        "enabled": False,
+        "commands": {
+            "craft": False,
+            "brew": False,
+            "enchant": False,
+            "scribe": False,
+        },
+    },
+    "economy": {
+        "enabled": False,
+        "commands": {
+            "job": False,
+            "buy": False,
+            "sell": False,
+            "wallet": False,
+        },
+    },
+    "content": {
+        "enabled": False,
+        "commands": {
+            "library": False,
+            "read": False,
+        },
+    },
+    "misc": {
+        "enabled": False,
+        "commands": {
+            "quest": False,
+            "recipe": False,
+        },
+    },
+}
+
+# House rules — see docs/internal/projects/westmarch-statement/data-shapes.md § Server policies
+policies = {
+    "time": {"mode": "manual"},
+    "travel": {"apply_path_costs": False, "consume_rations": False},
+    "downtime": {"mode": "manual"},
+    "crafting": {
+        "require_downtime_before_roll": True,
+        "auto_deduct_materials": False,
+        "auto_deduct_gold": False,
+    },
+    "inventory": {
+        "track_encumbrance": False,
+        "attunement_limit": None,
+        "magic_items_carry_limit": None,
+    },
+    "exploration": {"enforce_cooldowns": True},
+}

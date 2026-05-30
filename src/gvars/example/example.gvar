@@ -4,5 +4,5 @@ In the full westmarch-generic design, server owners point svars at a gvar id
 that loads their workshop configuration instead of hard-coding values here.
 """
 
-SERVER_NAME = "Example Server"
-ENABLED = True
+server_name = "Example Server"
+enabled = True

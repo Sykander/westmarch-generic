@@ -2,7 +2,7 @@
 
 Critical review of the full [westmarch-statement](README.md) document set: [problem-statement.md](problem-statement.md) (**PS**), [user-stories.md](user-stories.md) (**US**), [solution-statement.md](solution-statement.md) (**SS**), and [mvp-commands.md](mvp-commands.md) (**MVP**).
 
-**Reviewed:** May 2026 (MVP: 23 commands — incl. location status, exploration, travel/world, downtime, crafting, economy, content, misc)  
+**Reviewed:** May 2026 (MVP: 24 player commands + `westmarch` hub — incl. wallet, location, exploration, travel/world, downtime, crafting, economy, content, misc)  
 **Overall verdict:** The plan is **coherent and implementable in principle**, but **scope risk is the main threat**. PS/US/SS align well; MVP has grown ambitious relative to Phase 0–1 capacity. Several cross-doc gaps and one internal SS defect should be fixed before coding beyond the vertical slice.
 
 ---
@@ -35,7 +35,7 @@ flowchart LR
 | **PS** | Why engine ≠ config; architectural problem |
 | **US** | Who, journeys, P0–P3 story IDs |
 | **SS** | How: options, decisions, loader, phases, migration |
-| **MVP** | What ships first: 23 commands, tiers A–H, config modules |
+| **MVP** | What ships first: 24 player commands, tiers A–H, config modules |
 
 ---
 
@@ -79,10 +79,10 @@ flowchart LR
 
 | Issue | Severity | Notes |
 |-------|----------|-------|
-| **US-3.5 vs US-2.4 vs SUBSYSTEMS.commands.\*** | Medium | US-3.5 says “unset svar for features”; SS/MVP use per-command toggles *inside* config when svar is set. Wording conflates “svar unset” with “command disabled in config” |
+| **US-3.5 vs US-2.4 vs subsystems.commands.\*** | Medium | US-3.5 says “unset svar for features”; SS/MVP use per-command toggles *inside* config when svar is set. Wording conflates “svar unset” with “command disabled in config” |
 | **GM** persona missing; US-3.4 uses GM | Low | Add GM or rename to server owner |
 | **No stories for buy/sell/time/weather** | Medium | MVP adds commands without dedicated US rows; US-6.1 partially covers |
-| **No RULES_EDITION story** | Low | Could be US-2.x: configure rules revision |
+| **No rules_edition story** | Low | Could be US-2.x: configure rules revision |
 | **US-6.1** mentions dungeons in MVP player outcome | Low | Dungeons deferred past MVP — text overshoots MVP |
 | P0 omits **US-4.3** (tests) | Medium | SS Phase 0 includes tests; P0 tier should include US-4.3 or note Phase 0 extends P0 |
 
@@ -108,7 +108,7 @@ flowchart LR
 
 | Issue | Severity | Notes |
 |-------|----------|-------|
-| **Duplicate config schema block** in § Config gvar schema | **High (doc defect)** | Two nearly identical ` ```py ` blocks; merge into one with `RULES_EDITION` |
+| **Duplicate config schema block** in § Config gvar schema | **High (doc defect)** | Two nearly identical ` ```py ` blocks; merge into one with `rules_edition` |
 | **Phase 1 scope vs capacity** | **High (plan risk)** | Full MVP (22 commands, Tiers B–H) in one phase after thin Phase 0 is aggressive; use 1a–1d tranches |
 | **`westmarch_config` svar name** not frozen in US | Low | Consistent in SS/MVP; document in public setup when written |
 | **Avrae rules inference** marked TBD | Medium | Honest; Phase 0 spike required — add to Phase 0 table explicitly |
@@ -116,7 +116,7 @@ flowchart LR
 | **drac2-tools dependency** in P3 US but SS assumes P1 | Medium | `env` refs to drac2-tools likely P0/P1; align US-7.3 tier or SS text |
 | **buy/sell** behaviour | Medium | MVP outlines; SS silent on shop/currency model beyond “data in config” |
 | Gantt dates **2025-06** | Low | Stale placeholders; update or remove dates |
-| Phase 0 omits **RULES_EDITION spike** | Low | MVP Tier A mentions it; SS Phase 0 table should list it |
+| Phase 0 omits **rules_edition spike** | Low | MVP Tier A mentions it; SS Phase 0 table should list it |
 
 ### SS score
 
@@ -133,7 +133,7 @@ flowchart LR
 - Single table: command → subsystem → toggle → config → westmarch vs new.
 - Tiers A–F give implementable sequencing; dependencies diagram is useful.
 - Config modules table maps westmarch gvars to generic config (incl. new world clock, weather, shops).
-- `RULES_EDITION` integrated; Drac2 `time()` shadowing called out for `!time`.
+- `rules_edition` integrated; Drac2 `time()` shadowing called out for `!time`.
 - Deferred list stays disciplined (dungeons, nexus).
 - **content** (library, read) and **misc** (quest, recipe) subsystems added; Tiers G–H.
 
@@ -202,7 +202,7 @@ flowchart LR
 
 ### What Phase 0 should prove (minimum)
 
-1. `resolve_config()` + `resolve_rules_edition()` (with default 2014)
+1. `get_config()` with defaults merge — `config.get_rules_edition()` for edition branches
 2. One activity command (forage or enc) against **minimal** fixture config
 3. Behaviour semantics for unset svar + disabled subsystem
 4. `.alias-test` with mocked svar + `.varfile.json` fixture

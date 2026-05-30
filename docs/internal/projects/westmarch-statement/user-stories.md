@@ -26,9 +26,12 @@ A server wants westmarch-style play without maintaining a fork.
 |----|--------|
 | **US-1.1** | As a **server owner**, I want to install the westmarch-generic workshop on my Avrae bot, **so that** my server gets the standard command set without cloning the westmarch repo. |
 | **US-1.2** | As a **server owner**, I want clear documentation on which svars to set and what each one does, **so that** I can enable the ruleset without reading Drac2 source. |
+| **US-1.2a** | As a **server owner**, I want **`!westmarch setup`** to walk me through creating a config gvar and setting **`!svar westmarch_config`**, **so that** I can onboard from Discord without hunting external docs first. |
 | **US-1.3** | As a **server owner**, I want commands to behave safely when my config svar is **unset**, **so that** I can deploy the engine first and wire up my world later without broken or misleading behaviour. |
 | **US-1.4** | As a **server owner**, I want to point a config svar at my workshop gvar UUID, **so that** the engine loads **my** server's setup on the next command without redeploying aliases. |
 | **US-1.5** | As a **player**, I want help text and command names to be consistent with other servers running the same engine, **so that** guides and muscle memory transfer across communities. |
+| **US-1.6** | As a **server owner**, I want **`!westmarch check`** to validate my svar wiring and config schema, **so that** I can fix misconfiguration before players hit broken commands. |
+| **US-1.7** | As a **server owner**, I want **`!westmarch show`** to summarize what the engine loaded and explain each section, **so that** I can confirm my setup without reading raw gvar Python. |
 
 ### Journey sketch
 
@@ -124,7 +127,7 @@ Optional longer-term use cases; not required for bootstrap.
 |----|--------|
 | **US-7.1** | As a **server owner**, I want to import a published config gvar from another creator (with attribution), **so that** I can run a prefab world and tweak it. |
 | **US-7.2** | As an **engine maintainer**, I want config schema versioning notes in docs, **so that** older config gvars fail gracefully or migrate when the engine adds fields. |
-| **US-7.3** | As a **server owner**, I want the engine to depend on [drac2-tools](https://github.com/Sykander/drac2-tools) for shared utilities, **so that** I benefit from community libraries without duplicating them in my config. |
+| **US-7.3** | As a **server owner**, I want the engine to reuse [drac2-tools](https://github.com/Sykander/drac2-tools) implementations **without** subscribing to a second workshop, **so that** shared utilities ship in the westmarch-generic workshop (`src/gvars/core/`) and I only manage one engine subscription. |
 
 ---
 

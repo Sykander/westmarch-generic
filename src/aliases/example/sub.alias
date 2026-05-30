@@ -4,5 +4,5 @@ using(
     example = env.gvars.example,
 )
 
-return f"Example sub command ran on {example.SERVER_NAME}."
+return f"Example sub command ran on {example.server_name}."
 </drac2>

@@ -38,6 +38,7 @@ make test
 ### 2. Implement
 
 - Follow `.cursor/rules/` (Drac2 conventions from westmarch and drac2-tools).
+- **Core helpers** — copy from drac2-tools into `src/gvars/core/` when needed ([core.md](docs/internal/projects/westmarch-statement/gvars/core.md)); **domain gvars** (e.g. `pc`) port from westmarch and/or drac2-tools and adapt to engine contracts.
 - Pair behavior changes with `.alias-test` files where applicable.
 - For new gvars, take UUIDs from `unused_gvars.md` (never invent ids).
 

@@ -1,0 +1,4 @@
+id	name	kind	workdays	consumed	required	spells	tags	description
+example_brew_healing	Potion of Healing	brew	2	Arnica:2;Crystal vial:1			potion,healing,example	Reduce the herbs in a clean vessel over a gentle heat, then seal the vial and agitate the infusion until it glows faintly red. The draught is finished when the colour holds at room temperature.
+example_craft_healers_kit	Healer's Kit	craft	1	Leather:1;Herbs:1;Linen:2			item,healing,example	Cut and stitch a leather wrap, fold linen into dressings, and pack salves in a watertight pouch. Test every strap and closure before the kit is fit to carry.
+example_enchant_cloak_of_protection	Cloak of Protection	enchant	5	Diamond (100 gp):1;Incense:3	Cloak:1	Warding Bond	magic item,protection,example	Lay the cloak flat and inscribe warding sigils along the hem while blessed incense burns. At the ritual's peak, cast Warding Bond over the garment to bind the wards in place.

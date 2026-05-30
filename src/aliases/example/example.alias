@@ -7,7 +7,7 @@ using(
 argslist = &ARGS&
 
 if len(argslist) == 0 or argslist[0] in ["help", "?"]:
-    return f"""Example command for {example.SERVER_NAME}.
+    return f"""Example command for {example.server_name}.
 
 Usage: `{ctx.prefix}example`
 Use `{ctx.prefix}example sub` for the subcommand."""

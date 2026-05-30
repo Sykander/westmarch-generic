@@ -8,4 +8,4 @@ This is not player- or server-owner-facing documentation. For the public model a
 
 | Project | Status | Description |
 |---------|--------|-------------|
-| [westmarch-statement](projects/westmarch-statement/) | Complete | PS, US, SS, MVP, review + impl docs by subsystem ([exploration](projects/westmarch-statement/exploration/), [travel](projects/westmarch-statement/travel/), [downtime](projects/westmarch-statement/downtime/), [crafting](projects/westmarch-statement/crafting/), [economy](projects/westmarch-statement/economy/), [content](projects/westmarch-statement/content/), [misc](projects/westmarch-statement/misc/)) |
+| [westmarch-statement](projects/westmarch-statement/) | Complete | PS, US, SS, MVP, review + [aliases/](projects/westmarch-statement/aliases/) (by subsystem) + [gvars/](projects/westmarch-statement/gvars/) (engine modules) |
