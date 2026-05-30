@@ -7,6 +7,12 @@
     "deploy": "node utils/deploy.js",
     "generate-env": "node utils/generate-env.js",
     "generate-vars": "node utils/generate-vars.js",
+    "generate:monsters": "node utils/generate-monsters.js",
+    "generate:items": "node utils/generate-items.js",
+    "generate:spells": "node utils/generate-spells.js",
+    "generate:books": "node utils/generate-books.js",
+    "generate:recipes": "node utils/generate-recipes.js",
+    "generate:catalogues": "node utils/generate-catalogues.js",
     "test-sourcemaps": "node utils/sourcemap-test.js"
   },
   "author": "",

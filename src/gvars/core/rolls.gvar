@@ -1,0 +1,605 @@
+"""Rolls — reusable library for saves, checks, attacks, and regular rolls.
+
+Use ``get_roll`` as the main entry point.
+"""
+
+skills_abilities = {
+    "strength": "strength",
+    "athletics": "strength",
+    "dexterity": "dexterity",
+    "initiative": "dexterity",
+    "acrobatics": "dexterity",
+    "sleightOfHand": "dexterity",
+    "stealth": "dexterity",
+    "constitution": "constitution",
+    "intelligence": "intelligence",
+    "arcana": "intelligence",
+    "history": "intelligence",
+    "investigation": "intelligence",
+    "nature": "intelligence",
+    "religion": "intelligence",
+    "wisdom": "wisdom",
+    "animalHandling": "wisdom",
+    "insight": "wisdom",
+    "medicine": "wisdom",
+    "perception": "wisdom",
+    "survival": "wisdom",
+    "charisma": "charisma",
+    "deception": "charisma",
+    "intimidation": "charisma",
+    "performance": "charisma",
+    "persuasion": "charisma"
+}
+
+save_abilities = {
+    "strength": "strength",
+    "dexterity": "dexterity",
+    "constitution": "constitution",
+    "intelligence": "intelligence",
+    "wisdom": "wisdom",
+    "charisma": "charisma",
+    "death": None,
+    "honor": None,
+    "sanity": None
+}
+
+attack_type_abilities = {
+    "melee": "strength",
+    "ranged": "dexterity"
+}
+
+
+def _active_character():
+    try:
+        return character()
+    except:
+        return None
+
+
+def _resolve_optional_character(char = None):
+    return char if char != None else _active_character()
+
+
+def _require_character(char = None, context: str = "this operation"):
+    c = _resolve_optional_character(char)
+    if c == None:
+        err(f"No character available for {context}.")
+    return c
+
+
+def get_readable_name_for_skill(skill_name, ability_name = None, is_passive = False):
+    if skill_name.lower().startswith("sleight"):
+        readable_skill_name = "Sleight of Hand"
+    elif skill_name.lower().startswith("animal"):
+        readable_skill_name = "Animal Handling"
+    else:
+        readable_skill_name = skill_name.capitalize()
+
+    using_default_ability = ability_name == None or get_default_ability_for_skill(skill_name) == ability_name
+    passive_text = "Passive " if is_passive else ""
+
+    if using_default_ability:
+        return f'{passive_text}{readable_skill_name} Check'
+    else:
+        return f'{passive_text}{ability_name.capitalize()} ({readable_skill_name}) Check'
+
+
+def get_readable_name_for_save(save_name, ability_name = None):
+    readable_save_name = save_name.capitalize()
+
+    using_default_ability = ability_name == None or get_default_ability_for_save(save_name) == ability_name
+
+    if using_default_ability:
+        return f'{readable_save_name} Saving Throw'
+    else:
+        return f'{ability_name.capitalize()} ({readable_save_name}) Saving Throw'
+
+
+def get_readable_name_for_attack(attack_type, ability_name):
+    readable_attack_type = attack_type.capitalize()
+
+    using_default_ability = ability_name == None or get_default_ability_for_attack_type(attack_type) == ability_name
+
+    if using_default_ability:
+        return f'{readable_attack_type} Attack'
+    else:
+        return f'{readable_attack_type} Attack ({ability_name})'
+
+
+def get_default_ability_for_skill(skill_name: string):
+    if skill_name in skills_abilities:
+        return skills_abilities[skill_name]
+
+    return None
+
+
+def get_default_ability_for_save(save_name: string):
+    if save_name in save_abilities:
+        return save_abilities[save_name]
+
+    return None
+
+
+def get_default_ability_for_attack_type(attack_type: string):
+    if attack_type in attack_type_abilities:
+        return attack_type_abilities[attack_type]
+
+    return None
+
+
+def join_advantage(*advs):
+    if True in advs and False in advs:
+        return None
+    elif True in advs:
+        return True
+    elif False in advs:
+        return False
+    else:
+        return None
+
+
+def get_d20(adv: bool | None = None, eadv: bool = False, mi: int | None = None, ma: int | None = None, ro: list[int] | None = None):
+    if ro == None:
+        ro = []
+
+    if adv == None:
+        based20 = "1d20"
+    elif adv == True and eadv == True:
+        based20 = "3d20kh1"
+    elif adv == True:
+        based20 = "2d20kh1"
+    elif adv == False:
+        based20 = "2d20kl1"
+    else:
+        based20 = "1d20"
+
+    mi_text = "" if mi == None else f"mi{mi}"
+    ma_text = "" if ma == None else f"ma{ma}"
+    ro_text = "" if len(ro) == 0 else "".join([f"ro{r}" for r in ro])
+    return based20 + mi_text + ma_text + ro_text
+
+
+def join_roll_strings(roll_strings: list[str]):
+    """Join roll fragments with ``+`` when needed; skips empty/None entries."""
+    if len(roll_strings) == 0:
+        return ""
+
+    result_str = ""
+    for roll_str in roll_strings:
+        if roll_str in [None, ""]:
+            continue
+
+        roll_str = str(roll_str)
+
+        if result_str != "" and not roll_str.startswith("+") and not roll_str.startswith("-"):
+            result_str += "+"
+
+        result_str += roll_str
+
+    return result_str
+
+
+def get_damage_roll(
+    damage_dice: str,
+    bonuses: list[str] | None = None
+):
+    if bonuses == None:
+        bonuses = []
+
+    return join_roll_strings([damage_dice] + bonuses)
+
+
+def character_has_halfling_luck(character):
+    if character == None:
+        return False
+
+    return "halfling" in character.race.lower()
+
+
+def character_has_reliable_talent(character):
+    if character == None:
+        return False
+
+    return (character.levels.get("Rogue") or 0) >= 11
+
+
+def character_has_observant(character):
+    if character == None:
+        return False
+
+    return "observant" in character.get_cvar("feats", "").lower()
+
+
+def character_has_indomitable_might(character):
+    if character == None:
+        return False
+
+    return (character.levels.get("Barbarian") or 0) >= 18
+
+
+def _get_ability_to_use_from_args(args):
+    if args.last("str"):
+        return "strength"
+
+    if args.last("dex"):
+        return "dexterity"
+
+    if args.last("con"):
+        return "constitution"
+
+    if args.last("wis"):
+        return "wisdom"
+
+    if args.last("int"):
+        return "intelligence"
+
+    if args.last("cha"):
+        return "charisma"
+
+    return None
+
+
+def get_mod_override(character, ability_a: str | None = None, ability_b: str | None = None):
+    if character == None:
+        return 0
+
+    # ``ability_b`` is the override from args / caller; ``None`` means "use default ability" — the
+    # sheet skill/save ``value`` already includes the default ability mod, so there is no delta.
+    if ability_b == None:
+        return 0
+
+    if ability_a == ability_b:
+        return 0
+
+    ability_a_mod = character.stats.get_mod(ability_a) if ability_a != None else 0
+    ability_b_mod = character.stats.get_mod(ability_b) if ability_b != None else 0
+
+    if (ability_a_mod == None):
+        err(f"Didn't find ability mod for {ability_a}!")
+
+    if (ability_b_mod == None):
+        err(f"Didn't find ability mod for {ability_b}!")
+
+    return ability_b_mod - ability_a_mod
+
+
+def _get_skill_for_character(character, skill_name):
+    if character == None:
+        return 0, None, 0
+
+    skills = [b_skill for (b_name, b_skill) in character.skills if skill_name == b_name]
+    if len(skills) != 1:
+        err(f"Didn't find skill for {skill_name}!")
+
+    skill = skills[0]
+    try:
+        prof = int(skill.prof) if skill.prof != None else 0
+    except:
+        prof = 0
+    return skill.value, skill.adv, prof
+
+
+def resolve_skill_input(character, raw_name: str):
+    """
+    Map user or alias input to the internal skill key on the sheet (substring match on keys).
+    """
+    c = _require_character(character, "resolve_skill_input")
+    q = raw_name.lower().replace(" ", "")
+    if q == "":
+        err("Empty skill name.")
+
+    for b_name, b_skill in c.skills:
+        if q in b_name.lower():
+            return b_name
+
+    err(f"No skill matching `{raw_name}` found. Try a skill name from your sheet.")
+
+
+def resolve_save_input(raw_name: str):
+    """
+    Map partial save names (e.g. dex -> dexterity) to save_abilities keys.
+    """
+    sn = raw_name.lower().strip()
+    if sn == "":
+        err("Empty save name.")
+
+    for k in save_abilities:
+        if k == sn:
+            return k
+
+    six = ["strength", "dexterity", "constitution", "wisdom", "intelligence", "charisma"]
+    hits = [x for x in six if sn in x]
+    if len(hits) == 1:
+        return hits[0]
+    if len(hits) > 1:
+        err(f"Ambiguous save `{raw_name}`; matches {hits}. Use a longer name.")
+
+    for special in ["death", "honor", "sanity"]:
+        if special in save_abilities and (sn in special or special in sn):
+            return special
+
+    err(f"No save matching `{raw_name}` found.")
+
+
+def _character_csetting(character, key: str, default=None):
+    if character == None:
+        return default
+    try:
+        return character.csettings.get(key, default)
+    except:
+        return default
+
+
+def _reliable_talent_minimum_applies(character, skill_prof: int):
+    if character == None or skill_prof < 1:
+        return False
+    return character_has_reliable_talent(character) or _character_csetting(character, "talent", False)
+
+
+def _d20_reroll_list(character):
+    ro = []
+    if character_has_halfling_luck(character):
+        ro.append(1)
+    rr = _character_csetting(character, "reroll", None)
+    if rr != None:
+        try:
+            ri = int(rr)
+            if ri not in ro:
+                ro.append(ri)
+        except:
+            pass
+    if len(ro) == 0:
+        return None
+    return ro
+
+
+def _natural_roll_from_result(roll_result):
+    try:
+        left = roll_result.raw
+        while left.children:
+            left = left.children[0]
+        return int(left)
+    except:
+        return None
+
+
+def _get_save_for_character(character, save_name):
+    if character == None:
+        return 0, None
+
+    if save_name not in save_abilities:
+        err(f"Didn't find save for {save_name}!")
+
+    save = character.saves.get(save_name)
+    if save == None:
+        err(f"Didn't find save for {save_name} on character!")
+
+    return save.value, save.adv
+
+
+def get_roll(
+    character,
+    roll_name,
+    args: ParsedArguments,
+    roll_type: str,
+    ability_name: str | None = None,
+    dc: int | None = None,
+    adv: bool | None = None,
+    bonuses: list[str] | None = None,
+    arg_aliases: dict | None = None,
+) -> dict:
+    """Build roll metadata and dice strings for Avrae.
+
+    ``character`` — optional sheet; required for ``check``, ``passive``, ``save``, ``attack``; ignored for flat ``roll``.
+
+    ``roll_name`` — skill/save name, attack type, or (for ``roll_type`` ``"roll"``) the roll string itself (non-strings coerced with ``str()``).
+
+    ``args`` — parsed alias arguments.
+
+    ``roll_type`` — ``"check"``, ``"passive"``, ``"save"``, ``"attack"``, or ``"roll"``.
+
+    ``ability_name`` — optional ability override string.
+
+    ``dc`` — optional DC (or AC for attacks).
+
+    ``adv`` — optional advantage flag.
+
+    ``bonuses`` — optional extra roll fragments.
+
+    ``arg_aliases`` — optional renames for argparse keys (e.g. advantage, ``mc``, ``b``, guidance).
+
+    ``args.adv(eadv=True)`` equals ``2`` when elven accuracy applies.
+
+    Returns a dict of roll results for downstream formatting / ``vroll``.
+    """
+    if roll_type not in ["roll", "check", "passive", "save", "attack"]:
+        err(f'Unknown roll roll_type {roll_type}')
+
+    actor = _resolve_optional_character(character)
+    if roll_type in ["check", "passive", "save", "attack"]:
+        actor = _require_character(actor, "get_roll")
+
+    if bonuses == None:
+        bonuses = []
+    else:
+        bonuses = [b for b in bonuses]
+
+    adv_custom = None
+    mc_key = "mc"
+    b_key = "b"
+    g_key = "guidance"
+    if arg_aliases != None:
+        adv_custom = arg_aliases.get("advantage")
+        if arg_aliases.get("mc") != None:
+            mc_key = arg_aliases["mc"]
+        if arg_aliases.get("b") != None:
+            b_key = arg_aliases["b"]
+        if arg_aliases.get("guidance") != None:
+            g_key = arg_aliases["guidance"]
+
+    extra_b = args.get(b_key)
+    if extra_b != None:
+        bonuses += extra_b
+    if adv_custom != None:
+        argsadv = args.adv(boolwise = True, custom = adv_custom)
+    else:
+        argsadv = args.adv(boolwise = True)
+    eadv = args.adv(eadv = True) == 2
+
+    if args.last(g_key) and roll_type in ["check", "passive"]:
+        bonuses.append("1d4[Guidance]")
+
+    if args.last("resistance") and roll_type == "save":
+        bonuses.append("1d4[Resistance]")
+
+    if args.last("bless") and roll_type in ["attack", "save"]:
+        bonuses.append("1d4[Bless]")
+
+    ability_name = ability_name if ability_name != None else _get_ability_to_use_from_args(args)
+
+    has_indomitable_might = character_has_indomitable_might(actor)
+
+    if roll_type in ["check", "passive"]:
+        roll_name = resolve_skill_input(actor, roll_name)
+    elif roll_type == "save":
+        roll_name = resolve_save_input(roll_name)
+
+    if roll_type == "check":
+        readable_roll_name = get_readable_name_for_skill(roll_name, ability_name)
+    elif roll_type == "passive":
+        readable_roll_name = get_readable_name_for_skill(roll_name, ability_name, is_passive = True)
+    elif roll_type == "save":
+        readable_roll_name = get_readable_name_for_save(roll_name, ability_name)
+    elif roll_type == "attack":
+        readable_roll_name = get_readable_name_for_attack(roll_name, ability_name)
+    elif roll_type == "roll":
+        readable_roll_name = 'Roll'
+
+    if roll_type == "roll":
+        roll_name = str(roll_name)
+
+    if roll_type == "roll":
+        roll_str = roll_name
+    elif roll_type == "check":
+        skill_value, skill_adv, skill_prof = _get_skill_for_character(actor, roll_name)
+
+        using_strength = ability_name == "strength" or ability_name == None and get_default_ability_for_skill(roll_name) == "strength"
+        mod_override = get_mod_override(actor, get_default_ability_for_skill(roll_name), ability_name)
+
+        base_adv = join_advantage(adv, argsadv, skill_adv)
+        base_mod = skill_value + mod_override
+
+        explicit_mi = args.last(mc_key, None, int)
+        mi = None
+        if explicit_mi != None:
+            mi = explicit_mi
+        elif _reliable_talent_minimum_applies(actor, skill_prof):
+            mi = 10
+
+        based20 = get_d20(
+            adv = base_adv,
+            mi = mi,
+            ro = _d20_reroll_list(actor),
+        )
+
+        roll_str = join_roll_strings([based20, base_mod] + bonuses)
+        if using_strength and has_indomitable_might:
+            roll_str = f'({roll_str}, {actor.stats.get_mod("strength")})kh1'
+    elif roll_type == "passive":
+        skill_value, skill_adv, skill_prof = _get_skill_for_character(actor, roll_name)
+
+        using_strength = ability_name == "strength" or ability_name == None and get_default_ability_for_skill(roll_name) == "strength"
+        mod_override = get_mod_override(actor, get_default_ability_for_skill(roll_name), ability_name)
+
+        base_adv = join_advantage(adv, argsadv, skill_adv)
+        base_mod = skill_value + mod_override
+
+        has_observant = character_has_observant(actor)
+        observant_perception_check = ability_name in [None, "wisdom"] and roll_name == "perception"
+        observant_investigation_check = ability_name in [None, "intelligence"] and roll_name == "investigation"
+        should_add_observant_bonus = has_observant and (observant_investigation_check or observant_perception_check)
+
+        if adv == True:
+            adv_flat = ["+5[advantage]"]
+        elif adv == False:
+            adv_flat = ["-5[disadvantage]"]
+        else:
+            adv_flat = []
+
+        flat_bonuses = adv_flat + (["+5[observant]"] if should_add_observant_bonus else [])
+        based20 = "10"
+        roll_str = join_roll_strings([based20, base_mod] + flat_bonuses + bonuses)
+        if using_strength and has_indomitable_might:
+            roll_str = f'({roll_str}, {actor.stats.get_mod("strength")})kh1'
+    elif roll_type == "save":
+        save_value, save_adv = _get_save_for_character(actor, roll_name)
+        mod_override = get_mod_override(actor, get_default_ability_for_save(roll_name), ability_name)
+
+        base_adv = join_advantage(adv, argsadv, save_adv)
+        base_mod = save_value + mod_override
+
+        based20 = get_d20(
+            adv = base_adv,
+            ro = _d20_reroll_list(actor),
+        )
+
+        roll_str = join_roll_strings([based20, base_mod] + bonuses)
+    elif roll_type == "attack":
+        if roll_name not in attack_type_abilities:
+            err(f'Unrecognised attack type {roll_name}')
+
+        ability_name = ability_name if ability_name != None else get_default_ability_for_attack_type(roll_name)
+
+        if actor == None:
+            ability_mod = 0
+            prof_mod = 0
+        else:
+            ability_mod = actor.stats.get_mod(ability_name)
+            prof_mod = actor.stats.prof_bonus
+
+        based20 = get_d20(
+            adv = adv,
+            eadv = eadv,
+            ro = _d20_reroll_list(actor),
+        )
+        roll_str = join_roll_strings([based20] + [str(ability_mod + prof_mod)] + bonuses)
+
+    roll_result = vroll(roll_str)
+
+    natural_roll = None if roll_type == "passive" else _natural_roll_from_result(roll_result)
+
+    if dc == None and roll_type == "save" and roll_name == "death":
+        dc = 10
+
+    passed = None
+    if dc != None:
+        passed = roll_result.total >= dc
+
+    crit = False
+    crit_fail = False
+    if natural_roll != None:
+        applies_crit = roll_type in ["attack", "save", "check"] or (roll_type == "roll" and "d20" in roll_name)
+        if applies_crit:
+            if natural_roll == 1:
+                crit_fail = True
+            elif natural_roll == 20:
+                crit = True
+
+    if roll_type == "attack" or (roll_type == "save" and roll_name == "death"):
+        if crit:
+            passed = True
+        elif crit_fail:
+            passed = False
+
+    return {
+        "roll": roll_result,
+        "total": roll_result.total,
+        "full": roll_result.full,
+        "name": readable_roll_name,
+        "roll_string": roll_str,
+        "dc": dc,
+        "passed": passed,
+        "crit": crit,
+        "crit_fail": crit_fail,
+        "natural_roll": natural_roll,
+    }

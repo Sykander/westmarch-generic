@@ -1,0 +1,1009 @@
+"""Languages — D&D 5e (2014-era) catalog. Single source: ``_LANGUAGES`` (canonical name → metadata).
+
+**Public API** (unprefixed): ``get_character_languages``; ``language_comprehension_score`` (PHB-style implicit **Common**
+for scoring when the cvar omits it); ``COMMUNICATION_METHODS``; ``LANGUAGE_NAMES``. Everything else is ``_``-prefixed
+for maintainers and tests.
+"""
+
+_languages_cvar_key = "languages"
+
+# Canonical ``communication_method`` values for ``language_comprehension_score`` / ``_get_similarity``. Order is stable.
+COMMUNICATION_METHODS = ["vocal", "script", "telepathic", "gestural"]
+
+
+def _name_subtoken_match(lang_lower: str, tok_lower: str) -> bool:
+    """True if ``tok_lower`` plausibly refers to a catalog name ``lang_lower`` (substring false positives like ``orc`` in ``common``)."""
+    if tok_lower == lang_lower:
+        return True
+    if len(tok_lower) >= 4 and tok_lower in lang_lower:
+        return True
+    if len(tok_lower) < 4 and lang_lower.startswith(tok_lower):
+        return True
+    return False
+
+
+"""
+_LANGUAGES catalog (see also the module docstring at top).
+
+Structure
+  Mapping: canonical language name (str) -> record (dict). The key is the stable identifier returned by
+  _canonicalize_language_token and listed in ``LANGUAGE_NAMES``.
+
+Why this shape
+  - Single source of truth for sheet parsing, similarity, and comprehension heuristics.
+  - Per-channel ``methods`` keeps overlap scores medium-specific: vocal similarity to Elvish is independent
+    of script or sign data, which matches how characters encounter languages at the table.
+  - Each supported channel stores ``rarity`` next to ``similar_to`` so "how commonly this medium shows up
+    for this language in play" is authored separately from "how close another catalog language is on that
+    same medium." Helpers can scale modality by rarity while _get_similarity reads only similar_to.
+
+Record fields (each value in _LANGUAGES)
+  - name: Human-readable label; usually matches the key. For display or logs, not matching logic.
+  - aliases: Extra tokens that should resolve to this key (legacy spellings, Primordial (Dialect), Human (Ethnic), etc.).
+    Used only inside _canonicalize_language_token.
+  - primary_method: Typical medium in fiction (vocal, script, telepathic, gestural). Informative; gates no logic by itself.
+  - common_speakers: Short tags of typical speakers; used for optional race-based comprehension hints, not rules.
+  - methods: Dict keyed by channel name (vocal, script, telepathic, gestural). Value is either False (channel not
+    used for this language) or a dict with:
+      - rarity: int 0-100. Used as the modality factor when that channel is supported (_modality_compatibility).
+      For each language, the ``rarity`` values on **supported** channels (those with a dict, not ``False``) sum to **100**
+      so modality weights partition attention across media for that tongue.
+      - similar_to: dict of other canonical language names -> int 0-100, directed from this language toward
+        the other on that channel only; omitted keys mean 0. Used by _get_similarity(lang_from, lang_to, method).
+  - type: standard | uncommon | exotic | secret | other. Used by _modality_compatibility fallbacks when the requested channel is absent from methods.
+  - writing_system: Script label (e.g. Common, Dwarvish, none, telepathy, unknown). Backs modality heuristics when the requested channel is absent.
+"""
+
+_LANGUAGES = {
+    "Common": {
+        "name": "Common",
+        "aliases": ["Comon", "Common Tongue", "Trade Tongue", "Human Common"],
+        "primary_method": "vocal",
+        "common_speakers": ["Humans"],
+        "methods": {
+            "vocal": {
+                "rarity": 70,
+                "similar_to": {
+                    "Elvish": 20,
+                    "Goblin": 25,
+                    "Halfling": 60,
+                    "Thieves' Cant": 85,
+                    "Undercommon": 35,
+                    "Chondathan": 85,
+                    "Damaran": 80,
+                    "Illuskan": 75
+                }
+            },
+            "script": {
+                "rarity": 25,
+                "similar_to": {
+                    "Halfling": 95,
+                    "Chondathan": 95,
+                    "Damaran": 95,
+                    "Illuskan": 95
+                }
+            },
+            "telepathic": False,
+            "gestural": {
+                "rarity": 5,
+                "similar_to": {
+                    "Common Sign Language": 55
+                }
+            }
+        },
+        "type": "standard",
+        "writing_system": "Common",
+    },
+
+    "Common Sign Language": {
+        "name": "Common Sign Language",
+        "aliases": ["CSL", "Common Sign"],
+        "primary_method": "gestural",
+        "common_speakers": ["Humans"],
+        "methods": {
+            "vocal": False,
+            "script": False,
+            "telepathic": False,
+            "gestural": {
+                "rarity": 100,
+                "similar_to": {
+                    "Common": 55,
+                }
+            }
+        },
+        "type": "standard",
+        "writing_system": "none",
+    },
+
+    "Elvish": {
+        "name": "Elvish",
+        "aliases": ["Elven", "Elf", "Elven Tongue"],
+        "primary_method": "vocal",
+        "common_speakers": ["Elves"],
+        "methods": {
+            "vocal": {
+                "rarity": 80,
+                "similar_to": {
+                    "Common": 20,
+                    "Sylvan": 90,
+                    "Draconic": 25,
+                    "Undercommon": 55
+                }
+            },
+            "script": {
+                "rarity": 20,
+                "similar_to": {
+                    "Sylvan": 95,
+                    "Undercommon": 85
+                }
+            },
+            "telepathic": False,
+            "gestural": False
+        },
+        "type": "standard",
+        "writing_system": "Elvish",
+    },
+
+    "Dwarvish": {
+        "name": "Dwarvish",
+        "aliases": ["Dwarven", "Dwarf", "Dwarfish", "Dwarvish", "Dwarf Tongue"],
+        "primary_method": "vocal",
+        "common_speakers": ["Dwarves"],
+        "methods": {
+            "vocal": {
+                "rarity": 75,
+                "similar_to": {
+                    "Giant": 45,
+                    "Gnomish": 55,
+                    "Orc": 20
+                }
+            },
+            "script": {
+                "rarity": 25,
+                "similar_to": {
+                    "Giant": 90,
+                    "Gnomish": 85,
+                    "Goblin": 80,
+                    "Orc": 80,
+                    "Primordial": 70
+                }
+            },
+            "telepathic": False,
+            "gestural": False
+        },
+        "type": "standard",
+        "writing_system": "Dwarvish",
+    },
+
+    "Goblin": {
+        "name": "Goblin",
+        "aliases": ["Goblin tongue", "Goblinoid", "Goblinese"],
+        "primary_method": "vocal",
+        "common_speakers": ["Goblinoids"],
+        "methods": {
+            "vocal": {
+                "rarity": 90,
+                "similar_to": {
+                    "Common": 25,
+                    "Giant": 40,
+                    "Gnoll": 40,
+                    "Orc": 45
+                }
+            },
+            "script": {
+                "rarity": 10,
+                "similar_to": {
+                    "Dwarvish": 80
+                }
+            },
+            "telepathic": False,
+            "gestural": False
+        },
+        "type": "standard",
+        "writing_system": "Dwarvish",
+    },
+
+    "Orc": {
+        "name": "Orc",
+        "aliases": ["Orcish", "Orc Tongue"],
+        "primary_method": "vocal",
+        "common_speakers": ["Orcs"],
+        "methods": {
+            "vocal": {
+                "rarity": 90,
+                "similar_to": {
+                    "Goblin": 45,
+                    "Giant": 35,
+                    "Elvish": 10
+                }
+            },
+            "script": {
+                "rarity": 10,
+                "similar_to": {
+                    "Dwarvish": 80
+                }
+            },
+            "telepathic": False,
+            "gestural": False
+        },
+        "type": "standard",
+        "writing_system": "Dwarvish",
+    },
+
+    "Giant": {
+        "name": "Giant",
+        "aliases": ["Jotun", "Giant Tongue"],
+        "primary_method": "vocal",
+        "common_speakers": ["Giants"],
+        "methods": {
+            "vocal": {
+                "rarity": 85,
+                "similar_to": {
+                    "Dwarvish": 45,
+                    "Goblin": 40,
+                    "Orc": 35
+                }
+            },
+            "script": {
+                "rarity": 15,
+                "similar_to": {
+                    "Dwarvish": 90
+                }
+            },
+            "telepathic": False,
+            "gestural": False
+        },
+        "type": "standard",
+        "writing_system": "Dwarvish",
+    },
+
+    "Gnomish": {
+        "name": "Gnomish",
+        "aliases": ["Gnome", "Gnomish Tongue"],
+        "primary_method": "vocal",
+        "common_speakers": ["Gnomes"],
+        "methods": {
+            "vocal": {
+                "rarity": 80,
+                "similar_to": {
+                    "Dwarvish": 55,
+                    "Halfling": 45
+                }
+            },
+            "script": {
+                "rarity": 20,
+                "similar_to": {
+                    "Dwarvish": 85
+                }
+            },
+            "telepathic": False,
+            "gestural": False
+        },
+        "type": "standard",
+        "writing_system": "Dwarvish",
+    },
+
+    "Halfling": {
+        "name": "Halfling",
+        "aliases": ["Hin", "Halfling Tongue"],
+        "primary_method": "vocal",
+        "common_speakers": ["Halflings"],
+        "methods": {
+            "vocal": {
+                "rarity": 80,
+                "similar_to": {
+                    "Common": 60,
+                    "Gnomish": 45
+                }
+            },
+            "script": {
+                "rarity": 20,
+                "similar_to": {
+                    "Common": 95
+                }
+            },
+            "telepathic": False,
+            "gestural": False
+        },
+        "type": "standard",
+        "writing_system": "Common",
+    },
+
+    "Abyssal": {
+        "name": "Abyssal",
+        "aliases": ["Abyssal Tongue", "Demonic"],
+        "primary_method": "vocal",
+        "common_speakers": ["Demons", "Fiends"],
+        "methods": {
+            "vocal": {
+                "rarity": 80,
+                "similar_to": {
+                    "Infernal": 45,
+                    "Celestial": 25,
+                    "Deep Speech": 20,
+                    "Undercommon": 30
+                }
+            },
+            "script": {
+                "rarity": 20,
+                "similar_to": {
+                    "Infernal": 55,
+                    "Celestial": 35
+                }
+            },
+            "telepathic": False,
+            "gestural": False
+        },
+        "type": "exotic",
+        "writing_system": "Infernal",
+    },
+
+    "Celestial": {
+        "name": "Celestial",
+        "aliases": ["Celestial Tongue", "Angelic"],
+        "primary_method": "vocal",
+        "common_speakers": ["Celestials", "Angels", "Aasimar"],
+        "methods": {
+            "vocal": {
+                "rarity": 80,
+                "similar_to": {
+                    "Infernal": 30,
+                    "Abyssal": 25,
+                    "Common": 15,
+                    "Elvish": 25
+                }
+            },
+            "script": {
+                "rarity": 20,
+                "similar_to": {
+                    "Infernal": 40,
+                    "Abyssal": 35
+                }
+            },
+            "telepathic": False,
+            "gestural": False
+        },
+        "type": "exotic",
+        "writing_system": "Celestial",
+    },
+
+    "Infernal": {
+        "name": "Infernal",
+        "aliases": ["Infernal Tongue", "Diabolic"],
+        "primary_method": "vocal",
+        "common_speakers": ["Devils", "Tieflings"],
+        "methods": {
+            "vocal": {
+                "rarity": 75,
+                "similar_to": {
+                    "Abyssal": 45,
+                    "Celestial": 30,
+                    "Common": 15,
+                    "Undercommon": 25
+                }
+            },
+            "script": {
+                "rarity": 25,
+                "similar_to": {
+                    "Abyssal": 55,
+                    "Celestial": 40
+                }
+            },
+            "telepathic": False,
+            "gestural": False
+        },
+        "type": "exotic",
+        "writing_system": "Infernal",
+    },
+
+    "Draconic": {
+        "name": "Draconic",
+        "aliases": ["Draconic Tongue", "Dragontongue", "Dragon Tongue"],
+        "primary_method": "vocal",
+        "common_speakers": ["Dragons", "Dragonborn"],
+        "methods": {
+            "vocal": {
+                "rarity": 75,
+                "similar_to": {
+                    "Primordial": 40,
+                    "Infernal": 25,
+                    "Celestial": 30,
+                    "Elvish": 25,
+                    "Common": 15,
+                    "Giant": 30,
+                    "Undercommon": 20
+                }
+            },
+            "script": {
+                "rarity": 25,
+                "similar_to": {
+                    "Elvish": 50,
+                    "Infernal": 35,
+                    "Celestial": 35,
+                    "Primordial": 40
+                }
+            },
+            "telepathic": False,
+            "gestural": False
+        },
+        "type": "exotic",
+        "writing_system": "Draconic",
+    },
+
+    "Primordial": {
+        "name": "Primordial",
+        "aliases": [
+            "Primordial (Aquan)",
+            "Primordial (Auran)",
+            "Primordial (Ignan)",
+            "Primordial (Terran)",
+            "Aquan",
+            "Auran",
+            "Ignan",
+            "Terran",
+            "Elemental",
+        ],
+        "primary_method": "vocal",
+        "common_speakers": ["Elementals"],
+        "methods": {
+            "vocal": {
+                "rarity": 75,
+                "similar_to": {
+                    "Dwarvish": 55,
+                    "Giant": 40,
+                    "Draconic": 35,
+                    "Gnomish": 35,
+                    "Common": 15
+                }
+            },
+            "script": {
+                "rarity": 25,
+                "similar_to": {
+                    "Dwarvish": 90,
+                    "Draconic": 45,
+                    "Giant": 50
+                }
+            },
+            "telepathic": False,
+            "gestural": False
+        },
+        "type": "exotic",
+        "writing_system": "Dwarvish",
+    },
+
+    "Sylvan": {
+        "name": "Sylvan",
+        "aliases": ["Sylvan Tongue", "Language of the fey"],
+        "primary_method": "vocal",
+        "common_speakers": ["Fey", "Elves"],
+        "methods": {
+            "vocal": {
+                "rarity": 80,
+                "similar_to": {
+                    "Elvish": 90,
+                    "Common": 20,
+                    "Draconic": 25,
+                    "Goblin": 20,
+                    "Primordial": 25
+                }
+            },
+            "script": {
+                "rarity": 20,
+                "similar_to": {
+                    "Elvish": 95,
+                    "Draconic": 40
+                }
+            },
+            "telepathic": False,
+            "gestural": False
+        },
+        "type": "exotic",
+        "writing_system": "Elvish",
+    },
+
+    "Undercommon": {
+        "name": "Undercommon",
+        "aliases": ["Underdark Trade Tongue", "Deep Common"],
+        "primary_method": "vocal",
+        "common_speakers": ["Underdark residents"],
+        "methods": {
+            "vocal": {
+                "rarity": 90,
+                "similar_to": {
+                    "Common": 35,
+                    "Elvish": 55,
+                    "Deep Speech": 25
+                }
+            },
+            "script": {
+                "rarity": 10,
+                "similar_to": {
+                    "Elvish": 85
+                }
+            },
+            "telepathic": False,
+            "gestural": False
+        },
+        "type": "uncommon",
+        "writing_system": "Elvish",
+    },
+
+    "Deep Speech": {
+        "name": "Deep Speech",
+        "aliases": ["Speech of the Deep", "Aberrant Tongue"],
+        "primary_method": "telepathic",
+        "common_speakers": ["Aberrations"],
+        "methods": {
+            "vocal": {
+                "rarity": 30,
+                "similar_to": {
+                    "Undercommon": 25
+                }
+            },
+            "script": False,
+            "telepathic": {
+                "rarity": 70,
+                "similar_to": {
+                    "Psionics": 60
+                }
+            },
+            "gestural": False
+        },
+        "type": "exotic",
+        "writing_system": "none",
+    },
+
+    "Thieves' Cant": {
+        "name": "Thieves' Cant",
+        "aliases": ["Cant", "Rogues' Cant", "Thieves Cant"],
+        "primary_method": "vocal",
+        "common_speakers": ["Rogues"],
+        "methods": {
+            "vocal": {
+                "rarity": 60,
+                "similar_to": {
+                    "Common": 85
+                }
+            },
+            "script": False,
+            "telepathic": False,
+            "gestural": {
+                "rarity": 40,
+                "similar_to": {
+                    "Common": 50
+                }
+            }
+        },
+        "type": "secret",
+        "writing_system": "none",
+    },
+
+    "Druidic": {
+        "name": "Druidic",
+        "aliases": ["Druidic Tongue", "Druid tongue", "Druid cant"],
+        "primary_method": "vocal",
+        "common_speakers": ["Druids"],
+        "methods": {
+            "vocal": {
+                "rarity": 100,
+                "similar_to": {
+                    "Sylvan": 50,
+                    "Elvish": 40,
+                    "Primordial": 35,
+                    "Common": 25
+                }
+            },
+            "script": False,
+            "telepathic": False,
+            "gestural": False
+        },
+        "type": "secret",
+        "writing_system": "none",
+    },
+}
+
+LANGUAGE_NAMES = []
+for _k in _LANGUAGES.keys():
+    LANGUAGE_NAMES.append(_k)
+
+
+def _active_character():
+    try:
+        return character()
+    except:
+        return None
+
+
+def _resolve_optional_character(char = None):
+    return char if char != None else _active_character()
+
+
+def _require_character(char = None, context: str = "this operation"):
+    c = _resolve_optional_character(char)
+    if c == None:
+        err(f"No character available for {context}.")
+    return c
+
+
+def _parse_languages_from_cvar_value(raw) -> list:
+    """Split a ``languages`` cvar string into stripped tokens (commas or semicolons)."""
+    if raw == None:
+        return []
+    text = str(raw).strip()
+    if text == "":
+        return []
+
+    unified = text.replace(";", ",")
+    out = []
+    for chunk in unified.split(","):
+        t = chunk.strip()
+        if t != "":
+            out.append(t)
+    return out
+
+
+def _canonicalize_language_token(token: str) -> str:
+    """Resolve to a canonical catalog name, or ``None``. Ambiguous tokens (e.g. bare ``Human``) return ``None``."""
+    if token == None:
+        return None
+    s = str(token).strip()
+    if s == "":
+        return None
+
+    sl = s.lower()
+
+    for _canon, _spec in _LANGUAGES.items():
+        for _al in _spec["aliases"]:
+            if str(_al).lower() == sl:
+                return _canon
+
+    for n in LANGUAGE_NAMES:
+        if n == s:
+            return n
+
+    ci_hits = []
+    for n in LANGUAGE_NAMES:
+        if str(n).lower() == sl:
+            ci_hits.append(n)
+    if len(ci_hits) == 1:
+        return ci_hits[0]
+    if len(ci_hits) > 1:
+        return None
+
+    sub_hits = []
+    sub_seen = {}
+    for n in LANGUAGE_NAMES:
+        nl = str(n).lower()
+        if _name_subtoken_match(nl, sl):
+            if sub_seen.get(n, False) == False:
+                sub_seen[n] = True
+                sub_hits.append(n)
+    for _canon, _spec in _LANGUAGES.items():
+        for _al in _spec["aliases"]:
+            al_l = str(_al).lower()
+            if _name_subtoken_match(al_l, sl):
+                if sub_seen.get(_canon, False) == False:
+                    sub_seen[_canon] = True
+                    sub_hits.append(_canon)
+    if len(sub_hits) == 1:
+        return sub_hits[0]
+    if len(sub_hits) > 1:
+        return None
+
+    rev_hits = []
+    for n in LANGUAGE_NAMES:
+        nl = str(n).lower()
+        if nl in sl:
+            rev_hits.append(n)
+    for _canon, _spec in _LANGUAGES.items():
+        for _al in _spec["aliases"]:
+            _al_l = str(_al).lower()
+            if _al_l in sl:
+                rev_hits.append(_canon)
+    if len(rev_hits) == 1:
+        return rev_hits[0]
+    return None
+
+
+def _get_similarity(lang_from: str, lang_to: str, method: str = "vocal") -> int:
+    """Directed similarity 0–100 on ``method``: reads ``methods[method].similar_to[lang_to]`` (not necessarily symmetric)."""
+    method = _normalize_communication_method(method)
+    ca = _canonicalize_language_token(lang_from)
+    cb = _canonicalize_language_token(lang_to)
+    if ca == None or cb == None:
+        return 0
+    if ca == cb:
+        return 100
+    slot = _LANGUAGES[ca]["methods"].get(method, False)
+    if slot == False:
+        return 0
+    st = slot.get("similar_to", None)
+    if st == None:
+        return 0
+    return int(st.get(cb, 0))
+
+
+def _get_languages_cvar_raw(char = None) -> str:
+    """The raw ``languages`` cvar string (empty string if unset)."""
+    char = _require_character(char, "languages cvar")
+    v = char.get_cvar(_languages_cvar_key, "")
+    if v == None:
+        return ""
+    return str(v)
+
+
+def _get_sheet_language_tokens(char = None) -> list:
+    """Tokens from the ``languages`` cvar after splitting (not necessarily catalog names)."""
+    raw = _get_languages_cvar_raw(char)
+    return _parse_languages_from_cvar_value(raw)
+
+
+def get_character_languages(char = None) -> list:
+    """Public: canonical catalog names from the character's ``languages`` cvar (tokens that resolve, including via aliases)."""
+    char = _require_character(char, "known languages")
+    out = []
+    seen = {}
+    for tok in _get_sheet_language_tokens(char):
+        c = _canonicalize_language_token(tok)
+        if c != None and seen.get(c, False) == False:
+            seen[c] = True
+            out.append(c)
+    return out
+
+
+def _character_knows_language(target: str, known: list) -> bool:
+    for _k in known:
+        if _k == target:
+            return True
+    return False
+
+
+def _class_granted_languages(char) -> list:
+    """Class features that grant languages without listing them on the ``languages`` cvar."""
+    if char == None:
+        return []
+    try:
+        lv = char.levels
+    except:
+        return []
+    if lv == None:
+        return []
+    out = []
+    try:
+        if int(lv.get("Rogue") or 0) >= 1 and _LANGUAGES.get("Thieves' Cant") != None:
+            out.append("Thieves' Cant")
+    except:
+        pass
+    try:
+        if int(lv.get("Druid") or 0) >= 1 and _LANGUAGES.get("Druidic") != None:
+            out.append("Druidic")
+    except:
+        pass
+    return out
+
+
+def _speaker_stem_for_race_match(tag) -> str:
+    """Normalize a ``common_speakers`` tag for substring checks against ``character.race``."""
+    t = str(tag).lower().strip()
+    hard = {
+        "elves": "elf",
+        "dwarves": "dwarf",
+        "gnomes": "gnome",
+        "halflings": "halfling",
+        "dragonoids": "dragon",
+        "goblinoids": "goblin",
+        "mind flayers": "illithid",
+        "giants": "giant",
+        "ogres": "ogre",
+        "orcs": "orc",
+    }
+    if t in hard:
+        return hard[t]
+    if len(t) > 3 and t.endswith("s") and not t.endswith("ss"):
+        return t[:-1]
+    return t
+
+
+def _race_familiarity_bonus(char, target_canonical: str) -> int:
+    """0–45 extra familiarity when ``char.race`` matches typical speakers of ``target_canonical`` (PHB-style stems)."""
+    if char == None or target_canonical == None:
+        return 0
+    try:
+        r = char.race
+    except:
+        return 0
+    if r == None:
+        return 0
+    rl = str(r).lower()
+    if rl == "":
+        return 0
+    spec = _LANGUAGES.get(target_canonical)
+    if spec == None:
+        return 0
+    bonus = 0
+    for tag in spec["common_speakers"]:
+        stem = _speaker_stem_for_race_match(tag)
+        if len(stem) < 3:
+            continue
+        if stem in rl:
+            bonus += 22
+    extra = [
+        ("tiefling", "Infernal", 30),
+        ("aasimar", "Celestial", 28),
+        ("dragonborn", "Draconic", 32),
+        ("githyanki", "Gith", 34),
+        ("githzerai", "Gith", 34),
+    ]
+    for key, lang, amt in extra:
+        if target_canonical == lang and key in rl:
+            if amt > bonus:
+                bonus = amt
+    return min(45, bonus)
+
+
+def _merged_known_languages_for_comprehension(char) -> list:
+    """Sheet languages plus class-granted (Thieves' Cant, Druidic), deduped in sheet order then extras.
+
+    **PHB-style default:** if **Common** exists in ``_LANGUAGES`` but is missing from the sheet and grants, it is
+    **prepended** anyway. 5e assumes every PC speaks Common; the ``languages`` cvar often omits it. This affects only
+    ``language_comprehension_score`` (not ``get_character_languages``).
+    """
+    sheet = get_character_languages(char)
+    grant = _class_granted_languages(char)
+    seen = {}
+    out = []
+    for x in sheet + grant:
+        if seen.get(x, False) == False:
+            seen[x] = True
+            out.append(x)
+    if _LANGUAGES.get("Common") != None and seen.get("Common", False) == False:
+        out = ["Common"] + out
+    return out
+
+
+def _normalize_communication_method(method) -> str:
+    """Normalize caller labels to a value in ``COMMUNICATION_METHODS`` (unknown → ``vocal``)."""
+    if method == None:
+        return "vocal"
+    m = str(method).strip().lower()
+    if m == "" or m == "vocal" or m == "spoken" or m == "speech":
+        return "vocal"
+    if m == "telepathy":
+        return "telepathic"
+    if m == "telepathic":
+        return "telepathic"
+    if m == "script" or m == "written" or m == "writing":
+        return "script"
+    if m == "gestural" or m == "visual" or m == "sign":
+        return "gestural"
+    return "vocal"
+
+
+def _language_supports_communication_method(canonical_lang: str, method: str) -> bool:
+    """True when the catalog marks ``method`` as a real channel for ``canonical_lang`` (``methods[method]`` is a dict, not ``False``)."""
+    spec = _LANGUAGES.get(canonical_lang)
+    if spec == None:
+        return False
+    slot = spec["methods"].get(method, False)
+    return slot != False
+
+
+def _modality_compatibility(canonical_lang: str, method: str) -> int:
+    """0–100: channel fit for ``canonical_lang``. When ``methods[method]`` is a dict, returns its ``rarity`` (clamped); else fallbacks + specials."""
+    spec = _LANGUAGES[canonical_lang]
+    md = spec["methods"]
+    bucket = spec["type"]
+
+    slot = md.get(method, False)
+    if slot != False:
+        try:
+            r = int(slot["rarity"])
+            if r < 0:
+                r = 0
+            if r > 100:
+                r = 100
+            return r
+        except:
+            return 100
+
+    if canonical_lang == "Psionics" and method == "script":
+        return 15
+
+    if method == "vocal" and md.get("gestural") is not False and md.get("vocal") is False:
+        return 25
+
+    if method == "gestural" and md.get("gestural") is False and md.get("script") is not False:
+        return 55
+
+    if method == "script" and md.get("gestural") is not False and md.get("script") is False:
+        return 45
+
+    if method == "telepathic":
+        if canonical_lang == "Psionics":
+            return 100
+        if canonical_lang == "Qualith":
+            return 55
+        if canonical_lang == "Deep Speech":
+            return 75
+        if bucket == "standard" or bucket == "uncommon":
+            return 40
+        return 60
+
+    if method == "vocal":
+        if canonical_lang == "Qualith":
+            return 25
+        if spec["writing_system"] == "telepathy":
+            return 35
+        return 30
+
+    if method == "script":
+        if spec["writing_system"] == "none":
+            return 40
+        if spec["writing_system"] == "telepathy":
+            return 20
+        return 30
+
+    if method == "gestural":
+        return 30
+
+    return 100
+
+
+def language_comprehension_score(
+    language_name: str,
+    char = None,
+    communication_method: str = "vocal",
+) -> int:
+    """0–100 heuristic: how well ``char`` might follow ``language_name`` via ``communication_method`` (``vocal`` default).
+
+    When the character **knows** the target (cvar, class-granted, or **implicit Common** — see
+    ``_merged_known_languages_for_comprehension``): returns **100** if that language **supports** the requested
+    ``communication_method`` in ``_LANGUAGES`` (the channel is a dict, not ``False``); otherwise **0** (channel not
+    used for that language — incomprehensible on that medium).
+
+    When the target is **not** known: combines **directed** similarities from every effective known language, a small
+    bonus when several known languages each overlap the target, **race** vs ``common_speakers`` hints, then scales by
+    ``_modality_compatibility``.
+
+    Returns ``0`` when there is no effective known language (after grants and implicit **Common**), no similarity or
+    race hint applies, and the target is not known. Unknown ``language_name`` → ``0``.
+    """
+    target = _canonicalize_language_token(language_name)
+    if target == None:
+        return 0
+
+    method = _normalize_communication_method(communication_method)
+    char = _require_character(char, "language comprehension")
+    heritage = _race_familiarity_bonus(char, target)
+    known = _merged_known_languages_for_comprehension(char)
+    if len(known) == 0 and heritage == 0:
+        return 0
+
+    if _character_knows_language(target, known):
+        if _language_supports_communication_method(target, method):
+            return 100
+        return 0
+
+    modality_fac = _modality_compatibility(target, method)
+    sims = []
+    for _k in known:
+        if _k == target:
+            continue
+        sims.append(_get_similarity(_k, target, method))
+    mx = 0
+    for s in sims:
+        if s > mx:
+            mx = s
+    total = 0
+    for s in sims:
+        total += s
+    crowd = 0
+    if len(sims) > 0 and total > mx:
+        crowd = int((total - mx) * 0.14)
+    raw = mx + crowd + heritage
+    if raw > 100:
+        raw = 100
+    if mx == 0 and crowd == 0 and heritage == 0:
+        return 0
+    partial = int(raw * 55 / 100)
+    return int(partial * modality_fac / 100)

@@ -117,7 +117,7 @@ using(
 
 ok, msg = auth.is_allowed()
 if not ok:
-    return embeds.get_embed(title="Cannot run command", desc=msg)
+    return get_embed(desc=msg)
 
 get_embed = display.get_display()
 

@@ -1,0 +1,91 @@
+# Vendored from drac2-tools — src/gvars/utils/embeds/embeds.gvar
+
+using(
+    commands = env.gvars.commands,
+)
+
+"""Embed — general-purpose ``!embed`` command string helpers.
+
+For a one-off embed use ``get_embed``; for several exit points, ``configure_get_embed`` fixes defaults.
+"""
+
+
+def format_to_length(content: str, length: int) -> str:
+    """Truncate ``content`` to ``length`` with an ellipsis suffix when longer."""
+    if len(content) < length:
+        return content
+
+    return f'{content[0:length - 3]}...'
+
+
+def get_field(title, text = "", inline = False):
+    """One ``-f`` field fragment: ``title|text`` plus ``|inline`` when requested."""
+    return f"{title}|{text}{'|inline' if inline else ''}"
+
+
+def get_embed(
+    desc: str | None = None,
+    title: str | None = None,
+    fields: list[str] | None = None,
+    footer: str | None = None,
+    image: str | None = None,
+    thumb: str | None = None,
+    color: str | None = None,
+    timeout: int | None = None
+) -> str:
+    """Return an ``!embed`` command string. See ``!help embed`` in Avrae."""
+    if fields == None:
+        fields = []
+
+    actions = ["embed"]
+    args = []
+    if title != None:
+        args.append(["-title", title])
+
+    if desc != None and len(desc) > 0:
+        args.append(["-desc", format_to_length(desc, 4020)])
+
+    args = args + [["-f", format_to_length(field, 1020)] for field in fields]
+
+    if footer != None and len(footer) > 0:
+        args.append(["-footer", footer])
+
+    if image != None:
+        args.append(["-image", image])
+
+    if thumb != None:
+        args.append(["-thumb", thumb])
+
+    if color != None:
+        args.append(["-color", color])
+
+    if timeout != None:
+        args.append(["-t", str(timeout)])
+
+    return commands.get_command(actions, args)
+
+
+def configure_get_embed(
+    desc: str | None = None,
+    title: str | None = None,
+    fields: list[str] | None = None,
+    footer: str | None = None,
+    image: str | None = None,
+    thumb: str | None = None,
+    color: str | None = None,
+    timeout: int | None = None
+):
+    """Return a callable that supplies these defaults to ``get_embed`` (partial application)."""
+    if fields == None:
+        fields = []
+
+    return lambda desc = desc, title = title, fields = fields, footer = footer, image = image, thumb = thumb, color = color, timeout = timeout: get_embed(
+        desc = desc,
+        fields = fields,
+        title = title,
+        footer = footer,
+        image = image,
+        thumb = thumb,
+        color = color,
+        timeout = timeout
+    )

@@ -1,0 +1,210 @@
+"""Strings — reusable string helpers."""
+
+_ONES = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"]
+_TEENS = [
+    "Ten",
+    "Eleven",
+    "Twelve",
+    "Thirteen",
+    "Fourteen",
+    "Fifteen",
+    "Sixteen",
+    "Seventeen",
+    "Eighteen",
+    "Nineteen",
+]
+_TENS = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"]
+_TENS_ORD = ["", "", "Twentieth", "Thirtieth", "Fortieth", "Fiftieth", "Sixtieth", "Seventieth", "Eightieth", "Ninetieth"]
+_ORD_LT20 = [
+    "",
+    "First",
+    "Second",
+    "Third",
+    "Fourth",
+    "Fifth",
+    "Sixth",
+    "Seventh",
+    "Eighth",
+    "Ninth",
+    "Tenth",
+    "Eleventh",
+    "Twelfth",
+    "Thirteenth",
+    "Fourteenth",
+    "Fifteenth",
+    "Sixteenth",
+    "Seventeenth",
+    "Eighteenth",
+    "Nineteenth",
+]
+_ORD_ONES = ["", "First", "Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh", "Eighth", "Ninth"]
+_SCALES_CARD = ["", "Thousand", "Million", "Billion", "Trillion"]
+_SCALES_ORD = ["", "Thousandth", "Millionth", "Billionth", "Trillionth"]
+
+
+def get_readable_list(items: list[str], delim: str = ", ", final_delim: str = " and ") -> str:
+    items = list(items)
+    if len(items) == 0:
+        return ""
+    if len(items) == 1:
+        return items[0]
+    return final_delim.join([delim.join(items[:-1]), items[-1]])
+
+
+def get_ordinal_index(index: int) -> str:
+    teen = index % 100
+    if teen >= 11 and teen <= 13:
+        return f"{index}th"
+    last = index % 10
+    if last == 1:
+        return f"{index}st"
+    if last == 2:
+        return f"{index}nd"
+    if last == 3:
+        return f"{index}rd"
+    return f"{index}th"
+
+
+def replace_all(given_string: str, search: str, replace: str) -> str:
+    parts = given_string.split(search)
+    return replace.join(parts)
+
+
+def replace(given_string: str, search: str, replace: str) -> str:
+    if search not in given_string:
+        return given_string
+
+    parts = given_string.split(search)
+
+    if len(parts) == 2:
+        return replace.join(parts)
+
+    return search.join(
+        [replace.join(parts[0:1])] + parts[2:]
+    )
+
+
+def is_str(maybe_str) -> bool:
+    try:
+        return maybe_str == str(maybe_str)
+    except:
+        return False
+
+
+def _ten_one(n: int) -> str:
+    if n < 10:
+        return _ONES[n]
+    if n < 20:
+        return _TEENS[n - 10]
+    t = floor(n / 10)
+    u = n % 10
+    if u == 0:
+        return _TENS[t]
+    return _TENS[t] + " " + _ONES[u]
+
+
+def _cardinal_under_1000(n: int) -> str:
+    if n < 100:
+        return _ten_one(n)
+    h = floor(n / 100)
+    r = n % 100
+    base = _ONES[h] + " Hundred"
+    if r == 0:
+        return base
+    return base + " and " + _ten_one(r)
+
+
+def _ordinal_under_100(n: int) -> str:
+    if n < 20:
+        return _ORD_LT20[n]
+    t = floor(n / 10)
+    u = n % 10
+    if u == 0:
+        return _TENS_ORD[t]
+    return _TENS[t] + " " + _ORD_ONES[u]
+
+
+def _ordinal_under_1000(n: int) -> str:
+    if n < 100:
+        return _ordinal_under_100(n)
+    h = floor(n / 100)
+    r = n % 100
+    base = _ONES[h] + " Hundred"
+    if r == 0:
+        return base + "th"
+    return base + " and " + _ordinal_under_100(r)
+
+
+def get_cardinal_text(n: int) -> str:
+    """Spelled-out cardinal (e.g. ``193`` → ``One Hundred and Ninety Three``)."""
+    if n < 0:
+        err("strings: get_cardinal_text expects n >= 0")
+    if n == 0:
+        return "Zero"
+    if n < 1000:
+        return _cardinal_under_1000(n)
+    chunks = []
+    temp = n
+    while temp > 0:
+        chunks.append(temp % 1000)
+        temp = floor(temp / 1000)
+    if len(chunks) > len(_SCALES_CARD):
+        err("strings: get_cardinal_text out of supported range (use n < 10^15)")
+    out = ""
+    hi = len(chunks) - 1
+    while hi >= 0:
+        c = chunks[hi]
+        if c != 0:
+            sc = _SCALES_CARD[hi]
+            if sc == "":
+                piece = _cardinal_under_1000(c)
+            else:
+                piece = _cardinal_under_1000(c) + " " + sc
+            if out == "":
+                out = piece
+            else:
+                out = out + " " + piece
+        hi = hi - 1
+    return out
+
+
+def get_ordinal_text(n: int) -> str:
+    """Spelled-out ordinal (e.g. ``193`` → ``One Hundred and Ninety Third``)."""
+    if n < 0:
+        err("strings: get_ordinal_text expects n >= 0")
+    if n == 0:
+        return "Zeroth"
+    if n < 1000:
+        return _ordinal_under_1000(n)
+    chunks = []
+    temp = n
+    while temp > 0:
+        chunks.append(temp % 1000)
+        temp = floor(temp / 1000)
+    if len(chunks) > len(_SCALES_ORD):
+        err("strings: get_ordinal_text out of supported range (use n < 10^15)")
+    k = 0
+    while k < len(chunks):
+        if chunks[k] != 0:
+            break
+        k = k + 1
+    out = ""
+    hi = len(chunks) - 1
+    while hi > k:
+        c = chunks[hi]
+        if c != 0:
+            sc = _SCALES_CARD[hi]
+            piece = _cardinal_under_1000(c) + " " + sc
+            if out == "":
+                out = piece
+            else:
+                out = out + " " + piece
+        hi = hi - 1
+    ck = chunks[k]
+    if k == 0:
+        suf = _ordinal_under_1000(ck)
+    else:
+        suf = _cardinal_under_1000(ck) + " " + _SCALES_ORD[k]
+    if out == "":
+        return suf
+    return out + " " + suf

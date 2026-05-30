@@ -1,0 +1,75 @@
+"""Lists — reusable list helpers."""
+
+using(
+    random = env.gvars.random
+)
+
+
+def to_dict(items: list, key: string) -> dict:
+    output = {}
+
+    for item in items:
+        if key in item:
+            output[item[key]] = item
+        else:
+            err(f"item does not have key {key}")
+
+    return output
+
+
+def get_random_from_list(items: list, count = 1) -> list:
+    if count == 0:
+        return []
+    elif count < 0:
+        err(f"Can't get {count} items from a list.")
+
+    if count > len(items):
+        err(f"Can't get {count} items from a list of length {len(items)}")
+
+    seen = set()
+    results = []
+
+    while len(seen) < count:
+        index = random.get_random_integer(0, len(items) - 1)
+        if index not in seen:
+            seen.add(index)
+            results.append(items[index])
+
+    return results
+
+
+def is_list(maybe_list) -> bool:
+    try:
+        return maybe_list == list(maybe_list)
+    except:
+        return False
+
+
+def search_list(items: list, search: str) -> list:
+    exact_matches = [item for item in items if item == search]
+
+    if len(exact_matches) > 0:
+        return exact_matches
+
+    search_lower = search.lower()
+    lower_matches = [item for item in items if search_lower == str(item).lower()]
+
+    if len(lower_matches) > 0:
+        return lower_matches
+
+    return [item for item in items if search_lower in str(item).lower()]
+
+
+def search_list_by_key(items: list[dict], key: str, search: str) -> list[dict]:
+    exact_matches = [item for item in items if item[key] == search]
+
+    if len(exact_matches) > 0:
+        return exact_matches
+
+    search_lower = search.lower()
+    lower_matches = [item for item in items if search_lower == str(item[key]).lower()]
+
+    if len(lower_matches) > 0:
+        return lower_matches
+
+    return [item for item in items if search_lower in str(item[key]).lower()]

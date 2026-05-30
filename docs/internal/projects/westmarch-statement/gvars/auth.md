@@ -25,7 +25,7 @@ using(auth = env.gvars.auth)
 
 ok, msg = auth.is_allowed()
 if not ok:
-    return embed(title="Cannot run command", desc=msg)
+    return embed(desc=msg)
 ```
 
 ## Module setup

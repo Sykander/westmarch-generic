@@ -2,41 +2,36 @@
 
 Workshop **global modules** deployed with the westmarch-generic engine. Aliases import them via `env.gvars.*`.
 
-**Status:** Layout and API contracts are documented under [docs/internal/projects/westmarch-statement/gvars/](../../docs/internal/projects/westmarch-statement/gvars/README.md). Implementation lands in **Phase 0** (config, auth, core helpers, encounter slice) and **Phase 1** (subsystem modules).
-
-Only bootstrap artifacts exist in this tree today:
+**Status:** Placeholder modules wired in [utils/sourcemap.dev.json](../../utils/sourcemap.dev.json) / [sourcemap.prod.json](../../utils/sourcemap.prod.json). API contracts: [docs/internal/projects/westmarch-statement/gvars/](../../docs/internal/projects/westmarch-statement/gvars/README.md).
 
 | Path | Purpose |
 |------|---------|
 | `env.dev.gvar` / `env.prod.gvar` | Generated UUID map — run `make rebuild` after sourcemap changes |
-| `example/` | Bootstrap placeholder (not production engine) |
-| `configs/starter.gvar` | Minimal server config template |
-| `configs/biomes/` | Preset biome pool modules (planned bodies) |
+| `core/` | Vendored drac2-tools helpers |
+| `config/`, `display/`, `auth/`, … | Engine domain modules (placeholders) |
+| `configs/starter.gvar` | Minimal server config template (not in engine sourcemap) |
+| `configs/biomes/` | Preset biome pool modules |
 
-## Planned layout
+## Layout
 
 ```
 src/gvars/
-  env.*.gvar              # generated
-  core/                   # vendored helpers — see gvars/core.md
-  config/config.gvar      # engine loader (get_config) — not configs/
+  env.*.gvar
+  core/                   # commands, embeds, rolls, …
+  config/config.gvar
   display/display.gvar
   check_config/check_config.gvar
-  world/biomes.gvar       # runtime biome resolver (lazy load)
-  configs/                # server config bodies + preset data
-    starter.gvar
-    biomes/               # preset pool modules
-    generic_fantasy_2014.gvar
-    …
   auth/auth.gvar
-  pc/pc.gvar
-  encounters/ …
-  catalogues/ …
-  economy/ …
-  content/ …
-  misc/ …
+  pc/pc.gvar, pc/stats.gvar
+  encounters/
+  world/                  # biomes, locations, paths, journeys, clock, weather
+  catalogues/monsters/, items/, spells/
+  exploration/loot.gvar
+  economy/shops.gvar
+  crafting/crafting.gvar
+  content/library.gvar
+  misc/quests.gvar, recipe.gvar
+  configs/                # owner templates — not engine env slots
 ```
 
-**Engine loader:** `config/config.gvar` · **Embed branding:** `display/display.gvar` · **Owner / example data:** owner workshop gvar, [configs/starter.gvar](configs/starter.gvar), or other presets under **`configs/`**.
-
-Server **config** gvars normally live in the **owner’s** workshop. See [docs/setup.md](../../docs/setup.md).
+**Engine loader:** `config/config.gvar` · **Owner data:** separate workshop gvar → `westmarch_config` svar. See [docs/setup.md](../../docs/setup.md).

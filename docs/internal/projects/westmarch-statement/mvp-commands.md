@@ -140,6 +140,7 @@ Large catalogues may require **extension gvars** ([solution-statement.md](soluti
 | **library** | [gvars/library.md](gvars/library.md) | library, read |
 | **quests** | [gvars/quests.md](gvars/quests.md) | quest |
 | **recipe** | [gvars/recipe.md](gvars/recipe.md) | recipe |
+| **crafting** | — | craft, brew, scribe, enchant |
 
 Index: [gvars/README.md](gvars/README.md).
 

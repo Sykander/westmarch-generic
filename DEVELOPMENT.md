@@ -8,7 +8,7 @@
 | Development | `utils/sourcemap.dev.json` | Deploy target for dev workshop |
 | Production | `utils/sourcemap.prod.json` | Deploy target for production workshop |
 
-Template sourcemaps ship with **placeholder UUIDs** (`00000000-…`, `11111111-…`). Replace these with real Avrae workshop ids before deploying.
+Template sourcemaps use **real workshop UUIDs** from `unused_gvars.md`. The **`workshop.environment`** field must always match the **`env`** gvar slot id in that sourcemap (`env.dev.gvar` in dev, `env.prod.gvar` in prod). Aliases `using(env="…")` reference the **dev** env id for local work.
 
 ## Local setup
 

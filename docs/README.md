@@ -41,22 +41,17 @@ flowchart LR
 | Area | Role |
 |------|------|
 | `public/assets/` | TSV catalogues — **`utils/generate-*`** → split shard gvars ([content-pipeline.md](internal/projects/westmarch-statement/content-pipeline.md)) |
-| `src/aliases/` | Commands players invoke in Discord |
-| `src/snippets/` | Text expansion before alias logic runs |
+| `src/aliases/` | MVP command aliases — [mvp-commands.md](internal/projects/westmarch-statement/mvp-commands.md) |
+| `src/snippets/` | *(none in MVP — combat snippets deferred)* |
 | `src/gvars/` | Engine workshop globals — see [src/gvars/README.md](../src/gvars/README.md) |
-| `src/gvars/configs/` | Example server config presets (FR, generic, Spelljammer) — [configs.md](internal/projects/westmarch-statement/gvars/configs.md) |
-| `src/gvars/core/` | Vendored drac2-tools helpers (commands, embeds, rolls, …) — see [core.md](internal/projects/westmarch-statement/gvars/core.md) |
-| `src/gvars/example/` | Placeholder config gvar (bootstrap only) |
+| `src/gvars/configs/` | Example server config presets — [configs.md](internal/projects/westmarch-statement/gvars/configs.md) |
+| `src/gvars/core/` | Vendored drac2-tools helpers — [core.md](internal/projects/westmarch-statement/gvars/core.md) |
 
-## Example artifacts (bootstrap)
+## Workshop scaffold
 
-The repo includes minimal examples wired in the template sourcemaps:
+All MVP aliases and engine gvars are registered in **`utils/sourcemap.dev.json`** / **`sourcemap.prod.json`** with UUIDs from **`unused_gvars.md`**. Placeholder bodies return “not implemented” embeds until each tier is ported. Regenerate env after sourcemap edits: **`make rebuild`**.
 
-- **`example` alias** with **`sub`** sub-alias — demonstrates sourcemap nesting.
-- **`example` snippet** — minimal snippet expansion.
-- **`example` gvar** — stand-in for a server config module (`server_name`, `enabled`).
-
-These are **not** production game content; they exist to validate tooling and document patterns.
+The **`westmarch`** hub uses sub-aliases (`setup`, `check`, `show`) — same sourcemap nesting pattern as the old bootstrap `example` alias.
 
 ## Further reading
 

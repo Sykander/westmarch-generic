@@ -33,6 +33,7 @@ Shared **engine workshop** modules under `src/gvars/`. Aliases `using()` these v
 | **library** | [library.md](library.md) | 1 | Book search, comprehension, read display |
 | **quests** | [quests.md](quests.md) | 1 | Quest journal cvars |
 | **recipe** | [recipe.md](recipe.md) | 1 | Recipe search / format for `!recipe` |
+| **crafting** | *(doc TBD)* | 1 | Shared craft DC / proficiency helpers |
 | **configs/** *(example server configs)* | [configs.md](configs.md) | 1+ | Prefab setting modules — FR, generic, Spelljammer; tests + onboarding |
 
 Shared shapes: [data-shapes.md](../data-shapes.md).

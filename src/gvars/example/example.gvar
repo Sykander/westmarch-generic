@@ -1,8 +1,0 @@
-"""Example configuration gvar — placeholder for server-specific setup.
-
-In the full westmarch-generic design, server owners point svars at a gvar id
-that loads their workshop configuration instead of hard-coding values here.
-"""
-
-server_name = "Example Server"
-enabled = True

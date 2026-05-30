@@ -109,52 +109,41 @@ Row shapes match [data-shapes.md](data-shapes.md) and column docs in [public/ass
 
 ---
 
-## Generate utils *(planned)*
+## Generate utils
 
-Location: **`utils/`** at repo root.
+Location: **`utils/`** at repo root — see [utils/README.md](../../../utils/README.md).
 
 | Script | Input | Output |
 |--------|-------|--------|
 | **`generate-monsters.js`** | `public/assets/monsters.tsv` | `src/gvars/catalogues/monsters/{a-z}_monsters.gvar` |
 | **`generate-items.js`** | `public/assets/items.tsv` | `items_list`, `potions_list`, `magic_items_list` |
 | **`generate-spells.js`** | `public/assets/spells.tsv` | `spells/spells_list.gvar` |
-| **`generate-books.js`** | `books-fiction.tsv`, `books-real.tsv` | `books/*.gvar` shards |
-| **`generate-recipes.js`** | `public/assets/recipes.tsv` | `src/gvars/configs/recipes_snippet.gvar` or inject into preset configs |
+| **`generate-books.js`** | `books-fiction.tsv`, `books-real.tsv` | `{corpus}_all.gvar` when empty; else `{corpus}_{a-z}.gvar` |
+| **`generate-recipes.js`** | `public/assets/recipes.tsv` | `recipes/recipes_list.gvar` |
 
-Shared library *(planned)* **`utils/lib/`**:
+Shared library: **`utils/lib/`** — `read-tsv`, `write-json-gvar`, `shard-by`, `manifest`, `sourcemap-shards`.
 
-| Module | Role |
-|--------|------|
-| **`read-tsv.js`** | Header row, `\t` delimiter, `\r` strip, skip blank lines |
-| **`write-json-gvar.js`** | `JSON.stringify(rows, null, 0)` + optional validation |
-| **`shard-by.js`** | Group rows by key function (letter, type, …) |
-| **`manifest.js`** | Print shard counts / warn empty shards for CI |
+**npm scripts:**
 
-**npm scripts** *(to add to `package.json`)*:
-
-```json
-"generate:monsters": "node utils/generate-monsters.js",
-"generate:items": "node utils/generate-items.js",
-"generate:spells": "node utils/generate-spells.js",
-"generate:books": "node utils/generate-books.js",
-"generate:recipes": "node utils/generate-recipes.js",
-"generate:catalogues": "npm run generate:monsters && npm run generate:items && npm run generate:spells && npm run generate:books && npm run generate:recipes"
+```bash
+npm run generate:monsters   # one catalogue
+make generate-catalogues    # all + make rebuild
 ```
 
-Port logic from westmarch **`utils/generate-*.js`** — paths updated to `public/assets/` and `src/gvars/catalogues/`.
+Generators auto-register shard slots in sourcemaps (UUIDs from **`unused_gvars.md`**). Run **`make rebuild`** after.
 
 ---
 
 ## Sourcemaps and UUIDs
 
-Every **new shard file** needs a slot in **`utils/sourcemap.dev.json`** and **`utils/sourcemap.prod.json`**:
+Every **new shard file** needs a slot in **`utils/sourcemap.dev.json`** and **`utils/sourcemap.prod.json`**.
+
+Catalogue generators call **`utils/lib/sourcemap-shards.js`** automatically. For hand-added shards:
 
 1. Take UUID from top of **`unused_gvars.md`**
-2. Add `{ "name": "a_monsters", "file": "src/gvars/catalogues/monsters/a_monsters.gvar", "id": "…" }`
-3. Delete used line from **`unused_gvars.md`**
+2. Add `{ "name": "a_monsters", "file": "src/gvars/catalogues/monsters/a_monsters.gvar", "id": "…" }` to **both** sourcemaps (different ids)
+3. Delete used lines from **`unused_gvars.md`**
 4. **`make rebuild`**
-
-Generate scripts should **list** any output paths not yet in sourcemap (maintainer checklist). Automating sourcemap append is **post-MVP** — easy to get UUID wrong.
 
 ---
 

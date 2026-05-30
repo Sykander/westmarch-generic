@@ -1,0 +1,107 @@
+"""Bags — reusable library for interacting with bags.
+
+https://avrae.io/dashboard/workshop/6296b723c964982e890e5315
+
+Use ``get_bag``, ``set_bag``, and ``modify_bag`` to interact with bags.
+
+``bags_cache`` — in-memory per-character bag list so multiple updates batch before persisting.
+"""
+
+bags_code = "bags"
+
+
+def _active_character():
+    try:
+        return character()
+    except:
+        return None
+
+
+def _resolve_optional_character(char = None):
+    return char if char != None else _active_character()
+
+
+def _require_character(char = None, context: str = "this operation"):
+    c = _resolve_optional_character(char)
+    if c == None:
+        err(f"No character available for {context}.")
+    return c
+
+
+bags_cache = {}
+
+
+def get_bags(char = None) -> list[Tuple[str, dict]]:
+    char = _require_character(char, "bag operations")
+
+    if not bags_cache.get(char.name, False):
+        bags_cache[char.name] = load_json(char.get_cvar(bags_code)) if char.get_cvar(bags_code) else []
+
+    return bags_cache[char.name]
+
+
+def set_bags(bags: list[Tuple[str, dict]], char = None) -> None:
+    char = _require_character(char, "bag operations")
+
+    bags_cache[char.name] = bags
+    char.set_cvar(bags_code, dump_json(bags))
+
+
+def get_bag(bag_name: str, char = None) -> dict:
+    bags = get_bags(char)
+    for bag in bags:
+        if bag[0] == bag_name:
+            return bag[1]
+
+    return {}
+
+
+def set_bag(bag_name: str, bag_contents: dict, char = None) -> None:
+    bags = get_bags(char)
+    bag_index = None
+    for index, bag in enumerate(bags):
+        if bag[0] == bag_name:
+            bag_index = index
+            break
+
+    if bag_index == None:
+        bags.append([bag_name, bag_contents])
+    else:
+        bags[bag_index] = [bag_name, bag_contents]
+
+    set_bags(bags, char)
+
+
+def modify_bag(
+    item: str,
+    count: int | None = None,
+    bag: str | None = None,
+    char = None,
+) -> Tuple[bool, str]:
+    """Modify the character's bag.
+
+    ``item`` — name of the item.
+
+    ``count`` — optional; default ``1``; amount to add (positive) or remove (negative).
+
+    ``bag`` — optional; default ``Equipment``; which bag to modify.
+
+    ``char`` — optional; defaults to active character.
+
+    Returns ``(did_update, update_message)``.
+    """
+    count = count if count != None else 1
+    bag = bag if bag != None else "Equipment"
+    char = _require_character(char, "bag operations")
+
+    bag_contents = get_bag(bag, char)
+    current_count = bag_contents.get(item, 0)
+    new_count = current_count + count
+
+    if new_count < 0:
+        return False, f"Couldn't update {char.name}'s bag {bag} with {count}x {item} because the new count would be {new_count}."
+
+    bag_contents[item] = new_count
+    set_bag(bag, bag_contents, char)
+
+    return True, f"""{f"{abs(count)}x " if abs(count) != 1 else ""}{item} {"added to" if count > 0 else "removed from"} {char.name}'s bag {bag}."""

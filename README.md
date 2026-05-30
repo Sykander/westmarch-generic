@@ -33,7 +33,7 @@ This repo is the **generic engine**. Per-server content lives in workshop gvars 
 
 ### Current status
 
-Bootstrap only: example alias (with sub-alias), snippet, gvar, template sourcemaps with placeholder UUIDs, and basic CI tests. Game systems from westmarch are **not** ported yet. Planned first port: the [MVP command set](docs/internal/projects/westmarch-statement/mvp-commands.md) (24 top-level commands — 23 player + GM hub `westmarch`; see doc for full list).
+Scaffolded workshop layout: **25** player/GM aliases (including **`westmarch`** subcommands), **35** engine gvar placeholders, dev/prod sourcemaps with UUIDs from **`unused_gvars.md`**. Implementation is stub-only — see [MVP command set](docs/internal/projects/westmarch-statement/mvp-commands.md).
 
 ## Documentation
 

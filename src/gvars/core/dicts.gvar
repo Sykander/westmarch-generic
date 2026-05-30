@@ -1,0 +1,8 @@
+"""Dicts — small dict helpers."""
+
+
+def is_dict(maybe_dict) -> bool:
+    try:
+        return maybe_dict == dict(maybe_dict)
+    except:
+        return False

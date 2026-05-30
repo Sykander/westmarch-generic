@@ -3,6 +3,10 @@
 #
 rebuild: rebuild_dev rebuild_prod
 
+generate-catalogues: install_node
+	npm run generate:catalogues
+	$(MAKE) rebuild
+
 test: sourcemap-tests unit-tests
 
 #

@@ -17,7 +17,7 @@ The **svar** remains **`westmarch_config`** (Avrae storage). The **command** is 
 
 ## Subcommands (sourcemap sub-aliases)
 
-Avrae routes `!westmarch <sub>` to nested aliases in the workshop sourcemap (same pattern as `!example sub` in bootstrap). Aliases **cannot** invoke other aliases from Drac2 — sub-aliases are a deploy-time structure, not runtime calls.
+Avrae routes `!westmarch <sub>` to nested aliases in the workshop sourcemap. Aliases **cannot** invoke other aliases from Drac2 — sub-aliases are a deploy-time structure, not runtime calls.
 
 | Invocation | Sub-alias | Doc | Purpose |
 |------------|-----------|-----|---------|

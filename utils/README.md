@@ -22,38 +22,36 @@ make test      # sourcemap tests + avrae-ls alias tests
 
 ---
 
-## Planned — catalogue generators *(TSV → gvar shards)*
+## Catalogue generators *(TSV → gvar shards)*
 
-Port from [westmarch `utils/`](https://github.com/Sykander/westmarch/tree/main/utils) with updated paths:
-
-| Script | Input | Output directory |
-|--------|-------|------------------|
-| **`generate-monsters.js`** | [public/assets/monsters.tsv](../public/assets/monsters.tsv) | `src/gvars/catalogues/monsters/{a-z}_monsters.gvar` |
-| **`generate-items.js`** | [public/assets/items.tsv](../public/assets/items.tsv) | `src/gvars/catalogues/items/{items,potions,magic_items}_list.gvar` |
-| **`generate-spells.js`** | [public/assets/spells.tsv](../public/assets/spells.tsv) | `src/gvars/catalogues/spells/spells_list.gvar` |
-| **`generate-books.js`** | [books-fiction.tsv](../public/assets/books-fiction.tsv), [books-real.tsv](../public/assets/books-real.tsv) | `src/gvars/catalogues/books/*.gvar` |
-| **`generate-recipes.js`** | [public/assets/recipes.tsv](../public/assets/recipes.tsv) | Snippet for config presets / optional `catalogues/recipes.gvar` |
-
-**Planned aggregate:**
+| Script | npm command | Input | Output |
+|--------|-------------|-------|--------|
+| [generate-monsters.js](generate-monsters.js) | `npm run generate:monsters` | [monsters.tsv](../public/assets/monsters.tsv) | `{a-z}_monsters.gvar` |
+| [generate-items.js](generate-items.js) | `npm run generate:items` | [items.tsv](../public/assets/items.tsv) | `items_list`, `potions_list`, `magic_items_list` |
+| [generate-spells.js](generate-spells.js) | `npm run generate:spells` | [spells.tsv](../public/assets/spells.tsv) | `spells_list.gvar` |
+| [generate-books.js](generate-books.js) | `npm run generate:books` | books-fiction/real.tsv | `{fiction,real}_all.gvar` when empty; else `{corpus}_{a-z}.gvar` |
+| [generate-recipes.js](generate-recipes.js) | `npm run generate:recipes` | [recipes.tsv](../public/assets/recipes.tsv) | `recipes_list.gvar` |
+| [generate-catalogues.js](generate-catalogues.js) | `npm run generate:catalogues` | All above | Runs all generators |
 
 ```bash
-npm run generate:catalogues
+make generate-catalogues   # generate all shards + rebuild env
 ```
 
-### Shared library — `utils/lib/` *(planned)*
+### Shared library — [utils/lib/](lib/)
 
-| File | Responsibility |
-|------|----------------|
-| **`read-tsv.js`** | Parse header + rows; normalize `\r`; warn on column mismatch |
-| **`write-json-gvar.js`** | Write JSON array body; optional row validator hook |
-| **`shard-by.js`** | `groupBy(rows, keyFn)` for letter / type splits |
-| **`manifest.js`** | Log row counts per shard; exit non-zero on empty required shards |
+| Module | Role |
+|--------|------|
+| [read-tsv.js](lib/read-tsv.js) | Parse TSV; skip blanks; warn on column mismatch |
+| [write-json-gvar.js](lib/write-json-gvar.js) | Write JSON array shard body |
+| [shard-by.js](lib/shard-by.js) | Letter / group helpers |
+| [manifest.js](lib/manifest.js) | Log row counts per shard |
+| [sourcemap-shards.js](lib/sourcemap-shards.js) | Auto-register shards in dev/prod sourcemaps |
+
+Generators register sourcemap slots automatically (two UUIDs per shard from **`unused_gvars.md`**). Then **`make rebuild`**.
 
 ### Output format
 
-Shard files are **raw JSON arrays** (westmarch pattern) — loaded at runtime with `load_json(get_gvar(uuid))`. Facade gvars ([monsters.gvar](../docs/internal/projects/westmarch-statement/gvars/monsters.md), etc.) map shard keys to **`env.gvars.*`** and **lazy-load** only the shard needed for the current lookup.
-
-**Do not** concatenate all shards into one generated file — that defeats the split.
+Shard files are **raw JSON arrays** — loaded at runtime with `load_json(get_gvar(uuid))`. Facade gvars map shard keys to **`env.gvars.*`** and lazy-load per lookup.
 
 ---
 
@@ -63,7 +61,7 @@ Shard files are **raw JSON arrays** (westmarch pattern) — loaded at runtime wi
 2. **Shard rule** — letter, type, or separate file per corpus; document in [content-pipeline.md](../docs/internal/projects/westmarch-statement/content-pipeline.md).
 3. **Implement** `utils/generate-<name>.js` using **`utils/lib/read-tsv.js`** + **`write-json-gvar.js`**.
 4. **Output paths** under `src/gvars/catalogues/` (or `src/gvars/configs/biomes/` for encounter pools).
-5. **Sourcemap** — one UUID per new `.gvar` from **`unused_gvars.md`**; run **`make rebuild`**.
+5. **Sourcemap** — generators call **`lib/sourcemap-shards.js`**; ensure enough UUIDs in **`unused_gvars.md`**, then **`make rebuild`**.
 6. **Facade** — engine gvar with lazy cache; document API in `docs/internal/projects/westmarch-statement/gvars/`.
 7. **npm script** — add to `package.json`; wire optional **`generate:catalogues`** bundle.
 

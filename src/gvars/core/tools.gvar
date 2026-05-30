@@ -1,0 +1,115 @@
+# Vendored from drac2-tools — src/gvars/utils/tools/tools.gvar
+
+using(
+    lists = env.gvars.lists,
+)
+
+"""Tools — search the official tool list and read proficiency/expertise from cvars."""
+
+tool_prof_code = "pTools"
+tool_exp_code = "eTools"
+
+tools_list = [
+    "Alchemist's Supplies",
+    "Brewer's Supplies",
+    "Calligrapher's Supplies",
+    "Carpenter's Tools",
+    "Cartographer's Tools",
+    "Cobbler's Tools",
+    "Cook's Utensils",
+    "Glassblower's Tools",
+    "Jeweler's Tools",
+    "Leatherworker's Tools",
+    "Mason's Tools",
+    "Painter's Supplies",
+    "Potter's Tools",
+    "Smith's Tools",
+    "Tinker's Tools",
+    "Weaver's Tools",
+    "Woodcarver's Tools",
+    "Dice Set",
+    "Dragonchess Set",
+    "Playing Card Set",
+    "Three-Dragon Ante Set",
+    "Bagpipes",
+    "Birdpipes",
+    "Drum",
+    "Dulcimer",
+    "Flute",
+    "Glaur",
+    "Hand Drum",
+    "Horn",
+    "Longhorn",
+    "Lute",
+    "Lyre",
+    "Pan Flute",
+    "Shawm",
+    "Songhorn",
+    "Tantan",
+    "Thelarr",
+    "Tocken",
+    "Viol",
+    "Wargong",
+    "Yarting",
+    "Zulkoon",
+    "Disguise Kit",
+    "Forgery Kit",
+    "Herbalism Kit",
+    "Navigator's Tools",
+    "Poisoner's Kit",
+    "Thieves' Tools",
+    "Land Vehicles",
+    "Water Vehicles",
+]
+
+
+def _active_character():
+    try:
+        return character()
+    except:
+        return None
+
+
+def _resolve_optional_character(char = None):
+    return char if char != None else _active_character()
+
+
+def _require_character(char = None, context: str = "this operation"):
+    c = _resolve_optional_character(char)
+    if c == None:
+        err(f"No character available for {context}.")
+    return c
+
+
+def search_for_tool(toolname):
+    return lists.search_list(tools_list, toolname)
+
+
+def get_has_proficiency(
+    toolname: str,
+    char = None,
+) -> bool:
+    """True if ``char`` has proficiency or expertise in ``toolname`` (official list only)."""
+    char = _require_character(char, "tools")
+
+    if toolname not in tools_list:
+        return False
+
+    tool_prof = char.get_cvar(tool_prof_code, "")
+    tool_exp = char.get_cvar(tool_exp_code, "")
+
+    return toolname in tool_prof or toolname in tool_exp
+
+
+def get_has_expertise(
+    toolname: str,
+    char = None,
+) -> bool:
+    char = _require_character(char, "tools")
+
+    if toolname not in tools_list:
+        return False
+
+    tool_exp = char.get_cvar(tool_exp_code, "")
+
+    return toolname in tool_exp

@@ -1,0 +1,49 @@
+"""Commands — reusable command-string builders.
+
+Does not prepend ``ctx.prefix`` except for multiline output; add prefix yourself when needed.
+"""
+
+MULTILINE_BASE = "multiline "
+
+
+def get_multiline(commands: list[str]) -> str:
+    """Build a multiline command string (``multiline`` prefix + per-line ``ctx.prefix``).
+
+    ``commands`` — list of command lines.
+
+    Returns the full multiline command string.
+    """
+    return MULTILINE_BASE + ctx.prefix + ("\n" + ctx.prefix).join(commands)
+
+
+def get_quotes(value: str) -> str:
+    """Wrap ``value`` in quotes suitable for command arguments when needed."""
+    problem_chars = [" ", "'", '"', "\t", "\n"]
+    problems = [char for char in problem_chars if char in value]
+    if len(problems) == 0:
+        return value
+
+    if '"' not in value:
+        return f'"{value}"'
+
+    if "'" not in value:
+        return f"'{value}'"
+
+    return f"《{value}》"
+
+
+def get_command(actions: list[str], args: list[Tuple[str, str]] | None = None) -> str:
+    """Build a single-line command string.
+
+    ``actions`` — list of action tokens (each passed through ``get_quotes``).
+
+    ``args`` — optional list of ``[flag, value]`` pairs (values quoted).
+
+    Returns the assembled command string.
+    """
+    command = " ".join([get_quotes(action) for action in actions])
+
+    if args != None:
+        command += " " + " ".join([f"{arg[0]} {get_quotes(arg[1])}" for arg in args])
+
+    return command
