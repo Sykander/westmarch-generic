@@ -1,17 +1,16 @@
 #!/usr/bin/env node
 /**
  * Generate recipe catalogue from public/assets/recipes.tsv
- * Output: src/gvars/catalogues/recipes/recipes_list.gvar (JSON array)
+ * Output: src/gvars/configs/recipes/recipes_list.gvar (JSON array)
  */
 const paths = require('./lib/paths');
 const { readTsv } = require('./lib/read-tsv');
 const { writeJsonGvar } = require('./lib/write-json-gvar');
 const { printManifest } = require('./lib/manifest');
-const { ensureShardSlots } = require('./lib/sourcemap-shards');
 
 const INPUT = paths.assets('recipes.tsv');
 const name = 'recipes_list';
-const file = 'src/gvars/catalogues/recipes/recipes_list.gvar';
+const file = 'src/gvars/configs/recipes/recipes_list.gvar';
 
 function parseMaterialList(raw) {
   const s = String(raw || '').trim();
@@ -53,7 +52,4 @@ const recipes = rows
 writeJsonGvar(paths.gvar(file), recipes);
 
 printManifest('Recipes', [{ name, file, count: recipes.length }]);
-
-const { added, skipped } = ensureShardSlots([{ name, file }]);
-console.log(`Sourcemap: ${added} slot(s) added, ${skipped} already registered.`);
 console.log('Recipes done.');

@@ -128,7 +128,7 @@ Optional longer-term use cases; not required for bootstrap.
 |----|--------|
 | **US-7.1** | As a **server owner**, I want to import a published config gvar from another creator (with attribution), **so that** I can run a prefab world and tweak it. |
 | **US-7.2** | As an **engine maintainer**, I want config schema versioning notes in docs, **so that** older config gvars fail gracefully or migrate when the engine adds fields. |
-| **US-7.3** | As a **server owner**, I want the engine to reuse [drac2-tools](https://github.com/Sykander/drac2-tools) implementations **without** subscribing to a second workshop, **so that** shared utilities ship in the westmarch-generic workshop (`src/gvars/core/`) and I only manage one engine subscription. |
+| **US-7.3** | As a **server owner**, I want the engine to reuse [drac2-tools](https://github.com/Sykander/drac2-tools) implementations **without** subscribing to a second workshop, **so that** shared utilities ship in the westmarch-generic workshop (`src/gvars/utils/core/`) and I only manage one engine subscription. |
 
 ---
 

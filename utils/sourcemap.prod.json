@@ -128,342 +128,327 @@
     },
     {
       "name": "a_monsters",
-      "file": "src/gvars/catalogues/monsters/a_monsters.gvar",
+      "file": "src/gvars/utils/catalogues/monsters/a_monsters.gvar",
       "id": "3251f862-418c-4ec4-b216-951439677f34"
     },
     {
       "name": "auth",
-      "file": "src/gvars/auth/auth.gvar",
+      "file": "src/gvars/utils/auth/auth.gvar",
       "id": "a3126246-4c37-42a6-b9e3-df2d1c57e821"
     },
     {
       "name": "b_monsters",
-      "file": "src/gvars/catalogues/monsters/b_monsters.gvar",
+      "file": "src/gvars/utils/catalogues/monsters/b_monsters.gvar",
       "id": "d513b5f7-3af2-4b07-b9cc-7724f1515e3b"
     },
     {
       "name": "bags",
-      "file": "src/gvars/core/bags.gvar",
+      "file": "src/gvars/utils/core/bags.gvar",
       "id": "dfc7333d-ebba-4cb9-9408-954f54084b24"
     },
     {
       "name": "biomes",
-      "file": "src/gvars/world/biomes.gvar",
+      "file": "src/gvars/utils/world/biomes.gvar",
       "id": "e5871a1f-2dfa-4a5e-b556-75dbbf8d27bd"
     },
     {
       "name": "c_monsters",
-      "file": "src/gvars/catalogues/monsters/c_monsters.gvar",
+      "file": "src/gvars/utils/catalogues/monsters/c_monsters.gvar",
       "id": "a8027d7d-19b8-4e20-b433-1e92cce119fc"
     },
     {
       "name": "check_config",
-      "file": "src/gvars/check_config/check_config.gvar",
+      "file": "src/gvars/utils/check_config/check_config.gvar",
       "id": "ff914b4f-938f-4126-b914-07f9ed12826a"
     },
     {
       "name": "clock",
-      "file": "src/gvars/world/clock.gvar",
+      "file": "src/gvars/utils/world/clock.gvar",
       "id": "5533ed6a-4483-45f3-b7ef-2a336fa7ddfe"
     },
     {
       "name": "commands",
-      "file": "src/gvars/core/commands.gvar",
+      "file": "src/gvars/utils/core/commands.gvar",
       "id": "58dd877f-b654-4f80-a9be-1e3dd0450d56"
     },
     {
       "name": "config",
-      "file": "src/gvars/config/config.gvar",
+      "file": "src/gvars/utils/config/config.gvar",
       "id": "1d810d47-af5b-47d5-9595-0ff9900a00bf"
     },
     {
       "name": "crafting",
-      "file": "src/gvars/crafting/crafting.gvar",
+      "file": "src/gvars/utils/crafting/crafting.gvar",
       "id": "5bd54705-0f1a-46b9-9e8b-eef559cddb8e"
     },
     {
       "name": "d_monsters",
-      "file": "src/gvars/catalogues/monsters/d_monsters.gvar",
+      "file": "src/gvars/utils/catalogues/monsters/d_monsters.gvar",
       "id": "d3d2428b-5527-443a-b07c-c265292ad113"
     },
     {
       "name": "dicts",
-      "file": "src/gvars/core/dicts.gvar",
+      "file": "src/gvars/utils/core/dicts.gvar",
       "id": "8d7b2b26-8026-4855-bc69-e55617dd95a9"
     },
     {
       "name": "display",
-      "file": "src/gvars/display/display.gvar",
+      "file": "src/gvars/utils/display/display.gvar",
       "id": "8dc8aae7-deb0-4f21-8f8a-2a101c33cc32"
     },
     {
       "name": "e_monsters",
-      "file": "src/gvars/catalogues/monsters/e_monsters.gvar",
+      "file": "src/gvars/utils/catalogues/monsters/e_monsters.gvar",
       "id": "19177b4c-6d86-4b6b-9382-4861de76548a"
     },
     {
       "name": "embeds",
-      "file": "src/gvars/core/embeds.gvar",
+      "file": "src/gvars/utils/core/embeds.gvar",
       "id": "d483bc13-362f-45c5-8596-efcab434123b"
     },
     {
       "name": "encounter_lists",
-      "file": "src/gvars/encounters/encounter_lists.gvar",
+      "file": "src/gvars/utils/encounters/encounter_lists.gvar",
       "id": "7497adbc-f942-44ad-aae5-7fc72eb162dc"
     },
     {
       "name": "encounter_templates",
-      "file": "src/gvars/encounters/encounter_templates.gvar",
+      "file": "src/gvars/utils/encounters/encounter_templates.gvar",
       "id": "5e41f89b-91f8-4554-8bed-440ff3781e4b"
     },
     {
       "name": "encounters",
-      "file": "src/gvars/encounters/encounters.gvar",
+      "file": "src/gvars/utils/encounters/encounters.gvar",
       "id": "2aabdcdb-3510-431b-8f35-afd06ff04224"
     },
     {
       "name": "f_monsters",
-      "file": "src/gvars/catalogues/monsters/f_monsters.gvar",
+      "file": "src/gvars/utils/catalogues/monsters/f_monsters.gvar",
       "id": "a2165486-155c-4577-afb3-abbb216cbe44"
     },
     {
-      "name": "fiction_all",
-      "file": "src/gvars/catalogues/books/fiction_all.gvar",
-      "id": "6b51c53f-3db9-49cd-8f24-e35866226fa2"
-    },
-    {
       "name": "g_monsters",
-      "file": "src/gvars/catalogues/monsters/g_monsters.gvar",
+      "file": "src/gvars/utils/catalogues/monsters/g_monsters.gvar",
       "id": "84d6ba9a-0003-4ff6-aa09-d814ad4b9221"
     },
     {
       "name": "h_monsters",
-      "file": "src/gvars/catalogues/monsters/h_monsters.gvar",
+      "file": "src/gvars/utils/catalogues/monsters/h_monsters.gvar",
       "id": "bc99078e-5c7c-4967-9324-c6c8dc39663b"
     },
     {
       "name": "i_monsters",
-      "file": "src/gvars/catalogues/monsters/i_monsters.gvar",
+      "file": "src/gvars/utils/catalogues/monsters/i_monsters.gvar",
       "id": "b63dbe3b-44df-4885-8a57-ef5d61d98e89"
     },
     {
       "name": "items",
-      "file": "src/gvars/catalogues/items/items.gvar",
+      "file": "src/gvars/utils/catalogues/items/items.gvar",
       "id": "573a61f9-8b12-40e2-b296-cb5445c61edd"
     },
     {
       "name": "items_list",
-      "file": "src/gvars/catalogues/items/items_list.gvar",
+      "file": "src/gvars/utils/catalogues/items/items_list.gvar",
       "id": "d1021306-0d9e-4874-8105-9003b81bdfef"
     },
     {
       "name": "j_monsters",
-      "file": "src/gvars/catalogues/monsters/j_monsters.gvar",
+      "file": "src/gvars/utils/catalogues/monsters/j_monsters.gvar",
       "id": "18be1a3a-4345-4787-9e59-b9cf5570f1d6"
     },
     {
       "name": "journeys",
-      "file": "src/gvars/world/journeys.gvar",
+      "file": "src/gvars/utils/world/journeys.gvar",
       "id": "48d231dd-a0a9-496a-8834-38b062e063e4"
     },
     {
       "name": "k_monsters",
-      "file": "src/gvars/catalogues/monsters/k_monsters.gvar",
+      "file": "src/gvars/utils/catalogues/monsters/k_monsters.gvar",
       "id": "b78b899b-20e5-47f8-8fa9-df8d39a4689a"
     },
     {
       "name": "l_monsters",
-      "file": "src/gvars/catalogues/monsters/l_monsters.gvar",
+      "file": "src/gvars/utils/catalogues/monsters/l_monsters.gvar",
       "id": "3ea53d40-bdcf-48da-9c94-460fb9865ef7"
     },
     {
       "name": "languages",
-      "file": "src/gvars/core/languages.gvar",
+      "file": "src/gvars/utils/core/languages.gvar",
       "id": "37e8d5c2-ac58-4811-a395-e1a475e66130"
     },
     {
       "name": "library",
-      "file": "src/gvars/content/library.gvar",
+      "file": "src/gvars/utils/content/library.gvar",
       "id": "43a10f5e-dd24-445d-b82d-f10ed989eff5"
     },
     {
       "name": "lists",
-      "file": "src/gvars/core/lists.gvar",
+      "file": "src/gvars/utils/core/lists.gvar",
       "id": "ec3ed4c1-527f-40a8-9352-36cfeb7d59d6"
     },
     {
       "name": "locations",
-      "file": "src/gvars/world/locations.gvar",
+      "file": "src/gvars/utils/world/locations.gvar",
       "id": "f4cc9003-4fb4-41cb-8e06-98199b60d96b"
     },
     {
       "name": "loot",
-      "file": "src/gvars/exploration/loot.gvar",
+      "file": "src/gvars/utils/exploration/loot.gvar",
       "id": "bbb9da79-aa74-40ec-9868-2075900bbfca"
     },
     {
       "name": "m_monsters",
-      "file": "src/gvars/catalogues/monsters/m_monsters.gvar",
+      "file": "src/gvars/utils/catalogues/monsters/m_monsters.gvar",
       "id": "2c9afcd4-e811-4e4d-8093-cfb36ec23a0c"
     },
     {
       "name": "magic_items_list",
-      "file": "src/gvars/catalogues/items/magic_items_list.gvar",
+      "file": "src/gvars/utils/catalogues/items/magic_items_list.gvar",
       "id": "7d85da39-507e-466f-bd53-e57ff42558fb"
     },
     {
       "name": "monsters",
-      "file": "src/gvars/catalogues/monsters/monsters.gvar",
+      "file": "src/gvars/utils/catalogues/monsters/monsters.gvar",
       "id": "64f20a33-f431-47c5-8a97-ca8abb0d3c9d"
     },
     {
       "name": "n_monsters",
-      "file": "src/gvars/catalogues/monsters/n_monsters.gvar",
+      "file": "src/gvars/utils/catalogues/monsters/n_monsters.gvar",
       "id": "f8a462b7-39a3-4dfb-8735-0423578ea83e"
     },
     {
       "name": "o_monsters",
-      "file": "src/gvars/catalogues/monsters/o_monsters.gvar",
+      "file": "src/gvars/utils/catalogues/monsters/o_monsters.gvar",
       "id": "dfa9b97e-5141-44e4-869b-f60fceaa32dc"
     },
     {
       "name": "p_monsters",
-      "file": "src/gvars/catalogues/monsters/p_monsters.gvar",
+      "file": "src/gvars/utils/catalogues/monsters/p_monsters.gvar",
       "id": "6dfb76b0-7793-4149-b209-9c3bcc5e60be"
     },
     {
       "name": "paths",
-      "file": "src/gvars/world/paths.gvar",
+      "file": "src/gvars/utils/world/paths.gvar",
       "id": "c6875cce-8c86-486e-ba75-7c0f8963b889"
     },
     {
       "name": "pc",
-      "file": "src/gvars/pc/pc.gvar",
+      "file": "src/gvars/utils/pc/pc.gvar",
       "id": "a6dab2a6-dd73-4ee4-a6d9-668236faab04"
     },
     {
       "name": "potions_list",
-      "file": "src/gvars/catalogues/items/potions_list.gvar",
+      "file": "src/gvars/utils/catalogues/items/potions_list.gvar",
       "id": "2ed21b7e-cb0f-46dd-bb2c-31a4b05df641"
     },
     {
       "name": "q_monsters",
-      "file": "src/gvars/catalogues/monsters/q_monsters.gvar",
+      "file": "src/gvars/utils/catalogues/monsters/q_monsters.gvar",
       "id": "f36fdf90-8d35-4e6c-add2-f68bc37cbd1e"
     },
     {
       "name": "quests",
-      "file": "src/gvars/misc/quests.gvar",
+      "file": "src/gvars/utils/misc/quests.gvar",
       "id": "46ee044d-1b95-437a-8cf5-66f9320e04e0"
     },
     {
       "name": "r_monsters",
-      "file": "src/gvars/catalogues/monsters/r_monsters.gvar",
+      "file": "src/gvars/utils/catalogues/monsters/r_monsters.gvar",
       "id": "4eb2ec86-4bb4-4884-952b-c822c5320c84"
     },
     {
       "name": "random",
-      "file": "src/gvars/core/random.gvar",
+      "file": "src/gvars/utils/core/random.gvar",
       "id": "f7184e4a-95e0-4ef1-83ad-b2dc6ca57e89"
     },
     {
-      "name": "real_all",
-      "file": "src/gvars/catalogues/books/real_all.gvar",
-      "id": "856b1c4a-3605-41a3-9a5a-78dca4834550"
-    },
-    {
       "name": "recipe",
-      "file": "src/gvars/misc/recipe.gvar",
+      "file": "src/gvars/utils/misc/recipe.gvar",
       "id": "d667bf05-88ad-4379-9ae6-bc91466eb3ea"
     },
     {
-      "name": "recipes_list",
-      "file": "src/gvars/catalogues/recipes/recipes_list.gvar",
-      "id": "d1560630-749a-413a-96de-1503473ea1cf"
-    },
-    {
       "name": "regex",
-      "file": "src/gvars/core/regex.gvar",
+      "file": "src/gvars/utils/core/regex.gvar",
       "id": "20ad4399-8662-4ea6-afb5-339bed44acbe"
     },
     {
       "name": "rolls",
-      "file": "src/gvars/core/rolls.gvar",
+      "file": "src/gvars/utils/core/rolls.gvar",
       "id": "d769f5a0-fbf9-4bde-88d0-b8de49bb9936"
     },
     {
       "name": "s_monsters",
-      "file": "src/gvars/catalogues/monsters/s_monsters.gvar",
+      "file": "src/gvars/utils/catalogues/monsters/s_monsters.gvar",
       "id": "56fab4ee-0246-4441-b5a7-556b563daba9"
     },
     {
       "name": "shops",
-      "file": "src/gvars/economy/shops.gvar",
+      "file": "src/gvars/utils/economy/shops.gvar",
       "id": "8b5f6144-89d4-4bac-b28f-551158f510bb"
     },
     {
       "name": "spells",
-      "file": "src/gvars/catalogues/spells/spells.gvar",
+      "file": "src/gvars/utils/catalogues/spells/spells.gvar",
       "id": "7ebd040c-28de-4304-9c49-f16242d3e261"
     },
     {
       "name": "spells_list",
-      "file": "src/gvars/catalogues/spells/spells_list.gvar",
+      "file": "src/gvars/utils/catalogues/spells/spells_list.gvar",
       "id": "bc60c8c7-df51-4e28-8e9b-51ad5438edf4"
     },
     {
       "name": "stats",
-      "file": "src/gvars/pc/stats.gvar",
+      "file": "src/gvars/utils/pc/stats.gvar",
       "id": "c0b0f9c3-23ed-437e-a248-98bb448dcd96"
     },
     {
       "name": "strings",
-      "file": "src/gvars/core/strings.gvar",
+      "file": "src/gvars/utils/core/strings.gvar",
       "id": "1094cf3c-8b5f-4ea7-b5d6-ae18bc66680a"
     },
     {
       "name": "t_monsters",
-      "file": "src/gvars/catalogues/monsters/t_monsters.gvar",
+      "file": "src/gvars/utils/catalogues/monsters/t_monsters.gvar",
       "id": "04710412-6914-422d-ab2b-5574ccbe0b77"
     },
     {
       "name": "tools",
-      "file": "src/gvars/core/tools.gvar",
+      "file": "src/gvars/utils/core/tools.gvar",
       "id": "d1e91227-938b-4c65-a8fd-b3d98ed32fb7"
     },
     {
       "name": "u_monsters",
-      "file": "src/gvars/catalogues/monsters/u_monsters.gvar",
+      "file": "src/gvars/utils/catalogues/monsters/u_monsters.gvar",
       "id": "23fef75b-997b-40b7-9630-ef45a8ae67a2"
     },
     {
       "name": "v_monsters",
-      "file": "src/gvars/catalogues/monsters/v_monsters.gvar",
+      "file": "src/gvars/utils/catalogues/monsters/v_monsters.gvar",
       "id": "23820b8e-c725-45fa-9a27-4005931059bc"
     },
     {
       "name": "w_monsters",
-      "file": "src/gvars/catalogues/monsters/w_monsters.gvar",
+      "file": "src/gvars/utils/catalogues/monsters/w_monsters.gvar",
       "id": "f8449119-206a-4a05-8140-2bebc25eb8ee"
     },
     {
       "name": "weather",
-      "file": "src/gvars/world/weather.gvar",
+      "file": "src/gvars/utils/world/weather.gvar",
       "id": "d074b25e-9d6b-4588-ac0c-07bdff78eed5"
     },
     {
       "name": "x_monsters",
-      "file": "src/gvars/catalogues/monsters/x_monsters.gvar",
+      "file": "src/gvars/utils/catalogues/monsters/x_monsters.gvar",
       "id": "2149d241-dd11-401c-8757-0cfa308a44a7"
     },
     {
       "name": "y_monsters",
-      "file": "src/gvars/catalogues/monsters/y_monsters.gvar",
+      "file": "src/gvars/utils/catalogues/monsters/y_monsters.gvar",
       "id": "cf7e2fd2-6be9-44f7-bb1d-e71b720e42c9"
     },
     {
       "name": "z_monsters",
-      "file": "src/gvars/catalogues/monsters/z_monsters.gvar",
+      "file": "src/gvars/utils/catalogues/monsters/z_monsters.gvar",
       "id": "6f366ec0-1337-43ac-a325-d9316c1cfe94"
     }
   ]

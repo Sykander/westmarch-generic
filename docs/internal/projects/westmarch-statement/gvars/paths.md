@@ -1,6 +1,6 @@
 # paths.gvar
 
-**Path:** `src/gvars/world/paths.gvar` · **Phase:** 1 (Tier C)
+**Path:** `src/gvars/utils/world/paths.gvar` · **Phase:** 1 (Tier C)
 
 Look up [paths](../data-shapes.md#path) from **`world_data.paths`** and resolve **per-edge** costs and steps. Transport modes from **`world_data.transport`**. Edge helpers used by [journeys.md](journeys.md).
 

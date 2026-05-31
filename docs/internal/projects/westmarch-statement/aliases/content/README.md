@@ -35,7 +35,7 @@ Book search and deep reading. Shared **`library.gvar`** engine.
 
 Full spec: [data-shapes.md § content.config](../../data-shapes.md#contentconfig).
 
-Book catalogues: [public/assets/books-fiction.tsv](../../../../public/assets/books-fiction.tsv), [books-real.tsv](../../../../public/assets/books-real.tsv) (merge or separate at build time).
+Book catalogues: [public/assets/books-forgotten-realms.tsv](../../../../public/assets/books-forgotten-realms.tsv) (Forgotten Realms in-universe works), [books-real.tsv](../../../../public/assets/books-real.tsv) (public-domain works — use **`content_link`** for full text URLs). Shape: [data-shapes.md § Book](../../data-shapes.md#book). Merge or keep separate at build time.
 
 Reference: [westmarch library architecture](https://github.com/Sykander/westmarch/blob/main/docs/library/library-architecture.md).
 

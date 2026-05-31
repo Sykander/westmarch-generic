@@ -12,8 +12,8 @@ Tab-separated value (`.tsv`) catalogues used to build config gvars and seed serv
 | [items.tsv](items.tsv) | Copied from westmarch | craft, brew, enchant, buy, sell | Single file; `type` column splits Item / Magic Item / Potion at build time |
 | [recipes.tsv](recipes.tsv) | **Examples** in repo | brew, enchant, craft, **recipe** | Explicit recipes; `consumed` vs `required` materials — links to [items.tsv](items.tsv) `name` |
 | [spells.tsv](spells.tsv) | Copied from westmarch | scribe | `name`, `level`, `school` |
-| [books-fiction.tsv](books-fiction.tsv) | **Empty** (headers only) | library, read | Forgotten Realms–style fiction; **not** westmarch corpus |
-| [books-real.tsv](books-real.tsv) | **Empty** (headers only) | library, read | Real-world / pop-fiction works (e.g. *Harry Potter*, *Twilight*) — populate later |
+| [books-forgotten-realms.tsv](books-forgotten-realms.tsv) | Curated FR in-universe set | library, read | Forgotten Realms gazetteers, histories, travelogues — **`content_link`** when wiki or official digital edition exists |
+| [books-real.tsv](books-real.tsv) | Curated public-domain set | library, read | Real works — **`content_link`** points to Project Gutenberg |
 
 ## Book columns
 
@@ -32,8 +32,9 @@ Both book files share the westmarch book schema:
 | `tags` | Comma-separated topic tags for `!library` search |
 | `read_bonus` | Optional numeric bonus (usually `0`) |
 | `image` | Optional image URL |
+| `content_link` | Optional HTTPS URL to full text (shown in-game at 100% comprehension only) — see [data-shapes.md § Book](../../docs/internal/projects/westmarch-statement/data-shapes.md#book) |
 
-At config/build time, server owners may merge fiction + real lists, use one only, or keep them in separate extension gvars.
+At config/build time, server owners may merge forgotten-realms + real lists, use one only, or keep them in separate extension gvars.
 
 ## Items `type` values
 
@@ -75,7 +76,7 @@ cp ../westmarch/public/items.tsv public/assets/
 cp ../westmarch/public/spells.tsv public/assets/
 ```
 
-Do **not** copy `westmarch/public/books.tsv` into this repo — use `books-fiction.tsv` and `books-real.tsv` instead.
+Do **not** copy `westmarch/public/books.tsv` into this repo — use `books-forgotten-realms.tsv` and `books-real.tsv` instead.
 
 **Recipes** are owner-defined — edit [recipes.tsv](recipes.tsv) or load recipes directly into the config gvar; there is no westmarch export.
 

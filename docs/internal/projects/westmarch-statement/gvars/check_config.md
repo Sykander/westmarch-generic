@@ -1,6 +1,6 @@
 # check_config.gvar
 
-**Path:** `src/gvars/check_config/check_config.gvar` · **Phase:** 0–1
+**Path:** `src/gvars/utils/check_config/check_config.gvar` · **Phase:** 0–1
 
 **Config validation** for **`!westmarch check`** — svar wiring, schema shape, cross-subsystem rules, and enabled-subsystem data requirements.
 

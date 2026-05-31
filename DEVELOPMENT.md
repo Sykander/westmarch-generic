@@ -38,7 +38,7 @@ make test
 ### 2. Implement
 
 - Follow `.cursor/rules/` (Drac2 conventions; cached Avrae docs in `.cursor/avrae-reference/`).
-- **Core helpers** — copy from drac2-tools into `src/gvars/core/` when needed ([core.md](docs/internal/projects/westmarch-statement/gvars/core.md)); **domain gvars** (e.g. `pc`) port from westmarch and/or drac2-tools and adapt to engine contracts.
+- **Core helpers** — copy from drac2-tools into `src/gvars/utils/core/` when needed ([core.md](docs/internal/projects/westmarch-statement/gvars/core.md)); **domain gvars** (e.g. `pc`) port from westmarch and/or drac2-tools and adapt to engine contracts.
 - Pair behavior changes with **`.alias-test`** or **`.gvar-test`** files where applicable.
 - For new gvars, take UUIDs from `unused_gvars.md` (never invent ids).
 
@@ -57,7 +57,7 @@ npm run generate:catalogues   # planned — see utils/README.md
 make rebuild                  # if new shard gvars were added to sourcemaps
 ```
 
-This writes `src/gvars/env.dev.gvar`, `src/gvars/env.prod.gvar`, and `.varfile.json`. Do not hand-edit those outputs. Shard bodies under `src/gvars/catalogues/` are **committed JSON** produced by generate scripts — see [content-pipeline.md](docs/internal/projects/westmarch-statement/content-pipeline.md).
+This writes `src/gvars/env.dev.gvar`, `src/gvars/env.prod.gvar`, and `.varfile.json`. Do not hand-edit those outputs. Shard bodies under `src/gvars/utils/catalogues/` are **committed JSON** produced by generate scripts — see [content-pipeline.md](docs/internal/projects/westmarch-statement/content-pipeline.md).
 
 ### 4. Verify
 

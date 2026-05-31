@@ -8,7 +8,7 @@ These are **not** engine code. Do not confuse with:
 
 | Path | Role |
 |------|------|
-| **`src/gvars/config/`** | Engine **`config.gvar`** — `get_config()`, defaults merge, svar loader |
+| **`src/gvars/utils/config/`** | Engine **`config.gvar`** — `get_config()`, defaults merge, svar loader |
 | **`src/gvars/configs/biomes/`** | Engine **preset biome gvar bodies** — referenced via **`engine:configs/biomes/<code>`** |
 | **`src/gvars/configs/`** | **Server data** — toggles, **`world_data`**, catalogues for a specific setting |
 | **`src/gvars/configs/starter.gvar`** | Minimal empty schema — all subsystems off, no world data |
@@ -25,6 +25,8 @@ At runtime, the owner’s **`westmarch_config`** svar points at **their** worksh
 4. **Documentation** — worked examples of [data-shapes.md](../data-shapes.md) in a coherent world.
 
 Presets ship in the **same westmarch-generic repo** as source; workshop UUIDs for each preset are listed in [docs/setup.md](../../../../docs/setup.md) when published (one slot per preset in sourcemaps, same pattern as engine gvars).
+
+**Bulk content authoring:** copy-paste prompts for external LLMs live in [`src/prompts/`](../../../../src/prompts/README.md). Full build guide: [prompt-generation/](../../prompt-generation/README.md) (locations → paths → shops → biomes → …). Generate there → validate → paste into Cursor for repo integration.
 
 ---
 

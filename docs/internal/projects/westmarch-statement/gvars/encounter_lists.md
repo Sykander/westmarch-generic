@@ -1,6 +1,6 @@
 # encounter_lists.gvar
 
-**Path:** `src/gvars/encounters/encounter_lists.gvar` · **Phase:** 0–1
+**Path:** `src/gvars/utils/encounters/encounter_lists.gvar` · **Phase:** 0–1
 
 Pick **one encounter** for an activity command (**enc**, **forage**, …). Expects a **resolved biome code** from **[biomes.gvar](biomes.md)** **`resolve_biome`** — this module does **not** resolve biome source policy.
 

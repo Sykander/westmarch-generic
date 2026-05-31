@@ -25,6 +25,8 @@ Shared flags:
 
 - **`comprehend`** — Comprehend Languages for that slip.
 - **Cooldown:** **`policies.content.enforce_library_cooldowns`**; **`command_config.library.cooldown_seconds`** (default **120**); **[pc.gvar](../../gvars/pc.md)** **`check_cooldown(ch, "library")`**.
+- **Embed body:** **`description`** only — a short in-game excerpt, not the full volume ([data-shapes.md § Book](../../data-shapes.md#book)).
+- **Full text link:** when the book has **`content_link`** and the character reaches **100% comprehension** on that title, **`read_display`** adds a link to read the complete work online (public-domain catalogue entries).
 - On high comprehension (>50), embed suggests `!read "<title>"` for deep study.
 
 **`restricted`** example config:
@@ -104,6 +106,7 @@ Activity commands and **crafting** are **not** hard dependencies, but **`inferre
 - All four **`library_topic_source`** modes ([data-shapes.md](../../data-shapes.md#contentconfig))
 - Topic search → single random book from candidate pool (~20 internal candidates per westmarch spec)
 - Quick read with comprehension score, skill roll field, censoring
+- **`content_link`** footer when comprehension reaches **100** and book defines a URL ([library.gvar](../../gvars/library.md))
 - Cooldown enforcement (skip in Development)
 - Help embed reflects active **`library_topic_source`** (usage differs per mode)
 - Alias-tests: help, manual search, restricted reject, inferred/balanced smoke *(fixture history)*
@@ -118,11 +121,11 @@ Activity commands and **crafting** are **not** hard dependencies, but **`inferre
 
 ## Implementation checklist
 
-- [ ] Port **`library.gvar`** — `infer_topics`, `resolve_search_topics`; follow [library-architecture.md](https://github.com/Sykander/westmarch/blob/main/docs/library/library-architecture.md)
+- [ ] Port **`library.gvar`** — `infer_topics`, `resolve_search_topics`, **`read_display`** with **`content_link`** gating; follow [library-architecture.md](https://github.com/Sykander/westmarch/blob/main/docs/library/library-architecture.md)
 - [ ] Refactor book source from hard-coded gvar → config `books` (or extension pointer)
 - [ ] Port **`library.alias`** — loader, content toggle, topic policy branch
 - [ ] Add **`subsystems.content.config`** to schema + template config
-- [ ] **`library.alias-test`** — manual, restricted, inferred fixtures
+- [ ] **`library.alias-test`** — manual, restricted, inferred fixtures; **`content_link`** hidden below 100% comprehension
 - [ ] Document public `docs/config/books.md` when schema stabilizes
 
 ## Exit criteria
@@ -135,6 +138,7 @@ Activity commands and **crafting** are **not** hard dependencies, but **`inferre
 | **`restricted`** rejects disallowed topic | Alias-test |
 | **`inferred`** rejects user-supplied topic args | Alias-test |
 | Comprehend flag path does not crash | Optional alias-test row |
+| **`content_link`** shown only at 100% comprehension when set | Alias-test |
 | CI green | GitHub Actions |
 
 ## Related

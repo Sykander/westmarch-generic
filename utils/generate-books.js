@@ -1,14 +1,13 @@
 #!/usr/bin/env node
 /**
- * Generate book shards from books-fiction.tsv and books-real.tsv
- * Output: src/gvars/catalogues/books/{fiction,real}_{a-z}.gvar
+ * Generate book shards from books-forgotten-realms.tsv and books-real.tsv
+ * Output: src/gvars/configs/books/{forgotten_realms,real}_{a-z}.gvar
  */
 const paths = require('./lib/paths');
 const { readTsv } = require('./lib/read-tsv');
 const { writeJsonGvar } = require('./lib/write-json-gvar');
 const { LETTERS, letterFromName } = require('./lib/shard-by');
 const { printManifest } = require('./lib/manifest');
-const { ensureShardSlots } = require('./lib/sourcemap-shards');
 
 function parseTags(s) {
   return String(s || '')
@@ -42,6 +41,9 @@ function rowToBook(row) {
   const image = String(row.image ?? '').trim();
   if (image) book.image = image;
 
+  const contentLink = String(row.content_link ?? '').trim();
+  if (contentLink) book.content_link = contentLink;
+
   return book;
 }
 
@@ -53,39 +55,42 @@ function generateCorpus(corpus, tsvName) {
   const books = rows.map(rowToBook).filter((b) => b.name.length > 0);
 
   const manifest = [];
-  const sourcemapEntries = [];
+  const outDir = 'src/gvars/configs/books';
 
   // Single shard until corpus is large enough to split by letter (content-pipeline)
   if (books.length === 0) {
     const name = `${corpus}_all`;
-    const file = `src/gvars/catalogues/books/${name}.gvar`;
+    const file = `${outDir}/${name}.gvar`;
     writeJsonGvar(paths.gvar(file), []);
     manifest.push({ name, file, count: 0 });
-    sourcemapEntries.push({ name, file });
-    return { manifest, sourcemapEntries, total: 0 };
+    return { manifest, total: 0 };
+  }
+
+  const LETTER_SHARD_THRESHOLD = 100;
+  if (books.length < LETTER_SHARD_THRESHOLD) {
+    const name = `${corpus}_all`;
+    const file = `${outDir}/${name}.gvar`;
+    writeJsonGvar(paths.gvar(file), books);
+    manifest.push({ name, file, count: books.length });
+    return { manifest, total: books.length };
   }
 
   for (const letter of LETTERS) {
     const name = `${corpus}_${letter}`;
-    const file = `src/gvars/catalogues/books/${name}.gvar`;
+    const file = `${outDir}/${name}.gvar`;
     const contents = books.filter((b) => letterFromName(b.name) === letter);
     writeJsonGvar(paths.gvar(file), contents);
     manifest.push({ name, file, count: contents.length });
-    sourcemapEntries.push({ name, file });
   }
 
-  return { manifest, sourcemapEntries, total: books.length };
+  return { manifest, total: books.length };
 }
 
-const fiction = generateCorpus('fiction', 'books-fiction.tsv');
+const forgottenRealms = generateCorpus('forgotten_realms', 'books-forgotten-realms.tsv');
 const real = generateCorpus('real', 'books-real.tsv');
 
-printManifest('Books (fiction)', fiction.manifest);
-console.log(`  (${fiction.total} total fiction rows)`);
+printManifest('Books (forgotten realms)', forgottenRealms.manifest);
+console.log(`  (${forgottenRealms.total} total forgotten realms rows)`);
 printManifest('Books (real)', real.manifest);
 console.log(`  (${real.total} total real rows)`);
-
-const allEntries = [...fiction.sourcemapEntries, ...real.sourcemapEntries];
-const { added, skipped } = ensureShardSlots(allEntries);
-console.log(`Sourcemap: ${added} slot(s) added, ${skipped} already registered.`);
 console.log('Books done.');

@@ -398,7 +398,7 @@ Document tranches in SS and MVP § Mapping to solution phases.
 | **Biome encounter pools** | Tier A/B | **`world_data.biomes` → lazy gvar**; [src/gvars/configs/biomes/](../../../src/gvars/configs/biomes/README.md) presets; port from westmarch per biome |
 | Monsters | Tier C | **`utils/generate-monsters.js`** → letter shards; [content-pipeline.md](content-pipeline.md) |
 | Items / potions / magic | Tier E | **`generate-items.js`** → three shards |
-| Books | Tier G | **`generate-books.js`** → fiction/real shards |
+| Books | Tier G | **`generate-books.js`** → forgotten_realms/real shards |
 | Recipes | Tier E/H | **`recipes`** in config; [recipes.tsv](../../../public/assets/recipes.tsv) via **`generate-recipes.js`** |
 
 **Decision needed:** inline vs extension vs build-time merge for **catalogues** (monsters/items/books) — before Tier E reference extraction. **Biomes** decision made: **always separate gvars**, registry on config.

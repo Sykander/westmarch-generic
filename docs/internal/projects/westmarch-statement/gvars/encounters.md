@@ -1,6 +1,6 @@
 # encounters.gvar
 
-**Path:** `src/gvars/encounters/encounters.gvar` · **Phase:** 0–1
+**Path:** `src/gvars/utils/encounters/encounters.gvar` · **Phase:** 0–1
 
 Run an [encounter dict](../data-shapes.md#encounter-input), apply sheet outcomes, return embed-ready result. Ports westmarch `process_encounters.gvar` as **one public API**.
 

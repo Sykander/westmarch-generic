@@ -1,6 +1,6 @@
 # Core gvars — vendored utilities
 
-**Path:** `src/gvars/core/` · **Phase:** 0–1
+**Path:** `src/gvars/utils/core/` · **Phase:** 0–1
 
 Shared **Drac2 helpers** copied into the westmarch-generic workshop — not loaded from a separate [drac2-tools](https://github.com/Sykander/drac2-tools) subscription at runtime.
 
@@ -21,7 +21,7 @@ This satisfies the intent of [US-7.3](../user-stories.md) — reuse community li
 
 ## Two port kinds
 
-### 1. Core utilities — `src/gvars/core/`
+### 1. Core utilities — `src/gvars/utils/core/`
 
 **Pure helpers:** no server config, no westmarch domain rules. Copy from **drac2-tools** `src/gvars/utils/<name>/<name>.gvar`, adjust **`using()`** / env keys, trim unused surface, add to sourcemap.
 
@@ -94,7 +94,7 @@ src/gvars/
 ## Port workflow
 
 1. **Identify upstream** — drac2-tools path and/or westmarch path in module doc (e.g. [pc.md](pc.md) → westmarch `bags.gvar`).
-2. **Copy** into target path under `src/gvars/core/` or domain folder.
+2. **Copy** into target path under `src/gvars/utils/core/` or domain folder.
 3. **Adapt** — replace external `using(env=…)` with `env.gvars.*` from this workshop; drop unused exports; fix Drac2 subset issues.
 4. **Provenance** — short header comment in the **`.gvar`** source: upstream repo, path, port date (maintainer-facing, not player docs).
 5. **Register** — add slot to **`utils/sourcemap.*.json`**, UUID from **`unused_gvars.md`**, **`make rebuild`**.

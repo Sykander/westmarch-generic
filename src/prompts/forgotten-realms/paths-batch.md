@@ -1,0 +1,30 @@
+# Forgotten Realms — paths (batch)
+
+**Prompt:** [`paths-batch.prompt.md`](paths-batch.prompt.md)
+
+**Goal:** **15–25** one-way path edges per chat.
+
+**Schema:** [Path](../../../docs/internal/projects/westmarch-statement/data-shapes.md#path)
+
+## Before you send
+
+Paste **all location ids** (or the subgraph ids for this region). Optionally name a **hub** to star-connect first.
+
+## Validation
+
+- [ ] Assigns to `world_data_paths` (list)
+- [ ] Every `from` / `to` is in your pasted id list
+- [ ] Every step `type` is `encounter`, `proceed`, or `cost`
+- [ ] Encounter steps use allowed biome codes only
+- [ ] No duplicate `(from, to, transport)` — treat missing `requirements` as `walk`/any
+- [ ] Bidirectional routes have two entries if both directions are travelable
+- [ ] `description` on proceed steps ≤280 chars
+
+## Integration
+
+> Append these entries to `world_data.paths` in `forgotten_realms_2014.gvar`. Skip duplicates matching same `from`, `to`, and `requirements.transport`.
+
+## Tips
+
+- Connect trial hub to every wilderness node before adding wilderness-only edges.
+- Ferry/toll: use top-level `cost` and/or a `cost` step with same gold amount.

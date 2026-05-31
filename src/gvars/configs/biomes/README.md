@@ -14,7 +14,7 @@ world_data = {
 
 After publish, **`engine:configs/biomes/forest`** resolves to this folder’s workshop UUID (sourcemap slot).
 
-Not to be confused with **`src/gvars/config/`** — the engine **`config.gvar`** loader (`get_config()`).
+Not to be confused with **`src/gvars/utils/config/`** — the engine **`config.gvar`** loader (`get_config()`).
 
 ## Preset codes
 
@@ -48,7 +48,7 @@ MVP presets include at least one **`gather`** entry per enabled activity for ali
 
 ## westmarch port notes
 
-Reference westmarch `src/gvars/encounters/biomes/*.gvar` for flavour and encounter ideas. When porting:
+Reference westmarch `src/gvars/utils/encounters/biomes/*.gvar` for flavour and encounter ideas. When porting:
 
 - Split legacy **`encounters`** + **`combat_encounters`** into **`pools.enc.combat`** / **`.gather`** / **`.quest`**
 - Drop d100 list-builder weights — kind mix comes from **`subsystems.exploration.config.distribution`**

@@ -1,6 +1,6 @@
 # display.gvar
 
-**Path:** `src/gvars/display/display.gvar` · **Phase:** 0
+**Path:** `src/gvars/utils/display/display.gvar` · **Phase:** 0
 
 Single entry point for **command-scoped embed branding**. Resolves subsystem, command, merged config display layers, and footer policy from **`ctx`** + server config, then returns a pre-configured **`get_embed`** from **`core/embeds`**.
 

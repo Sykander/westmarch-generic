@@ -13,7 +13,9 @@ Deep read companion to [library.md](library.md). Same **`library.gvar`** engine;
 - **Search:** `library.search_by_name(name, author)` — disambiguation embed if multiple hits.
 - **Read:** `library.read_book(..., "deep_read", ...)` + `library.read_display`.
 - **Cooldown:** 28800s (`bags.read_cooldown_code`); skip in Development.
-- **Comprehension:** full body (not 120-char quick skim); skill roll in embed field when present.
+- **Embed body:** full **`description`** text for deep study (not a 120-char skim) — still an excerpt for long works, not a novel pasted into Discord ([data-shapes.md § Book](../../data-shapes.md#book)).
+- **Full text link:** same rule as **`!library`** — if the book has **`content_link`** and comprehension is **100%**, **`read_display`** adds the external link ([library.gvar](../../gvars/library.md)).
+- **Comprehension:** skill roll in embed field when present; score updates per-book cvar.
 
 ## westmarch reference
 
@@ -43,7 +45,7 @@ search_by_name → read_book(deep_read) → read_display
 
 - [ ] **`read.alias`** — loader, content toggle, author disambiguation
 - [ ] Share config fixture with library alias-tests
-- [ ] **`read.alias-test`** — help, single book deep read, cooldown message shape
+- [ ] **`read.alias-test`** — help, single book deep read, cooldown message shape; **`content_link`** at 100% comprehension only
 - [ ] **`rules_edition`** — languages helper path
 
 ## Exit criteria

@@ -41,7 +41,7 @@ Applies to **all** exploration activity commands; **`enc`** is the reference imp
 | Artifact | Path |
 |----------|------|
 | Alias | `westmarch/src/aliases/exploration/enc.alias` |
-| List builder | `westmarch/src/gvars/encounters/encounter_lists.gvar` |
+| List builder | `westmarch/src/gvars/utils/encounters/encounter_lists.gvar` |
 | Encounters engine | [encounters.md](../../gvars/encounters.md) |
 
 Key call path:

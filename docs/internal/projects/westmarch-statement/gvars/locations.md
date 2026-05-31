@@ -1,6 +1,6 @@
 # locations.gvar
 
-**Path:** `src/gvars/world/locations.gvar` · **Phase:** 1 (Tier C)
+**Path:** `src/gvars/utils/world/locations.gvar` · **Phase:** 1 (Tier C)
 
 Look up [locations](../data-shapes.md#location) from **`world_data.locations`**. Config owns **`world_data`**; this module owns resolution and display.
 

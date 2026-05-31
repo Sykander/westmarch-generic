@@ -1,6 +1,6 @@
 # biomes.gvar
 
-**Path:** `src/gvars/world/biomes.gvar` · **Phase:** 0–1
+**Path:** `src/gvars/utils/world/biomes.gvar` · **Phase:** 0–1
 
 **Biome registry resolution**, lazy-loaded biome bodies, and **biome code selection** for all exploration activity commands. Biome bodies are **large** — stored in separate workshop gvars referenced from **`world_data.biomes`**, not inline in server config.
 

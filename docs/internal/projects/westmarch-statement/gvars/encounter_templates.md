@@ -1,8 +1,8 @@
 # encounter_templates.gvar
 
-**Path:** `src/gvars/encounters/encounter_templates.gvar` · **Phase:** 0–1
+**Path:** `src/gvars/utils/encounters/encounter_templates.gvar` · **Phase:** 0–1
 
-Factory functions that return **[encounter](../data-shapes.md#encounter-input)** dicts (data only). Port from `westmarch/src/gvars/encounters/encounter_templates.gvar`.
+Factory functions that return **[encounter](../data-shapes.md#encounter-input)** dicts (data only). Port from `westmarch/src/gvars/utils/encounters/encounter_templates.gvar`.
 
 Encounter field shapes and **`ectx`** callables: [data-shapes.md](../data-shapes.md).
 

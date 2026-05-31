@@ -14,6 +14,8 @@ Previously named `initial-statement`; renamed to reflect that this is the **west
 | [data-shapes.md](data-shapes.md) | — | Reusable data shapes (encounter, location, path, **policies**, …) |
 | [server-config.md](server-config.md) | — | How server config is stored, loaded, validated |
 
+**Bulk config authoring:** [../prompt-generation/README.md](../prompt-generation/README.md) — LLM prompts for locations, paths, shops, biomes, etc.
+
 ## Implementation docs
 
 ### Aliases *(by `subsystems` key)*

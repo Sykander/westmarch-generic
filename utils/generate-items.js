@@ -10,7 +10,7 @@ const { printManifest } = require('./lib/manifest');
 const { ensureShardSlots } = require('./lib/sourcemap-shards');
 
 const INPUT = paths.assets('items.tsv');
-const OUT_DIR = 'src/gvars/catalogues/items';
+const OUT_DIR = 'src/gvars/utils/catalogues/items';
 
 const RARITIES = ['common', 'uncommon', 'rare', 'very rare', 'legendary'];
 const POTION_PRICES = ['250 gp', '500 gp', '1,000 gp', '10,000 gp', '100,000 gp'];

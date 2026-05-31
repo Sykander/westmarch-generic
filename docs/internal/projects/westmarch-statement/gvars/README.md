@@ -2,7 +2,7 @@
 
 Shared **engine workshop** modules under `src/gvars/`. Aliases `using()` these via `env` — they do not contain server world data (that lives in the owner’s config gvar pointed to by `westmarch_config` svar).
 
-**Core utilities** (`commands`, `embeds`, `rolls`, …) are **vendored** from [drac2-tools](https://github.com/Sykander/drac2-tools) into [`src/gvars/core/`](core.md). Domain modules (e.g. **`pc`**) port from westmarch and/or drac2-tools and adapt to this engine’s contracts. See **[core.md](core.md)**.
+**Core utilities** (`commands`, `embeds`, `rolls`, …) are **vendored** from [drac2-tools](https://github.com/Sykander/drac2-tools) into [`src/gvars/utils/core/`](core.md). Domain modules (e.g. **`pc`**) port from westmarch and/or drac2-tools and adapt to this engine’s contracts. See **[core.md](core.md)**.
 
 ## Modules
 
@@ -72,7 +72,6 @@ src/gvars/
     monsters/              # generate-monsters.js → {a-z}_monsters.gvar
     items/                 # generate-items.js → *_list.gvar
     spells/
-    books/
   exploration/
     loot.gvar
   economy/
@@ -85,6 +84,8 @@ src/gvars/
   configs/                 # example server configs + preset bodies — see configs.md
     starter.gvar             # minimal empty schema
     biomes/                  # preset biome pool modules — engine:configs/biomes/<code>
+    books/                   # generate-books.js — forgotten_realms_*, real_*
+    recipes/                 # generate-recipes.js — recipes_list.gvar
     forgotten_realms_2014.gvar
     generic_fantasy_2014.gvar
     …
@@ -104,7 +105,7 @@ src/gvars/
 - [content-pipeline.md](../content-pipeline.md) — TSV → split catalogue gvars
 - [check_config.md](check_config.md) — `validate()` for `!westmarch check`
 - [configs.md](configs.md) — example server presets (`src/gvars/configs/`)
-- [core.md](core.md) — vendoring drac2-tools / westmarch into `src/gvars/core/` and domain modules
+- [core.md](core.md) — vendoring drac2-tools / westmarch into `src/gvars/utils/core/` and domain modules
 - [data-shapes.md](../data-shapes.md)
 - [server-config.md](../server-config.md)
 - [mvp-commands.md](../mvp-commands.md)

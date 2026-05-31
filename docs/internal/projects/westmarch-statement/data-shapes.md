@@ -277,6 +277,94 @@ recipe = {
 
 ---
 
+## Book
+
+Volume entry for **`!library`** and **`!read`**. Stored in config **`books`** (list or dict) or loaded from generated catalogue shards ([content-pipeline.md](content-pipeline.md)). Authoring source: [public/assets/books-forgotten-realms.tsv](../../../../public/assets/books-forgotten-realms.tsv), [books-real.tsv](../../../../public/assets/books-real.tsv).
+
+```py
+book = {
+    "name": "A Brief History of the Dessarin",   # required — title; comprehension cvar key
+    "description": str,                         # required — excerpt/summary for Discord embeds
+    "author": str,                              # required
+    "written": str,                             # required — in-world or publication date string
+    "rarity": str,                              # required — common, uncommon, rare, …
+    "language": str,                            # required — e.g. Common; drives language checks
+    "type": "original" | "commentary",          # required
+    "base_work": str,                           # optional — for commentaries: work referenced
+    "tags": [ str, ... ],                       # required — topic tokens for !library search
+    "read_bonus": int,                          # optional — default 0
+    "image": str,                               # optional — embed image URL
+    "content_link": str,                        # optional — URL to full text outside Discord
+}
+```
+
+| Field | Required | Notes |
+|-------|----------|--------|
+| `name` | yes | Unique title for search; key for per-character comprehension cvar |
+| `description` | yes | **Embed body only** — short excerpt, summary, or representative passage. Not the full work. Max practical length for Discord (~2–4 paragraphs). Use literal `\n\n` in TSV for paragraph breaks. |
+| `author` | yes | Display name (translator/editor for public-domain imports) |
+| `written` | yes | Flavour date (`1480 DR`) or publication year for real works |
+| `rarity` | yes | `common`, `uncommon`, `rare`, `very rare`, `legendary`, `ancient`, … |
+| `language` | yes | Script/language for comprehension ([languages.gvar](gvars/core.md)) |
+| `type` | yes | `original` or `commentary` |
+| `base_work` | no | Empty string or omit for `original` |
+| `tags` | yes | Lowercase tokens; align with location **`library_topics`** where possible |
+| `read_bonus` | no | Default **0** |
+| `image` | no | Empty in TSV until URLs added |
+| `content_link` | no | HTTPS URL where the **full** text can be read for free (see below) |
+
+### TSV columns
+
+Both book TSV files share the same header (including **`content_link`**):
+
+`name`, `description`, `author`, `written`, `rarity`, `language`, `type`, `base_work`, `tags`, `read_bonus`, `image`, `content_link`
+
+Build: **`npm run generate:books`** → [configs/books/](../../../../src/gvars/configs/books/).
+
+### Forgotten Realms vs real catalogues
+
+| File | Purpose | Typical `content_link` |
+|------|---------|------------------------|
+| **`books-forgotten-realms.tsv`** | Canon in-universe titles (Volo's Guides, North histories, …) | **Forgotten Realms Wiki** lore page when no full text is freely hosted; **DM's Guild** URL for official digital editions of matching sourcebooks |
+| **`books-real.tsv`** | Public-domain (or otherwise licensed) real-world works | **Project Gutenberg**, Wikisource, Standard Ebooks, etc. — only sources you may legally redistribute a link to |
+
+Do **not** paste copyrighted novel text into **`description`**. Do **not** link to pirate or scan sites.
+
+### Display and comprehension ([library.gvar](gvars/library.md))
+
+Discord embeds cannot reasonably carry full novels. The split:
+
+| What | Where |
+|------|--------|
+| **Skim / study text** | `description` in the embed — may be **censored** or truncated by comprehension score |
+| **Full text** | **`content_link`** — optional external URL |
+
+**`read_display(read_result)`** rules *(both **`quick_read`** and **`deep_read`**)*:
+
+1. Always show title + comprehension-scored **`description`** (existing westmarch behaviour).
+2. Append a **“Read full text”** link **only when all** of:
+   - `book.content_link` is a non-empty string, **and**
+   - `read_result.comprehension_score >= 100` (per-book comprehension cvar via **`get_comprehension(character, book["name"])`** after the read roll updates it).
+
+If **`content_link`** is omitted or comprehension is below 100, **no link line** appears — players are not pointed off-platform until they have fully comprehended the in-embed excerpt.
+
+Suggested embed footer line:
+
+```markdown
+[Read the full text online](https://…)
+```
+
+3. **`content_link` is never shown on search-only embeds** — only after a **`read_book`** call produces a **`read_result`**.
+
+### Catalogue placement
+
+| Storage | Notes |
+|---------|--------|
+| Top-level **`books`** on config gvar | Small curated lists |
+| **`extensions.books`** / shard gvars | Large corpora — [content-pipeline.md](content-pipeline.md) |
+
+---
+
 ## Encounter result — `encounter_result`
 
 Return value of **`encounters.process_encounter`**. Embed-ready; sheet already updated.
@@ -575,7 +663,7 @@ Activity **`enc`** uses **`pools.enc`**; **`mine`** uses **`pools.mine`**, etc. 
 
 #### Engine preset biomes
 
-Placed at **`src/gvars/configs/biomes/`** (not under **`src/gvars/config/`**, which is reserved for the engine **`config.gvar`** loader).
+Placed at **`src/gvars/configs/biomes/`** (not under **`src/gvars/utils/config/`**, which is reserved for the engine **`config.gvar`** loader).
 
 | Code | Setting notes |
 |------|----------------|
@@ -616,13 +704,17 @@ location = {
     "image": str,                       # optional — embed image URL
     "link": str,                        # optional — Discord channel URL for embed links
     "biome": str,                       # optional — primary biome code (forest, cave, river, …)
-    "activities": {                     # optional — exploration commands available here
-        "enc": ["forest"],              # biome pool codes for !enc
+    "commands": {                       # optional — player commands available at this place
+        "enc": ["forest"],              # exploration keys → list of biome pool codes
         "forage": ["forest"],
-        "mine": ["forest"],
-        "lumber": ["forest"],
-        "fish": ["river"],
-        "hunt": ["forest"],             # when combat vertical ships
+        "library": True,                # other location-gated keys → True when available
+        "job": True,
+        "buy": True,
+        "sell": True,
+    },
+    "activities": {                     # legacy — same shape as exploration keys in `commands`
+        "enc": ["forest"],
+        "forage": ["forest"],
     },
     "services": [ "general_store", "inn" ],  # optional — ids into shop/service config
     "library_topics": [ "nature", "history" ],  # optional — topic hints for !library inference
@@ -637,16 +729,32 @@ location = {
 | `description` | no | Short flavour |
 | `travel_description` | no | Rules text (extreme cold, maze encs, …) |
 | `image`, `link` | no | Rich embeds on travel / location |
-| `biome` | no | Default when an activity omits biome list |
-| `activities` | no | Omit key → activity unavailable at this place |
-| `services` | no | Logical service ids — vendors, crafting benches, … |
-| `library_topics` | no | Topic tags for **`!library`** when **`content.config.library_topic_source`** is **`inferred`** or **`balanced`** |
+| `biome` | no | Default when an exploration command omits biome list |
+| `commands` | no | **Preferred** — per-command availability at this location (see below) |
+| `activities` | no | **Legacy** — exploration subset of `commands`; omit when using `commands` |
+| `services` | no | Logical service ids — vendors, crafting benches, … (use when `buy` / `sell` / crafting commands are enabled) |
+| `library_topics` | no | Topic tags for **`!library`** when **`library`** is in `commands` and topic source is **`inferred`** or **`balanced`** |
 
-### Activities map
+### Commands map
 
-Each **activity** key matches an exploration command (`enc`, `forage`, `fish`, `mine`, `lumber`, `hunt`). Value is a **list of biome codes** — keys in **`world_data.biomes`** (lazy-loaded gvar per code).
+**Authoring rule:** list every **location-gated** player command on a place-by-place basis. Omit a key → that command is **not** available while the character is here.
 
-westmarch used `encs` with emoji prefixes (`✅`, `❓`, `❌`) plus biome lists. westmarch-generic: **presence of the activity key = available**; absence = not offered. Uncertainty / rarity moves to encounter pool weights, not location display flags.
+| Value | Meaning |
+|-------|---------|
+| **`["forest", …]`** | Exploration command — biome pool codes (keys in **`world_data.biomes`**) |
+| **`True`** | Command is available here (no extra args on the location) |
+
+**Exploration keys** (value must be a biome list): `enc`, `forage`, `fish`, `mine`, `lumber`, `hunt`, `loot`.
+
+**Other location-gated keys** (value `True` when offered): `craft`, `brew`, `enchant`, `scribe`, `job`, `buy`, `sell`, `library`, `read`.
+
+**Do not put in `commands`** — these are global or travel-scoped, not per-location toggles: `travel`, `location`, `time`, `weather`, `wallet`, `downtime`, `quest`, `recipe`, `journal`, `diary`.
+
+westmarch used `encs` with emoji prefixes (`✅`, `❓`, `❌`) plus biome lists. westmarch-generic: **presence of the key = available**; absence = not offered. Uncertainty / rarity moves to encounter pool weights, not location display flags.
+
+### Activities map (legacy)
+
+Same shape as the **exploration keys** inside **`commands`**. New configs should use **`commands`** only; loaders may copy exploration entries into **`activities`** for backward compatibility.
 
 ### Config example
 
@@ -662,11 +770,12 @@ world_data = {
         "oakwood": {
             "name": "Oakwood Forest",
             "biome": "forest",
-            "activities": {
+            "commands": {
                 "enc": ["forest"],
                 "forage": ["forest"],
                 "lumber": ["forest"],
                 "mine": ["forest"],
+                "loot": ["forest"],
             },
             "services": ["forest_guide"],
         },

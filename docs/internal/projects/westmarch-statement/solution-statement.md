@@ -138,7 +138,7 @@ How a server gets engine aliases ([US-1.1](user-stories.md)):
 | Subsystem toggles | **Inside master config** | Avoids Option B complexity for P0–P1; optional per-subsystem svars deferred |
 | Config ownership | **D1 + D2** | Template gvar in repo or docs; owner copies to their workshop |
 | Engine distribution | **E1 (+ E3)** | Matches publish-avrae pipeline already in repo |
-| Shared utilities | **Vendored `src/gvars/core/`** (from drac2-tools) + domain ports (westmarch / drac2-tools) | Reuse community implementations ([US-7.3](user-stories.md)) without a second workshop subscription; `env` lists westmarch-generic UUIDs only |
+| Shared utilities | **Vendored `src/gvars/utils/core/`** (from drac2-tools) + domain ports (westmarch / drac2-tools) | Reuse community implementations ([US-7.3](user-stories.md)) without a second workshop subscription; `env` lists westmarch-generic UUIDs only |
 | westmarch long-term | **Reference server becomes first config consumer** | Monolithic westmarch repo enters maintenance; generic engine + extracted config gvar becomes canonical for that community ([US-5.*](user-stories.md)) |
 | **Rules edition** | **Optional `rules_version` on config** + Avrae inference + default `"2014"` | See § Rules edition; `get_rules_edition()` |
 
@@ -333,7 +333,7 @@ Three viable approaches; **recommended: phased extraction (M2)**.
 | Port MVP commands | Full set in [mvp-commands.md](mvp-commands.md) — Tiers B–H (23 player commands) + admin (Tier A′) | US-6.1, US-6.3 |
 | Schema expansion | Document required keys per ported vertical | US-2.2, US-2.5 |
 | Help from config | Local names in help embeds | US-6.3, US-1.5 |
-| Core library ports | Vendored `src/gvars/core/` (commands, embeds, rolls, bags, …) from drac2-tools | US-7.3 |
+| Core library ports | Vendored `src/gvars/utils/core/` (commands, embeds, rolls, bags, …) from drac2-tools | US-7.3 |
 | Published workshop | E1 subscription path live | US-1.1, US-4.5 |
 
 ---

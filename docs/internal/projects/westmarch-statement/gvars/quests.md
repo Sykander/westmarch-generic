@@ -1,6 +1,6 @@
 # quests.gvar
 
-**Path:** `src/gvars/misc/quests.gvar` · **Phase:** 1 (Tier H)
+**Path:** `src/gvars/utils/misc/quests.gvar` · **Phase:** 1 (Tier H)
 
 **Quest journal** cvar storage for **`!quest`** — list, view, append player notes. Greenfield (no westmarch player command).
 

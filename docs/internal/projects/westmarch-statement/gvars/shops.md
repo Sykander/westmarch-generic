@@ -1,6 +1,6 @@
 # shops.gvar
 
-**Path:** `src/gvars/economy/shops.gvar` · **Phase:** 1 (Tier F)
+**Path:** `src/gvars/utils/economy/shops.gvar` · **Phase:** 1 (Tier F)
 
 Resolve **shop** definitions from config and run **buy** / **sell** transactions. All sheet changes go through **[pc.gvar](pc.md)** — aliases never call coinpurse or **`core/bags`** directly.
 

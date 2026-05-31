@@ -1,6 +1,6 @@
 # loot.gvar
 
-**Path:** `src/gvars/exploration/loot.gvar` · **Phase:** 1 (Tier C)
+**Path:** `src/gvars/utils/exploration/loot.gvar` · **Phase:** 1 (Tier C)
 
 **Post-combat loot sessions** for **`!loot`** — not random encounter drops. After a fight (often following **`!hunt`**), players run a multi-step minigame: pick a creature, roll Investigation/Arcana/Religion/Nature (by lootable type) to extract items and gp from that corpse.
 

@@ -1,6 +1,6 @@
 # auth.gvar
 
-**Path:** `src/gvars/auth/auth.gvar` · **Phase:** 0
+**Path:** `src/gvars/utils/auth/auth.gvar` · **Phase:** 0
 
 Single gate: may the invoker run **this alias in this channel**? Reads **`ctx`** and server config via [config.md](config.md). No arguments.
 

@@ -1,6 +1,6 @@
 # monsters.gvar
 
-**Path:** `src/gvars/catalogues/monsters.gvar` · **Phase:** 1 (Tier C)
+**Path:** `src/gvars/utils/catalogues/monsters.gvar` · **Phase:** 1 (Tier C)
 
 Search and load **monster** rows from engine catalogue shards. Source TSV: [public/assets/monsters.tsv](../../../../public/assets/monsters.tsv) → built by **`utils/generate-monsters.js`** ([content-pipeline.md](../content-pipeline.md)).
 

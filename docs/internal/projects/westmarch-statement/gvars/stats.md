@@ -1,6 +1,6 @@
 # stats.gvar
 
-**Path:** `src/gvars/pc/stats.gvar` · **Phase:** 0–1
+**Path:** `src/gvars/utils/pc/stats.gvar` · **Phase:** 0–1
 
 **Per-character command usage** — counts, timestamps, last args, and command-specific aggregates stored on character cvars. Replaces westmarch **`bags.*_cooldown_code`** patterns; exploration cooldowns read **`last_used_at`** from here.
 

@@ -29,8 +29,8 @@ make test      # sourcemap tests + avrae-ls alias tests
 | [generate-monsters.js](generate-monsters.js) | `npm run generate:monsters` | [monsters.tsv](../public/assets/monsters.tsv) | `{a-z}_monsters.gvar` |
 | [generate-items.js](generate-items.js) | `npm run generate:items` | [items.tsv](../public/assets/items.tsv) | `items_list`, `potions_list`, `magic_items_list` |
 | [generate-spells.js](generate-spells.js) | `npm run generate:spells` | [spells.tsv](../public/assets/spells.tsv) | `spells_list.gvar` |
-| [generate-books.js](generate-books.js) | `npm run generate:books` | books-fiction/real.tsv | `{fiction,real}_all.gvar` when empty; else `{corpus}_{a-z}.gvar` |
-| [generate-recipes.js](generate-recipes.js) | `npm run generate:recipes` | [recipes.tsv](../public/assets/recipes.tsv) | `recipes_list.gvar` |
+| **`generate-books.js`** | `npm run generate:books` | books-forgotten-realms/real.tsv | `configs/books/{forgotten_realms,real}_all.gvar` when empty; else `{corpus}_{a-z}.gvar` |
+| [generate-recipes.js](generate-recipes.js) | `npm run generate:recipes` | [recipes.tsv](../public/assets/recipes.tsv) | `configs/recipes/recipes_list.gvar` |
 | [generate-catalogues.js](generate-catalogues.js) | `npm run generate:catalogues` | All above | Runs all generators |
 
 ```bash
@@ -60,8 +60,8 @@ Shard files are **raw JSON arrays** — loaded at runtime with `load_json(get_gv
 1. **TSV schema** — document columns in [public/assets/README.md](../public/assets/README.md).
 2. **Shard rule** — letter, type, or separate file per corpus; document in [content-pipeline.md](../docs/internal/projects/westmarch-statement/content-pipeline.md).
 3. **Implement** `utils/generate-<name>.js` using **`utils/lib/read-tsv.js`** + **`write-json-gvar.js`**.
-4. **Output paths** under `src/gvars/catalogues/` (or `src/gvars/configs/biomes/` for encounter pools).
-5. **Sourcemap** — generators call **`lib/sourcemap-shards.js`**; ensure enough UUIDs in **`unused_gvars.md`**, then **`make rebuild`**.
+4. **Output paths** under `src/gvars/utils/catalogues/` for engine catalogues, or `src/gvars/configs/` for setting-specific data (biomes, books, recipes).
+5. **Sourcemap** — engine catalogue generators call **`lib/sourcemap-shards.js`**; config outputs (biomes, books, recipes) are **not** registered. Ensure enough UUIDs in **`unused_gvars.md`**, then **`make rebuild`**.
 6. **Facade** — engine gvar with lazy cache; document API in `docs/internal/projects/westmarch-statement/gvars/`.
 7. **npm script** — add to `package.json`; wire optional **`generate:catalogues`** bundle.
 
@@ -76,13 +76,13 @@ Reference implementations:
 | `utils/generate-monsters.js` | 26 letter shards; filter `name.toLowerCase().startsWith(letter)` |
 | `utils/generate-items.js` | Split on **`type`**: Item / Potion / Magic Item |
 | `utils/generate-spells.js` | Single list; coerce **`level`** to number |
-| `utils/generate-books.js` | Row shape for library; adapt to fiction + real TSVs |
+| `utils/generate-books.js` | Row shape for library; adapt to forgotten-realms + real TSVs |
 
-Path renames:
+Path layout:
 
 - `public/*.tsv` → **`public/assets/*.tsv`**
-- `src/gvars/utils/monsters/` → **`src/gvars/catalogues/monsters/`**
-- `src/gvars/utils/items/` → **`src/gvars/catalogues/items/`**
+- Engine modules → **`src/gvars/utils/`** (auth, catalogues, world, core, …)
+- Server presets → **`src/gvars/configs/`** (not in sourcemap)
 
 Runtime improvement: westmarch **`items.gvar`** loads all three lists at import — generic facades should **lazy-load** per type (see content-pipeline).
 

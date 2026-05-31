@@ -1,6 +1,6 @@
 # clock.gvar
 
-**Path:** `src/gvars/world/clock.gvar` · **Phase:** 1 (Tier C)
+**Path:** `src/gvars/utils/world/clock.gvar` · **Phase:** 1 (Tier C)
 
 Shared **in-world calendar and clock** for **`!time`**. Reads **`world_data.calendars`** on the owner config gvar ([data-shapes.md § Calendar](../data-shapes.md#calendar)).
 

@@ -1,6 +1,6 @@
 # pc.gvar
 
-**Path:** `src/gvars/pc/pc.gvar` · **Phase:** 0–1
+**Path:** `src/gvars/utils/pc/pc.gvar` · **Phase:** 0–1
 
 **Player character state** — read and modify sheet-adjacent data: Avrae **gp**, config **wallet** currencies, **bags**, **downtime**, cooldown cvars, and related helpers.
 

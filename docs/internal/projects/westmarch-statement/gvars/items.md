@@ -1,6 +1,6 @@
 # items.gvar
 
-**Path:** `src/gvars/catalogues/items.gvar` · **Phase:** 1 (Tier E/F)
+**Path:** `src/gvars/utils/catalogues/items.gvar` · **Phase:** 1 (Tier E/F)
 
 Search **item catalogues** from engine shards — mundane **Item**, **Potion**, and **Magic Item** pools (three generated files from [items.tsv](../../../../public/assets/items.tsv) **`type`** column).
 

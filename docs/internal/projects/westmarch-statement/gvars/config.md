@@ -1,6 +1,6 @@
 # config.gvar
 
-**Path:** `src/gvars/config/config.gvar` · **Phase:** 0
+**Path:** `src/gvars/utils/config/config.gvar` · **Phase:** 0
 
 Load the server’s config gvar via svar **once when `config.gvar` is bound**, **merge schema defaults** into module-level **`cfg`**, and expose thin helpers.
 
@@ -133,7 +133,7 @@ get_embed = display.get_display()
 
 ## Tests
 
-Direct **`config.gvar-test`** (avrae-ls — no alias wrapper). See `src/gvars/config/config.gvar-test`.
+Direct **`config.gvar-test`** (avrae-ls — no alias wrapper). See `src/gvars/utils/config/config.gvar-test`.
 
 - **`get_config()`** and **`cfg`** are the same object; repeated calls identical.
 - Empty owner body → **`cfg.subsystems.exploration`** present after defaults merge.

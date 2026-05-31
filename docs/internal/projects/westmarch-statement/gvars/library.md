@@ -1,10 +1,12 @@
 # library.gvar
 
-**Path:** `src/gvars/content/library.gvar` · **Phase:** 1 (Tier G)
+**Path:** `src/gvars/utils/content/library.gvar` · **Phase:** 1 (Tier G)
 
 Book **search**, **comprehension**, and **read display** for **`!library`** and **`!read`**. Ports westmarch `utils/library.gvar`; architecture: westmarch `docs/library/library-architecture.md`.
 
 Topic resolution for **`!library`** follows **`subsystems.content.config`** — [data-shapes.md § content.config](../data-shapes.md#contentconfig).
+
+Book dict shape: [data-shapes.md § Book](../data-shapes.md#book).
 
 ## API
 
@@ -32,10 +34,13 @@ def read_book(book, character, args, mode, argslist):
     """
 
 def read_display(read_result):
-    """Embed-ready title + description."""
+    """
+    Embed-ready title + description.
+    Appends content_link when book has content_link and comprehension_score >= 100.
+    """
 
 def get_comprehension(character, book_id):
-    """Per-book comprehension cvar (decay over time)."""
+    """Per-book comprehension cvar (decay over time). Keyed by book name."""
 ```
 
 **Alias flow:** **`resolve_search_topics`** → **`search_by_topics`** → **`read_book(quick_read)`** → **`read_display`**.
@@ -47,9 +52,29 @@ def get_comprehension(character, book_id):
 | **`manual`** | User topics required; no inference |
 | **`restricted`** | User topics required; each must match **`allowed_topics`** |
 
-Book dict — config or extension gvar; shape in [public/assets/README.md](../../../../public/assets/README.md) (books TSV columns).
-
 Cooldowns: [pc.md](pc.md) keys for library search and deep read throttle.
+
+## `read_display` and `content_link`
+
+Full books do not live in Discord embeds. Each [Book](../data-shapes.md#book) has:
+
+- **`description`** — excerpt/summary shown in the embed (comprehension may censor or limit visible text).
+- **`content_link`** *(optional)* — HTTPS URL to the full work elsewhere (typical for public-domain **`books-real`** rows).
+
+**Link visibility** — append a markdown link to the embed **only when**:
+
+| Condition | Required |
+|-----------|----------|
+| `book.get("content_link")` | Non-empty string |
+| `read_result["comprehension_score"]` | **≥ 100** (after this read updates comprehension) |
+
+If either fails, **`read_display`** must **not** mention **`content_link`**.
+
+**Not shown:** search result embeds before a read; books with no **`content_link`**; partial comprehension (&lt; 100).
+
+**Suggested copy:** `[Read the full text online]({content_link})` as a final line after the description block.
+
+Both **`quick_read`** (`!library`) and **`deep_read`** (`!read`) use the same **`read_display`** rules.
 
 ## Dependencies
 
@@ -61,4 +86,4 @@ Cooldowns: [pc.md](pc.md) keys for library search and deep read throttle.
 ## Related
 
 - [aliases/content/library.md](../aliases/content/library.md) · [read.md](../aliases/content/read.md)
-- [data-shapes.md § content.config](../data-shapes.md#contentconfig)
+- [data-shapes.md § Book](../data-shapes.md#book) · [§ content.config](../data-shapes.md#contentconfig)

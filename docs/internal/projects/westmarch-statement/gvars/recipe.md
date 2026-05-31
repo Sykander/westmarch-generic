@@ -1,6 +1,6 @@
 # recipe.gvar
 
-**Path:** `src/gvars/misc/recipe.gvar` · **Phase:** 1 (Tier H)
+**Path:** `src/gvars/utils/misc/recipe.gvar` · **Phase:** 1 (Tier H)
 
 **Read-only recipe browser** for **`!recipe`** — search and format rows from config **`recipes`** ([data-shapes.md § Recipe](../data-shapes.md#recipe)) plus catalogue metadata from [items.md](items.md).
 

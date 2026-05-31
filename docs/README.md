@@ -45,7 +45,7 @@ flowchart LR
 | `src/snippets/` | *(none in MVP — combat snippets deferred)* |
 | `src/gvars/` | Engine workshop globals — see [src/gvars/README.md](../src/gvars/README.md) |
 | `src/gvars/configs/` | Example server config presets — [configs.md](internal/projects/westmarch-statement/gvars/configs.md) |
-| `src/gvars/core/` | Vendored drac2-tools helpers — [core.md](internal/projects/westmarch-statement/gvars/core.md) |
+| `src/gvars/utils/core/` | Vendored drac2-tools helpers — [core.md](internal/projects/westmarch-statement/gvars/core.md) |
 
 ## Workshop scaffold
 

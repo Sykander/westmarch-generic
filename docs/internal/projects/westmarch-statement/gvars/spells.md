@@ -1,6 +1,6 @@
 # spells.gvar
 
-**Path:** `src/gvars/catalogues/spells.gvar` · **Phase:** 1 (Tier E)
+**Path:** `src/gvars/utils/catalogues/spells.gvar` · **Phase:** 1 (Tier E)
 
 Search **spell** catalogue for **`!scribe`**. Source TSV: [public/assets/spells.tsv](../../../../public/assets/spells.tsv) → **`catalogues/spells/spells_list.gvar`** via **`utils/generate-spells.js`** ([content-pipeline.md](../content-pipeline.md)).
 

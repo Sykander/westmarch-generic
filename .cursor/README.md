@@ -29,12 +29,12 @@ Implementation: **`.cursor/scripts/refresh_upstream_reference_cache.py`** (reads
 
 `python3 .cursor/scripts/probe_perf_boundaries.py` shells to `avrae-ls --run-tests` to binary-search max **`-loops`** / **`-compiles`** one testcase at a time via a gitignored `_probe.*.alias-test`. See **`--help`** and the epilog.
 
-- **Presets:** **`--preset regex`**, **`--preset rolls`**, **`--preset performance_examples`** — dimensions in **`PRESETS`** inside the script; paths still target the drac2-tools **`src/gvars/utils/<name>/`** layout. Use **`--alias-dir`** / **`--stress-alias`** for this repo until local `*-perf` harnesses exist under **`src/gvars/core/`**.
+- **Presets:** **`--preset regex`**, **`--preset rolls`**, **`--preset performance_examples`** — dimensions in **`PRESETS`** inside the script; paths still target the drac2-tools **`src/gvars/utils/<name>/`** layout. Use **`--alias-dir`** / **`--stress-alias`** for this repo until local `*-perf` harnesses exist under **`src/gvars/utils/core/`**.
 - **Ad hoc:** repeatable **`--dimension 'testcase,param,low,cap[,extra]'`** or **`--dimensions-file`**.
 
 ```bash
 python3 .cursor/scripts/probe_perf_boundaries.py --preset performance_examples --max-binary 20
-python3 .cursor/scripts/probe_perf_boundaries.py --alias-dir src/gvars/core/regex --stress-alias regex-perf --dimension '…'
+python3 .cursor/scripts/probe_perf_boundaries.py --alias-dir src/gvars/utils/core/regex --stress-alias regex-perf --dimension '…'
 ```
 
 Workflow: **`.cursor/rules/gvar-perf-boundaries.mdc`**.

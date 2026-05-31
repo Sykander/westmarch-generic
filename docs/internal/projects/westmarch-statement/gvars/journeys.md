@@ -1,6 +1,6 @@
 # journeys.gvar
 
-**Path:** `src/gvars/world/journeys.gvar` · **Phase:** 1 (Tier C)
+**Path:** `src/gvars/utils/world/journeys.gvar` · **Phase:** 1 (Tier C)
 
 Character **travel state** (location, active journey, visit counts) and **route planning** — including shortest-path search over config **`paths`**. Ports westmarch `areas/journeys.gvar` + **`get_shortest_path`** from `paths.gvar`.
 

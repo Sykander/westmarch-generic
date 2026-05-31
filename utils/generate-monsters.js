@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Generate monster letter shards from public/assets/monsters.tsv
- * Output: src/gvars/catalogues/monsters/{a-z}_monsters.gvar
+ * Output: src/gvars/utils/catalogues/monsters/{a-z}_monsters.gvar
  */
 const paths = require('./lib/paths');
 const { readTsv } = require('./lib/read-tsv');
@@ -11,7 +11,7 @@ const { printManifest } = require('./lib/manifest');
 const { ensureShardSlots } = require('./lib/sourcemap-shards');
 
 const INPUT = paths.assets('monsters.tsv');
-const OUT_DIR = 'src/gvars/catalogues/monsters';
+const OUT_DIR = 'src/gvars/utils/catalogues/monsters';
 
 console.log(`Reading ${INPUT}`);
 

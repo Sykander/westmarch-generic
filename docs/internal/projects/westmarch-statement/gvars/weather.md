@@ -1,6 +1,6 @@
 # weather.gvar
 
-**Path:** `src/gvars/world/weather.gvar` · **Phase:** 1 (Tier C)
+**Path:** `src/gvars/utils/world/weather.gvar` · **Phase:** 1 (Tier C)
 
 Regional **weather display** for **`!weather`** — lookup by area code + optional season from [clock.md](clock.md).
 
