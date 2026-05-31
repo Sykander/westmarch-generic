@@ -8,7 +8,8 @@ using(
     config = env.gvars.config,
 )
 
-DEFAULT_ADMIN_ROLES = ["Dragonspeaker", "Server Aliaser"]
+ADMIN_ROLES = ["Dragonspeaker", "Server Aliaser"]
+# Avrae aliasing permissions (workshop aliases, gvars, svars) — not in-game GM/DM roles.
 
 MSG_UNKNOWN = "Unknown command."
 MSG_NO_GUILD = "This command cannot be run in DMs."
@@ -104,35 +105,37 @@ def resolve_invocation():
     return _resolve_invocation()
 
 
-def _author_is_admin():
+def _author_roles():
+    """Avrae exposes roles via get_roles(); avrae-ls mock also has .roles."""
+    roles = None
     try:
-        if ctx.author.guild_permissions.administrator:
-            return True
+        roles = ctx.author.roles
+    except:
+        roles = None
+    if roles != None:
+        return roles
+    try:
+        return ctx.author.get_roles()
     except:
         pass
-    roles = DEFAULT_ADMIN_ROLES
-    cfg = config.cfg
-    if cfg != None:
+    return []
+
+
+def _role_grants_admin(role_name):
+    if role_name == None:
+        return False
+    name = str(role_name).strip()
+    for allowed in ADMIN_ROLES:
+        if name == allowed:
+            return True
+    return False
+
+
+def _author_is_admin():
+    for role in _author_roles():
         try:
-            custom = cfg.admin_roles
-            if custom != None:
-                roles = custom
-        except:
-            pass
-    try:
-        author_roles = ctx.author.roles
-    except:
-        author_roles = []
-    if author_roles == None:
-        author_roles = []
-    for role in author_roles:
-        try:
-            name = role.name
-            if name == "Administrator":
+            if _role_grants_admin(role.name):
                 return True
-            for allowed in roles:
-                if name == allowed:
-                    return True
         except:
             pass
     return False
@@ -141,17 +144,10 @@ def _author_is_admin():
 def _check_admin_roles():
     if _author_is_admin():
         return True, MSG_ALLOWED
-    roles = DEFAULT_ADMIN_ROLES
-    cfg = config.cfg
-    if cfg != None:
-        try:
-            custom = cfg.admin_roles
-            if custom != None:
-                roles = custom
-        except:
-            pass
-    label = ", ".join(roles)
-    return False, f"You need Administrator or an aliasing role ({label})."
+    return False, (
+        f"You need **Dragonspeaker** or **Server Aliaser** "
+        f"(Avrae aliasing permissions — not a GM/DM role)."
+    )
 
 
 def _read_subsystem(cfg, subsystem):

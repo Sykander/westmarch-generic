@@ -119,7 +119,7 @@ subsystems = {
 
 # World data — add when enabling travel, location, exploration, or world clock
 # world_data = {
-#     "default_location": "nexus",
+#     "default_location": "river_town",
 #     "locations": { … },
 #     "paths": [ … ],
 #     "transport": { "walk": {"name": "On foot", "default": True}, "horse": {"name": "Riding horse"} },

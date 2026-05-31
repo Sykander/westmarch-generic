@@ -72,7 +72,7 @@ Implemented in **[check_config.gvar](../../gvars/check_config.md)** — **`check
 | `policies.languages.allowed` contains unknown language name | Warning | Name not in rules-edition language table |
 | `library_topic_source == "restricted"` but `allowed_topics` empty | Error | Restricted library search requires allowed topic list |
 | `library_topic_source` inferred/balanced, location off, no `library_topics` on locations | Warning | Location-based topic inference limited |
-| `subsystems.admin` present | Warning | Admin is not configurable — remove; GM hub is role-gated |
+| `subsystems.admin` present | Warning | Admin is not configurable — remove; setup hub is aliasing role-gated |
 
 ## Generic architecture
 

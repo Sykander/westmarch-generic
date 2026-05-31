@@ -1,8 +1,8 @@
-# westmarch — GM hub command
+# westmarch — setup hub command
 
 **Subsystem:** admin *(not in config)* · **Phase:** 0–1
 
-**Parent alias** for server-owner tooling. Player game commands stay top-level (`!enc`, `!travel`, …); GM inspection lives under one branded entry point. Always available to admins — **not** toggled via **`subsystems`**.
+**Parent alias** for server setup tooling. Player game commands stay top-level (`!enc`, `!travel`, …); config inspection lives under one branded entry point. Always available to holders of Avrae aliasing roles — **not** toggled via **`subsystems`**.
 
 ## Why `!westmarch` (not `!config` / `westmarch_config`)
 
@@ -26,11 +26,11 @@ Avrae routes `!westmarch <sub>` to nested aliases in the workshop sourcemap. Ali
 | `!westmarch check` | `check` | [check.md](check.md) | Validate wiring + schema; errors/warnings |
 | `!westmarch show [section]` | `show` | [show.md](show.md) | Summarize loaded config with field glossary |
 
-**Who may run:** Discord **Administrator**, or role in `admin_roles` / Avrae defaults (`Dragonspeaker`, `Server Aliaser`). See [README.md](README.md).
+**Who may run:** **`Dragonspeaker`** or **`Server Aliaser`** (Avrae aliasing permissions — not GM/DM). See [README.md](README.md).
 
 ### Explicit non-goals (MVP)
 
-- **No in-Discord config editing** — aliases cannot write svars or gvars. **`setup`** prints copy-paste **`!gvar`** / **`!svar`** instructions; the GM runs those manually.
+- **No in-Discord config editing** — aliases cannot write svars or gvars. **`setup`** prints copy-paste **`!gvar`** / **`!svar`** instructions; someone with aliasing permissions runs those manually.
 - **No `stats`** — see [README.md](README.md).
 
 ## Parent alias behaviour
@@ -49,7 +49,7 @@ Default embed:
 
 ## Access
 
-**Who may run:** Discord **Administrator**, or role in **`admin_roles`** / Avrae defaults (`Dragonspeaker`, `Server Aliaser`). Enforced in **`auth.is_allowed()`** — no config toggle.
+**Who may run:** **`Dragonspeaker`** or **`Server Aliaser`** only. Enforced in **`auth.is_allowed()`** — no config toggle. These roles gate Avrae workshop/svar setup, not narrative GM authority.
 
 ## Sourcemap layout (planned)
 

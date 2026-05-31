@@ -1,14 +1,18 @@
 # Admin — MVP implementation docs
 
-**Not in `subsystems`** — GM hub commands are **role-gated only** ([gvars/auth.md](../../gvars/auth.md)). Phase 0–1 (with config loader).
+**Not in `subsystems`** — setup hub commands are **Avrae aliasing role-gated only** ([gvars/auth.md](../../gvars/auth.md)). Phase 0–1 (with config loader).
 
-Server-owner tooling under **`!westmarch`**. Uses engine [gvars/config.md](../../gvars/config.md) and [gvars/auth.md](../../gvars/auth.md).
+Server setup tooling under **`!westmarch`**. Uses engine [gvars/config.md](../../gvars/config.md) and [gvars/auth.md](../../gvars/auth.md).
+
+## Avrae aliasing roles *(not GM/DM)*
+
+**`Dragonspeaker`** and **`Server Aliaser`** are Discord roles Avrae uses for **workshop and server-variable permissions** — editing aliases, gvars, and svars. They do **not** mean someone is the campaign GM or DM. A player can hold either role to wire engine config; a GM without those roles cannot run **`!westmarch`**.
 
 ## Config storage (validated architecture)
 
 **Svar pointer → config gvar body** — see [gvars/config.md](../../gvars/config.md). **`!westmarch setup`** prints onboarding steps; aliases do not write svars or gvars.
 
-## GM command hub
+## Setup command hub
 
 | Invocation | Doc | Purpose |
 |------------|-----|---------|
@@ -21,7 +25,7 @@ Planned sourcemap: `src/aliases/westmarch/`.
 
 ## Access control
 
-Via **`auth.is_allowed()`** — Discord **Administrator** or roles in **`admin_roles`** / engine defaults. No **`subsystems.admin`** toggle — GMs can always run the hub when the engine workshop is subscribed.
+Via **`auth.is_allowed()`** — **`Dragonspeaker`** or **`Server Aliaser`** only. No **`subsystems.admin`** toggle — anyone with those Avrae aliasing roles can run the hub when the engine workshop is subscribed.
 
 ## Implementation order
 

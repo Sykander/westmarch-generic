@@ -41,7 +41,7 @@ Character cvars (westmarch names → generic engine `bags` constants):
 | `Westmarch_journey` | Active journey JSON |
 | `Westmarch_locations_data` | Per-name visit aggregates |
 
-Default when unset: starting location from config `DEFAULT_LOCATION` / reference Nexus equivalent.
+Default when unset: starting location from config **`default_location`**.
 
 ## Generic architecture
 

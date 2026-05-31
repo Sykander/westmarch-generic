@@ -31,8 +31,9 @@ Shared **engine workshop** modules under `src/gvars/`. Aliases `using()` these v
 | **spells** | [spells.md](spells.md) | 1 | Spell catalogue — scribe |
 | **shops** | [shops.md](shops.md) | 1 | Buy / sell transactions |
 | **library** | [library.md](library.md) | 1 | Book search, comprehension, read display |
-| **quests** | [quests.md](quests.md) | 1 | Quest journal cvars |
-| **recipe** | [recipe.md](recipe.md) | 1 | Recipe search / format for `!recipe` |
+| **quests** | [quests.md](quests.md) | 1 | Quest log cvars — **`!quest`** |
+| **recipe** | [recipe.md](recipe.md) | 1 | Recipe search / format — **`!recipe`** |
+| **diary** | [diary.md](diary.md) | post-MVP | Personal RP journal cvars — **`!diary`** |
 | **crafting** | *(doc TBD)* | 1 | Shared craft DC / proficiency helpers |
 | **configs/** *(example server configs)* | [configs.md](configs.md) | 1+ | Prefab setting modules — FR, generic, Spelljammer; tests + onboarding |
 

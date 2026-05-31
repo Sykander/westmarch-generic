@@ -228,7 +228,7 @@ shops = {
     "general_store": {
         "id": "general_store",
         "name": "General Store",
-        "location_id": "nexus",
+        "location_id": "river_town",
         "accepts_sells": True,
         "buyback": 0.5,
         "stock": [
@@ -355,9 +355,9 @@ cfg.world_data.biomes.forest.gvar_id
 
 ```py
 world_data = {
-    "default_location": "nexus",
-    "locations": { "nexus": { … }, "oakwood": { … } },
-    "paths": [ { "from": "nexus", "to": "oakwood", … }, … ],
+    "default_location": "river_town",
+    "locations": { "river_town": { … }, "oakwood": { … } },
+    "paths": [ { "from": "river_town", "to": "oakwood", … }, … ],
     "transport": { "horse": { … }, "boat": { … } },
     "calendars": { "primary": { … } },
     "biomes": {
@@ -409,28 +409,49 @@ transport = {
 | `description` | no | Help / journey embed copy |
 | `default` | no | **`walk`** (or first mode) when player has no active transport |
 
-**Path requirements** reference transport **ids** (not booleans):
+**Path requirements** reference transport **ids** (not booleans). Each path has **one** `steps` list — no alternate step lists on the same edge. Riding vs walking the same corridor → **two path entries** (same `from`/`to`, different `requirements.transport` and `steps`):
 
 ```py
-path = {
-    "from": "harbor",
-    "to": "island",
-    "requirements": { "transport": "boat" },
-    "steps_by_transport": {
-        "boat": [ { "type": "proceed", "description": "Sail across the bay" } ],
-        "walk": [],  # edge unavailable — omit path or omit walk key
-    },
+world_data = {
+    "paths": [
+        {
+            "from": "oakwood",
+            "to": "oakwood_east",
+            "requirements": { "transport": "walk" },
+            "steps": [
+                { "type": "encounter", "biome": "forest" },
+                { "type": "proceed", "description": "Hike the east trail." },
+            ],
+        },
+        {
+            "from": "oakwood",
+            "to": "oakwood_east",
+            "requirements": { "transport": "horse" },
+            "steps": [
+                { "type": "proceed", "description": "Canter along the east trail." },
+            ],
+        },
+        {
+            "from": "harbor",
+            "to": "island",
+            "requirements": { "transport": "boat" },
+            "steps": [
+                { "type": "proceed", "description": "Sail across the bay." },
+            ],
+        },
+    ],
 }
 ```
 
 | `requirements.transport` | Meaning |
 |--------------------------|---------|
-| **string** | Traveller must be using that mode |
+| **string** | Traveller must be using that mode to use **this path** |
 | **list of strings** | Any listed mode satisfies the requirement |
+| **omitted** | Any transport mode may use the path (subject to **`transport.default`**) |
 
-**`journeys.gvar`** resolves active transport from character cvar (TBD in port) or journey start flags. **`paths.gvar`** uses **`steps_by_transport`** when present, else **`steps`**.
+**`journeys.gvar`** resolves active transport from character cvar (TBD in port) or journey start flags, then considers only paths whose **`requirements`** match.
 
-westmarch **`path.horse`** / **`path.boat`** parallel lists → **`steps_by_transport.horse`** / **`.boat`**.
+westmarch **`path.horse`** / **`path.boat`** parallel lists → **separate path dicts** with **`requirements.transport`** and that mode’s **`steps`** — not nested variants on one path.
 
 ### Calendar
 
@@ -631,12 +652,12 @@ westmarch used `encs` with emoji prefixes (`✅`, `❓`, `❌`) plus biome lists
 
 ```py
 world_data = {
-    "default_location": "nexus",
+    "default_location": "river_town",
     "locations": {
-        "nexus": {
-            "name": "Nexus",
+        "river_town": {
+            "name": "River Town",
             "link": "https://discord.com/channels/…",
-            "image": "https://…/nexus.png",
+            "image": "https://…/river_town.png",
         },
         "oakwood": {
             "name": "Oakwood Forest",
@@ -676,11 +697,7 @@ path = {
     "requirements": {               # optional — transport / state gates
         "transport": "horse",       # or ["horse", "boat"] — see world_data.transport
     },
-    "steps": [ journey_step, ... ],
-    "steps_by_transport": {         # optional — alternate legs per transport mode
-        "horse": [ journey_step, ... ],
-        "boat": [ journey_step, ... ],
-    }, # ordered steps to complete the leg
+    "steps": [ journey_step, ... ], # one ordered list for this path only
     "cost": {                       # optional — lump cost to take this path (deducted on start or first step — TBD in journeys port)
         "gold": 25,
         "rations": 2,
@@ -714,11 +731,11 @@ One entry in **`path["steps"]`** — what the player does before advancing (`!tr
 
 **Encounter steps** map to `!enc <biome>` (or the matching activity when the journey was started with a flag). **Cost steps** deduct when the step completes. **Proceed** steps auto-complete on `!travel next`.
 
-### Requirements and alternate step lists
+### Requirements and parallel paths
 
-When a path requires non-default **transport**, use **`requirements.transport`** and optional **`steps_by_transport`** — see [Transport](#transport). **`journeys.gvar`** picks the step list for the traveller’s active transport mode.
+**`requirements.transport`** gates **whether this path dict applies** for the traveller’s active mode. Different step sequences for horse vs walk between the same locations → **two path entries** (duplicate `from`/`to`, different `requirements` and `steps`) — see [Transport](#transport).
 
-**`requirements`** gates **whether the edge exists** for that traveller (transport mode, faction, item — item gates deferred). Display **`label`** when access is narrative-only (not yet enforced).
+**`requirements`** may also gate faction, item, or narrative access (item gates deferred). Display **`label`** when access is narrative-only (not yet enforced).
 
 ### westmarch fields mapped
 
@@ -726,7 +743,7 @@ When a path requires non-default **transport**, use **`requirements.transport`**
 |------------------------|---------|
 | `from`, `to` (area names) | `from`, `to` (location **ids**) |
 | `encs` list | `steps` with `{ "type": "encounter", "biome": … }` |
-| `horse`, `boat` lists | `steps_by_transport.horse`, `.boat` + `requirements.transport` |
+| `horse`, `boat` lists | Separate path dicts — `requirements.transport` + that list as `steps` |
 | `gold` | `cost.gold` and/or `{ "type": "cost", "gold": N }` step |
 | `label` | `label` |
 
@@ -738,14 +755,19 @@ world_data = {
         {
             "from": "oakwood",
             "to": "oakwood_east",
+            "requirements": { "transport": "walk" },
             "steps": [
                 { "type": "encounter", "biome": "forest" },
                 { "type": "encounter", "biome": "forest" },
             ],
+        },
+        {
+            "from": "oakwood",
+            "to": "oakwood_east",
             "requirements": { "transport": "horse" },
-            "steps_by_transport": {
-                "horse": [ { "type": "proceed", "description": "Canter along the east trail" } ],
-            },
+            "steps": [
+                { "type": "proceed", "description": "Canter along the east trail" },
+            ],
         },
         {
             "from": "four_bridges",
@@ -933,7 +955,6 @@ Engine ships default **`helpful_tips`** and **`credits`** strings when the owner
 |-----|---------|
 | `subsystems` | Feature toggles — [Subsystem entry](#subsystem-entry) |
 | `policies` | House rules — [Server policies](#server-policies) |
-| `admin_roles` | GM hub role override — [auth.md](gvars/auth.md) |
 | `channel_policy` | Channel whitelist — [auth.md](gvars/auth.md) |
 | `world_data` | Campaign geography — [World data](#world-data) |
 
@@ -953,7 +974,7 @@ Prefer nested or tagged catalogues over hard-coded edition branches in aliases.
 
 ## Subsystem entry
 
-Each key under **`subsystems`** matches a **player-facing** alias folder (`exploration`, `travel`, …). The GM hub (**`!westmarch`**) is **not** in **`subsystems`** — always available to admins via roles ([gvars/auth.md](gvars/auth.md)), not config toggles.
+Each key under **`subsystems`** matches a **player-facing** alias folder (`exploration`, `travel`, …). The setup hub (**`!westmarch`**) is **not** in **`subsystems`** — always available to holders of Avrae aliasing roles ([gvars/auth.md](gvars/auth.md)), not config toggles.
 
 ```py
 "exploration": {
@@ -1520,6 +1541,24 @@ Quest and gather kinds ignore scaling.
 Requires **`subsystems.misc.commands.quest`** enabled when **`self_assign`** is **`True`** — **`!westmarch check`** **errors** otherwise.
 
 **Check:** **`max_active`** set and **< 1** → **error**.
+
+### `misc.commands`
+
+Per-command toggles under **`subsystems.misc`**. MVP ships **`quest`** and **`recipe`** only; post-MVP adds **`diary`** and hub **`journal`**.
+
+```py
+"misc": {
+    "enabled": True,
+    "commands": {
+        "quest": True,    # MVP — structured quest log
+        "recipe": True,   # MVP — read-only recipe browser
+        "diary": False,   # post-MVP — freeform RP journal
+        "journal": False, # post-MVP — hub; !journal quest ≡ !quest
+    },
+},
+```
+
+**Hub auth:** **`!journal <sub>`** checks the **target** command’s toggle (e.g. **`quest`** for **`!journal quest`**). Bare **`!journal`** help requires **`journal`** enabled. See [aliases/misc/journal.md](../aliases/misc/journal.md).
 
 ### `content`
 

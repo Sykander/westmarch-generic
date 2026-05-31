@@ -9,3 +9,21 @@ return auth.is_allowed()[1]
 "Unknown command."
 ---
 name: unknown ctx alias message
+
+return auth.is_allowed()[0]
+---
+True
+---
+name: admin westmarch allowed for dragonspeaker
+vars:
+  uvars:
+    _wm_command: westmarch
+
+return auth.is_allowed()[1]
+---
+"Command allowed."
+---
+name: admin westmarch success message
+vars:
+  uvars:
+    _wm_command: westmarch

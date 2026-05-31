@@ -139,7 +139,6 @@ DEFAULTS = {
             "credits": None,
         },
     },
-    "admin_roles": None,
     "channel_policy": {
         "admin_any_channel": True,
         "mode": "any",
@@ -157,7 +156,6 @@ OWNER_TOP_LEVEL_KEYS = [
     "display",
     "subsystems",
     "policies",
-    "admin_roles",
     "channel_policy",
     "world_data",
     "extensions",
@@ -229,11 +227,6 @@ def _read_mod_field(mod, key):
     try:
         if key == "policies":
             return mod.policies
-    except:
-        pass
-    try:
-        if key == "admin_roles":
-            return mod.admin_roles
     except:
         pass
     try:

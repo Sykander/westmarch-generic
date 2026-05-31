@@ -26,7 +26,7 @@ Previously named `initial-statement`; renamed to reflect that this is the **west
 | [aliases/crafting/](aliases/crafting/README.md) | `crafting` | craft, brew, scribe, enchant |
 | [aliases/economy/](aliases/economy/README.md) | `economy` | job, buy, sell, wallet |
 | [aliases/content/](aliases/content/README.md) | `content` | library, read |
-| [aliases/misc/](aliases/misc/README.md) | `misc` | quest, recipe |
+| [aliases/misc/](aliases/misc/README.md) | `misc` | quest, recipe *(MVP)*; diary, journal hub *(post-MVP)* |
 | [aliases/admin/](aliases/admin/README.md) | *(not in config)* | westmarch (`setup`, `check`, `show`) — role-gated |
 
 ### Engine gvars

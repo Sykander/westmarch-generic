@@ -3,5 +3,18 @@
   "avraeService": {
     "token": "$AVRAE_TOKEN"
   },
-  "varFiles": [".varfile.json"]
+  "varFiles": [".varfile.json"],
+  "profiles": {
+    "default": {
+      "ctx": {
+        "author": {
+          "roles": [
+            {"id": 4567, "name": "DM"},
+            {"id": 4568, "name": "Player"},
+            {"id": 4569, "name": "Dragonspeaker"}
+          ]
+        }
+      }
+    }
+  }
 }

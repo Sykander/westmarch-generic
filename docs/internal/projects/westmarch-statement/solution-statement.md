@@ -404,7 +404,8 @@ MVP scope is fixed in [mvp-commands.md](mvp-commands.md). Order within and after
 ### After MVP (Phase 2+)
 
 11. **Dungeons** — floor/setup/begin; extension gvars likely
-12. **Nexus / remaining** — most westmarch-specific
+12. **Diary** — freeform personal RP journal — [aliases/misc/diary.md](aliases/misc/diary.md)
+13. **Journal** — misc hub (`!journal quest` ≡ `!quest`, …) — [aliases/misc/journal.md](aliases/misc/journal.md)
 
 Reorder if reference server priorities differ; document rationale when changing.
 

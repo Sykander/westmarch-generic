@@ -18,7 +18,8 @@ Finalize syntax during design (IDs vs slug names, nested sub-quests).
 - **Add entry:** player-authored journal text under an existing quest bucket.
 - **Storage:** character cvar JSON — engine **[quests.gvar](../../gvars/quests.md)**; config may define quest templates/categories only.
 
-Optional later: link to exploration quest-weighted encounters via **`policies.quest.self_assign`** — auto-activate journal entries from encounter outcomes ([data-shapes § quest policy](../../data-shapes.md#quest)).
+- Optional later: link to exploration quest-weighted encounters via **`policies.quest.self_assign`** — auto-activate quest entries from encounter outcomes ([data-shapes § quest policy](../../data-shapes.md#quest)).
+- Post-MVP: **`!journal quest`** routes here with identical behaviour — [journal.md](journal.md).
 
 ## westmarch reference
 
@@ -67,7 +68,7 @@ flowchart TD
       "title": "Find the Missing Scout",
       "category": "main",
       "entries": [
-        { "at": 1700000000, "text": "Spoke to the innkeeper in Nexus." }
+        { "at": 1700000000, "text": "Spoke to the innkeeper in River Town." }
       ],
       "subquests": []
     }

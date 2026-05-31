@@ -10,7 +10,7 @@
 !westmarch setup
 ```
 
-- **Who may run:** same gate as [westmarch.md](westmarch.md) — Administrator or `admin_roles` / Avrae defaults.
+- **Who may run:** same gate as [westmarch.md](westmarch.md) — **`Dragonspeaker`** or **`Server Aliaser`** (Avrae aliasing permissions; not GM/DM).
 - **Output:** one or more embeds (paginate if needed) with numbered setup steps and **copy-paste-ready** Avrae commands.
 - **Does not mutate** svars or gvars — displays instructions only.
 
@@ -29,7 +29,7 @@ Embed sections in order:
 ### 1 — Subscribe to the engine
 
 - Subscribe to the **westmarch-generic** workshop on [Avrae](https://avrae.io/dashboard/workshop) (see [docs/setup.md](../../../../../docs/setup.md)).
-- Ensure your account has **Dragonspeaker** or **Server Aliaser** (or Discord Administrator) on this server.
+- Ensure your account has **Dragonspeaker** or **Server Aliaser** on this server (Avrae aliasing permissions — for editing aliases, gvars, and svars).
 
 ### 2 — Create a config gvar
 
@@ -137,7 +137,7 @@ Point this Discord server at your config gvar UUID:
 
 - **Svar name** is fixed: **`westmarch_config`** (see [solution-statement.md](../../solution-statement.md)).
 - **Value** is only the 36-character gvar UUID string — not Python, not JSON.
-- Requires **Dragonspeaker**, **Server Aliaser**, or Discord Administrator.
+- Requires **Dragonspeaker** or **Server Aliaser** (Avrae aliasing permissions).
 
 To swap configs later (new season, staging world):
 

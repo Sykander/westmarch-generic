@@ -9,7 +9,7 @@ For architecture and config schema detail, see [internal westmarch-statement](in
 ## Prerequisites
 
 - Avrae bot on your Discord server
-- **Dragonspeaker**, **Server Aliaser**, or Discord **Administrator** (required to set svars and run `!westmarch`)
+- **Dragonspeaker** or **Server Aliaser** — Avrae aliasing permissions to edit workshop aliases, gvars, and svars (required to set svars and run `!westmarch`). Not the same as being campaign GM or DM.
 - An Avrae workshop slot for your server’s config gvar
 
 ---
@@ -133,7 +133,7 @@ Fix errors reported by **`check`**, then try a smoke command for an enabled subs
 | State | Typical message |
 |-------|-----------------|
 | **`westmarch_config` unset** | Server not configured — GM must set the svar |
-| **Svar set but config invalid** | Configuration error — GM runs `!westmarch check` |
+| **Svar set but config invalid** | Configuration error — someone with aliasing permissions runs `!westmarch check` |
 | **Subsystem or command disabled in config** | This feature is disabled on this server |
 | **Enabled but missing world data** | Command-specific error (e.g. no encounter pool for biome) |
 

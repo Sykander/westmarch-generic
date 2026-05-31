@@ -6,20 +6,22 @@ Look up [paths](../data-shapes.md#path) from **`world_data.paths`** and resolve 
 
 **Shortest-path search** lives in **`journeys.gvar`** — not here.
 
+Each path dict is **one directed edge** with **one** `steps` list. Same `from`/`to` with different transport → **separate path entries** (see [data-shapes § Transport](../data-shapes.md#transport)).
+
 ## API
 
 ```py
-def get_edge(config, from_id, to_id):
-    """Single directed path dict from → to, or None."""
+def get_edge(config, from_id, to_id, transport_id="walk"):
+    """Single directed path dict from → to matching transport, or None."""
 
-def get_edges_from(config, from_id):
-    """All path dicts where path.from == from_id."""
+def get_edges_from(config, from_id, transport_id="walk"):
+    """All path dicts where path.from == from_id and requirements match transport."""
 
 def get_path_cost(path, transport_id="walk"):
     """Numeric cost for one edge — used by journeys.find_journey (lower = cheaper)."""
 
-def get_path_steps(path, transport_id="walk"):
-    """Resolved step list — uses steps_by_transport[transport_id] when present."""
+def get_path_steps(path):
+    """Step list for this path — always path.steps (see default proceed below)."""
 
 def display_path(path, config, mode="short", horse=False, boat=False, prefix="!"):
     """One leg — markdown string (linked names via [locations.md](locations.md))."""
@@ -27,24 +29,22 @@ def display_path(path, config, mode="short", horse=False, boat=False, prefix="!"
 
 ## Edge cost (`get_path_cost`)
 
-westmarch compares the **cheapest travel mode** available on the edge:
+westmarch compares the **cheapest applicable path** between two locations (each path is already transport-specific):
 
 | Source on path | Cost formula *(westmarch)* | Generic target |
 |----------------|---------------------------|----------------|
-| Encounter steps | `len(steps)` | `len(get_path_steps(...))` |
-| Horse variant | **`steps_by_transport.horse`** when **`transport_id == "horse"`** |
-| Boat variant | **`steps_by_transport.boat`** |
+| Encounter steps | `len(steps)` | `len(get_path_steps(path))` |
 | Gold only | `gold / 25` | `cost.gold / 25` |
 | Free hop | `0` | no steps and no cost |
 
-Return **`min(...)`** of applicable costs; use a large sentinel when a mode does not apply (westmarch used `999`).
+Return **`min(...)`** across paths that match the traveller’s transport; use a large sentinel when no path applies (westmarch used `999`).
 
 ## Steps (`get_path_steps`)
 
-1. `horse=True` and path has horse-specific steps → use those  
-2. else `boat=True` and boat-specific steps → use those  
-3. else generic **`path.steps`**  
-4. else **`[{ "type": "proceed", "description": "Proceed to {to}" }]`**
+1. If **`path.steps`** present → return it  
+2. else **`[{ "type": "proceed", "description": "Proceed to {to}" }]`**
+
+Transport selection happens when **choosing which path dict** applies — not by swapping step lists on one path.
 
 ## Display (`display_path`)
 
@@ -60,8 +60,8 @@ Multi-leg routes and progress strikethrough → **`journeys.display_journey`**.
 ```py
 using(paths = env.gvars.paths, journeys = env.gvars.journeys)
 
-edge = paths.get_edge(cfg, "oakwood", "oakwood_east")
-steps = paths.get_path_steps(edge, horse=True)
+edge = paths.get_edge(cfg, "oakwood", "oakwood_east", transport_id="horse")
+steps = paths.get_path_steps(edge)
 found, legs = journeys.find_journey(cfg, from_id, to_id, horse=horse, boat=boat)
 ```
 
@@ -76,6 +76,7 @@ found, legs = journeys.find_journey(cfg, from_id, to_id, horse=horse, boat=boat)
 |-----------|---------|
 | `paths` list in engine gvar | Config **`paths`** |
 | `get_path_cost` / `get_path_steps` | same names |
+| `path.horse` / `path.boat` on one edge | Separate path dicts per transport |
 | `get_shortest_path` | **`journeys.find_journey`** |
 
 ## Related

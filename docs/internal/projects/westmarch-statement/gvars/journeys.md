@@ -57,7 +57,7 @@ Endpoints must be config **`locations`** ids — resolve display names with [loc
 ```py
 using(paths = env.gvars.paths, journeys = env.gvars.journeys)
 
-found, legs = journeys.find_journey(cfg, "nexus", "oakwood", horse=True)
+found, legs = journeys.find_journey(cfg, "river_town", "oakwood", horse=True)
 ```
 
 ## Journey lifecycle

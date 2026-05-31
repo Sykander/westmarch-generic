@@ -62,7 +62,6 @@ Always present after **`get_config()`** merges **`DEFAULTS`** ([gvars/config.md]
 | `subsystems` | Player-facing subsystems only — exploration, travel, downtime, crafting, economy, content, misc; optional **`display`** / **`command_display`**; nested **`config`** per subsystem ([data-shapes.md § Subsystem entry](data-shapes.md#subsystem-entry)) |
 | `policies` | House rules — downtime mode, cooldown enforcement, repeat encounters, combat HP, … ([data-shapes.md § Server policies](data-shapes.md#server-policies)) |
 | `subsystems.*.command_config` | Per-command cooldowns and workday costs ([data-shapes.md § Command config](data-shapes.md#command-config)) |
-| `admin_roles` | Optional override for GM hub roles |
 | `channel_policy` | Optional channel whitelist / RP rules ([gvars/auth.md](gvars/auth.md)) |
 
 **`!westmarch check`** validates structure and data for enabled subsystems; engine release notes cover breaking config changes.
@@ -93,7 +92,7 @@ Other layer-2 catalogues (not in **`world_data`** yet):
 | `recipes` | `[ recipe, … ]` | brew, enchant, **recipe** |
 | `items`, `library`, … | per vertical | crafting, content, … |
 
-**Location keys** (`oakwood`, `nexus`, …) are stable **`id`** slugs used in path `from`/`to`, cvar resolution, and (argument mode) distinct from biome codes.
+**Location keys** (`oakwood`, `river_town`, …) are stable **`id`** slugs used in path `from`/`to`, cvar resolution, and (argument mode) distinct from biome codes.
 
 ### 3 — Extension gvars *(optional, large tables)*
 
@@ -213,10 +212,10 @@ subsystems = {
 }
 
 world_data = {
-    "default_location": "nexus",
+    "default_location": "river_town",
     "locations": {
-        "nexus": {
-            "name": "Nexus",
+        "river_town": {
+            "name": "River Town",
             "description": "The safe starting town.",
         },
         "oakwood": {
@@ -267,7 +266,7 @@ subsystems = {
 
 world_data = {
     "locations": {
-        "nexus": {"name": "Nexus"},
+        "river_town": {"name": "River Town"},
         "oakwood": {"name": "Oakwood Forest", "biome": "forest", "activities": {"enc": ["forest"]}},
         "oakwood_east": {"name": "Oakwood — East Trail", "biome": "forest", "activities": {"enc": ["forest"]}},
     },
@@ -279,10 +278,15 @@ world_data = {
                 {"type": "encounter", "biome": "forest"},
                 {"type": "proceed", "description": "The trail opens into a clearing."},
             ],
+            "requirements": {"transport": "walk"},
+        },
+        {
+            "from": "oakwood",
+            "to": "oakwood_east",
+            "steps": [
+                {"type": "proceed", "description": "Canter along the east trail."},
+            ],
             "requirements": {"transport": "horse"},
-            "steps_by_transport": {
-                "horse": [{"type": "proceed", "description": "Canter along the east trail."}],
-            },
             "cost": {"gold": 25, "rations": 2},
         },
     ],
@@ -375,7 +379,7 @@ Shape rules for world objects → [data-shapes.md](data-shapes.md). Toggle and *
 ## Conventions
 
 - **Top-level keys:** lowercase `snake_case` (`default_location`, `subsystems`, …).
-- **Subsystem keys:** match player alias folders (`exploration`, `travel`, …). **`admin`** is not a subsystem — GM hub commands are role-gated only.
+- **Subsystem keys:** match player alias folders (`exploration`, `travel`, …). **`admin`** is not a subsystem — setup hub commands are Avrae aliasing role-gated only.
 - **Command toggle keys:** match alias names (`enc`, `forage`, …) under the owning subsystem’s **`commands`**.
 - **Data only** — config is maps, lists, strings, numbers, bools. Engine must not execute config as code ([solution-statement.md § Trust boundaries](solution-statement.md#trust-boundaries)).
 

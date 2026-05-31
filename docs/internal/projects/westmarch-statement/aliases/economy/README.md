@@ -29,7 +29,7 @@ shops = {
     "general_store": {
         "id": "general_store",
         "name": "General Store",
-        "location_id": "nexus",
+        "location_id": "river_town",
         "accepts_sells": True,
         "buyback": 0.5,
         "stock": [

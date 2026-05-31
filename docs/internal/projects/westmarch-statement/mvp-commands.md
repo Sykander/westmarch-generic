@@ -8,7 +8,7 @@ See [solution-statement.md](solution-statement.md) for architecture and phases; 
 
 ## MVP command set
 
-Twenty-five top-level commands (twenty-four player-facing + GM hub **`westmarch`**), plus shared engine/config infrastructure. The hub exposes **`setup`**, **`check`**, and **`show`** subcommands — **role-gated**, not in **`subsystems`**.
+Twenty-five top-level commands (twenty-four player-facing + setup hub **`westmarch`**), plus shared engine/config infrastructure. The hub exposes **`setup`**, **`check`**, and **`show`** subcommands — **Avrae aliasing role-gated**, not in **`subsystems`**.
 
 | Command | Subsystem | Enable via config | Primary config data | Source |
 |---------|-----------|-------------------|---------------------|--------|
@@ -36,7 +36,7 @@ Twenty-five top-level commands (twenty-four player-facing + GM hub **`westmarch`
 | **read** | content | `…commands.read` | Same book engine; deep-read cooldown policy | westmarch |
 | **quest** | misc | `subsystems.misc.commands.quest` | Optional quest categories, labels, permissions | **new** |
 | **recipe** | misc | `…commands.recipe` | Recipe catalogues (items, potions, magic items) | **new** |
-| **westmarch** | admin *(not in config)* | — *(role-gated)* | Svar wiring, validation rules, display glossary, starter template | **new** — GM hub; subcommands **`setup`**, **`check`**, **`show`** |
+| **westmarch** | admin *(not in config)* | — *(aliasing role-gated)* | Svar wiring, validation rules, display glossary, starter template | **new** — setup hub; subcommands **`setup`**, **`check`**, **`show`** |
 
 ### Subsystem notes
 
@@ -50,9 +50,9 @@ Twenty-five top-level commands (twenty-four player-facing + GM hub **`westmarch`
 
 **Content** — **library** and **read** share the westmarch book engine (`library.gvar`). **`!library`** topic behaviour is set in **`subsystems.content.config.library_topic_source`**: **`inferred`**, **`balanced`**, **`manual`**, or **`restricted`** ([data-shapes.md § content.config](data-shapes.md#contentconfig)). **`!read`** searches by title/author only.
 
-**Misc** — **quest** and **recipe** are new player utilities. **quest** surfaces a structured quest log (view active quests, browse entries, add journal notes under a quest). **recipe** searches and displays recipes the character knows or can access from crafting catalogues—complements **craft** / **brew** / **enchant** without replacing them.
+**Misc** — **quest** and **recipe** are MVP player utilities. **quest** surfaces a structured quest log (view active quests, browse entries, add notes under a quest). **recipe** searches and displays recipes from crafting catalogues—complements **craft** / **brew** / **enchant** without replacing them. **diary** (freeform RP notes) and **journal** (optional hub: **`!journal quest`** ≡ **`!quest`**, etc.) ship **post-MVP** — see [aliases/misc/journal.md](aliases/misc/journal.md).
 
-**Admin** — **`!westmarch`** is the **GM-only** hub (Discord Administrator or Avrae **`Dragonspeaker`** / **`Server Aliaser`**, plus optional `admin_roles`). Subcommands **`setup`**, **`check`**, **`show`** are always on when the engine is subscribed — **not** toggled via **`subsystems`**. See [aliases/admin/README.md](aliases/admin/README.md).
+**Setup hub** — **`!westmarch`** is for **Avrae engine setup** (svars, config gvar wiring, validation). Requires **`Dragonspeaker`** or **`Server Aliaser`** — Avrae aliasing permissions to edit workshop aliases and server variables; **not** an in-game GM or DM role. Subcommands **`setup`**, **`check`**, **`show`** are always on when the engine is subscribed — **not** toggled via **`subsystems`**. See [aliases/admin/README.md](aliases/admin/README.md).
 
 ---
 
@@ -71,7 +71,6 @@ subsystems = {
 }
 
 # Optional top-level
-admin_roles = ["Dragonspeaker", "Server Aliaser"]
 channel_policy = { ... }
 policies = { ... }
 ```
@@ -102,7 +101,7 @@ When a subsystem `enabled` is `False`, all its commands respect the global off s
 | **Books & library** | `library` book catalogue | library, read |
 | **Quest journal** | *(new)* optional categories, display labels | quest |
 | **Recipe index** | **`recipes`** + item/potion/magic catalogues | recipe |
-| **Admin access** | *(optional)* `admin_roles` | `!westmarch` hub (`setup`, `check`, `show`) |
+| **Setup hub access** | Avrae aliasing roles in [auth.gvar](gvars/auth.md) (`Dragonspeaker`, `Server Aliaser`) | `!westmarch` hub (`setup`, `check`, `show`) |
 | **Display / identity** | *(optional)* base **`display`**; per-subsystem **`display`** + **`command_display`**; **`policies.display.footer_behaviour`** | Help embeds, command embeds, `!westmarch show`, default embed accent |
 | **Config metadata** | *(optional)* `config_version`, `rules_version` | Owner versioning; rules override |
 | **Language policy** | `policies.languages.allowed` | Setting-valid languages |
@@ -237,7 +236,7 @@ flowchart LR
 | **recipe** | Search and browse recipes (craft, brew, enchant) by name, ingredient, or tag; show ingredients, downtime, DCs, and prerequisites. Read-only companion to crafting commands—does not consume materials or start downtime |
 | **westmarch** | *(admin hub)* **`setup`** — onboarding (gvar create + svar wire); **`check`** — validate; **`show`** — summarize loaded config |
 
-**Not planned:** server-wide **`stats`** / usage analytics — see [aliases/admin/README.md](aliases/admin/README.md).
+**Not planned:** server-wide **`stats`** / usage analytics; westmarch **`nexus`** (+ brand/moon/star Discord structure); combat targeting snippets **`-tl`** / **`-tc`** — see [aliases/admin/README.md](aliases/admin/README.md).
 
 Detailed behaviour specs belong in engine implementation and public `docs/config/` as each command is built.
 
@@ -248,9 +247,8 @@ Detailed behaviour specs belong in engine implementation and public `docs/config
 | Command(s) | Reason |
 |--------------|--------|
 | **dungeon** (+ subcommands) | Separate subsystem; many engine gvars |
-| **nexus** (+ brand, moon, star, …) | westmarch-specific Discord structure |
-| **diary** | Server-specific RP journal (westmarch had dedicated command) |
-| Snippets **-tl**, **-tc** | Combat targeting; after enc/combat stable |
+| **diary** | Freeform personal RP journal (character cvar); distinct from **`!quest`** — [aliases/misc/diary.md](aliases/misc/diary.md) |
+| **journal** | Optional misc hub — **`!journal quest`** ≡ **`!quest`**, same for **recipe** / **diary** when enabled; per-command toggles — [aliases/misc/journal.md](aliases/misc/journal.md) |
 
 ---
 
@@ -262,7 +260,7 @@ Detailed behaviour specs belong in engine implementation and public `docs/config
 | **Phase 1** | Tiers B–H — full MVP player command set (24 commands), admin commands, template config, setup doc, workshop |
 | **Phase 2** | Extract reference westmarch data; parity tests for ported commands |
 
-Post-MVP: dungeons, nexus per [solution-statement.md](solution-statement.md).
+Post-MVP: **dungeons**, **diary**, **journal** per [solution-statement.md](solution-statement.md).
 
 ---
 
@@ -276,7 +274,7 @@ Post-MVP: dungeons, nexus per [solution-statement.md](solution-statement.md).
 - [aliases/economy/](aliases/economy/README.md) — economy subsystem
 - [aliases/content/](aliases/content/README.md) — content subsystem
 - [aliases/misc/](aliases/misc/README.md) — misc subsystem
-- [aliases/admin/](aliases/admin/README.md) — `!westmarch` GM hub
+- [aliases/admin/](aliases/admin/README.md) — `!westmarch` setup hub
 - [gvars/](gvars/README.md) — engine modules (config, auth, encounters)
 - [solution-statement.md](solution-statement.md) — architecture and implementation plan
 - [user-stories.md](user-stories.md) — adoption and config journeys

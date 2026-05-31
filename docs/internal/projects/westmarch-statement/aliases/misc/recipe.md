@@ -15,6 +15,7 @@
 - **Search:** across **`recipes`** config ([data-shapes.md § Recipe](../../data-shapes.md#recipe)) plus item catalogues from [items.tsv](../../../../../public/assets/items.tsv).
 - **Display:** `consumed`, `required`, workdays, spells; gp-band hints for mundane craft without a recipe row.
 - **Read-only** — no rolls, no bag changes.
+- Post-MVP: **`!journal recipe …`** routes here with identical behaviour — [journal.md](journal.md).
 
 ## westmarch reference
 
