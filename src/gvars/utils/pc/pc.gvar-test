@@ -1,0 +1,60 @@
+cfg_fixture = {
+    "subsystems": {
+        "exploration": {
+            "enabled": True,
+            "commands": {"enc": True},
+            "command_config": {"enc": {"cooldown_seconds": 120}},
+        },
+    },
+    "policies": {"exploration": {"enforce_cooldowns": True}},
+}
+allowed, remaining = pc.check_cooldown(character(), "enc", cfg_fixture)
+return allowed == False and remaining > 0
+---
+True
+---
+name: cooldown blocks when last_used_at is in the future
+vars:
+  cvars:
+    wg_stats: '{"enc": {"last_used_at": 9999999999}}'
+
+cfg_fixture = {
+    "subsystems": {
+        "exploration": {
+            "enabled": True,
+            "commands": {"enc": True},
+            "command_config": {"enc": {"cooldown_seconds": 120}},
+        },
+    },
+}
+return pc.cooldown_seconds("enc", cfg_fixture)
+---
+120
+---
+name: cooldown_seconds uses command_config override
+
+cfg_fixture = {
+    "subsystems": {
+        "exploration": {
+            "enabled": True,
+            "commands": {"enc": True},
+            "command_config": {"enc": {"cooldown_seconds": 120}},
+        },
+    },
+    "policies": {"exploration": {"enforce_cooldowns": False}},
+}
+allowed, remaining = pc.check_cooldown(character(), "enc", cfg_fixture)
+return allowed == True
+---
+True
+---
+name: cooldown skipped when enforce_cooldowns is false
+vars:
+  cvars:
+    wg_stats: '{"enc": {"last_used_at": 9999999999}}'
+
+return pc.cooldown_seconds("hunt", {})
+---
+0
+---
+name: hunt default cooldown is zero when not in command_config

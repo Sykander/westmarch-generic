@@ -23,6 +23,27 @@ Drac2 (Draconic) is a **Python subset** Avrae runs for workshop gvars and for lo
 
 When behaviour is unclear, read **`.cursor/rules/drac2-avrae-sources.mdc`** and the cached upstream docs under **`.cursor/avrae-reference/`** and **`.cursor/avrae-ls-reference/`**.
 
+## Character cvars (read / write)
+
+On **real Avrae**, character cvars are **strings**. `character.get_cvar(name)` returns a **string** (or default) — not a parsed dict/list. **`character.set_cvar(name, val)`** also stores strings.
+
+For structured data (dicts, lists — e.g. **`wg_stats`**, bag JSON):
+
+1. **Save:** `ch.set_cvar(CVAR_NAME, dump_json(payload))`
+2. **Load:** read via `ch.cvars[name]` or `get_cvar`, then if the value is a string, **`load_json(raw)`** before use; if already a dict (mock / in-memory), use as-is.
+
+**Canonical pattern:** `src/gvars/utils/pc/stats.gvar` — `_load_stats` / `_save_stats`.
+
+**Load order (robust across Avrae + avrae-ls):**
+
+- Prefer **`ch.cvars[key]`** when the mock still holds a live dict.
+- Fall back to **`get_cvar`** / runtime **`get("key")`** (string on Avrae).
+- Parse with **`load_json`** when `strings.is_str(raw)` and `dicts.is_dict` fails.
+
+**Tests (avrae-ls):** inject JSON cvars as **`vars.cvars.<name>: '{"enc": …}'`** (string). Nested YAML dicts under **`character.cvars`** may not round-trip through `get_cvar` the same way — prefer JSON strings for structured fixtures.
+
+**Do not** assume `get_cvar` returns a dict you can subscript without parsing. **Do not** `set_cvar` a raw dict on Avrae — always **`dump_json`** first (see also **`core/bags.gvar`**).
+
 ## File roles
 
 - **`.gvar`** — entire file is Drac2; imported via `using` / env.

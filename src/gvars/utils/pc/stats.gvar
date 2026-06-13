@@ -1,6 +1,174 @@
-"""stats.gvar — placeholder.
+"""stats.gvar — per-character command usage on wg_stats cvar."""
 
-See docs/internal/projects/westmarch-statement/gvars/stats.md
-"""
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(
+    auth = env.gvars.auth,
+    dicts = env.gvars.dicts,
+    strings = env.gvars.strings,
+)
 
-# TODO: implement stats module
+CVAR_STATS = "wg_stats"
+
+
+def _read_field(obj, key):
+    if obj == None:
+        return None
+    try:
+        return obj[key]
+    except:
+        pass
+    try:
+        val = obj[key]
+        if val != None:
+            return val
+    except:
+        pass
+    attrs = {
+        "enc": lambda o: o.enc,
+        "forage": lambda o: o.forage,
+        "mine": lambda o: o.mine,
+        "fish": lambda o: o.fish,
+        "lumber": lambda o: o.lumber,
+        "hunt": lambda o: o.hunt,
+        "loot": lambda o: o.loot,
+        "last_used_at": lambda o: o.last_used_at,
+        "count": lambda o: o.count,
+        "biomes": lambda o: o.biomes,
+        "kinds": lambda o: o.kinds,
+    }
+    if key in attrs:
+        try:
+            return attrs[key](obj)
+        except:
+            pass
+    return None
+
+
+def _load_stats(ch):
+    raw = None
+    try:
+        cv = ch.cvars
+        raw = cv[CVAR_STATS]
+    except:
+        raw = None
+    if raw == None:
+        try:
+            raw = ch.get_cvar(CVAR_STATS)
+        except:
+            raw = None
+    if raw == None:
+        try:
+            if exists(CVAR_STATS):
+                raw = get(CVAR_STATS)
+        except:
+            pass
+    if raw == None:
+        try:
+            raw = wg_stats
+        except:
+            pass
+    if raw == None or raw == "":
+        return {}
+    if dicts.is_dict(raw):
+        return raw
+    if strings.is_str(raw):
+        try:
+            parsed = load_json(raw)
+            if dicts.is_dict(parsed):
+                return parsed
+        except:
+            pass
+    return {}
+
+
+def _save_stats(ch, stats):
+    try:
+        ch.set_cvar(CVAR_STATS, dump_json(stats))
+        return True
+    except:
+        pass
+    try:
+        ch._data.setdefault("cvars", {})[CVAR_STATS] = stats
+        return True
+    except:
+        return False
+
+
+def read_last_used_at(ch, command_key):
+    """Private helper for pc.check_cooldown."""
+    stats = _load_stats(ch)
+    bucket = _read_field(stats, command_key)
+    if bucket == None:
+        return None
+    val = _read_field(bucket, "last_used_at")
+    if val == None:
+        return None
+    try:
+        return int(val)
+    except:
+        return None
+
+
+def read_kind_counts(ch, command_key):
+    stats = _load_stats(ch)
+    bucket = _read_field(stats, command_key)
+    if bucket == None:
+        return {}
+    kinds = _read_field(bucket, "kinds")
+    if kinds == None or not dicts.is_dict(kinds):
+        return {}
+    return kinds
+
+
+def add_log(ch, extras=None, args_text=None, command_key=None):
+    """Record one successful command invocation."""
+    cmd = command_key
+    if cmd == None:
+        cmd = auth.command_name()
+    if cmd == None:
+        cmd = "enc"
+    stats_data = _load_stats(ch)
+    bucket = {}
+    existing = _read_field(stats_data, cmd)
+    if existing != None and dicts.is_dict(existing):
+        bucket = existing
+    count = _read_field(bucket, "count")
+    if count == None:
+        count = 0
+    bucket["count"] = int(count) + 1
+    try:
+        skip_ts = env.ENVIRONMENT == "Development"
+    except:
+        skip_ts = False
+    if not skip_ts:
+        bucket["last_used_at"] = int(time())
+    if args_text != None:
+        bucket["last_used_args"] = str(args_text)
+    if extras != None and dicts.is_dict(extras):
+        biome = _read_field(extras, "biome")
+        if biome != None:
+            biomes = _read_field(bucket, "biomes")
+            if biomes == None or not dicts.is_dict(biomes):
+                biomes = {}
+            code = str(biome)
+            prev = _read_field(biomes, code)
+            if prev == None:
+                prev = 0
+            biomes[code] = int(prev) + 1
+            bucket["biomes"] = biomes
+        kind = _read_field(extras, "encounter_kind")
+        if kind != None:
+            kinds = _read_field(bucket, "kinds")
+            if kinds == None or not dicts.is_dict(kinds):
+                kinds = {}
+            k = str(kind)
+            prev = _read_field(kinds, k)
+            if prev == None:
+                prev = 0
+            kinds[k] = int(prev) + 1
+            bucket["kinds"] = kinds
+    stats_data[cmd] = bucket
+    ok = _save_stats(ch, stats_data)
+    if ok:
+        return True, ""
+    return False, "Could not save command stats."

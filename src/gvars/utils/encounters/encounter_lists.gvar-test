@@ -1,0 +1,98 @@
+cfg_fixture = {
+    "subsystems": {
+        "exploration": {
+            "enabled": True,
+            "commands": {"enc": True},
+            "config": {
+                "distribution_policy": "balanced",
+                "distribution": {"combat": 33, "quest": 33, "gather": 34},
+            },
+        },
+    },
+    "world_data": {
+        "biomes": {"forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"}},
+    },
+}
+enc = encounter_lists.get_encounter("forest", "enc", character(), cfg_fixture)
+return enc != None and enc["kind"] == "gather"
+---
+True
+---
+name: balanced kind favours underrepresented gather at near-perfect mix
+vars:
+  cvars:
+    wg_stats: '{"enc": {"kinds": {"combat": 33, "quest": 33, "gather": 32}}}'
+  gvars:
+    eeee5555-5555-5555-5555-555555555555: |
+      pools = {
+          "enc": {
+              "combat": [{"kind": "combat", "name": "Forest ambush"}],
+              "quest": [{"kind": "quest", "name": "Lost traveller"}],
+              "gather": [{"kind": "gather", "name": "Berries in the Wild"}],
+          },
+      }
+
+cfg_fixture = {
+    "subsystems": {
+        "exploration": {
+            "enabled": True,
+            "commands": {"enc": True},
+            "config": {
+                "distribution_policy": "balanced",
+                "distribution": {"combat": 33, "quest": 33, "gather": 34},
+            },
+        },
+    },
+    "world_data": {
+        "biomes": {"forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"}},
+    },
+}
+enc = encounter_lists.get_encounter("forest", "enc", character(), cfg_fixture)
+return enc != None and enc["kind"] == "quest"
+---
+True
+---
+name: balanced kind favours quest when combat and gather dominate history
+vars:
+  cvars:
+    wg_stats: '{"enc": {"kinds": {"combat": 20, "quest": 0, "gather": 10}}}'
+  gvars:
+    eeee5555-5555-5555-5555-555555555555: |
+      pools = {
+          "enc": {
+              "combat": [{"kind": "combat", "name": "Forest ambush"}],
+              "quest": [{"kind": "quest", "name": "Lost traveller"}],
+              "gather": [{"kind": "gather", "name": "Berries in the Wild"}],
+          },
+      }
+
+cfg_fixture = {
+    "subsystems": {
+        "exploration": {
+            "enabled": True,
+            "commands": {"enc": True},
+            "config": {
+                "enc_biome_source": "argument",
+                "distribution": {"combat": 0, "quest": 100, "gather": 0},
+            },
+        },
+    },
+    "world_data": {
+        "biomes": {"forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"}},
+    },
+}
+enc = encounter_lists.get_encounter("forest", "enc", character(), cfg_fixture)
+return enc != None and enc["kind"] == "combat" and enc["name"] == "Forest ambush"
+---
+True
+---
+name: empty quest pool falls back to combat entries
+vars:
+  gvars:
+    eeee5555-5555-5555-5555-555555555555: |
+      pools = {
+          "enc": {
+              "combat": [{"kind": "combat", "name": "Forest ambush"}],
+              "quest": [],
+          },
+      }

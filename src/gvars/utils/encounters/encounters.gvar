@@ -1,6 +1,106 @@
-"""encounters.gvar — placeholder.
+"""encounters.gvar — run a chosen encounter (rolls + outcomes MVP)."""
 
-See docs/internal/projects/westmarch-statement/gvars/encounters.md
-"""
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(
+    dicts = env.gvars.dicts,
+    lists = env.gvars.lists,
+    strings = env.gvars.strings,
+)
 
-# TODO: implement encounters module
+def _read_field(obj, key):
+    if obj == None:
+        return None
+    try:
+        if key in obj:
+            return obj[key]
+    except:
+        pass
+    try:
+        return obj.get(key)
+    except:
+        pass
+    return None
+
+
+def _resolve_str(value):
+    if value == None:
+        return ""
+    if strings.is_str(value):
+        return str(value)
+    try:
+        return str(value)
+    except:
+        return ""
+
+
+def process_encounter(encounter, character, args=None):
+    """Return {name, description, outcome_text, thumb}."""
+    if encounter == None:
+        return {"name": "Encounter", "description": "No encounter data.", "outcome_text": "", "thumb": None}
+    name = _resolve_str(_read_field(encounter, "name"))
+    if name == "":
+        name = "Encounter"
+    desc = _resolve_str(_read_field(encounter, "description"))
+    outcomes = _read_field(encounter, "outcomes")
+    outcome_text = ""
+    if outcomes != None and lists.is_list(outcomes):
+        outcome_text = _apply_outcomes(outcomes, character)
+    thumb = _read_field(encounter, "thumb")
+    return {
+        "name": name,
+        "description": desc,
+        "outcome_text": outcome_text,
+        "thumb": thumb,
+    }
+
+
+def _roll_total(value):
+    if value == None:
+        return 0
+    if strings.is_str(value):
+        try:
+            return vroll(value).total
+        except:
+            try:
+                return int(value)
+            except:
+                return 0
+    try:
+        return int(value)
+    except:
+        return 0
+
+
+def _apply_outcomes(outcomes, character):
+    lines = []
+    for outcome in outcomes:
+        if outcome == None or not dicts.is_dict(outcome):
+            continue
+        otype = _read_field(outcome, "type")
+        if otype == None:
+            continue
+        otype = str(otype).strip().lower()
+        if otype == "gold":
+            total = _roll_total(_read_field(outcome, "total"))
+            try:
+                character.coinpurse.modify_coins(gp=total)
+                lines.append(f"-# Gained **{total}** gp.")
+            except:
+                lines.append(f"-# Found **{total}** gp (coinpurse not updated).")
+        elif otype == "damage":
+            total = _roll_total(_read_field(outcome, "total"))
+            try:
+                character.modify_hp(-1 * total, overflow=False)
+                lines.append(f"-# Took **{total}** damage.")
+            except:
+                lines.append(f"-# Took **{total}** damage (HP not updated).")
+        elif otype == "healing":
+            total = _roll_total(_read_field(outcome, "total"))
+            try:
+                character.modify_hp(total, overflow=False)
+                lines.append(f"-# Recovered **{total}** HP.")
+            except:
+                lines.append(f"-# Recovered **{total}** HP (HP not updated).")
+    if len(lines) == 0:
+        return ""
+    return "\n".join(lines)

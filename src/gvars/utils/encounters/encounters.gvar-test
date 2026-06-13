@@ -1,0 +1,22 @@
+enc = {"kind": "gather", "name": "Treasure cache", "description": "Coins glint.", "outcomes": [{"type": "gold", "total": "3"}]}
+result = encounters.process_encounter(enc, character())
+return result["name"] == "Treasure cache" and "3" in result["outcome_text"]
+---
+True
+---
+name: process_encounter applies gold outcome
+
+enc = {"kind": "gather", "name": "Empty", "description": "Nothing happens."}
+result = encounters.process_encounter(enc, character())
+return result["description"] == "Nothing happens." and result["outcome_text"] == ""
+---
+True
+---
+name: process_encounter handles encounter without outcomes
+
+result = encounters.process_encounter(None, character())
+return result["name"] == "Encounter"
+---
+True
+---
+name: process_encounter handles missing encounter

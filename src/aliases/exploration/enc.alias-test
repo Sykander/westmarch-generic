@@ -171,6 +171,8 @@ name: "planned: cooldown blocks repeat use"
 vars:
   uvars:
     _wm_command: enc
+  cvars:
+    wg_stats: '{"enc": {"last_used_at": 9999999999}}'
   svars:
     westmarch_config: "eeee3333-3333-3333-3333-333333333333"
   gvars:
@@ -198,11 +200,6 @@ vars:
               "gather": [{"kind": "gather", "name": "Berries in the Wild"}],
           },
       }
-  character:
-    cvars:
-      wg_stats:
-        enc:
-          last_used_at: 9999999999
 
 !enc help
 ---
@@ -278,3 +275,175 @@ vars:
   character:
     cvars:
       wg_location: "oakwood"
+
+!enc forest
+---
+re:Forest ambush|Wolf|combat
+---
+name: combat kind from mixed distribution pool
+vars:
+  uvars:
+    _wm_command: enc
+  svars:
+    westmarch_config: "eeee8888-8888-8888-8888-888888888888"
+  gvars:
+    eeee8888-8888-8888-8888-888888888888: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+              "config": {
+                  "enc_biome_source": "argument",
+                  "distribution_policy": "random",
+                  "distribution": {"combat": 100, "quest": 0, "gather": 0},
+              },
+          },
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+          },
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      pools = {
+          "enc": {
+              "combat": [{"kind": "combat", "name": "Forest ambush", "description": "Something stirs."}],
+              "gather": [{"kind": "gather", "name": "Berries in the Wild"}],
+          },
+      }
+
+!enc forest
+---
+re:Lost traveller|quest
+---
+name: balanced distribution favours underrepresented quest kind
+vars:
+  uvars:
+    _wm_command: enc
+  cvars:
+    wg_stats: '{"enc": {"kinds": {"combat": 20, "quest": 0, "gather": 10}}}'
+  svars:
+    westmarch_config: "eeee8889-8889-8889-8889-888888888889"
+  gvars:
+    eeee8889-8889-8889-8889-888888888889: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+              "config": {
+                  "enc_biome_source": "argument",
+                  "distribution_policy": "balanced",
+                  "distribution": {"combat": 33, "quest": 33, "gather": 34},
+              },
+          },
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+          },
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      pools = {
+          "enc": {
+              "combat": [{"kind": "combat", "name": "Forest ambush"}],
+              "quest": [{"kind": "quest", "name": "Lost traveller", "description": "A plea for help."}],
+              "gather": [{"kind": "gather", "name": "Berries in the Wild"}],
+          },
+      }
+
+!enc forest
+---
+re:Herb|Berries|Forest ambush|Lost traveller
+---
+name: large biome pool resolves without statement limit error
+vars:
+  uvars:
+    _wm_command: enc
+  svars:
+    westmarch_config: "eeee8890-8890-8890-8890-888888889090"
+  gvars:
+    eeee8890-8890-8890-8890-888888889090: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+              "config": {
+                  "enc_biome_source": "argument",
+                  "distribution": {"combat": 0, "quest": 0, "gather": 100},
+              },
+          },
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee8891-8891-8891-8891-888888889191"},
+          },
+      }
+    eeee8891-8891-8891-8891-888888889191: |
+      pools = {
+          "enc": {
+              "gather": [
+                  {"kind": "gather", "name": "Herb patch 01"},
+                  {"kind": "gather", "name": "Herb patch 02"},
+                  {"kind": "gather", "name": "Herb patch 03"},
+                  {"kind": "gather", "name": "Herb patch 04"},
+                  {"kind": "gather", "name": "Herb patch 05"},
+                  {"kind": "gather", "name": "Herb patch 06"},
+                  {"kind": "gather", "name": "Herb patch 07"},
+                  {"kind": "gather", "name": "Herb patch 08"},
+                  {"kind": "gather", "name": "Herb patch 09"},
+                  {"kind": "gather", "name": "Herb patch 10"},
+                  {"kind": "gather", "name": "Herb patch 11"},
+                  {"kind": "gather", "name": "Herb patch 12"},
+                  {"kind": "gather", "name": "Herb patch 13"},
+                  {"kind": "gather", "name": "Herb patch 14"},
+                  {"kind": "gather", "name": "Herb patch 15"},
+                  {"kind": "gather", "name": "Herb patch 16"},
+                  {"kind": "gather", "name": "Herb patch 17"},
+                  {"kind": "gather", "name": "Herb patch 18"},
+                  {"kind": "gather", "name": "Herb patch 19"},
+                  {"kind": "gather", "name": "Herb patch 20"},
+              ],
+              "combat": [{"kind": "combat", "name": "Forest ambush"}],
+              "quest": [{"kind": "quest", "name": "Lost traveller"}],
+          },
+      }
+
+!enc forest
+---
+re:gold|Gained
+---
+name: encounter outcomes apply gold reward
+vars:
+  uvars:
+    _wm_command: enc
+  svars:
+    westmarch_config: "eeee8892-8892-8892-8892-888888889292"
+  gvars:
+    eeee8892-8892-8892-8892-888888889292: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+              "config": {
+                  "enc_biome_source": "argument",
+                  "distribution": {"combat": 0, "quest": 0, "gather": 100},
+              },
+          },
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+          },
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      pools = {
+          "enc": {
+              "gather": [{
+                  "kind": "gather",
+                  "name": "Treasure cache",
+                  "description": "Coins glint in the dirt.",
+                  "outcomes": [{"type": "gold", "total": "5"}],
+              }],
+          },
+      }
+

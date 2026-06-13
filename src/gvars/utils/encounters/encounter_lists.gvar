@@ -1,6 +1,152 @@
-"""encounter_lists.gvar — placeholder.
+"""encounter_lists.gvar — pick one encounter for an activity command."""
 
-See docs/internal/projects/westmarch-statement/gvars/encounter_lists.md
-"""
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(
+    biomes = env.gvars.biomes,
+    config = env.gvars.config,
+    dicts = env.gvars.dicts,
+    lists = env.gvars.lists,
+    random = env.gvars.random,
+    stats = env.gvars.stats,
+)
 
-# TODO: implement encounter_lists module
+KINDS = ["combat", "quest", "gather"]
+
+
+def _read_field(obj, key):
+    if obj == None:
+        return None
+    try:
+        if key in obj:
+            return obj[key]
+    except:
+        pass
+    try:
+        return obj.get(key)
+    except:
+        pass
+    return None
+
+
+def _cfg(config_override=None):
+    if config_override != None:
+        return config_override
+    return config.get_config()
+
+
+def _exploration_config(cfg):
+    sub = _read_field(cfg, "subsystems")
+    exp = _read_field(sub, "exploration")
+    return _read_field(exp, "config")
+
+
+def _distribution(cfg):
+    exp_cfg = _exploration_config(cfg)
+    dist = _read_field(exp_cfg, "distribution")
+    if dist == None or not dicts.is_dict(dist):
+        return {"combat": 25, "quest": 25, "gather": 50}
+    return dist
+
+
+def _distribution_policy(cfg):
+    exp_cfg = _exploration_config(cfg)
+    pol = _read_field(exp_cfg, "distribution_policy")
+    if pol == None:
+        return "random"
+    return str(pol).strip().lower()
+
+
+def _random_kind(dist):
+    kind_roll = random.get_random_integer(1, 100)
+    cum = 0
+    for kind in KINDS:
+        pct = _read_field(dist, kind)
+        if pct == None:
+            pct = 0
+        try:
+            cum += int(pct)
+        except:
+            pass
+        if kind_roll <= cum:
+            return kind
+    return "gather"
+
+
+def _balanced_kind(ch, cmd, dist):
+    counts = stats.read_kind_counts(ch, cmd)
+    total = 0
+    for kind in KINDS:
+        seen = _read_field(counts, kind)
+        if seen == None:
+            seen = 0
+        try:
+            total += int(seen)
+        except:
+            pass
+    if total <= 0:
+        return _random_kind(dist)
+    best = "gather"
+    best_deficit = None
+    for kind in KINDS:
+        target = _read_field(dist, kind)
+        if target == None:
+            target = 0
+        try:
+            target = int(target)
+        except:
+            target = 0
+        seen = _read_field(counts, kind)
+        if seen == None:
+            seen = 0
+        try:
+            seen = int(seen)
+        except:
+            seen = 0
+        expected = (target * total) // 100
+        deficit = expected - seen
+        if best_deficit == None or deficit > best_deficit:
+            best_deficit = deficit
+            best = kind
+    return best
+
+
+def _choose_kind(ch, cmd, cfg):
+    dist = _distribution(cfg)
+    if _distribution_policy(cfg) == "balanced":
+        return _balanced_kind(ch, cmd, dist)
+    return _random_kind(dist)
+
+
+def _pick_entry(entries):
+    if len(entries) == 1:
+        return entries[0]
+    idx = random.get_random_integer(0, len(entries) - 1)
+    return entries[idx]
+
+
+def get_encounter(biome, activity, character, config=None, location_id=None):
+    """Return encounter dict with kind set, or None if no pool entries."""
+    cfg = _cfg(config)
+    cmd = activity
+    kind = _choose_kind(character, cmd, cfg)
+    entries = biomes.get_pool_entries(biome, activity, kind, cfg)
+    if len(entries) == 0:
+        for fallback in KINDS:
+            if fallback == kind:
+                continue
+            entries = biomes.get_pool_entries(biome, activity, fallback, cfg)
+            if len(entries) > 0:
+                kind = fallback
+                break
+    if len(entries) == 0:
+        return None
+    enc = _pick_entry(entries)
+    if enc == None:
+        return None
+    if dicts.is_dict(enc):
+        merged = {}
+        for key in enc:
+            merged[key] = enc[key]
+        merged["kind"] = kind
+        return merged
+    return {"kind": kind, "name": str(enc)}

@@ -178,3 +178,81 @@ vars:
       }
     eeee5555-5555-5555-5555-555555555555: |
       pools = {"fish": {"gather": [{"kind": "gather", "name": "River trout"}]}}
+
+!fish forest
+---
+re:cooldown|wait|seconds
+---
+name: "planned: cooldown blocks repeat use"
+vars:
+  uvars:
+    _wm_command: fish
+  cvars:
+    wg_stats: '{"fish": {"last_used_at": 9999999999}}'
+  svars:
+    westmarch_config: "eeee3333-3333-3333-3333-333333333333"
+  gvars:
+    eeee3333-3333-3333-3333-333333333333: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"fish": True},
+              "config": {
+                  "enc_biome_source": "argument",
+                  "distribution": {"combat": 0, "quest": 0, "gather": 100},
+              },
+              "command_config": {"fish": {"cooldown_seconds": 120}},
+          },
+      }
+      policies = {"exploration": {"enforce_cooldowns": True}}
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+          },
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      pools = {"fish": {"gather": [{"kind": "gather", "name": "River trout"}]}}
+
+!fish
+---
+re:River trout
+---
+name: "planned: location mode infers biome from character location"
+vars:
+  uvars:
+    _wm_command: fish
+  svars:
+    westmarch_config: "eeee3334-3334-3334-3334-333333333334"
+  gvars:
+    eeee3334-3334-3334-3334-333333333334: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"fish": True},
+              "config": {
+                  "enc_biome_source": "location",
+                  "distribution": {"combat": 0, "quest": 0, "gather": 100},
+              },
+          },
+          "travel": {
+              "enabled": True,
+              "commands": {"location": True},
+          },
+      }
+      world_data = {
+          "default_location": "oakwood",
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+          },
+          "locations": {
+              "oakwood": {
+                  "name": "Oakwood",
+                  "commands": {"fish": ["forest"]},
+              },
+          },
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      pools = {"fish": {"gather": [{"kind": "gather", "name": "River trout"}]}}
+  character:
+    cvars:
+      wg_location: "oakwood"

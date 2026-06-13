@@ -1,0 +1,16 @@
+ch = character()
+stats.add_log(ch, extras={"encounter_kind": "gather", "biome": "forest"}, command_key="forage")
+counts = stats.read_kind_counts(ch, "forage")
+return counts["gather"] == 1
+---
+True
+---
+name: add_log writes kind counter under explicit command_key
+
+ch = character()
+ok, msg = stats.add_log(ch, extras={"biome": "forest"}, command_key="enc")
+return ok == True
+---
+True
+---
+name: add_log returns success on write

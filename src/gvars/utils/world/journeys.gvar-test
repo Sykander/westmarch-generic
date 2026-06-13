@@ -1,0 +1,31 @@
+loc_id, loc = journeys.get_location(character())
+return loc_id == "oakwood" and loc != None
+---
+True
+---
+name: get_location uses default_location without config override
+vars:
+  svars:
+    westmarch_config: "eeee3334-3334-3334-3334-333333333334"
+  gvars:
+    eeee3334-3334-3334-3334-333333333334: |
+      subsystems = {
+          "exploration": {"enabled": True, "commands": {"enc": True}},
+          "travel": {"enabled": True, "commands": {"location": True}},
+      }
+      world_data = {
+          "default_location": "oakwood",
+          "biomes": {"forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"}},
+          "locations": {
+              "oakwood": {"name": "Oakwood", "commands": {"enc": ["forest"]}},
+          },
+      }
+
+return journeys.get_location_id(character())
+---
+oakwood
+---
+name: get_location_id reads wg_location cvar
+vars:
+  cvars:
+    wg_location: "Oakwood"

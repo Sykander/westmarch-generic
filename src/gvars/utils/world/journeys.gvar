@@ -1,6 +1,83 @@
-"""journeys.gvar — placeholder.
+"""journeys.gvar — character location cvar helpers."""
 
-See docs/internal/projects/westmarch-statement/gvars/journeys.md
-"""
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(
+    config = env.gvars.config,
+    dicts = env.gvars.dicts,
+)
 
-# TODO: implement journeys module
+CVAR_LOCATION = "wg_location"
+
+
+def _read_field(obj, key):
+    if obj == None:
+        return None
+    try:
+        return obj[key]
+    except:
+        pass
+    try:
+        val = obj[key]
+        if val != None:
+            return val
+    except:
+        pass
+    attrs = {
+        "world_data": lambda o: o.world_data,
+        "locations": lambda o: o.locations,
+        "default_location": lambda o: o.default_location,
+        "biome": lambda o: o.biome,
+        "commands": lambda o: o.commands,
+        "activities": lambda o: o.activities,
+        "name": lambda o: o.name,
+    }
+    if key in attrs:
+        try:
+            return attrs[key](obj)
+        except:
+            pass
+    return None
+
+
+def get_location_id(ch, config_override=None):
+    """Return normalized location id from wg_location cvar, or None."""
+    if ch == None:
+        return None
+    val = None
+    try:
+        cv = ch.cvars
+        if CVAR_LOCATION in cv:
+            val = cv[CVAR_LOCATION]
+    except:
+        pass
+    if val == None:
+        try:
+            if exists(CVAR_LOCATION):
+                val = get(CVAR_LOCATION)
+        except:
+            pass
+    if val == None:
+        return None
+    text = str(val).strip()
+    if text == "":
+        return None
+    return text.lower()
+
+
+def get_location(ch, config_override=None):
+    """Return (location_id, location_entry) for the character."""
+    cfg = config_override
+    if cfg == None:
+        cfg = config.get_config()
+    loc_id = get_location_id(ch, cfg)
+    if loc_id == None:
+        wd = _read_field(cfg, "world_data")
+        loc_id = _read_field(wd, "default_location")
+    if loc_id == None:
+        return None, None
+    loc_id = str(loc_id).strip().lower()
+    wd = _read_field(cfg, "world_data")
+    locs = _read_field(wd, "locations")
+    if locs == None or not dicts.is_dict(locs):
+        return loc_id, None
+    return loc_id, _read_field(locs, loc_id)

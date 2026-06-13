@@ -1,6 +1,111 @@
-"""pc.gvar — placeholder.
+"""pc.gvar — player character helpers (cooldown gates for MVP)."""
 
-See docs/internal/projects/westmarch-statement/gvars/pc.md
-"""
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(
+    config = env.gvars.config,
+    dicts = env.gvars.dicts,
+    stats = env.gvars.stats,
+)
 
-# TODO: implement pc module
+EXPLORATION_COMMANDS = ["enc", "forage", "mine", "fish", "lumber", "hunt", "loot"]
+EXPLORATION_ACTIVITY_COMMANDS = ["enc", "forage", "mine", "fish", "lumber"]
+ZERO_COOLDOWN_COMMANDS = ["hunt", "loot"]
+DEFAULT_EXPLORATION_COOLDOWN = 120
+DEFAULT_JOB_COOLDOWN = 28800
+
+
+def _read_field(obj, key):
+    if obj == None:
+        return None
+    try:
+        return obj[key]
+    except:
+        pass
+    try:
+        val = obj[key]
+        if val != None:
+            return val
+    except:
+        pass
+    attrs = {
+        "policies": lambda o: o.policies,
+        "exploration": lambda o: o.exploration,
+        "enforce_cooldowns": lambda o: o.enforce_cooldowns,
+        "subsystems": lambda o: o.subsystems,
+        "command_config": lambda o: o.command_config,
+        "enc": lambda o: o.enc,
+        "forage": lambda o: o.forage,
+        "mine": lambda o: o.mine,
+        "fish": lambda o: o.fish,
+        "lumber": lambda o: o.lumber,
+        "hunt": lambda o: o.hunt,
+        "loot": lambda o: o.loot,
+        "cooldown_seconds": lambda o: o.cooldown_seconds,
+    }
+    if key in attrs:
+        try:
+            return attrs[key](obj)
+        except:
+            pass
+    return None
+
+
+def _cfg(config_override=None):
+    if config_override != None:
+        return config_override
+    return config.get_config()
+
+
+def _exploration_enforce(cfg):
+    policies = _read_field(cfg, "policies")
+    exp_pol = _read_field(policies, "exploration")
+    val = _read_field(exp_pol, "enforce_cooldowns")
+    if val == None:
+        return True
+    return val == True
+
+
+def _command_config(cfg, command_key):
+    sub = _read_field(cfg, "subsystems")
+    exp = _read_field(sub, "exploration")
+    cmd_cfg = _read_field(exp, "command_config")
+    if cmd_cfg == None or not dicts.is_dict(cmd_cfg):
+        return None
+    return _read_field(cmd_cfg, command_key)
+
+
+def cooldown_seconds(command_key, config_override=None):
+    cfg = _cfg(config_override)
+    layer = _command_config(cfg, command_key)
+    if layer != None:
+        cd = _read_field(layer, "cooldown_seconds")
+        if cd != None:
+            try:
+                return int(cd)
+            except:
+                pass
+    if command_key in ZERO_COOLDOWN_COMMANDS:
+        return 0
+    if command_key in EXPLORATION_ACTIVITY_COMMANDS:
+        return DEFAULT_EXPLORATION_COOLDOWN
+    if command_key == "job":
+        return DEFAULT_JOB_COOLDOWN
+    return 0
+
+
+def check_cooldown(ch, command_key, config_override=None):
+    """Return (allowed, seconds_remaining)."""
+    cfg = _cfg(config_override)
+    if command_key in EXPLORATION_COMMANDS and not _exploration_enforce(cfg):
+        return True, 0
+    seconds = cooldown_seconds(command_key, cfg)
+    if seconds <= 0:
+        return True, 0
+    last = stats.read_last_used_at(ch, command_key)
+    if last == None:
+        return True, 0
+    now = int(time())
+    elapsed = now - int(last)
+    if elapsed >= seconds:
+        return True, 0
+    return False, seconds - elapsed

@@ -3,33 +3,15 @@ using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(
     auth = env.gvars.auth,
     display = env.gvars.display,
-    config = env.gvars.config,
+    exploration = env.gvars.exploration,
 )
 
 ok, msg = auth.is_allowed()
 get_embed = display.get_display()
 
-cmd_name = auth.command_name()
-if cmd_name == None:
-    cmd_name = "command"
-
 if not ok:
     return get_embed(desc=msg)
 
-args = argparse(&ARGS&)
 argslist = &ARGS&
-
-if len(argslist) > 0 and argslist[0] in ["help", "?"]:
-    return get_embed(desc = f"{cmd_name} help is not implemented")
-
-try:
-    ch = character()
-except:
-    return get_embed(desc = f"{cmd_name} requires a character")
-
-
-return get_embed(
-    desc=f"{cmd_name} is not implemented",
-)
+return exploration.run_activity("enc", argslist, get_embed)
 </drac2>
-

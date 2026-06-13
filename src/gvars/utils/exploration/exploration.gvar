@@ -1,0 +1,125 @@
+"""exploration.gvar — shared pipeline for activity exploration aliases."""
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(
+    auth = env.gvars.auth,
+    biomes = env.gvars.biomes,
+    config = env.gvars.config,
+    encounter_lists = env.gvars.encounter_lists,
+    encounters = env.gvars.encounters,
+    pc = env.gvars.pc,
+    stats = env.gvars.stats,
+)
+
+
+def _args_text(argslist):
+    if argslist == None:
+        return ""
+    parts = []
+    for arg in argslist:
+        parts.append(str(arg))
+    return " ".join(parts)
+
+
+def help_text(activity, config_override=None):
+    cfg = config_override
+    if cfg == None:
+        cfg = config.get_config()
+    cmd = auth.command_name()
+    if cmd == None:
+        cmd = activity
+    lines = ["**Usage**"]
+    if biomes.uses_location_mode(cfg):
+        lines.append(f"`!{cmd} [bonuses]`")
+        lines.append("**Biome** is inferred from your current **location**.")
+    else:
+        lines.append(f"`!{cmd} <biome> [bonuses]`")
+        codes = biomes.list_biomes(cfg)
+        lines.append("**Registered biomes:**")
+        if len(codes) == 0:
+            lines.append("- *(none registered)*")
+        else:
+            for code in codes:
+                label = biomes.biome_display_name(code, cfg)
+                lines.append(f"- `{code}` — {label}")
+    return "\n".join(lines)
+
+
+def _field(obj, key):
+    if obj == None:
+        return None
+    try:
+        return obj[key]
+    except:
+        pass
+    try:
+        if key in obj:
+            return obj[key]
+    except:
+        pass
+    try:
+        return obj.get(key)
+    except:
+        pass
+    return None
+
+
+def run_activity(activity, argslist, get_embed):
+    """End-to-end exploration activity handler."""
+    cfg = config.get_config()
+    cmd = auth.command_name()
+    if cmd == None:
+        cmd = activity
+
+    if len(argslist) > 0 and argslist[0] in ["help", "?"]:
+        return get_embed(desc=help_text(activity, cfg))
+
+    try:
+        ch = character()
+    except:
+        return get_embed(desc=f"**{cmd}** requires a character.")
+
+    allowed, remaining = pc.check_cooldown(ch, cmd, cfg)
+    if not allowed:
+        return get_embed(
+            desc=f"On **cooldown** — wait **{remaining}** seconds before using `!{cmd}` again."
+        )
+
+    biome, resolve_err = biomes.resolve_biome(activity, argslist, ch, cfg)
+    if resolve_err != None:
+        return get_embed(desc=resolve_err)
+
+    enc = encounter_lists.get_encounter(biome, activity, ch, cfg)
+    if enc == None:
+        return get_embed(
+            desc=f"No encounters configured for **{biome}** / **{activity}** on this server."
+        )
+
+    kind = _field(enc, "kind")
+    if kind == None:
+        kind = "gather"
+    result = encounters.process_encounter(enc, ch, argslist)
+
+    ok_log, log_msg = stats.add_log(
+        ch,
+        extras={"biome": biome, "encounter_kind": kind, "encounter_id": _field(result, "name")},
+        args_text=_args_text(argslist),
+        command_key=cmd,
+    )
+    if not ok_log:
+        return get_embed(desc=log_msg if log_msg != "" else "Could not record command usage.")
+
+    parts = []
+    name = _field(result, "name")
+    if name not in [None, ""]:
+        parts.append(f"**{name}**")
+    desc_body = _field(result, "description")
+    if desc_body not in [None, ""]:
+        parts.append(str(desc_body))
+    outcome = _field(result, "outcome_text")
+    if outcome not in [None, ""]:
+        parts.append(str(outcome))
+    desc = "\n\n".join(parts)
+    if desc == "":
+        desc = "Encounter complete."
+    return get_embed(desc=desc)

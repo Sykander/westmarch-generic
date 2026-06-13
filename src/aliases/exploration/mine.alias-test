@@ -179,3 +179,81 @@ vars:
       }
     eeee5555-5555-5555-5555-555555555555: |
       pools = {"mine": {"gather": [{"kind": "gather", "name": "Iron seam"}]}}
+
+!mine forest
+---
+re:cooldown|wait|seconds
+---
+name: "planned: cooldown blocks repeat use"
+vars:
+  uvars:
+    _wm_command: mine
+  cvars:
+    wg_stats: '{"mine": {"last_used_at": 9999999999}}'
+  svars:
+    westmarch_config: "eeee3333-3333-3333-3333-333333333333"
+  gvars:
+    eeee3333-3333-3333-3333-333333333333: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"mine": True},
+              "config": {
+                  "enc_biome_source": "argument",
+                  "distribution": {"combat": 0, "quest": 0, "gather": 100},
+              },
+              "command_config": {"mine": {"cooldown_seconds": 120}},
+          },
+      }
+      policies = {"exploration": {"enforce_cooldowns": True}}
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+          },
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      pools = {"mine": {"gather": [{"kind": "gather", "name": "Iron seam"}]}}
+
+!mine
+---
+re:Iron seam
+---
+name: "planned: location mode infers biome from character location"
+vars:
+  uvars:
+    _wm_command: mine
+  svars:
+    westmarch_config: "eeee3334-3334-3334-3334-333333333334"
+  gvars:
+    eeee3334-3334-3334-3334-333333333334: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"mine": True},
+              "config": {
+                  "enc_biome_source": "location",
+                  "distribution": {"combat": 0, "quest": 0, "gather": 100},
+              },
+          },
+          "travel": {
+              "enabled": True,
+              "commands": {"location": True},
+          },
+      }
+      world_data = {
+          "default_location": "oakwood",
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+          },
+          "locations": {
+              "oakwood": {
+                  "name": "Oakwood",
+                  "commands": {"mine": ["forest"]},
+              },
+          },
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      pools = {"mine": {"gather": [{"kind": "gather", "name": "Iron seam"}]}}
+  character:
+    cvars:
+      wg_location: "oakwood"

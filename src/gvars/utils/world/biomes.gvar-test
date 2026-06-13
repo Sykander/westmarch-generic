@@ -1,0 +1,90 @@
+entries = biomes.get_pool_entries("forest", "enc", "gather")
+return len(entries) == 1 and entries[0]["name"] == "Berries in the Wild"
+---
+True
+---
+name: get_pool_entries loads inline biome gvar
+vars:
+  svars:
+    westmarch_config: "eeee3333-3333-3333-3333-333333333333"
+  gvars:
+    eeee3333-3333-3333-3333-333333333333: |
+      subsystems = {
+          "exploration": {"enabled": True, "commands": {"enc": True}},
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+          },
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      pools = {
+          "enc": {
+              "gather": [{"kind": "gather", "name": "Berries in the Wild"}],
+          },
+      }
+
+cfg_fixture = {
+    "subsystems": {
+        "exploration": {
+            "enabled": True,
+            "commands": {"enc": True},
+            "config": {"enc_biome_source": "auto"},
+        },
+        "travel": {
+            "enabled": True,
+            "commands": {"location": True},
+        },
+    },
+    "world_data": {
+        "biomes": {"forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"}},
+        "locations": {"oakwood": {"name": "Oakwood", "commands": {"enc": ["forest"]}}},
+    },
+}
+return biomes.uses_location_mode(cfg_fixture)
+---
+True
+---
+name: auto mode uses location when travel and locations configured
+
+cfg_fixture = {
+    "subsystems": {
+        "exploration": {
+            "enabled": True,
+            "commands": {"enc": True},
+            "config": {"enc_biome_source": "argument"},
+        },
+    },
+    "world_data": {
+        "biomes": {
+            "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+        },
+    },
+}
+code, resolve_err = biomes.resolve_biome("enc", ["desert"], character(), cfg_fixture)
+return code == None and "registered" in resolve_err
+---
+True
+---
+name: resolve_biome rejects unknown biome code
+
+cfg_fixture = {
+    "subsystems": {
+        "exploration": {
+            "enabled": True,
+            "commands": {"enc": True},
+            "config": {"enc_biome_source": "argument"},
+        },
+    },
+    "world_data": {
+        "biomes": {
+            "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+        },
+    },
+}
+code, resolve_err = biomes.resolve_biome("enc", [], character(), cfg_fixture)
+return code == None and "biome" in resolve_err.lower()
+---
+True
+---
+name: argument mode requires biome code
