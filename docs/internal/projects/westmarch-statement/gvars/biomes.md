@@ -2,9 +2,11 @@
 
 **Path:** `src/gvars/utils/world/biomes.gvar` · **Phase:** 0–1
 
-**Biome registry resolution**, lazy-loaded biome bodies, and **biome code selection** for all exploration activity commands. Biome bodies are **large** — stored in separate workshop gvars referenced from **`world_data.biomes`**, not inline in server config.
+**Biome registry resolution**, lazy-loaded biome bodies, and **biome code selection** for exploration activity commands. Biome bodies are **large** — stored in separate workshop gvars referenced from **`world_data.biomes`**, not inline in server config.
 
-**[encounter_lists.gvar](encounter_lists.md)** calls **`get_pool_entries`** after choosing encounter **kind** — no d100 list build.
+**Scope:** Biome pools hold **generic wilderness** content only (`enc`, `forage`, `mine`, `fish`, `lumber`, `hunt`). Economy, crafting, content, and dungeons are **location-scoped** — see [location_encounters.gvar](location_encounters.md).
+
+**[encounter_lists.gvar](encounter_lists.md)** calls **`get_pool_entries`** after choosing encounter **kind** — merges with location pools when present.
 
 ## Dependencies
 
@@ -38,7 +40,7 @@ def get_biome(code, config=None):
 def get_pool_entries(code, activity, kind, config=None):
     """
     List of encounter dicts for activity + kind from loaded biome.
-    activity: "enc" | "mine" | "forage" | "fish" | "lumber" | …
+    activity: "enc" | "mine" | "forage" | "fish" | "lumber" | "hunt"
     kind: "combat" | "quest" | "gather"
     """
 
@@ -46,7 +48,7 @@ def resolve_biome(activity, args, character, config=None):
     """
     Resolve biome code for an exploration activity command.
 
-    activity — "enc" | "forage" | "mine" | "fish" | "lumber" | …
+    activity — "enc" | "forage" | "mine" | "fish" | "lumber" | "hunt"
     args — alias args string (positional biome arg when in manual mode)
     character — Avrae character (location cvar for inferred mode)
 
@@ -124,12 +126,15 @@ pools = {
     },
     "mine": { "gather": [ … ] },
     "forage": { "gather": [ … ] },
+    "fish": { "gather": [ … ] },
+    "lumber": { "gather": [ … ] },
+    "hunt": { "combat": [ … ] },
 }
 ```
 
 See [data-shapes.md § Biome gvar body](../data-shapes.md#biome-gvar-body-separate-workshop-module).
 
-westmarch **`encounters`** mega-pool + d100 **`get_encounter_list`** — **not** ported. Combat / quest / gather are **separate buckets** per activity.
+westmarch **`encounters`** mega-pool + d100 **`get_encounter_list`** — **not** ported. Place-specific service content → [location encounter module](../data-shapes.md#location-encounter-module-separate-workshop-gvar).
 
 ## Cache
 
@@ -137,10 +142,12 @@ Per alias invocation — first **`get_biome("forest")`** loads once; subsequent 
 
 ## Related
 
-- [encounter_lists.md](encounter_lists.md) — kind selection + random pick
+- [location_encounters.md](location_encounters.md) — place-specific pools
+- [encounter_lists.md](encounter_lists.md) — kind selection + merge + random pick
 - [encounters.md](encounters.md) — run chosen encounter
 - [stats.md](stats.md) — command usage after encounter
 - [locations.md](locations.md) — location lookup for inferred mode
 - [journeys.md](journeys.md) — character location cvar
 - [data-shapes.md § World data](../data-shapes.md#world-data)
+- [biome-data-shape-investigation.md](../biome-data-shape-investigation.md)
 - [src/gvars/configs/biomes/README.md](../../../../src/gvars/configs/biomes/README.md) — engine presets

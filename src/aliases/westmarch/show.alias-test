@@ -1,0 +1,50 @@
+!show
+---
+re:No config loaded
+---
+name: unwired shows missing config message
+vars:
+  uvars:
+    _wm_command: show
+
+!show
+---
+re:My Demo Realm
+---
+name: wired config shows world name
+vars:
+  uvars:
+    _wm_command: show
+  svars:
+    westmarch_config: "ffff3333-3333-3333-3333-333333333333"
+  gvars:
+    ffff3333-3333-3333-3333-333333333333: |
+      display = {"name": "My Demo Realm"}
+
+!show
+---
+re:exploration.*off
+---
+name: show lists subsystem status
+vars:
+  uvars:
+    _wm_command: show
+  svars:
+    westmarch_config: "ffff3333-3333-3333-3333-333333333333"
+  gvars:
+    ffff3333-3333-3333-3333-333333333333: |
+      display = {"name": "My Demo Realm"}
+
+!show
+---
+re:Data overview
+---
+name: show includes data overview section
+vars:
+  uvars:
+    _wm_command: show
+  svars:
+    westmarch_config: "ffff1111-1111-1111-1111-111111111111"
+  gvars:
+    ffff1111-1111-1111-1111-111111111111: |
+      # empty owner body

@@ -44,6 +44,8 @@ flowchart TD
 | `price_for_sell(shop, stock_entry, qty)` | Payout dict |
 | `sell(ch, config, shop, item_query, qty=1)` | **`pc`** bag remove + credit; `(success, message)` |
 
+Shop and sell availability are **location-scoped** — see [buy.md](buy.md) and [location_encounters.gvar](../../gvars/location_encounters.md).
+
 ### Config example
 
 ```py

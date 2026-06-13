@@ -15,6 +15,15 @@
           ]
         }
       }
+    },
+    "player": {
+      "ctx": {
+        "author": {
+          "roles": [
+            {"id": 4568, "name": "Player"}
+          ]
+        }
+      }
     }
   }
 }

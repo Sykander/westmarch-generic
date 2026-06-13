@@ -1,0 +1,22 @@
+!setup
+---
+re:Wire the server svar
+---
+name: unwired shows onboarding steps
+vars:
+  uvars:
+    _wm_command: setup
+
+!setup
+---
+re:Already wired
+---
+name: wired shows short summary
+vars:
+  uvars:
+    _wm_command: setup
+  svars:
+    westmarch_config: "ffff1111-1111-1111-1111-111111111111"
+  gvars:
+    ffff1111-1111-1111-1111-111111111111: |
+      # empty owner body

@@ -1,0 +1,44 @@
+!check
+---
+re:westmarch_config
+---
+name: svar unset reports error
+vars:
+  uvars:
+    _wm_command: check
+
+!check
+---
+re:Configuration OK
+---
+name: starter defaults pass validation
+vars:
+  uvars:
+    _wm_command: check
+  svars:
+    westmarch_config: "ffff1111-1111-1111-1111-111111111111"
+  gvars:
+    ffff1111-1111-1111-1111-111111111111: |
+      # empty owner body — defaults merge
+
+!check
+---
+re:total 100
+---
+name: bad exploration distribution fails
+vars:
+  uvars:
+    _wm_command: check
+  svars:
+    westmarch_config: "ffff2222-2222-2222-2222-222222222222"
+  gvars:
+    ffff2222-2222-2222-2222-222222222222: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+              "config": {
+                  "distribution": {"combat": 50, "quest": 25, "gather": 50},
+              },
+          },
+      }

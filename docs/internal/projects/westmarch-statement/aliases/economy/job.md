@@ -65,6 +65,7 @@ flowchart TD
 | `JOB.allowed_skills` | **Config** | Optional restrict list |
 | Cooldown | **stats.gvar** + **pc.check_cooldown** | Key **`"job"`** |
 | Skill names / edition | **Engine** `get_rules_edition()` | **`core/rolls`**; branch if 2024 skill renames apply |
+| Work-flavour beats | **Location encounter gvar** | Optional when **`commands.job`** — not on biomes ([location_encounters.gvar](../../gvars/location_encounters.md)) |
 
 ### Config loader integration
 

@@ -1,6 +1,592 @@
-"""check_config.gvar — placeholder.
+"""check_config.gvar — validate owner config and summarize for admin commands.
 
 See docs/internal/projects/westmarch-statement/gvars/check_config.md
 """
 
-# TODO: implement check_config module
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(
+    config = env.gvars.config,
+)
+
+VALID_ENC_BIOME = ["auto", "argument", "location"]
+VALID_DIST_POLICY = ["random", "balanced"]
+VALID_DIST_KEYS = ["combat", "quest", "gather"]
+VALID_LIBRARY_TOPIC = ["inferred", "balanced", "manual", "restricted"]
+VALID_RULES_VERSION = ["2014", "2024"]
+VALID_FOOTER_BEHAVIOUR = ["helpful_tips", "string", "help", "credits", "balanced"]
+SUBSYSTEM_KEYS = [
+    "exploration",
+    "travel",
+    "downtime",
+    "crafting",
+    "economy",
+    "content",
+    "misc",
+]
+
+
+def _is_dict(value) -> bool:
+    try:
+        return value == dict(value)
+    except:
+        return False
+
+
+def _dict_keys(obj):
+    if obj == None or not _is_dict(obj):
+        return []
+    out = []
+    for k in obj:
+        out.append(k)
+    return out
+
+
+def _read_subsystem(cfg, key):
+    if cfg == None:
+        return None
+    try:
+        subs = cfg.subsystems
+    except:
+        return None
+    if subs == None:
+        return None
+    try:
+        return subs[key]
+    except:
+        pass
+    try:
+        if key == "exploration":
+            return subs.exploration
+        if key == "travel":
+            return subs.travel
+        if key == "downtime":
+            return subs.downtime
+        if key == "crafting":
+            return subs.crafting
+        if key == "economy":
+            return subs.economy
+        if key == "content":
+            return subs.content
+        if key == "misc":
+            return subs.misc
+    except:
+        pass
+    return None
+
+
+def _subsystem_enabled(block):
+    if block == None:
+        return False
+    try:
+        return block.enabled == True
+    except:
+        return False
+
+
+def _command_on(block, command):
+    if block == None:
+        return False
+    commands = None
+    try:
+        commands = block.commands
+    except:
+        return False
+    if commands == None:
+        return False
+    try:
+        return commands[command] == True
+    except:
+        pass
+    try:
+        if command == "enc":
+            return commands.enc == True
+        if command == "location":
+            return commands.location == True
+        if command == "travel":
+            return commands.travel == True
+        if command == "library":
+            return commands.library == True
+        if command == "quest":
+            return commands.quest == True
+    except:
+        pass
+    return False
+
+
+def _world_data(cfg):
+    if cfg == None:
+        return None
+    try:
+        return cfg.world_data
+    except:
+        return None
+
+
+def _has_locations(cfg):
+    wd = _world_data(cfg)
+    if wd == None:
+        return False
+    locs = None
+    try:
+        locs = wd.locations
+    except:
+        locs = None
+    if locs == None:
+        return False
+    if not _is_dict(locs):
+        return False
+    return len(_dict_keys(locs)) > 0
+
+
+def _valid_hex_colour(raw):
+    if raw == None:
+        return True
+    s = str(raw).strip()
+    if s.startswith("#"):
+        s = s[1:]
+    if len(s) != 6:
+        return False
+    hex_chars = "0123456789abcdefABCDEF"
+    for ch in s:
+        if ch not in hex_chars:
+            return False
+    return True
+
+
+def _truncate_uuid(addr):
+    if addr == None:
+        return "—"
+    s = str(addr).strip()
+    if len(s) <= 12:
+        return s
+    return s[0:8] + "…"
+
+
+def _count_dict(obj):
+    if obj == None or not _is_dict(obj):
+        return 0
+    return len(_dict_keys(obj))
+
+
+def check_svar():
+    errors = []
+    warnings = []
+    uuid = get_svar(config.SVAR_NAME)
+    if uuid == None or str(uuid).strip() == "":
+        errors.append(
+            "Svar **westmarch_config** is not set — engine uses safe defaults only."
+        )
+        return errors, warnings
+    addr = str(uuid).strip()
+    body = get_gvar(addr)
+    if body == None or str(body).strip() == "":
+        errors.append("Config gvar UUID not found or empty.")
+    return errors, warnings
+
+
+def check_subsystems(cfg):
+    errors = []
+    warnings = []
+    if cfg == None:
+        return errors, warnings
+    subs = None
+    try:
+        subs = cfg.subsystems
+    except:
+        subs = None
+    if subs == None or not _is_dict(subs):
+        errors.append("**subsystems** must be an object.")
+        return errors, warnings
+    try:
+        if subs.admin != None:
+            warnings.append(
+                "**subsystems.admin** is not configurable — remove it; admin commands are role-gated."
+            )
+    except:
+        pass
+    for key in SUBSYSTEM_KEYS:
+        block = _read_subsystem(cfg, key)
+        if block == None:
+            continue
+        if not _is_dict(block):
+            errors.append(f"**subsystems.{key}** must be an object.")
+            continue
+        parent_on = _subsystem_enabled(block)
+        commands = None
+        try:
+            commands = block.commands
+        except:
+            commands = None
+        if commands != None and _is_dict(commands):
+            for cmd in _dict_keys(commands):
+                try:
+                    on = commands[cmd] == True
+                except:
+                    on = False
+                if on and not parent_on:
+                    warnings.append(
+                        f"**!{cmd}** is enabled while **{key}** subsystem is disabled."
+                    )
+    return errors, warnings
+
+
+def check_exploration(cfg):
+    errors = []
+    warnings = []
+    block = _read_subsystem(cfg, "exploration")
+    if block == None:
+        return errors, warnings
+    exp_cfg = None
+    try:
+        exp_cfg = block.config
+    except:
+        exp_cfg = None
+    if exp_cfg == None or not _is_dict(exp_cfg):
+        return errors, warnings
+    source = "auto"
+    try:
+        source = str(exp_cfg.enc_biome_source).strip().lower()
+    except:
+        source = "auto"
+    if source not in VALID_ENC_BIOME:
+        errors.append(
+            "**exploration.config.enc_biome_source** must be `auto`, `argument`, or `location`."
+        )
+    dist = None
+    try:
+        dist = exp_cfg.distribution
+    except:
+        dist = None
+    if dist != None:
+        if not _is_dict(dist):
+            errors.append("**exploration.config.distribution** must be an object.")
+        else:
+            total = 0
+            for k in _dict_keys(dist):
+                if k not in VALID_DIST_KEYS:
+                    errors.append(
+                        f"Unknown key **{k}** in exploration distribution — only combat, quest, gather."
+                    )
+                try:
+                    total = total + int(dist[k])
+                except:
+                    errors.append(f"Invalid percentage for **{k}** in exploration distribution.")
+            if total != 100:
+                errors.append(
+                    f"**exploration.config.distribution** must total 100 (currently {total})."
+                )
+    policy = "random"
+    try:
+        policy = str(exp_cfg.distribution_policy).strip().lower()
+    except:
+        policy = "random"
+    if policy not in VALID_DIST_POLICY:
+        errors.append(
+            "**exploration.config.distribution_policy** must be `random` or `balanced`."
+        )
+    if source == "location":
+        travel = _read_subsystem(cfg, "travel")
+        if not _subsystem_enabled(travel):
+            errors.append(
+                "**enc_biome_source: location** requires the **travel** subsystem enabled."
+            )
+        elif not _command_on(travel, "location"):
+            errors.append(
+                "**enc_biome_source: location** requires **!location** enabled."
+            )
+        elif not _has_locations(cfg):
+            errors.append(
+                "**enc_biome_source: location** requires **world_data.locations**."
+            )
+    return errors, warnings
+
+
+def check_content(cfg):
+    errors = []
+    warnings = []
+    block = _read_subsystem(cfg, "content")
+    if block == None:
+        return errors, warnings
+    content_cfg = None
+    try:
+        content_cfg = block.config
+    except:
+        content_cfg = None
+    if content_cfg == None or not _is_dict(content_cfg):
+        return errors, warnings
+    mode = "manual"
+    try:
+        mode = str(content_cfg.library_topic_source).strip().lower()
+    except:
+        mode = "manual"
+    if mode not in VALID_LIBRARY_TOPIC:
+        errors.append(
+            "**content.config.library_topic_source** must be inferred, balanced, manual, or restricted."
+        )
+    allowed = []
+    try:
+        allowed = content_cfg.allowed_topics
+    except:
+        allowed = []
+    if mode == "restricted":
+        if allowed == None or len(allowed) == 0:
+            errors.append(
+                "**library_topic_source: restricted** requires a non-empty **allowed_topics** list."
+            )
+    if mode in ["inferred", "balanced"]:
+        travel = _read_subsystem(cfg, "travel")
+        if not _command_on(travel, "location") and not _has_locations(cfg):
+            warnings.append(
+                "Location-based library topic inference is limited without **!location** and **world_data.locations**."
+            )
+    return errors, warnings
+
+
+def check_policies(cfg):
+    errors = []
+    warnings = []
+    if cfg == None:
+        return errors, warnings
+    policies = None
+    try:
+        policies = cfg.policies
+    except:
+        policies = None
+    if policies == None:
+        return errors, warnings
+    rv = None
+    try:
+        rv = cfg.rules_version
+    except:
+        rv = None
+    if rv != None and str(rv).strip() != "":
+        rv_s = str(rv).strip()
+        if rv_s not in VALID_RULES_VERSION:
+            errors.append("**rules_version** must be `2014` or `2024` when set.")
+    try:
+        sg = policies.economy.starting_gold
+        if sg != None and int(sg) < 0:
+            errors.append("**policies.economy.starting_gold** must be non-negative or omitted.")
+    except:
+        pass
+    try:
+        if policies.quest.self_assign == True:
+            misc = _read_subsystem(cfg, "misc")
+            if not _command_on(misc, "quest"):
+                errors.append(
+                    "**policies.quest.self_assign** requires **!quest** enabled."
+                )
+    except:
+        pass
+    try:
+        ma = policies.quest.max_active
+        if ma != None and int(ma) < 1:
+            errors.append("**policies.quest.max_active** must be positive or omitted.")
+    except:
+        pass
+    try:
+        if policies.downtime.mode == "tracked":
+            dt = _read_subsystem(cfg, "downtime")
+            if not _subsystem_enabled(dt):
+                errors.append(
+                    "**policies.downtime.mode: tracked** requires the **downtime** subsystem enabled."
+                )
+    except:
+        pass
+    try:
+        fb = str(policies.display.footer_behaviour).strip().lower()
+        if fb not in VALID_FOOTER_BEHAVIOUR:
+            errors.append(
+                "**policies.display.footer_behaviour** must be helpful_tips, string, help, credits, or balanced."
+            )
+    except:
+        pass
+    try:
+        if policies.combat.scale_encounters_to_level == True:
+            warnings.append("Combat scaling is not implemented in MVP.")
+    except:
+        pass
+    return errors, warnings
+
+
+def check_display(cfg):
+    errors = []
+    warnings = []
+    if cfg == None:
+        return errors, warnings
+    try:
+        colour = cfg.display.colour
+        if colour != None and not _valid_hex_colour(colour):
+            errors.append("**display.colour** must be `#RRGGBB` or `RRGGBB`.")
+    except:
+        pass
+    return errors, warnings
+
+
+def check_world_data(cfg):
+    errors = []
+    warnings = []
+    if cfg == None:
+        return errors, warnings
+    travel = _read_subsystem(cfg, "travel")
+    if _subsystem_enabled(travel) and not _has_locations(cfg):
+        errors.append(
+            "**travel** enabled but **world_data.locations** is missing or empty."
+        )
+    try:
+        locs = cfg.locations
+        if locs != None:
+            warnings.append(
+                "Legacy top-level **locations** found — migrate to **world_data.locations**."
+            )
+    except:
+        pass
+    return errors, warnings
+
+
+def check_cross_subsystem(cfg):
+    errors = []
+    warnings = []
+    if cfg == None:
+        return errors, warnings
+    errors = errors + check_exploration(cfg)[0]
+    warnings = warnings + check_exploration(cfg)[1]
+    errors = errors + check_content(cfg)[0]
+    warnings = warnings + check_content(cfg)[1]
+    errors = errors + check_policies(cfg)[0]
+    warnings = warnings + check_policies(cfg)[1]
+    errors = errors + check_display(cfg)[0]
+    warnings = warnings + check_display(cfg)[1]
+    errors = errors + check_world_data(cfg)[0]
+    warnings = warnings + check_world_data(cfg)[1]
+    return errors, warnings
+
+
+def validate():
+    errors, warnings = check_svar()
+    if len(errors) > 0:
+        return errors, warnings
+    cfg = config.get_config()
+    if cfg == None:
+        errors.append("Config gvar could not be loaded.")
+        return errors, warnings
+    e2, w2 = check_subsystems(cfg)
+    errors = errors + e2
+    warnings = warnings + w2
+    e3, w3 = check_cross_subsystem(cfg)
+    errors = errors + e3
+    warnings = warnings + w3
+    return errors, warnings
+
+
+def _enabled_commands_summary(cfg):
+    lines = []
+    for key in SUBSYSTEM_KEYS:
+        block = _read_subsystem(cfg, key)
+        if block == None:
+            continue
+        on = _subsystem_enabled(block)
+        status = "on" if on else "off"
+        lines.append(f"**{key}**: {status}")
+    return "\n".join(lines)
+
+
+def _policy_summary(cfg):
+    lines = []
+    try:
+        lines.append(f"time.mode: **{cfg.policies.time.mode}**")
+    except:
+        pass
+    try:
+        lines.append(f"downtime.mode: **{cfg.policies.downtime.mode}**")
+    except:
+        pass
+    try:
+        lines.append(
+            f"display.footer_behaviour: **{cfg.policies.display.footer_behaviour}**"
+        )
+    except:
+        pass
+    return "\n".join(lines)
+
+
+def _world_summary(cfg):
+    wd = _world_data(cfg)
+    if wd == None:
+        return "No **world_data** configured."
+    parts = []
+    parts.append(f"locations: **{_count_dict(wd.locations)}**")
+    parts.append(f"paths: **{_count_dict(wd.paths)}**")
+    parts.append(f"biomes: **{_count_dict(wd.biomes)}**")
+    return " · ".join(parts)
+
+
+def summarize_config(section=None):
+    """Return {title, desc} for admin show embed."""
+    section_key = None
+    if section != None and str(section).strip() != "":
+        section_key = str(section).strip().lower()
+    cfg = config.get_config()
+    uuid = get_svar(config.SVAR_NAME)
+    if cfg == None:
+        return {
+            "title": "Configuration summary",
+            "desc": (
+                "No config loaded. Set **westmarch_config** svar to your config gvar UUID.\n"
+                "Run **!westmarch setup** for onboarding steps."
+            ),
+        }
+    world_name = "Westmarch"
+    try:
+        n = cfg.display.name
+        if n != None and str(n).strip() != "":
+            world_name = str(n)
+    except:
+        pass
+    title = f"{world_name} — configuration"
+    wiring = (
+        f"**Svar:** `{config.SVAR_NAME}`\n"
+        f"**Config gvar:** `{_truncate_uuid(uuid)}`\n"
+        f"**Load:** OK"
+    )
+    try:
+        cv = cfg.config_version
+        if cv != None and str(cv).strip() != "":
+            wiring = wiring + f"\n**config_version:** {cv}"
+    except:
+        pass
+    runtime = f"**Rules edition:** {config.get_rules_edition()}"
+    try:
+        rv = cfg.rules_version
+        if rv != None and str(rv).strip() != "":
+            runtime = runtime + f" (config override **{rv}**)"
+    except:
+        pass
+    sections = {
+        "wiring": wiring,
+        "world": _world_summary(cfg),
+        "subsystems": _enabled_commands_summary(cfg),
+        "policies": _policy_summary(cfg),
+        "runtime": runtime,
+        "data": _world_summary(cfg),
+    }
+    if section_key != None and section_key in sections:
+        return {
+            "title": f"{world_name} — {section_key}",
+            "desc": sections[section_key],
+        }
+    desc_parts = []
+    order = ["wiring", "subsystems", "policies", "runtime", "data"]
+    labels = {
+        "wiring": "Wiring",
+        "subsystems": "Subsystems",
+        "policies": "Policies",
+        "runtime": "Runtime",
+        "data": "Data overview",
+    }
+    for key in order:
+        desc_parts.append(f"**{labels[key]}**\n{sections[key]}")
+    desc_parts.append(
+        "Run **!westmarch check** to validate. See project docs for full schema."
+    )
+    return {"title": title, "desc": "\n\n".join(desc_parts)}

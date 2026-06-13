@@ -3,7 +3,7 @@ using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(
     auth = env.gvars.auth,
     display = env.gvars.display,
-    config = env.gvars.config,
+    check_config = env.gvars.check_config,
 )
 
 ok, msg = auth.is_allowed()
@@ -11,19 +11,45 @@ get_embed = display.get_display()
 
 cmd_name = auth.command_name()
 if cmd_name == None:
-    cmd_name = "command"
+    cmd_name = "check"
 
 if not ok:
     return get_embed(desc=msg)
 
-args = argparse(&ARGS&)
 argslist = &ARGS&
 
 if len(argslist) > 0 and argslist[0] in ["help", "?"]:
-    return get_embed(desc = f"{cmd_name} help is not implemented")
+    help_text = f"""Validate this server's westmarch configuration.
 
-return get_embed(
-    desc=f"{cmd_name} is not implemented",
-)
+Usage:
+`{ctx.prefix}westmarch check`
+"""
+    return get_embed(desc=help_text)
+
+errors, warnings = check_config.validate()
+
+lines = []
+if len(errors) == 0:
+    lines.append("**Status:** OK")
+else:
+    lines.append("**Status:** Issues found")
+
+if len(errors) > 0:
+    lines.append("")
+    lines.append("**Errors**")
+    for item in errors:
+        lines.append(f"• {item}")
+
+if len(warnings) > 0:
+    lines.append("")
+    lines.append("**Warnings**")
+    for item in warnings:
+        lines.append(f"• {item}")
+
+if len(errors) == 0 and len(warnings) == 0:
+    lines.append("")
+    lines.append("No blocking errors or warnings.")
+
+title = "Configuration OK" if len(errors) == 0 else "Configuration issues"
+return get_embed(title=title, desc="\n".join(lines))
 </drac2>
-

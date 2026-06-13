@@ -55,6 +55,7 @@ Aliases pass **player input** through **`search_locations`**; engine internals u
 
 - Character location cvars / visit counts → **`journeys.gvar`** (planned)
 - Path routing → [paths.md](paths.md)
+- [location_encounters.md](location_encounters.md) — place-specific encounter modules
 - Config load → [config.md](config.md)
 
 ## westmarch reference
@@ -67,6 +68,6 @@ Aliases pass **player input** through **`search_locations`**; engine internals u
 
 ## Related
 
-- [paths.md](paths.md) — routes between locations
+- [location_encounters.md](../gvars/location_encounters.md) — place-specific encounter modules
 - [aliases/travel/location.md](../aliases/travel/location.md)
 - [aliases/travel/travel.md](../aliases/travel/travel.md)

@@ -12,6 +12,7 @@ Previously named `initial-statement`; renamed to reflect that this is the **west
 | [mvp-commands.md](mvp-commands.md) | **MVP** | Command scope, tiers, config surface |
 | [review.md](review.md) | — | Critical review of the full set |
 | [data-shapes.md](data-shapes.md) | — | Reusable data shapes (encounter, location, path, **policies**, …) |
+| [biome-data-shape-investigation.md](biome-data-shape-investigation.md) | — | Biome vs location split, shape options, owner scenarios |
 | [server-config.md](server-config.md) | — | How server config is stored, loaded, validated |
 
 **Bulk config authoring:** [../prompt-generation/README.md](../prompt-generation/README.md) — LLM prompts for locations, paths, shops, biomes, etc.

@@ -3,7 +3,7 @@ using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(
     auth = env.gvars.auth,
     display = env.gvars.display,
-    config = env.gvars.config,
+    check_config = env.gvars.check_config,
 )
 
 ok, msg = auth.is_allowed()
@@ -11,19 +11,36 @@ get_embed = display.get_display()
 
 cmd_name = auth.command_name()
 if cmd_name == None:
-    cmd_name = "command"
+    cmd_name = "show"
 
 if not ok:
     return get_embed(desc=msg)
 
-args = argparse(&ARGS&)
 argslist = &ARGS&
 
 if len(argslist) > 0 and argslist[0] in ["help", "?"]:
-    return get_embed(desc = f"{cmd_name} help is not implemented")
+    help_text = f"""Summarize the loaded westmarch configuration.
+
+Usage:
+`{ctx.prefix}westmarch show`
+`{ctx.prefix}westmarch show <section>`
+Sections: wiring, subsystems, policies, runtime, data
+"""
+    return get_embed(desc=help_text)
+
+section = None
+if len(argslist) > 0 and argslist[0] not in ["help", "?"]:
+    section = argslist[0]
+
+summary = check_config.summarize_config(section)
+footer = None
+errors, warnings = check_config.validate()
+if len(errors) > 0 or len(warnings) > 0:
+    footer = f"{len(errors)} error(s), {len(warnings)} warning(s) — run !westmarch check"
 
 return get_embed(
-    desc=f"{cmd_name} is not implemented",
+    title=summary["title"],
+    desc=summary["desc"],
+    footer=footer,
 )
 </drac2>
-

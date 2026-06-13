@@ -1,0 +1,49 @@
+return len(check_config.validate()[0]) > 0
+---
+True
+---
+name: validate errors when svar unset
+
+return len(check_config.validate()[0]) == 0
+---
+True
+---
+name: validate ok for empty owner defaults
+vars:
+  svars:
+    westmarch_config: "ffff1111-1111-1111-1111-111111111111"
+  gvars:
+    ffff1111-1111-1111-1111-111111111111: |
+      # empty owner body
+
+return "100" in str(check_config.validate()[0])
+---
+True
+---
+name: validate catches bad distribution total
+vars:
+  svars:
+    westmarch_config: "ffff2222-2222-2222-2222-222222222222"
+  gvars:
+    ffff2222-2222-2222-2222-222222222222: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+              "config": {
+                  "distribution": {"combat": 50, "quest": 25, "gather": 50},
+              },
+          },
+      }
+
+return check_config.summarize_config()["title"]
+---
+re:My Summary World
+---
+name: summarize uses display name
+vars:
+  svars:
+    westmarch_config: "ffff4444-4444-4444-4444-444444444444"
+  gvars:
+    ffff4444-4444-4444-4444-444444444444: |
+      display = {"name": "My Summary World"}

@@ -3,27 +3,34 @@ using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(
     auth = env.gvars.auth,
     display = env.gvars.display,
-    config = env.gvars.config,
 )
 
 ok, msg = auth.is_allowed()
 get_embed = display.get_display()
 
-cmd_name = auth.command_name()
-if cmd_name == None:
-    cmd_name = "command"
-
 if not ok:
     return get_embed(desc=msg)
 
-args = argparse(&ARGS&)
 argslist = &ARGS&
 
-if len(argslist) > 0 and argslist[0] in ["help", "?"]:
-    return get_embed(desc = f"{cmd_name} help is not implemented")
+if len(argslist) == 0 or argslist[0] in ["help", "?"]:
+    help_text = f"""Server setup and configuration tools for westmarch-generic.
 
-return get_embed(
-    desc=f"{cmd_name} is not implemented",
+Usage:
+`{ctx.prefix}westmarch setup`
+`{ctx.prefix}westmarch check`
+`{ctx.prefix}westmarch show`
+
+**New server?** Start with `{ctx.prefix}westmarch setup`.
+"""
+    return get_embed(desc=help_text)
+
+desc = (
+    f"**Subcommands**\n"
+    f"• `{ctx.prefix}westmarch setup` — onboarding (create gvar, wire svar)\n"
+    f"• `{ctx.prefix}westmarch check` — validate configuration\n"
+    f"• `{ctx.prefix}westmarch show` — summarize loaded config\n\n"
+    f"Requires **Dragonspeaker** or **Server Aliaser**."
 )
+return get_embed(title="Westmarch admin", desc=desc)
 </drac2>
-

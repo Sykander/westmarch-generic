@@ -626,26 +626,26 @@ biomes = {
 Simplified vs westmarch — **no d100 synthetic lists**, **no mega-pool mixing** at runtime.
 
 ```py
-# Loaded from biome gvar — pools keyed by activity, then by kind
+# Loaded from biome gvar — exploration & gathering only
 pools = {
     "enc": {
         "combat": [ encounter, … ],
         "quest": [ encounter, … ],
         "gather": [ encounter, … ],
     },
-    "mine": {
-        "gather": [ encounter, … ],
-    },
     "forage": { "gather": [ … ] },
     "fish": { "gather": [ … ] },
+    "mine": { "gather": [ … ] },
     "lumber": { "gather": [ … ] },
+    "hunt": { "combat": [ … ] },
 }
 ```
 
 | westmarch | westmarch-generic |
 |-----------|-------------------|
-| **`encounters`** mega-list + random mix into 100 slots | Dropped — entries live under **`pools[activity][kind]`** |
-| **`enc_encounters`**, **`mine_encounters`**, … as flat lists | **`pools.mine.gather`**, etc. |
+| **`encounters`** mega-list + random mix into 100 slots | Dropped — wilderness entries under biome **`pools[activity][kind]`** |
+| Library / merchant / job hints in **`encounters`** | **Location encounter gvar** — not biome ([investigation §4–5](biome-data-shape-investigation.md)) |
+| **`enc_encounters`**, **`mine_encounters`**, … as flat lists | **`pools.mine.gather`**, etc. on **biome** |
 | **`combat_encounters`** mixed into every roll | **`pools.<activity>.combat`** only |
 | **`recipe_encounters`** mixed globally | Recipe-tagged **`gather`** entries or **`economy`** catalogues |
 | d100 **`get_encounter_list`** | **Kind first** ([exploration.config](#explorationconfig) **`distribution`**) → uniform random within matching subset |
@@ -655,11 +655,12 @@ Each **`encounter`** dict matches [Encounter *(input)*](#encounter-input) with e
 **Selection algorithm** ([encounter_lists.gvar](gvars/encounter_lists.md)):
 
 1. Resolve biome code → load biome gvar if needed
-2. Choose **`kind`** ∈ **`{ combat, quest, gather }`** using **`distribution_policy`** + **`distribution`**
-3. Filter **`pools[activity][kind]`** (empty subset → player-facing error)
-4. Pick **one** entry at random — **not** a d100 table roll
+2. Resolve character location → load location encounter gvar when **`encounters_gvar_id`** set
+3. Choose **`kind`** ∈ **`{ combat, quest, gather }`** using **`distribution_policy`** + **`distribution`** *(exploration activities)*
+4. Build candidate list — biome **`pools[activity][kind]`** ∪ location **`pools[activity][kind]`** (exploration); service activities use location pool only
+5. Empty list → player-facing error; else uniform random pick — **not** d100
 
-Activity **`enc`** uses **`pools.enc`**; **`mine`** uses **`pools.mine`**, etc. Omit an activity key → that command is unavailable for the biome regardless of location flags.
+**Biome pools** — exploration & gathering only. Economy, crafting, content, dungeons — **location-scoped** ([investigation §3–5](biome-data-shape-investigation.md)).
 
 #### Engine preset biomes
 
@@ -718,6 +719,8 @@ location = {
     },
     "services": [ "general_store", "inn" ],  # optional — ids into shop/service config
     "library_topics": [ "nature", "history" ],  # optional — topic hints for !library inference
+    "encounters_gvar_id": "<uuid>",             # optional — lazy-loaded place-specific encounter module
+    "dungeon_ids": [ "whispering_hollow" ],     # optional — post-MVP; dungeons enterable here
     "calendar_id": "primary",                   # optional — override world_data.calendars key
 }
 ```
@@ -732,8 +735,10 @@ location = {
 | `biome` | no | Default when an exploration command omits biome list |
 | `commands` | no | **Preferred** — per-command availability at this location (see below) |
 | `activities` | no | **Legacy** — exploration subset of `commands`; omit when using `commands` |
-| `services` | no | Logical service ids — vendors, crafting benches, … (use when `buy` / `sell` / crafting commands are enabled) |
-| `library_topics` | no | Topic tags for **`!library`** when **`library`** is in `commands` and topic source is **`inferred`** or **`balanced`** |
+| `services` | no | Shop / service ids — vendors, crafting benches ([Shop](#shop) **`location_id`**) |
+| `library_topics` | no | Topics for **`!library`** when **`library_topic_source`** is **`inferred`** or **`balanced`** |
+| `encounters_gvar_id` | no | Workshop UUID — lazy-loaded [location encounter module](#location-encounter-module-separate-workshop-gvar) |
+| `dungeon_ids` | no | **Post-MVP** — dungeon registry keys enterable at this place ([investigation §5](biome-data-shape-investigation.md)) |
 
 ### Commands map
 
@@ -746,7 +751,13 @@ location = {
 
 **Exploration keys** (value must be a biome list): `enc`, `forage`, `fish`, `mine`, `lumber`, `hunt`, `loot`.
 
-**Other location-gated keys** (value `True` when offered): `craft`, `brew`, `enchant`, `scribe`, `job`, `buy`, `sell`, `library`, `read`.
+**Economy keys** (value `True` when offered): `job`, `buy`, `sell` — wire **`shops`** / payout config to this **`location_id`**; optional prose in **location encounter gvar**.
+
+**Crafting keys** (value `True` when offered): `craft`, `brew`, `enchant`, `scribe`.
+
+**Content keys** (value `True` when offered): `library`, `read`.
+
+Service commands are **not** biome pool keys — configure per location ([biome-data-shape-investigation.md §4–5](biome-data-shape-investigation.md)).
 
 **Do not put in `commands`** — these are global or travel-scoped, not per-location toggles: `travel`, `location`, `time`, `weather`, `wallet`, `downtime`, `quest`, `recipe`, `journal`, `diary`.
 
@@ -782,6 +793,37 @@ world_data = {
     },
 }
 ```
+
+## Location encounter module *(separate workshop gvar)*
+
+Place-specific encounter prose — jobs, shops, library scenes, unique exploration beats, and *(post-MVP)* dungeon hooks. **Not** stored on biome gvars.
+
+**Pointer:** optional **`encounters_gvar_id`** on [Location](#location) — workshop UUID, lazy-loaded like biome bodies.
+
+```py
+# Owner workshop — e.g. oakwood_settlement_encounters.gvar
+pools = {
+    "enc": {
+        "gather": [ encounter, … ],   # supplements biome — merged at roll time
+    },
+    "job": { "gather": [ encounter, … ] },
+    "buy": { "gather": [ encounter, … ] },
+    "library": { "gather": [ encounter, … ] },
+    "craft": { "gather": [ encounter, … ] },
+    # any activity enabled on this location's commands map
+}
+```
+
+| Concern | Biome gvar | Location encounter gvar |
+|---------|------------|---------------------------|
+| Scope | Generic archetype (*a* forest) | Named place (*Oakwood Village*) |
+| Activities | `enc`, `forage`, `mine`, `fish`, `lumber`, `hunt` only | Any command enabled on location — economy, crafting, content, plus optional **`enc`** supplements |
+| Mechanics | Encounter outcomes only | Encounter prose only — **`shops`**, recipes, payout bands stay in config |
+| Required? | Yes when location lists biome codes | Optional — omit **`encounters_gvar_id`** for config-only places |
+
+Loader: [location_encounters.gvar](gvars/location_encounters.md). Design rationale: [biome-data-shape-investigation.md §4–6](biome-data-shape-investigation.md).
+
+---
 
 ### westmarch fields mapped
 

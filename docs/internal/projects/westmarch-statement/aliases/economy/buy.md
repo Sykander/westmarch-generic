@@ -55,7 +55,11 @@ flowchart TD
 | `price_for_buy(shop, stock_entry, qty)` | Total price dict |
 | `buy(ch, config, shop, item_query, qty=1)` | **`pc`** debit + bag add; `(success, message)` |
 
-Keep transaction logic in **shops.gvar**; stock definitions in config **`shops`**.
+Keep transaction logic in **shops.gvar**; stock definitions in config **`shops`** with **`location_id`** per place.
+
+### Location wiring
+
+**`!buy`** / **`!sell`** availability and stock are **per location** — enable on location **`commands`**, wire **`shops`** entries to that **`location_id`**, optional encounter prose in **location encounter gvar** ([location_encounters.gvar](../../gvars/location_encounters.md)). Not biome pools.
 
 ### Config
 

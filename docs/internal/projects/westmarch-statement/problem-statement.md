@@ -44,6 +44,22 @@ We need a clear separation:
 
 Configuration must be **addressable on a live Avrae server** without redeploying the whole workshop for every world edit. Server owners should be able to point the bot at their setup through **svars** (unset = feature off or safe default; set to a **gvar id** = load that server's config module).
 
+## Representative server-owner goals
+
+These scenarios illustrate why **biomes** and **locations** are separate layers ([biome-data-shape-investigation.md](biome-data-shape-investigation.md) §5–6):
+
+### Three forest regions
+
+One server runs **Oakwood** (temperate **`forest`** biome, village + wilds), **Misty Forest** ( **`dark_forest`** wilds + **`elven_settlement`** town), and **Jungle expanse** ( **`jungle`** wilds + **`pyramid`** site with a post-MVP dungeon). Many locations reuse the same biome code; each settlement gets its own shops, jobs, and optional **location encounter gvar**.
+
+### Steampunk conversion
+
+Districts as **locations** with factory jobs, airship **`shops`**, and clockwork **`craft`** — wilderness **`!enc`** uses custom **`factory_wastes`** / **`docks`** biomes without embedding city NPCs in generic biome rolls.
+
+### Gestalt / high-power
+
+Standard **`mountain`** / **`cave`** biomes with scaled callable **`cr`**; **locations** gate **`hunt`** and **`dungeon_ids`** to tiered hunting grounds while payout and shop prices stay in config.
+
 ## Scope of this problem (broad)
 
 This project is not "fix one alias" or "extract one table." The problem is **architectural**:

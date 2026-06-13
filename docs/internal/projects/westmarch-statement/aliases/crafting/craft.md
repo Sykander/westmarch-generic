@@ -35,6 +35,8 @@ GP value bands (hard-coded in alias → move to config `CRAFT_PRICE_BANDS`):
 
 Tools (11 artisan tools): Carpenter's, Cobbler's, Glassblower's, Jeweler's, Leatherworker's, Mason's, Potter's, Smith's, Tinker's, Weaver's, Woodcarver's.
 
+Workshop ambience and bench flavour are **location-scoped** — optional **location encounter gvar** when **`commands.craft`** is on ([location_encounters.gvar](../../gvars/location_encounters.md)).
+
 ## Generic architecture
 
 ```mermaid
