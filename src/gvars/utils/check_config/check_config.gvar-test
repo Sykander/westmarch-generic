@@ -36,6 +36,74 @@ vars:
           },
       }
 
+return "Biome **forest**" in str(check_config.validate()[0])
+---
+True
+---
+name: validate missing biome registry entry
+vars:
+  svars:
+    westmarch_config: "ffff2222-2222-2222-2222-222222222222"
+  gvars:
+    ffff2222-2222-2222-2222-222222222222: |
+      world_data = {
+          "locations": {
+              "oakwood": {
+                  "name": "Oakwood",
+                  "commands": {"enc": ["forest"]},
+              },
+          },
+      }
+
+return "subsystems.exploration.display.colour" in str(check_config.validate()[0])
+---
+True
+---
+name: validate invalid display colour at subsystem layer
+vars:
+  svars:
+    westmarch_config: "ffff2222-2222-2222-2222-222222222222"
+  gvars:
+    ffff2222-2222-2222-2222-222222222222: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "display": {"colour": "BADHEX"},
+          },
+      }
+
+return "Unknown key **nope**" in str(check_config.validate()[1])
+---
+True
+---
+name: validate unknown command_display key warns
+vars:
+  svars:
+    westmarch_config: "ffff2222-2222-2222-2222-222222222222"
+  gvars:
+    ffff2222-2222-2222-2222-222222222222: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+              "command_display": {"nope": {"title": "Nope"}},
+          },
+      }
+
+return "footer_behaviour" in str(check_config.validate()[1])
+---
+True
+---
+name: validate string footer without footer warns
+vars:
+  svars:
+    westmarch_config: "ffff2222-2222-2222-2222-222222222222"
+  gvars:
+    ffff2222-2222-2222-2222-222222222222: |
+      policies = {
+          "display": {"footer_behaviour": "string"},
+      }
+
 return check_config.summarize_config()["title"]
 ---
 re:My Summary World
@@ -47,3 +115,326 @@ vars:
   gvars:
     ffff4444-4444-4444-4444-444444444444: |
       display = {"name": "My Summary World"}
+
+return check_config.summarize_config("wiring")["desc"]
+---
+re:westmarch_config
+---
+name: summarize section wiring
+vars:
+  svars:
+    westmarch_config: "ffff1111-1111-1111-1111-111111111111"
+  gvars:
+    ffff1111-1111-1111-1111-111111111111: |
+      # empty owner body
+
+return check_config.summarize_config("nope") == None
+---
+True
+---
+name: summarize unknown section returns None
+vars:
+  svars:
+    westmarch_config: "ffff1111-1111-1111-1111-111111111111"
+  gvars:
+    ffff1111-1111-1111-1111-111111111111: |
+      # empty owner body
+
+return "default_location" in str(check_config.validate()[1])
+---
+True
+---
+name: travel without default_location warns
+vars:
+  svars:
+    westmarch_config: "ffff2222-2222-2222-2222-222222222222"
+  gvars:
+    ffff2222-2222-2222-2222-222222222222: |
+      subsystems = {
+          "travel": {
+              "enabled": True,
+              "commands": {"travel": True, "location": True},
+          },
+      }
+      world_data = {
+          "locations": {
+              "town": {"name": "Town"},
+          },
+      }
+
+return len(check_config.validate()[0]) == 0
+---
+True
+---
+name: validate biome registry engine preset ok
+vars:
+  svars:
+    westmarch_config: "ffff2222-2222-2222-2222-222222222222"
+  gvars:
+    ffff2222-2222-2222-2222-222222222222: |
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "engine:configs/biomes/forest"},
+          },
+          "locations": {
+              "oakwood": {
+                  "commands": {"enc": ["forest"]},
+              },
+          },
+      }
+
+return "registered biome" in check_config.summarize_config("biomes")["desc"]
+---
+True
+---
+name: summarize biomes section
+vars:
+  svars:
+    westmarch_config: "ffff2222-2222-2222-2222-222222222222"
+  gvars:
+    ffff2222-2222-2222-2222-222222222222: |
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "engine:configs/biomes/forest"},
+          },
+      }
+
+return "Test World" in check_config.summarize_config("display")["desc"]
+---
+True
+---
+name: summarize display section
+vars:
+  svars:
+    westmarch_config: "ffff4444-4444-4444-4444-444444444444"
+  gvars:
+    ffff4444-4444-4444-4444-444444444444: |
+      display = {"name": "Test World", "colour": "#112233"}
+      policies = {"display": {"footer_behaviour": "helpful_tips"}}
+
+return "enc_biome_source: location** requires the **travel** subsystem" in str(check_config.validate()[0])
+---
+True
+---
+name: validate enc_biome_source location requires travel
+vars:
+  svars:
+    westmarch_config: "ffff2222-2222-2222-2222-222222222222"
+  gvars:
+    ffff2222-2222-2222-2222-222222222222: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+              "config": {"enc_biome_source": "location"},
+          },
+      }
+
+return "world_data.biomes** is missing or empty" in str(check_config.validate()[0])
+---
+True
+---
+name: validate exploration commands require biome registry
+vars:
+  svars:
+    westmarch_config: "ffff2222-2222-2222-2222-222222222222"
+  gvars:
+    ffff2222-2222-2222-2222-222222222222: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+          },
+      }
+
+return "non-negative integer" in str(check_config.validate()[0])
+---
+True
+---
+name: validate negative distribution percentage
+vars:
+  svars:
+    westmarch_config: "ffff2222-2222-2222-2222-222222222222"
+  gvars:
+    ffff2222-2222-2222-2222-222222222222: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+              "config": {
+                  "distribution": {"combat": -5, "quest": 25, "gather": 80},
+              },
+          },
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "ffff5555-5555-5555-5555-555555555555"},
+          },
+      }
+    ffff5555-5555-5555-5555-555555555555: |
+      pools = {
+          "enc": {
+              "combat": [{"name": "Wolf"}],
+              "quest": [],
+              "gather": [{"name": "Berries"}],
+          },
+      }
+
+return "repeat_exclude_window** must be a positive integer" in str(check_config.validate()[0])
+---
+True
+---
+name: validate repeat_exclude_window must be positive
+vars:
+  svars:
+    westmarch_config: "ffff2222-2222-2222-2222-222222222222"
+  gvars:
+    ffff2222-2222-2222-2222-222222222222: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+              "config": {"repeat_exclude_window": 0},
+          },
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "ffff5555-5555-5555-5555-555555555555"},
+          },
+      }
+    ffff5555-5555-5555-5555-555555555555: |
+      pools = {
+          "enc": {
+              "combat": [{"name": "Wolf"}],
+              "quest": [{"name": "Lost child"}],
+              "gather": [{"name": "Berries"}],
+          },
+      }
+
+return "avoid_repeat_encounters** relies on **stats.add_log**" in str(check_config.validate()[1])
+---
+True
+---
+name: validate avoid_repeat_encounters warns about stats logging
+vars:
+  svars:
+    westmarch_config: "ffff2222-2222-2222-2222-222222222222"
+  gvars:
+    ffff2222-2222-2222-2222-222222222222: |
+      policies = {
+          "exploration": {"avoid_repeat_encounters": "same_biome"},
+      }
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+          },
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "ffff5555-5555-5555-5555-555555555555"},
+          },
+      }
+    ffff5555-5555-5555-5555-555555555555: |
+      pools = {
+          "enc": {
+              "combat": [{"name": "Wolf"}],
+              "quest": [{"name": "Lost child"}],
+              "gather": [{"name": "Berries"}],
+          },
+      }
+
+return "no **quest** entries in **pools.enc**" in str(check_config.validate()[1])
+---
+True
+---
+name: validate empty quest pool warns when quest percent positive
+vars:
+  svars:
+    westmarch_config: "ffff2222-2222-2222-2222-222222222222"
+  gvars:
+    ffff2222-2222-2222-2222-222222222222: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+              "config": {
+                  "distribution": {"combat": 25, "quest": 25, "gather": 50},
+              },
+          },
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "ffff5555-5555-5555-5555-555555555555"},
+          },
+      }
+    ffff5555-5555-5555-5555-555555555555: |
+      pools = {
+          "enc": {
+              "combat": [{"name": "Wolf"}],
+              "quest": [],
+              "gather": [{"name": "Berries"}],
+          },
+      }
+
+return "Unknown key **nope** in **subsystems.exploration.command_config**" in str(check_config.validate()[1])
+---
+True
+---
+name: validate unknown exploration command_config key warns
+vars:
+  svars:
+    westmarch_config: "ffff2222-2222-2222-2222-222222222222"
+  gvars:
+    ffff2222-2222-2222-2222-222222222222: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+              "command_config": {"nope": {"cooldown_seconds": 60}},
+          },
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "ffff5555-5555-5555-5555-555555555555"},
+          },
+      }
+    ffff5555-5555-5555-5555-555555555555: |
+      pools = {
+          "enc": {
+              "combat": [{"name": "Wolf"}],
+              "quest": [{"name": "Lost child"}],
+              "gather": [{"name": "Berries"}],
+          },
+      }
+
+return "cooldown_seconds** must be non-negative" in str(check_config.validate()[0])
+---
+True
+---
+name: validate negative exploration cooldown errors
+vars:
+  svars:
+    westmarch_config: "ffff2222-2222-2222-2222-222222222222"
+  gvars:
+    ffff2222-2222-2222-2222-222222222222: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+              "command_config": {"enc": {"cooldown_seconds": -1}},
+          },
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "ffff5555-5555-5555-5555-555555555555"},
+          },
+      }
+    ffff5555-5555-5555-5555-555555555555: |
+      pools = {
+          "enc": {
+              "combat": [{"name": "Wolf"}],
+              "quest": [{"name": "Lost child"}],
+              "gather": [{"name": "Berries"}],
+          },
+      }

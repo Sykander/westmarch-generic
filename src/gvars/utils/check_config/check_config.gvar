@@ -6,6 +6,8 @@ See docs/internal/projects/westmarch-statement/gvars/check_config.md
 using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(
     config = env.gvars.config,
+    dicts = env.gvars.dicts,
+    lists = env.gvars.lists,
 )
 
 VALID_ENC_BIOME = ["auto", "argument", "location"]
@@ -14,6 +16,46 @@ VALID_DIST_KEYS = ["combat", "quest", "gather"]
 VALID_LIBRARY_TOPIC = ["inferred", "balanced", "manual", "restricted"]
 VALID_RULES_VERSION = ["2014", "2024"]
 VALID_FOOTER_BEHAVIOUR = ["helpful_tips", "string", "help", "credits", "balanced"]
+VALID_AVOID_REPEAT = ["off", "same_biome", "global"]
+POOL_ACTIVITY_COMMANDS = [
+    "enc",
+    "forage",
+    "fish",
+    "mine",
+    "lumber",
+    "hunt",
+]
+EXPLORATION_ACTIVITY_KEYS = [
+    "enc",
+    "forage",
+    "fish",
+    "mine",
+    "lumber",
+    "hunt",
+    "loot",
+]
+ENGINE_BIOME_PREFIX = "engine:configs/biomes/"
+ENGINE_BIOME_CODES = [
+    "beach",
+    "forest",
+    "mountain",
+    "cave",
+    "ruins",
+    "road",
+    "urban",
+    "river",
+    "sea",
+    "plains",
+    "desert",
+    "swamp",
+    "sky",
+    "deep_seas",
+    "underdark",
+    "tundra",
+    "jungle",
+    "volcanic",
+    "astral",
+]
 SUBSYSTEM_KEYS = [
     "exploration",
     "travel",
@@ -25,15 +67,8 @@ SUBSYSTEM_KEYS = [
 ]
 
 
-def _is_dict(value) -> bool:
-    try:
-        return value == dict(value)
-    except:
-        return False
-
-
 def _dict_keys(obj):
-    if obj == None or not _is_dict(obj):
+    if obj == None or not dicts.is_dict(obj):
         return []
     out = []
     for k in obj:
@@ -116,24 +151,17 @@ def _command_on(block, command):
 def _world_data(cfg):
     if cfg == None:
         return None
-    try:
-        return cfg.world_data
-    except:
-        return None
+    return _read_field(cfg, "world_data")
 
 
 def _has_locations(cfg):
     wd = _world_data(cfg)
     if wd == None:
         return False
-    locs = None
-    try:
-        locs = wd.locations
-    except:
-        locs = None
+    locs = _read_field(wd, "locations")
     if locs == None:
         return False
-    if not _is_dict(locs):
+    if not dicts.is_dict(locs):
         return False
     return len(_dict_keys(locs)) > 0
 
@@ -163,9 +191,359 @@ def _truncate_uuid(addr):
 
 
 def _count_dict(obj):
-    if obj == None or not _is_dict(obj):
+    if obj == None or not dicts.is_dict(obj):
         return 0
     return len(_dict_keys(obj))
+
+
+def _nonempty_str(value):
+    if value == None:
+        return False
+    return str(value).strip() != ""
+
+
+def _gvar_resolvable(addr):
+    if addr == None or not _nonempty_str(addr):
+        return False
+    s = str(addr).strip()
+    if s.startswith(ENGINE_BIOME_PREFIX):
+        code = s[len(ENGINE_BIOME_PREFIX) :]
+        return code in ENGINE_BIOME_CODES
+    body = get_gvar(s)
+    return body != None and str(body).strip() != ""
+
+
+def _read_field(obj, key):
+    if obj == None:
+        return None
+    try:
+        return obj[key]
+    except:
+        pass
+    try:
+        val = obj[key]
+        if val != None:
+            return val
+    except:
+        pass
+    attrs = {
+        "world_data": lambda o: o.world_data,
+        "locations": lambda o: o.locations,
+        "biomes": lambda o: o.biomes,
+        "paths": lambda o: o.paths,
+        "commands": lambda o: o.commands,
+        "activities": lambda o: o.activities,
+        "biome": lambda o: o.biome,
+        "display": lambda o: o.display,
+        "command_display": lambda o: o.command_display,
+        "gvar_id": lambda o: o.gvar_id,
+        "steps": lambda o: o.steps,
+        "type": lambda o: o.type,
+        "colour": lambda o: o.colour,
+        "footer": lambda o: o.footer,
+        "name": lambda o: o.name,
+        "title": lambda o: o.title,
+        "enc": lambda o: o.enc,
+        "forage": lambda o: o.forage,
+        "fish": lambda o: o.fish,
+        "mine": lambda o: o.mine,
+        "lumber": lambda o: o.lumber,
+        "hunt": lambda o: o.hunt,
+        "loot": lambda o: o.loot,
+        "footer_behaviour": lambda o: o.footer_behaviour,
+        "default_location": lambda o: o.default_location,
+        "pools": lambda o: o.pools,
+        "policies": lambda o: o.policies,
+    }
+    if key in attrs:
+        try:
+            return attrs[key](obj)
+        except:
+            pass
+    return None
+
+
+def _map_keys(obj):
+    if obj == None:
+        return []
+    keys = _dict_keys(obj)
+    if len(keys) > 0:
+        return keys
+    try:
+        return _dict_keys(dict(obj))
+    except:
+        pass
+    return []
+
+
+def _activity_values(cmd_map):
+    pairs = []
+    if cmd_map == None:
+        return pairs
+    if dicts.is_dict(cmd_map):
+        for act in _dict_keys(cmd_map):
+            if act in EXPLORATION_ACTIVITY_KEYS:
+                pairs.append([act, _read_field(cmd_map, act)])
+        return pairs
+    for act in EXPLORATION_ACTIVITY_KEYS:
+        val = _read_field(cmd_map, act)
+        if val != None:
+            pairs.append([act, val])
+    return pairs
+
+
+def _collect_biome_references(cfg):
+    refs = {}
+    wd = _world_data(cfg)
+    if wd == None:
+        return refs
+
+    def _add(code, context):
+        if code == None or not _nonempty_str(code):
+            return
+        key = str(code).strip()
+        if key == "":
+            return
+        if key not in _dict_keys(refs):
+            refs[key] = [context]
+        else:
+            ctx_list = refs[key]
+            if context not in ctx_list:
+                ctx_list.append(context)
+
+    locs = _read_field(wd, "locations")
+    if locs != None:
+        for loc_id in _map_keys(locs):
+            loc = _read_field(locs, loc_id)
+            if loc == None:
+                continue
+            ctx_base = f"**world_data.locations.{loc_id}**"
+            try:
+                _add(_read_field(loc, "biome"), f"{ctx_base}.biome")
+            except:
+                pass
+            for map_name in ["commands", "activities"]:
+                cmd_map = _read_field(loc, map_name)
+                if cmd_map == None:
+                    continue
+                for pair in _activity_values(cmd_map):
+                    act = pair[0]
+                    val = pair[1]
+                    if val == None:
+                        continue
+                    if dicts.is_dict(val):
+                        continue
+                    try:
+                        if val == True:
+                            continue
+                    except:
+                        pass
+                    if lists.is_list(val):
+                        for code in val:
+                            _add(code, f"{ctx_base}.{map_name}.{act}")
+                    elif _nonempty_str(val):
+                        _add(val, f"{ctx_base}.{map_name}.{act}")
+
+    paths = _read_field(wd, "paths")
+    if paths != None:
+        path_list = []
+        if lists.is_list(paths):
+            path_list = paths
+        elif dicts.is_dict(paths):
+            for pk in _dict_keys(paths):
+                try:
+                    path_list.append(paths[pk])
+                except:
+                    pass
+        idx = 0
+        for path in path_list:
+            if path == None:
+                idx = idx + 1
+                continue
+            steps = _read_field(path, "steps")
+            if steps == None or not lists.is_list(steps):
+                idx = idx + 1
+                continue
+            step_idx = 0
+            for step in steps:
+                if step != None:
+                    step_type = None
+                    try:
+                        step_type = str(_read_field(step, "type")).strip().lower()
+                    except:
+                        step_type = None
+                    if step_type == "encounter":
+                        try:
+                            _add(
+                                _read_field(step, "biome"),
+                                f"**world_data.paths[{idx}].steps[{step_idx}]**",
+                            )
+                        except:
+                            pass
+                step_idx = step_idx + 1
+            idx = idx + 1
+    return refs
+
+
+def _registry_has_biome(registry, code):
+    if registry == None:
+        return False
+    entry = _read_field(registry, code)
+    return entry != None
+
+
+def check_biomes(cfg):
+    errors = []
+    warnings = []
+    if cfg == None:
+        return errors, warnings
+    wd = _world_data(cfg)
+    registry = None
+    if wd != None:
+        registry = _read_field(wd, "biomes")
+    refs = _collect_biome_references(cfg)
+    for code in _dict_keys(refs):
+        if not _registry_has_biome(registry, code):
+            ref_ctx = ", ".join(refs[code])
+            errors.append(
+                f"Biome **{code}** referenced ({ref_ctx}) but missing from **world_data.biomes**."
+            )
+    if registry == None or not dicts.is_dict(registry):
+        return errors, warnings
+    for code in _dict_keys(registry):
+        entry = None
+        try:
+            entry = registry[code]
+        except:
+            entry = None
+        path = f"**world_data.biomes.{code}**"
+        if entry == None or not dicts.is_dict(entry):
+            errors.append(f"{path} must be an object with **gvar_id**.")
+            continue
+        gvar_id = None
+        try:
+            gvar_id = entry.gvar_id
+        except:
+            gvar_id = None
+        if not _nonempty_str(gvar_id):
+            errors.append(f"**{path}.gvar_id** is required.")
+            continue
+        gid = str(gvar_id).strip()
+        if gid.startswith(ENGINE_BIOME_PREFIX):
+            preset = gid[len(ENGINE_BIOME_PREFIX) :]
+            if preset not in ENGINE_BIOME_CODES:
+                errors.append(
+                    f"**{path}.gvar_id** `{gid}` — unknown engine biome preset."
+                )
+        elif not _gvar_resolvable(gid):
+            errors.append(f"Biome gvar UUID not found for **{code}** (`{gid}`).")
+    return errors, warnings
+
+
+def _display_layer_has_footer(fragment):
+    if fragment == None:
+        return False
+    try:
+        return _nonempty_str(fragment.footer)
+    except:
+        pass
+    return _nonempty_str(_read_field(fragment, "footer"))
+
+
+def _check_display_colour(path, fragment, errors):
+    if fragment == None:
+        return
+    try:
+        colour = fragment.colour
+    except:
+        colour = _read_field(fragment, "colour")
+    if colour != None and not _valid_hex_colour(colour):
+        errors.append(f"**{path}.colour** must be `#RRGGBB` or `RRGGBB`.")
+
+
+def _subsystem_command_keys(block, subsystem):
+    keys = []
+    if block == None:
+        return keys
+    commands = None
+    try:
+        commands = block.commands
+    except:
+        commands = _read_field(block, "commands")
+    if commands != None and dicts.is_dict(commands):
+        keys = _dict_keys(commands)
+    if subsystem == "downtime" and "downtime" not in keys:
+        keys.append("downtime")
+    return keys
+
+
+def check_display(cfg):
+    errors = []
+    warnings = []
+    if cfg == None:
+        return errors, warnings
+    base = _read_field(cfg, "display")
+    if base != None:
+        if not dicts.is_dict(base):
+            errors.append("**display** must be an object when set.")
+        else:
+            _check_display_colour("display", base, errors)
+    has_footer = _display_layer_has_footer(base)
+    for key in SUBSYSTEM_KEYS:
+        block = _read_subsystem(cfg, key)
+        if block == None:
+            continue
+        sub_path = f"subsystems.{key}.display"
+        sub_disp = _read_field(block, "display")
+        if sub_disp != None:
+            _check_display_colour(sub_path, sub_disp, errors)
+            if _display_layer_has_footer(sub_disp):
+                has_footer = True
+        cmd_disp = _read_field(block, "command_display")
+        if cmd_disp == None:
+            continue
+        cmd_keys = _map_keys(cmd_disp)
+        if len(cmd_keys) == 0:
+            errors.append(
+                f"**subsystems.{key}.command_display** must be an object when set."
+            )
+            continue
+        valid_cmds = _subsystem_command_keys(block, key)
+        for cmd in cmd_keys:
+            if cmd not in valid_cmds:
+                warnings.append(
+                    f"Unknown key **{cmd}** in **subsystems.{key}.command_display** — "
+                    f"does not match that subsystem's **commands** map."
+                )
+            cmd_layer = _read_field(cmd_disp, cmd)
+            if cmd_layer != None:
+                if not dicts.is_dict(cmd_layer):
+                    errors.append(
+                        f"**subsystems.{key}.command_display.{cmd}** must be an object."
+                    )
+                else:
+                    layer_path = f"subsystems.{key}.command_display.{cmd}"
+                    _check_display_colour(layer_path, cmd_layer, errors)
+                    if _display_layer_has_footer(cmd_layer):
+                        has_footer = True
+    footer_mode = "balanced"
+    policy = None
+    try:
+        policies = _read_field(cfg, "policies")
+        policy = _read_field(policies, "display")
+    except:
+        policy = None
+    if policy != None:
+        try:
+            footer_mode = str(_read_field(policy, "footer_behaviour")).strip().lower()
+        except:
+            pass
+    if footer_mode == "string" and not has_footer:
+        warnings.append(
+            "**policies.display.footer_behaviour** is **string** but no **footer** is set "
+            "at base, subsystem, or command display — runtime falls back to title / world name."
+        )
+    return errors, warnings
 
 
 def check_svar():
@@ -194,7 +572,7 @@ def check_subsystems(cfg):
         subs = cfg.subsystems
     except:
         subs = None
-    if subs == None or not _is_dict(subs):
+    if subs == None or not dicts.is_dict(subs):
         errors.append("**subsystems** must be an object.")
         return errors, warnings
     try:
@@ -208,7 +586,7 @@ def check_subsystems(cfg):
         block = _read_subsystem(cfg, key)
         if block == None:
             continue
-        if not _is_dict(block):
+        if not dicts.is_dict(block):
             errors.append(f"**subsystems.{key}** must be an object.")
             continue
         parent_on = _subsystem_enabled(block)
@@ -217,7 +595,7 @@ def check_subsystems(cfg):
             commands = block.commands
         except:
             commands = None
-        if commands != None and _is_dict(commands):
+        if commands != None and dicts.is_dict(commands):
             for cmd in _dict_keys(commands):
                 try:
                     on = commands[cmd] == True
@@ -230,35 +608,193 @@ def check_subsystems(cfg):
     return errors, warnings
 
 
+    return False
+
+
+def _biome_registry(cfg):
+    wd = _world_data(cfg)
+    return _read_field(wd, "biomes")
+
+
+def _has_biome_registry(cfg):
+    return _count_dict(_biome_registry(cfg)) > 0
+
+
+def _exploration_commands_on(block):
+    on = []
+    if block == None:
+        return on
+    for cmd in POOL_ACTIVITY_COMMANDS:
+        if _command_on(block, cmd):
+            on.append(cmd)
+    if _command_on(block, "loot"):
+        on.append("loot")
+    return on
+
+
+def _biome_gvar_id(registry, code):
+    entry = _read_field(registry, code)
+    if entry == None:
+        return None
+    return _read_field(entry, "gvar_id")
+
+
+def _load_biome_pools(gvar_id):
+    if not _nonempty_str(gvar_id):
+        return None
+    addr = str(gvar_id).strip()
+    body = get_gvar(addr)
+    if body == None or str(body).strip() == "":
+        return None
+    try:
+        using(_biome_mod=addr)
+        return _read_field(_biome_mod, "pools")
+    except:
+        return None
+
+
+def _pool_entry_count(pools, activity, kind):
+    if pools == None or not dicts.is_dict(pools):
+        return 0
+    act = _read_field(pools, activity)
+    if act == None or not dicts.is_dict(act):
+        return 0
+    bucket = _read_field(act, kind)
+    if bucket == None:
+        return 0
+    if lists.is_list(bucket):
+        return len(bucket)
+    return 0
+
+
+def _check_exploration_command_config(block, errors, warnings):
+    cmd_cfg = _read_field(block, "command_config")
+    if cmd_cfg == None:
+        return
+    if not dicts.is_dict(cmd_cfg):
+        errors.append("**subsystems.exploration.command_config** must be an object when set.")
+        return
+    valid_cmds = _subsystem_command_keys(block, "exploration")
+    for cmd in _map_keys(cmd_cfg):
+        if cmd not in valid_cmds:
+            warnings.append(
+                f"Unknown key **{cmd}** in **subsystems.exploration.command_config** — "
+                f"does not match that subsystem's **commands** map."
+            )
+        layer = _read_field(cmd_cfg, cmd)
+        if layer == None or not dicts.is_dict(layer):
+            errors.append(f"**subsystems.exploration.command_config.{cmd}** must be an object.")
+            continue
+        cd = _read_field(layer, "cooldown_seconds")
+        if cd != None:
+            try:
+                if int(cd) < 0:
+                    errors.append(
+                        f"**subsystems.exploration.command_config.{cmd}.cooldown_seconds** "
+                        f"must be non-negative."
+                    )
+            except:
+                errors.append(
+                    f"**subsystems.exploration.command_config.{cmd}.cooldown_seconds** must be an integer."
+                )
+
+
+def _check_exploration_pool_coverage(cfg, distribution, active_cmds, warnings):
+    if len(active_cmds) == 0:
+        return
+    kinds_over_zero = []
+    for kind in VALID_DIST_KEYS:
+        pct = _read_field(distribution, kind)
+        if pct == None:
+            continue
+        try:
+            if int(pct) > 0:
+                kinds_over_zero.append(kind)
+        except:
+            pass
+    if len(kinds_over_zero) == 0:
+        return
+    pool_cmds = []
+    for cmd in active_cmds:
+        if cmd in POOL_ACTIVITY_COMMANDS:
+            pool_cmds.append(cmd)
+    if len(pool_cmds) == 0:
+        return
+    registry = _biome_registry(cfg)
+    if registry == None or not dicts.is_dict(registry):
+        return
+    for code in _dict_keys(registry):
+        gid = _biome_gvar_id(registry, code)
+        pools = _load_biome_pools(gid)
+        if pools == None:
+            continue
+        for activity in pool_cmds:
+            for kind in kinds_over_zero:
+                if _pool_entry_count(pools, activity, kind) == 0:
+                    pct = _read_field(distribution, kind)
+                    warnings.append(
+                        f"**{kind}** is **{pct}%** in exploration distribution but biome **{code}** "
+                        f"has no **{kind}** entries in **pools.{activity}**."
+                    )
+
+
 def check_exploration(cfg):
     errors = []
     warnings = []
     block = _read_subsystem(cfg, "exploration")
     if block == None:
         return errors, warnings
-    exp_cfg = None
-    try:
-        exp_cfg = block.config
-    except:
-        exp_cfg = None
-    if exp_cfg == None or not _is_dict(exp_cfg):
+    enabled = _subsystem_enabled(block)
+    active_cmds = _exploration_commands_on(block)
+    _check_exploration_command_config(block, errors, warnings)
+    if enabled and len(active_cmds) > 0 and not _has_biome_registry(cfg):
+        errors.append(
+            "**exploration** has enabled commands but **world_data.biomes** is missing or empty."
+        )
+    exp_cfg = _read_field(block, "config")
+    if exp_cfg == None or not dicts.is_dict(exp_cfg):
         return errors, warnings
-    source = "auto"
-    try:
-        source = str(exp_cfg.enc_biome_source).strip().lower()
-    except:
+    source = _read_field(exp_cfg, "enc_biome_source")
+    if source != None:
+        source = str(source).strip().lower()
+    else:
         source = "auto"
     if source not in VALID_ENC_BIOME:
         errors.append(
             "**exploration.config.enc_biome_source** must be `auto`, `argument`, or `location`."
         )
-    dist = None
-    try:
-        dist = exp_cfg.distribution
-    except:
-        dist = None
+    if source == "argument" and not _has_biome_registry(cfg):
+        errors.append(
+            "**enc_biome_source: argument** requires a **world_data.biomes** registry."
+        )
+    window = _read_field(exp_cfg, "repeat_exclude_window")
+    if window != None:
+        try:
+            if int(window) < 1:
+                errors.append(
+                    "**exploration.config.repeat_exclude_window** must be a positive integer."
+                )
+        except:
+            errors.append(
+                "**exploration.config.repeat_exclude_window** must be a positive integer."
+            )
+    policies = _read_field(cfg, "policies")
+    exp_pol = _read_field(policies, "exploration")
+    avoid = _read_field(exp_pol, "avoid_repeat_encounters")
+    if avoid != None:
+        avoid_mode = str(avoid).strip().lower()
+        if avoid_mode not in VALID_AVOID_REPEAT:
+            errors.append(
+                "**policies.exploration.avoid_repeat_encounters** must be off, same_biome, or global."
+            )
+        elif avoid_mode != "off":
+            warnings.append(
+                "**policies.exploration.avoid_repeat_encounters** relies on **stats.add_log** "
+                "recording **encounter_id** in extras."
+            )
+    dist = _read_field(exp_cfg, "distribution")
     if dist != None:
-        if not _is_dict(dist):
+        if not dicts.is_dict(dist):
             errors.append("**exploration.config.distribution** must be an object.")
         else:
             total = 0
@@ -268,17 +804,24 @@ def check_exploration(cfg):
                         f"Unknown key **{k}** in exploration distribution — only combat, quest, gather."
                     )
                 try:
-                    total = total + int(dist[k])
+                    pct = int(_read_field(dist, k))
+                    if pct < 0:
+                        errors.append(
+                            f"**exploration.config.distribution.{k}** must be a non-negative integer."
+                        )
+                    total = total + pct
                 except:
                     errors.append(f"Invalid percentage for **{k}** in exploration distribution.")
             if total != 100:
                 errors.append(
                     f"**exploration.config.distribution** must total 100 (currently {total})."
                 )
-    policy = "random"
-    try:
-        policy = str(exp_cfg.distribution_policy).strip().lower()
-    except:
+            if enabled and len(active_cmds) > 0 and _has_biome_registry(cfg):
+                _check_exploration_pool_coverage(cfg, dist, active_cmds, warnings)
+    policy = _read_field(exp_cfg, "distribution_policy")
+    if policy != None:
+        policy = str(policy).strip().lower()
+    else:
         policy = "random"
     if policy not in VALID_DIST_POLICY:
         errors.append(
@@ -298,6 +841,16 @@ def check_exploration(cfg):
             errors.append(
                 "**enc_biome_source: location** requires **world_data.locations**."
             )
+    elif source == "auto":
+        travel = _read_subsystem(cfg, "travel")
+        if _subsystem_enabled(travel) and _has_locations(cfg):
+            warnings.append(
+                "**enc_biome_source: auto** — inferred from location when character location resolves; else manual biome arg."
+            )
+        else:
+            warnings.append(
+                "**enc_biome_source: auto** — manual biome argument until travel and **world_data.locations** are configured."
+            )
     return errors, warnings
 
 
@@ -312,7 +865,7 @@ def check_content(cfg):
         content_cfg = block.config
     except:
         content_cfg = None
-    if content_cfg == None or not _is_dict(content_cfg):
+    if content_cfg == None or not dicts.is_dict(content_cfg):
         return errors, warnings
     mode = "manual"
     try:
@@ -409,30 +962,24 @@ def check_policies(cfg):
     return errors, warnings
 
 
-def check_display(cfg):
-    errors = []
-    warnings = []
-    if cfg == None:
-        return errors, warnings
-    try:
-        colour = cfg.display.colour
-        if colour != None and not _valid_hex_colour(colour):
-            errors.append("**display.colour** must be `#RRGGBB` or `RRGGBB`.")
-    except:
-        pass
-    return errors, warnings
-
-
 def check_world_data(cfg):
     errors = []
     warnings = []
     if cfg == None:
         return errors, warnings
     travel = _read_subsystem(cfg, "travel")
-    if _subsystem_enabled(travel) and not _has_locations(cfg):
-        errors.append(
-            "**travel** enabled but **world_data.locations** is missing or empty."
-        )
+    if _subsystem_enabled(travel):
+        if not _has_locations(cfg):
+            errors.append(
+                "**travel** enabled but **world_data.locations** is missing or empty."
+            )
+        else:
+            wd = _world_data(cfg)
+            default_loc = _read_field(wd, "default_location")
+            if default_loc == None or str(default_loc).strip() == "":
+                warnings.append(
+                    "**travel** enabled — set **world_data.default_location** to a location id."
+                )
     try:
         locs = cfg.locations
         if locs != None:
@@ -457,6 +1004,8 @@ def check_cross_subsystem(cfg):
     warnings = warnings + check_policies(cfg)[1]
     errors = errors + check_display(cfg)[0]
     warnings = warnings + check_display(cfg)[1]
+    errors = errors + check_biomes(cfg)[0]
+    warnings = warnings + check_biomes(cfg)[1]
     errors = errors + check_world_data(cfg)[0]
     warnings = warnings + check_world_data(cfg)[1]
     return errors, warnings
@@ -493,20 +1042,98 @@ def _enabled_commands_summary(cfg):
 
 def _policy_summary(cfg):
     lines = []
-    try:
-        lines.append(f"time.mode: **{cfg.policies.time.mode}**")
-    except:
-        pass
-    try:
-        lines.append(f"downtime.mode: **{cfg.policies.downtime.mode}**")
-    except:
-        pass
-    try:
-        lines.append(
-            f"display.footer_behaviour: **{cfg.policies.display.footer_behaviour}**"
-        )
-    except:
-        pass
+    policies = _read_field(cfg, "policies")
+    time_pol = _read_field(policies, "time")
+    mode = _read_field(time_pol, "mode")
+    if mode != None:
+        lines.append(f"time.mode: **{mode}**")
+    dt_pol = _read_field(policies, "downtime")
+    dt_mode = _read_field(dt_pol, "mode")
+    if dt_mode != None:
+        lines.append(f"downtime.mode: **{dt_mode}**")
+    disp_pol = _read_field(policies, "display")
+    fb = _read_field(disp_pol, "footer_behaviour")
+    if fb != None:
+        lines.append(f"display.footer_behaviour: **{fb}**")
+    return "\n".join(lines)
+
+
+def _path_count(wd):
+    if wd == None:
+        return 0
+    paths = _read_field(wd, "paths")
+    if paths == None:
+        return 0
+    if lists.is_list(paths):
+        return len(paths)
+    return _count_dict(paths)
+
+
+def _biomes_summary(cfg):
+    wd = _world_data(cfg)
+    if wd == None:
+        return "No **world_data.biomes** registry."
+    registry = _read_field(wd, "biomes")
+    count = _count_dict(registry)
+    if count == 0:
+        return "Registry empty — register codes before locations reference them."
+    lines = [f"**{count}** registered biome(s):"]
+    if registry != None and dicts.is_dict(registry):
+        for code in _dict_keys(registry):
+            entry = None
+            try:
+                entry = registry[code]
+            except:
+                entry = None
+            gid = "—"
+            if entry != None and dicts.is_dict(entry):
+                raw = _read_field(entry, "gvar_id")
+                if raw != None:
+                    gid = str(raw).strip()
+                    if len(gid) > 28:
+                        gid = gid[0:24] + "…"
+            lines.append(f"• **{code}** → `{gid}`")
+    refs = _collect_biome_references(cfg)
+    if len(_dict_keys(refs)) > 0:
+        lines.append(f"Referenced in locations/paths: **{len(_dict_keys(refs))}** code(s).")
+    return "\n".join(lines)
+
+
+def _display_summary(cfg):
+    lines = []
+    world_name = "Westmarch"
+    colour = "—"
+    base = _read_field(cfg, "display")
+    if base != None:
+        n = _read_field(base, "name")
+        if _nonempty_str(n):
+            world_name = str(n)
+        c = _read_field(base, "colour")
+        if c != None:
+            colour = str(c)
+    lines.append(f"World: **{world_name}** · base colour: `{colour}`")
+    footer_mode = "balanced"
+    policies = _read_field(cfg, "policies")
+    disp_pol = _read_field(policies, "display")
+    fb = _read_field(disp_pol, "footer_behaviour")
+    if fb != None:
+        footer_mode = str(fb).strip().lower()
+    lines.append(f"Footer policy: **{footer_mode}**")
+    override_count = 0
+    cmd_override_count = 0
+    for key in SUBSYSTEM_KEYS:
+        block = _read_subsystem(cfg, key)
+        if block == None or not dicts.is_dict(block):
+            continue
+        if _read_field(block, "display") != None:
+            override_count = override_count + 1
+        cd = _read_field(block, "command_display")
+        if cd != None:
+            cmd_override_count = cmd_override_count + len(_map_keys(cd))
+    lines.append(
+        f"Subsystem **display** overrides: **{override_count}** · "
+        f"**command_display** entries: **{cmd_override_count}**"
+    )
     return "\n".join(lines)
 
 
@@ -515,9 +1142,9 @@ def _world_summary(cfg):
     if wd == None:
         return "No **world_data** configured."
     parts = []
-    parts.append(f"locations: **{_count_dict(wd.locations)}**")
-    parts.append(f"paths: **{_count_dict(wd.paths)}**")
-    parts.append(f"biomes: **{_count_dict(wd.biomes)}**")
+    parts.append(f"locations: **{_count_dict(_read_field(wd, 'locations'))}**")
+    parts.append(f"paths: **{_path_count(wd)}**")
+    parts.append(f"biomes: **{_count_dict(_read_field(wd, 'biomes'))}**")
     return " · ".join(parts)
 
 
@@ -537,12 +1164,10 @@ def summarize_config(section=None):
             ),
         }
     world_name = "Westmarch"
-    try:
-        n = cfg.display.name
-        if n != None and str(n).strip() != "":
-            world_name = str(n)
-    except:
-        pass
+    base = _read_field(cfg, "display")
+    n = _read_field(base, "name")
+    if _nonempty_str(n):
+        world_name = str(n)
     title = f"{world_name} — configuration"
     wiring = (
         f"**Svar:** `{config.SVAR_NAME}`\n"
@@ -569,20 +1194,26 @@ def summarize_config(section=None):
         "policies": _policy_summary(cfg),
         "runtime": runtime,
         "data": _world_summary(cfg),
+        "display": _display_summary(cfg),
+        "biomes": _biomes_summary(cfg),
     }
+    if section_key != None and section_key not in sections:
+        return None
     if section_key != None and section_key in sections:
         return {
             "title": f"{world_name} — {section_key}",
             "desc": sections[section_key],
         }
     desc_parts = []
-    order = ["wiring", "subsystems", "policies", "runtime", "data"]
+    order = ["wiring", "subsystems", "policies", "display", "runtime", "data", "biomes"]
     labels = {
         "wiring": "Wiring",
         "subsystems": "Subsystems",
         "policies": "Policies",
+        "display": "Display",
         "runtime": "Runtime",
         "data": "Data overview",
+        "biomes": "Biome registry",
     }
     for key in order:
         desc_parts.append(f"**{labels[key]}**\n{sections[key]}")

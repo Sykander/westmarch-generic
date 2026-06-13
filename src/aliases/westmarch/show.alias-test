@@ -48,3 +48,31 @@ vars:
   gvars:
     ffff1111-1111-1111-1111-111111111111: |
       # empty owner body
+
+!show wiring
+---
+re:Config gvar
+---
+name: show section filter wiring
+vars:
+  uvars:
+    _wm_command: show
+  svars:
+    westmarch_config: "ffff1111-1111-1111-1111-111111111111"
+  gvars:
+    ffff1111-1111-1111-1111-111111111111: |
+      # empty owner body
+
+!show not_a_section
+---
+re:Unknown section
+---
+name: show rejects unknown section
+vars:
+  uvars:
+    _wm_command: show
+  svars:
+    westmarch_config: "ffff1111-1111-1111-1111-111111111111"
+  gvars:
+    ffff1111-1111-1111-1111-111111111111: |
+      # empty owner body

@@ -9,10 +9,6 @@ using(
 ok, msg = auth.is_allowed()
 get_embed = display.get_display()
 
-cmd_name = auth.command_name()
-if cmd_name == None:
-    cmd_name = "check"
-
 if not ok:
     return get_embed(desc=msg)
 

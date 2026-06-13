@@ -9,6 +9,15 @@ vars:
 
 !setup
 ---
+re:gvar create
+---
+name: onboarding mentions gvar create
+vars:
+  uvars:
+    _wm_command: setup
+
+!setup
+---
 re:Already wired
 ---
 name: wired shows short summary

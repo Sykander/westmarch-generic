@@ -9,10 +9,6 @@ using(
 ok, msg = auth.is_allowed()
 get_embed = display.get_display()
 
-cmd_name = auth.command_name()
-if cmd_name == None:
-    cmd_name = "show"
-
 if not ok:
     return get_embed(desc=msg)
 
@@ -24,7 +20,7 @@ if len(argslist) > 0 and argslist[0] in ["help", "?"]:
 Usage:
 `{ctx.prefix}westmarch show`
 `{ctx.prefix}westmarch show <section>`
-Sections: wiring, subsystems, policies, runtime, data
+Sections: wiring, subsystems, policies, display, runtime, data, biomes
 """
     return get_embed(desc=help_text)
 
@@ -33,10 +29,22 @@ if len(argslist) > 0 and argslist[0] not in ["help", "?"]:
     section = argslist[0]
 
 summary = check_config.summarize_config(section)
+if summary == None:
+    return get_embed(
+        title="Unknown section",
+        desc=(
+            f"Unknown section `{section}`. "
+            f"Try: wiring, subsystems, policies, display, runtime, data, biomes"
+        ),
+    )
+
 footer = None
 errors, warnings = check_config.validate()
 if len(errors) > 0 or len(warnings) > 0:
-    footer = f"{len(errors)} error(s), {len(warnings)} warning(s) — run !westmarch check"
+    footer = (
+        f"{len(errors)} error(s), {len(warnings)} warning(s) — "
+        f"run {ctx.prefix}westmarch check"
+    )
 
 return get_embed(
     title=summary["title"],

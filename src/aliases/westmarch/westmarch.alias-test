@@ -1,0 +1,26 @@
+!westmarch
+---
+re:westmarch setup
+---
+name: parent help lists subcommands
+vars:
+  uvars:
+    _wm_command: westmarch
+
+!westmarch help
+---
+re:New server\?
+---
+name: explicit help shows onboarding hint
+vars:
+  uvars:
+    _wm_command: westmarch
+
+!westmarch check
+---
+re:Subcommands
+---
+name: unknown trailing arg shows subcommand list
+vars:
+  uvars:
+    _wm_command: westmarch

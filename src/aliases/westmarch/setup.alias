@@ -9,10 +9,6 @@ using(
 ok, msg = auth.is_allowed()
 get_embed = display.get_display()
 
-cmd_name = auth.command_name()
-if cmd_name == None:
-    cmd_name = "setup"
-
 if not ok:
     return get_embed(desc=msg)
 
@@ -38,28 +34,37 @@ if cfg != None and uuid != None and str(uuid).strip() != "":
         f"**Already wired.** This server points at config gvar `{short}` and it loads OK.\n\n"
         f"**Verify:** `{ctx.prefix}westmarch check`\n"
         f"**Summary:** `{ctx.prefix}westmarch show`\n\n"
-        f"Re-run **{ctx.prefix}westmarch setup** anytime for the full onboarding guide."
+        f"Re-run **`{ctx.prefix}westmarch setup`** anytime for the full onboarding guide."
     )
     return get_embed(title="Setup — already wired", desc=desc)
 
+svar_name = config.SVAR_NAME
 desc = f"""**1 — Subscribe to the engine**
 Subscribe to the **westmarch-generic** workshop on Avrae and ensure you have **Dragonspeaker** or **Server Aliaser** on this server.
 
 **2 — Create a config gvar**
-Duplicate [starter.gvar](repo) in your workshop, or create a gvar and paste the starter body from the project docs.
+Duplicate **starter.gvar** from the project repo into your workshop, or:
+```
+{ctx.prefix}gvar create # westmarch config
+{ctx.prefix}gvar editor <your-gvar-uuid>
+```
+Paste the starter body from `src/gvars/configs/starter.gvar` (see repo **docs/setup.md**).
 
 **3 — Wire the server svar**
 ```
-{ctx.prefix}svar westmarch_config <your-gvar-uuid>
+{ctx.prefix}svar {svar_name} <your-gvar-uuid>
 ```
 
-**4 — Verify**
+**4 — Enable subsystems**
+Edit your config gvar — turn on **`subsystems.*.enabled`** and **`commands.*`** as you port each vertical. Add **`world_data`** when travel/exploration need locations and biomes.
+
+**5 — Verify**
 ```
 {ctx.prefix}westmarch check
 {ctx.prefix}westmarch show
 ```
 
-Enable subsystems and add **world_data** as you port each vertical. This command does not mutate svars or gvars."""
+This command does not mutate svars or gvars."""
 
 return get_embed(title="Westmarch setup", desc=desc)
 </drac2>

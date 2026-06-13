@@ -27,3 +27,30 @@ name: admin westmarch success message
 vars:
   uvars:
     _wm_command: westmarch
+
+return auth.is_allowed()[0]
+---
+True
+---
+name: admin setup allowed for dragonspeaker
+vars:
+  uvars:
+    _wm_command: setup
+
+return auth.is_allowed()[0]
+---
+True
+---
+name: admin check allowed for dragonspeaker
+vars:
+  uvars:
+    _wm_command: check
+
+return auth.is_allowed()[0]
+---
+True
+---
+name: admin show allowed for dragonspeaker
+vars:
+  uvars:
+    _wm_command: show

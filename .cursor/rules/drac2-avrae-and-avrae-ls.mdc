@@ -30,6 +30,29 @@ When behaviour is unclear, read **`.cursor/rules/drac2-avrae-sources.mdc`** and 
 - **`.alias-test`** — mock alias runs for **`avrae-ls --run-tests`**; not deployed.
 - **`.gvar-test`** — direct gvar module tests (sibling **`.gvar`**); implicit `using(...)` bind; see **`.cursor/avrae-ls-reference/upstream/README.md`**.
 
+### `.gvar-test` case format (avrae-ls)
+
+Each case is four blocks in order — **`vars` belong in the metadata block for that same case**, not before the next `return`:
+
+```
+return <expression>
+---
+<expected>
+---
+name: <label>
+vars:
+  svars:
+    westmarch_config: "ffff1111-1111-1111-1111-111111111111"
+  gvars:
+    ffff1111-1111-1111-1111-111111111111: |
+      # fixture body
+```
+
+- **Wrong:** put `name` + `vars` after the previous case’s expected, then a new `return` — vars bind to the wrong case.
+- **Right:** `return` → `---` → expected → `---` → `name` (+ optional `vars`) for **that** `return`.
+- First case may omit metadata; later cases repeat the pattern. Separate cases with a blank line before the next `return`.
+- Reference: `src/gvars/utils/auth/auth.gvar-test`, `src/gvars/utils/config/config.gvar-test`, `src/gvars/utils/check_config/check_config.gvar-test`.
+
 ## avrae-ls
 
 - Run **`avrae-ls --run-tests src`** from repo root (see **`DEVELOPMENT.md`**, **`.github/workflows/test.yaml`**).
