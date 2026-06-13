@@ -1,0 +1,181 @@
+!mine
+---
+re:not configured
+---
+name: blocks without server config
+vars:
+  uvars:
+    _wm_command: mine
+
+!mine
+---
+title: Mine
+---
+name: passes auth when exploration mine enabled
+vars:
+  uvars:
+    _wm_command: mine
+  svars:
+    westmarch_config: "eeee1111-1111-1111-1111-111111111111"
+  gvars:
+    eeee1111-1111-1111-1111-111111111111: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"mine": True},
+          },
+      }
+
+!mine
+---
+re:disabled on this server
+---
+name: rejects disabled mine command
+vars:
+  uvars:
+    _wm_command: mine
+  svars:
+    westmarch_config: "eeee2222-2222-2222-2222-222222222222"
+  gvars:
+    eeee2222-2222-2222-2222-222222222222: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"mine": False},
+          },
+      }
+
+!mine help
+---
+title: Mine
+---
+name: help stub when mine enabled
+vars:
+  uvars:
+    _wm_command: mine
+  svars:
+    westmarch_config: "eeee1111-1111-1111-1111-111111111111"
+  gvars:
+    eeee1111-1111-1111-1111-111111111111: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"mine": True},
+          },
+      }
+
+!mine forest
+---
+re:Iron seam
+---
+name: "planned: manual biome rolls mine encounter from pool"
+vars:
+  uvars:
+    _wm_command: mine
+  svars:
+    westmarch_config: "eeee3333-3333-3333-3333-333333333333"
+  gvars:
+    eeee3333-3333-3333-3333-333333333333: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"mine": True},
+              "config": {
+                  "enc_biome_source": "argument",
+                  "distribution": {"combat": 0, "quest": 0, "gather": 100},
+              },
+              "command_config": {"mine": {"cooldown_seconds": 120}},
+          },
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+          },
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      pools = {
+          "mine": {
+              "gather": [{"kind": "gather", "name": "Iron seam", "description": "A promising vein."}],
+          },
+      }
+
+!mine
+---
+re:biome
+---
+name: "planned: argument mode requires biome code"
+vars:
+  uvars:
+    _wm_command: mine
+  svars:
+    westmarch_config: "eeee3333-3333-3333-3333-333333333333"
+  gvars:
+    eeee3333-3333-3333-3333-333333333333: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"mine": True},
+              "config": {"enc_biome_source": "argument"},
+          },
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+          },
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      pools = {"mine": {"gather": [{"kind": "gather", "name": "Iron seam"}]}}
+
+!mine desert
+---
+re:registered|unknown|invalid
+---
+name: "planned: unknown biome code rejected"
+vars:
+  uvars:
+    _wm_command: mine
+  svars:
+    westmarch_config: "eeee3333-3333-3333-3333-333333333333"
+  gvars:
+    eeee3333-3333-3333-3333-333333333333: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"mine": True},
+              "config": {"enc_biome_source": "argument"},
+          },
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+          },
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      pools = {"mine": {"gather": [{"kind": "gather", "name": "Iron seam"}]}}
+
+!mine help
+---
+re:forest|Biome|Usage
+---
+name: "planned: help lists registered biome codes"
+vars:
+  uvars:
+    _wm_command: mine
+  svars:
+    westmarch_config: "eeee3333-3333-3333-3333-333333333333"
+  gvars:
+    eeee3333-3333-3333-3333-333333333333: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"mine": True},
+              "config": {"enc_biome_source": "argument"},
+          },
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555", "name": "Forest"},
+          },
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      pools = {"mine": {"gather": [{"kind": "gather", "name": "Iron seam"}]}}

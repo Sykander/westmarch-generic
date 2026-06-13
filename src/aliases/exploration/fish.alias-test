@@ -1,0 +1,180 @@
+!fish
+---
+re:not configured
+---
+name: blocks without server config
+vars:
+  uvars:
+    _wm_command: fish
+
+!fish
+---
+title: Fish
+---
+name: passes auth when exploration fish enabled
+vars:
+  uvars:
+    _wm_command: fish
+  svars:
+    westmarch_config: "eeee1111-1111-1111-1111-111111111111"
+  gvars:
+    eeee1111-1111-1111-1111-111111111111: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"fish": True},
+          },
+      }
+
+!fish
+---
+re:disabled on this server
+---
+name: rejects disabled fish command
+vars:
+  uvars:
+    _wm_command: fish
+  svars:
+    westmarch_config: "eeee2222-2222-2222-2222-222222222222"
+  gvars:
+    eeee2222-2222-2222-2222-222222222222: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"fish": False},
+          },
+      }
+
+!fish help
+---
+title: Fish
+---
+name: help stub when fish enabled
+vars:
+  uvars:
+    _wm_command: fish
+  svars:
+    westmarch_config: "eeee1111-1111-1111-1111-111111111111"
+  gvars:
+    eeee1111-1111-1111-1111-111111111111: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"fish": True},
+          },
+      }
+
+!fish forest
+---
+re:River trout
+---
+name: "planned: manual biome rolls fish encounter from pool"
+vars:
+  uvars:
+    _wm_command: fish
+  svars:
+    westmarch_config: "eeee3333-3333-3333-3333-333333333333"
+  gvars:
+    eeee3333-3333-3333-3333-333333333333: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"fish": True},
+              "config": {
+                  "enc_biome_source": "argument",
+                  "distribution": {"combat": 0, "quest": 0, "gather": 100},
+              },
+          },
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+          },
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      pools = {
+          "fish": {
+              "gather": [{"kind": "gather", "name": "River trout", "description": "Fish in the shallows."}],
+          },
+      }
+
+!fish
+---
+re:biome
+---
+name: "planned: argument mode requires biome code"
+vars:
+  uvars:
+    _wm_command: fish
+  svars:
+    westmarch_config: "eeee3333-3333-3333-3333-333333333333"
+  gvars:
+    eeee3333-3333-3333-3333-333333333333: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"fish": True},
+              "config": {"enc_biome_source": "argument"},
+          },
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+          },
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      pools = {"fish": {"gather": [{"kind": "gather", "name": "River trout"}]}}
+
+!fish desert
+---
+re:registered|unknown|invalid
+---
+name: "planned: unknown biome code rejected"
+vars:
+  uvars:
+    _wm_command: fish
+  svars:
+    westmarch_config: "eeee3333-3333-3333-3333-333333333333"
+  gvars:
+    eeee3333-3333-3333-3333-333333333333: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"fish": True},
+              "config": {"enc_biome_source": "argument"},
+          },
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+          },
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      pools = {"fish": {"gather": [{"kind": "gather", "name": "River trout"}]}}
+
+!fish help
+---
+re:forest|Biome|Usage
+---
+name: "planned: help lists registered biome codes"
+vars:
+  uvars:
+    _wm_command: fish
+  svars:
+    westmarch_config: "eeee3333-3333-3333-3333-333333333333"
+  gvars:
+    eeee3333-3333-3333-3333-333333333333: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"fish": True},
+              "config": {"enc_biome_source": "argument"},
+          },
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555", "name": "Forest"},
+          },
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      pools = {"fish": {"gather": [{"kind": "gather", "name": "River trout"}]}}

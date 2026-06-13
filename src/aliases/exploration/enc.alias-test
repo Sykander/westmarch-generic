@@ -1,0 +1,280 @@
+!enc
+---
+re:not configured
+---
+name: blocks without server config
+vars:
+  uvars:
+    _wm_command: enc
+
+!enc
+---
+title: Encounter
+---
+name: passes auth when exploration enc enabled
+vars:
+  uvars:
+    _wm_command: enc
+  svars:
+    westmarch_config: "eeee1111-1111-1111-1111-111111111111"
+  gvars:
+    eeee1111-1111-1111-1111-111111111111: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+          },
+      }
+
+!enc
+---
+re:disabled on this server
+---
+name: rejects disabled enc command
+vars:
+  uvars:
+    _wm_command: enc
+  svars:
+    westmarch_config: "eeee2222-2222-2222-2222-222222222222"
+  gvars:
+    eeee2222-2222-2222-2222-222222222222: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": False},
+          },
+      }
+
+!enc help
+---
+title: Encounter
+---
+name: help stub when enc enabled
+vars:
+  uvars:
+    _wm_command: enc
+  svars:
+    westmarch_config: "eeee1111-1111-1111-1111-111111111111"
+  gvars:
+    eeee1111-1111-1111-1111-111111111111: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+          },
+      }
+
+!enc forest
+---
+re:Berries in the Wild
+---
+name: "planned: manual biome rolls gather encounter from pool"
+vars:
+  uvars:
+    _wm_command: enc
+  svars:
+    westmarch_config: "eeee3333-3333-3333-3333-333333333333"
+  gvars:
+    eeee3333-3333-3333-3333-333333333333: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+              "config": {
+                  "enc_biome_source": "argument",
+                  "distribution_policy": "random",
+                  "distribution": {"combat": 0, "quest": 0, "gather": 100},
+              },
+              "command_config": {"enc": {"cooldown_seconds": 120}},
+          },
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555", "name": "Forest"},
+          },
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      pools = {
+          "enc": {
+              "combat": [{"kind": "combat", "name": "Forest ambush"}],
+              "quest": [{"kind": "quest", "name": "Lost traveller"}],
+              "gather": [{"kind": "gather", "name": "Berries in the Wild", "description": "Edible berries."}],
+          },
+      }
+
+!enc
+---
+re:biome
+---
+name: "planned: argument mode requires biome code"
+vars:
+  uvars:
+    _wm_command: enc
+  svars:
+    westmarch_config: "eeee3333-3333-3333-3333-333333333333"
+  gvars:
+    eeee3333-3333-3333-3333-333333333333: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+              "config": {
+                  "enc_biome_source": "argument",
+                  "distribution": {"combat": 0, "quest": 0, "gather": 100},
+              },
+          },
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+          },
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      pools = {
+          "enc": {
+              "gather": [{"kind": "gather", "name": "Berries in the Wild"}],
+          },
+      }
+
+!enc desert
+---
+re:registered|unknown|invalid
+---
+name: "planned: unknown biome code rejected"
+vars:
+  uvars:
+    _wm_command: enc
+  svars:
+    westmarch_config: "eeee3333-3333-3333-3333-333333333333"
+  gvars:
+    eeee3333-3333-3333-3333-333333333333: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+              "config": {"enc_biome_source": "argument"},
+          },
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+          },
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      pools = {"enc": {"gather": [{"kind": "gather", "name": "Berries in the Wild"}]}}
+
+!enc forest
+---
+re:cooldown|wait|seconds
+---
+name: "planned: cooldown blocks repeat use"
+vars:
+  uvars:
+    _wm_command: enc
+  svars:
+    westmarch_config: "eeee3333-3333-3333-3333-333333333333"
+  gvars:
+    eeee3333-3333-3333-3333-333333333333: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+              "config": {
+                  "enc_biome_source": "argument",
+                  "distribution": {"combat": 0, "quest": 0, "gather": 100},
+              },
+              "command_config": {"enc": {"cooldown_seconds": 120}},
+          },
+      }
+      policies = {"exploration": {"enforce_cooldowns": True}}
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+          },
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      pools = {
+          "enc": {
+              "gather": [{"kind": "gather", "name": "Berries in the Wild"}],
+          },
+      }
+  character:
+    cvars:
+      wg_stats:
+        enc:
+          last_used_at: 9999999999
+
+!enc help
+---
+re:forest|Biome|Usage
+---
+name: "planned: help lists registered biome codes"
+vars:
+  uvars:
+    _wm_command: enc
+  svars:
+    westmarch_config: "eeee3333-3333-3333-3333-333333333333"
+  gvars:
+    eeee3333-3333-3333-3333-333333333333: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+              "config": {"enc_biome_source": "argument"},
+          },
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555", "name": "Forest"},
+          },
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      pools = {"enc": {"gather": [{"kind": "gather", "name": "Berries in the Wild"}]}}
+
+!enc
+---
+re:Berries in the Wild
+---
+name: "planned: location mode infers biome from character location"
+vars:
+  uvars:
+    _wm_command: enc
+  svars:
+    westmarch_config: "eeee3334-3334-3334-3334-333333333334"
+  gvars:
+    eeee3334-3334-3334-3334-333333333334: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+              "config": {
+                  "enc_biome_source": "location",
+                  "distribution": {"combat": 0, "quest": 0, "gather": 100},
+              },
+          },
+          "travel": {
+              "enabled": True,
+              "commands": {"location": True},
+          },
+      }
+      world_data = {
+          "default_location": "oakwood",
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+          },
+          "locations": {
+              "oakwood": {
+                  "name": "Oakwood",
+                  "commands": {"enc": ["forest"]},
+              },
+          },
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      pools = {
+          "enc": {
+              "gather": [{"kind": "gather", "name": "Berries in the Wild"}],
+          },
+      }
+  character:
+    cvars:
+      wg_location: "oakwood"

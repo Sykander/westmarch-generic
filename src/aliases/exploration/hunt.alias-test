@@ -1,0 +1,141 @@
+!hunt
+---
+re:not configured
+---
+name: blocks without server config
+vars:
+  uvars:
+    _wm_command: hunt
+
+!hunt
+---
+title: Hunt
+---
+name: passes auth when exploration hunt enabled
+vars:
+  uvars:
+    _wm_command: hunt
+  svars:
+    westmarch_config: "eeee1111-1111-1111-1111-111111111111"
+  gvars:
+    eeee1111-1111-1111-1111-111111111111: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"hunt": True},
+          },
+      }
+
+!hunt
+---
+re:disabled on this server
+---
+name: rejects disabled hunt command
+vars:
+  uvars:
+    _wm_command: hunt
+  svars:
+    westmarch_config: "eeee2222-2222-2222-2222-222222222222"
+  gvars:
+    eeee2222-2222-2222-2222-222222222222: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"hunt": False},
+          },
+      }
+
+!hunt help
+---
+title: Hunt
+---
+name: help stub when hunt enabled
+vars:
+  uvars:
+    _wm_command: hunt
+  svars:
+    westmarch_config: "eeee1111-1111-1111-1111-111111111111"
+  gvars:
+    eeee1111-1111-1111-1111-111111111111: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"hunt": True},
+          },
+      }
+
+!hunt help
+---
+re:creature|party|enc
+---
+name: "planned: help documents hunt usage and enc prerequisite"
+vars:
+  uvars:
+    _wm_command: hunt
+  svars:
+    westmarch_config: "eeee7777-7777-7777-7777-777777777777"
+  gvars:
+    eeee7777-7777-7777-7777-777777777777: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"hunt": True, "enc": True},
+          },
+      }
+
+!hunt Wolf
+---
+re:Survival|DC
+---
+name: "planned: hunt runs survival check for known creature"
+vars:
+  uvars:
+    _wm_command: hunt
+  svars:
+    westmarch_config: "eeee7777-7777-7777-7777-777777777777"
+  gvars:
+    eeee7777-7777-7777-7777-777777777777: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"hunt": True},
+          },
+      }
+
+!hunt NonexistentBeast
+---
+re:not found|unknown|Could not find
+---
+name: "planned: hunt rejects unknown creature"
+vars:
+  uvars:
+    _wm_command: hunt
+  svars:
+    westmarch_config: "eeee7777-7777-7777-7777-777777777777"
+  gvars:
+    eeee7777-7777-7777-7777-777777777777: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"hunt": True},
+          },
+      }
+
+!hunt Wolf 3
+---
+re:group|party|next hunter
+---
+name: "planned: group hunt failure offers chained command"
+vars:
+  uvars:
+    _wm_command: hunt
+  svars:
+    westmarch_config: "eeee7777-7777-7777-7777-777777777777"
+  gvars:
+    eeee7777-7777-7777-7777-777777777777: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"hunt": True},
+          },
+      }

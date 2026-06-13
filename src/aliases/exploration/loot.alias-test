@@ -1,0 +1,144 @@
+!loot
+---
+re:not configured
+---
+name: blocks without server config
+vars:
+  uvars:
+    _wm_command: loot
+
+!loot
+---
+title: Loot
+---
+name: passes auth when exploration loot enabled
+vars:
+  uvars:
+    _wm_command: loot
+  svars:
+    westmarch_config: "eeee1111-1111-1111-1111-111111111111"
+  gvars:
+    eeee1111-1111-1111-1111-111111111111: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"loot": True},
+          },
+      }
+
+!loot
+---
+re:disabled on this server
+---
+name: rejects disabled loot command
+vars:
+  uvars:
+    _wm_command: loot
+  svars:
+    westmarch_config: "eeee2222-2222-2222-2222-222222222222"
+  gvars:
+    eeee2222-2222-2222-2222-222222222222: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"loot": False},
+          },
+      }
+
+!loot help
+---
+title: Loot
+---
+name: help stub when loot enabled
+vars:
+  uvars:
+    _wm_command: loot
+  svars:
+    westmarch_config: "eeee1111-1111-1111-1111-111111111111"
+  gvars:
+    eeee1111-1111-1111-1111-111111111111: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"loot": True},
+          },
+      }
+
+!loot help
+---
+re:clear|creature|item|session
+---
+name: "planned: help documents three-phase loot session"
+vars:
+  uvars:
+    _wm_command: loot
+  svars:
+    westmarch_config: "eeee7777-7777-7777-7777-777777777777"
+  gvars:
+    eeee7777-7777-7777-7777-777777777777: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"loot": True},
+          },
+      }
+
+!loot Wolf
+---
+re:Investigation|loot table|lootables
+---
+name: "planned: start loot session for creature"
+vars:
+  uvars:
+    _wm_command: loot
+  svars:
+    westmarch_config: "eeee7777-7777-7777-7777-777777777777"
+  gvars:
+    eeee7777-7777-7777-7777-777777777777: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"loot": True},
+          },
+      }
+
+!loot clear
+---
+re:cleared|no active|session
+---
+name: "planned: clear ends loot session"
+vars:
+  uvars:
+    _wm_command: loot
+  svars:
+    westmarch_config: "eeee7777-7777-7777-7777-777777777777"
+  gvars:
+    eeee7777-7777-7777-7777-777777777777: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"loot": True},
+          },
+      }
+
+!loot
+---
+re:Wolf
+---
+name: "planned: bare loot shows active session status"
+vars:
+  uvars:
+    _wm_command: loot
+  svars:
+    westmarch_config: "eeee7777-7777-7777-7777-777777777777"
+  gvars:
+    eeee7777-7777-7777-7777-777777777777: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"loot": True},
+          },
+      }
+  character:
+    cvars:
+      wg_loot_session: '{"creature": "Wolf", "items": []}'

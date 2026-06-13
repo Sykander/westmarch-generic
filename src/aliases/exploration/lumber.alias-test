@@ -1,0 +1,180 @@
+!lumber
+---
+re:not configured
+---
+name: blocks without server config
+vars:
+  uvars:
+    _wm_command: lumber
+
+!lumber
+---
+title: Lumber
+---
+name: passes auth when exploration lumber enabled
+vars:
+  uvars:
+    _wm_command: lumber
+  svars:
+    westmarch_config: "eeee1111-1111-1111-1111-111111111111"
+  gvars:
+    eeee1111-1111-1111-1111-111111111111: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"lumber": True},
+          },
+      }
+
+!lumber
+---
+re:disabled on this server
+---
+name: rejects disabled lumber command
+vars:
+  uvars:
+    _wm_command: lumber
+  svars:
+    westmarch_config: "eeee2222-2222-2222-2222-222222222222"
+  gvars:
+    eeee2222-2222-2222-2222-222222222222: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"lumber": False},
+          },
+      }
+
+!lumber help
+---
+title: Lumber
+---
+name: help stub when lumber enabled
+vars:
+  uvars:
+    _wm_command: lumber
+  svars:
+    westmarch_config: "eeee1111-1111-1111-1111-111111111111"
+  gvars:
+    eeee1111-1111-1111-1111-111111111111: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"lumber": True},
+          },
+      }
+
+!lumber forest
+---
+re:Fallen oak
+---
+name: "planned: manual biome rolls lumber encounter from pool"
+vars:
+  uvars:
+    _wm_command: lumber
+  svars:
+    westmarch_config: "eeee3333-3333-3333-3333-333333333333"
+  gvars:
+    eeee3333-3333-3333-3333-333333333333: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"lumber": True},
+              "config": {
+                  "enc_biome_source": "argument",
+                  "distribution": {"combat": 0, "quest": 0, "gather": 100},
+              },
+          },
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+          },
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      pools = {
+          "lumber": {
+              "gather": [{"kind": "gather", "name": "Fallen oak", "description": "Good timber."}],
+          },
+      }
+
+!lumber
+---
+re:biome
+---
+name: "planned: argument mode requires biome code"
+vars:
+  uvars:
+    _wm_command: lumber
+  svars:
+    westmarch_config: "eeee3333-3333-3333-3333-333333333333"
+  gvars:
+    eeee3333-3333-3333-3333-333333333333: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"lumber": True},
+              "config": {"enc_biome_source": "argument"},
+          },
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+          },
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      pools = {"lumber": {"gather": [{"kind": "gather", "name": "Fallen oak"}]}}
+
+!lumber desert
+---
+re:registered|unknown|invalid
+---
+name: "planned: unknown biome code rejected"
+vars:
+  uvars:
+    _wm_command: lumber
+  svars:
+    westmarch_config: "eeee3333-3333-3333-3333-333333333333"
+  gvars:
+    eeee3333-3333-3333-3333-333333333333: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"lumber": True},
+              "config": {"enc_biome_source": "argument"},
+          },
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+          },
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      pools = {"lumber": {"gather": [{"kind": "gather", "name": "Fallen oak"}]}}
+
+!lumber help
+---
+re:forest|Biome|Usage
+---
+name: "planned: help lists registered biome codes"
+vars:
+  uvars:
+    _wm_command: lumber
+  svars:
+    westmarch_config: "eeee3333-3333-3333-3333-333333333333"
+  gvars:
+    eeee3333-3333-3333-3333-333333333333: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"lumber": True},
+              "config": {"enc_biome_source": "argument"},
+          },
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555", "name": "Forest"},
+          },
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      pools = {"lumber": {"gather": [{"kind": "gather", "name": "Fallen oak"}]}}
