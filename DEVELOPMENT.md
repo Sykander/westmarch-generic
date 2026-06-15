@@ -88,7 +88,7 @@ npm run deploy:dev
 npm run deploy:prod
 ```
 
-The unified CI workflow (`.github/workflows/ci.yml`) runs on pushes to `main` only. It runs lint, sourcemap checks, `avrae-ls` tests, and a live version check against the dev/prod `env` gvars. If checks pass, CI deploys Development. If `package.json` is higher than the deployed Production `VERSION`, CI deploys Production and tags the commit with that package version.
+The unified CI workflow (`.github/workflows/ci.yml`) runs on pushes to `main` only. It runs lint, sourcemap checks, `avrae-ls` tests, and a live version check against the dev/prod `env` gvars. If checks pass, CI deploys Development. If `package.json` is higher than the deployed Production `version`, CI deploys Production and tags the commit with that package version.
 
 Before first deploy:
 

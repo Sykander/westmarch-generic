@@ -41,7 +41,7 @@ flowchart LR
 3. **Register** new shard files in **`utils/sourcemap.*.json`** with UUIDs from **`unused_gvars.md`**; **`make build`**.
 4. **Deploy** workshop — facades resolve shards via **`env.gvars.*`** at runtime.
 
-Generate scripts are **Node** (repo root), same toolchain as **`generate-env.js`**. They do **not** run inside Avrae.
+Generate scripts are **Node** (repo root), same toolchain as **`publish-avrae generate-env`**. They do **not** run inside Avrae.
 
 ---
 

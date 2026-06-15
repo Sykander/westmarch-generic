@@ -7,7 +7,9 @@
     "deploy": "npm run deploy:dev",
     "deploy:dev": "publish-avrae deploy --sourcemap utils/sourcemap.dev.json",
     "deploy:prod": "publish-avrae deploy --sourcemap utils/sourcemap.prod.json",
-    "generate-env": "node utils/generate-env.js",
+    "generate-env": "npm run generate-env:dev && npm run generate-env:prod",
+    "generate-env:dev": "publish-avrae generate-env --sourcemap utils/sourcemap.dev.json --output src/gvars/env.dev.gvar --version $npm_package_version --environment Development",
+    "generate-env:prod": "publish-avrae generate-env --sourcemap utils/sourcemap.prod.json --output src/gvars/env.prod.gvar --version $npm_package_version --environment Production",
     "generate-vars": "node utils/generate-vars.js",
     "generate:monsters": "node utils/generate-monsters.js",
     "generate:items": "node utils/generate-items.js",
@@ -21,6 +23,6 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "publish-avrae": "^1.1.2"
+    "publish-avrae": "^1.1.4"
   }
 }

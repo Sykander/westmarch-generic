@@ -137,7 +137,7 @@ def add_log(ch, extras=None, args_text=None, command_key=None):
         count = 0
     bucket["count"] = int(count) + 1
     try:
-        skip_ts = env.ENVIRONMENT == "Development"
+        skip_ts = env.environment == "Development"
     except:
         skip_ts = False
     if not skip_ts:

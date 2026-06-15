@@ -151,10 +151,10 @@ jobs:
           }
 
           function parseEnvVersion(environment, value) {
-            const match = /^VERSION\s*=\s*["']([^"']+)["']/m.exec(value || '');
+            const match = /^version\s*=\s*["']([^"']+)["']/im.exec(value || '');
 
             if (!match) {
-              console.log(`${environment} env gvar does not declare VERSION; treating it as 0.0.0.`);
+              console.log(`${environment} env gvar does not declare version; treating it as 0.0.0.`);
               return '0.0.0';
             }
 

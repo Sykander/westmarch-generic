@@ -10,7 +10,7 @@ Architecture: [docs/internal/projects/westmarch-statement/content-pipeline.md](.
 
 | Script | npm command | Purpose |
 |--------|-------------|---------|
-| [generate-env.js](generate-env.js) | `npm run generate-env` | Write `src/gvars/env.{dev,prod}.gvar` from sourcemaps |
+| `publish-avrae generate-env` | `npm run generate-env` | Write `src/gvars/env.{dev,prod}.gvar` from sourcemaps |
 | [generate-vars.js](generate-vars.js) | `npm run generate-vars` | Write `.varfile.json` for alias-tests |
 | `publish-avrae check-config` / `compare-config` | `npm run test-sourcemaps` | Dev/prod sourcemap validation and parity |
 | `publish-avrae deploy` | `npm run deploy:dev`, `npm run deploy:prod` | Publish workshop via sourcemap |

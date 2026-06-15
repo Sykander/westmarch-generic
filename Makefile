@@ -48,10 +48,10 @@ install_avrae_ls:
 # Steps
 #
 build_dev: install_node generate-vars
-	ENVIRONMENT=Development npm run generate-env
+	npm run generate-env:dev
 
 build_prod: install_node
-	ENVIRONMENT=Production npm run generate-env
+	npm run generate-env:prod
 
 sourcemap-tests: install_node
 	npm run test-sourcemaps

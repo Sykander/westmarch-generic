@@ -7,8 +7,11 @@ const { readFileSync, writeFileSync } = require('fs');
 const prodSourceMap = require('./sourcemap.prod.json');
 const devSourceMap = require('./sourcemap.dev.json');
 
+const environmentName = Object.entries(process.env).find(
+  ([key]) => key.toLowerCase() === 'environment',
+)?.[1];
 const environmentToUpdate =
-  process.env.ENVIRONMENT === 'Production' ? 'Production' : 'Development';
+  environmentName === 'Production' ? 'Production' : 'Development';
 
 console.log(`${environmentToUpdate} starting update of var file.`);
 
