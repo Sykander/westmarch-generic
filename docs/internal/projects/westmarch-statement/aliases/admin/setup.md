@@ -8,19 +8,33 @@
 
 ```
 !westmarch setup
+!westmarch setup -p <page-number-or-title>
 ```
 
 - **Who may run:** same gate as [westmarch.md](westmarch.md) — **`Dragonspeaker`** or **`Server Aliaser`** (Avrae aliasing permissions; not GM/DM).
-- **Output:** one or more embeds (paginate if needed) with numbered setup steps and **copy-paste-ready** Avrae commands.
+- **Output:** one setup page at a time with numbered page index and **copy-paste-ready** Avrae commands.
 - **Does not mutate** svars or gvars — displays instructions only.
+- **Default page:** page 1 (**Initial Setup**) when `westmarch_config` is unset; page 2 (**General Configuration**) when it is set and loadable.
+- **Page lookup:** `!westmarch setup -p 1` or `!westmarch setup -p "Initial Setup"`.
 
 ### When already wired
 
-If `westmarch_config` svar is set and config loads:
+If `westmarch_config` svar is set and config loads, page 2 shows:
 
-- Short “already wired” summary (gvar UUID truncated, load OK).
+- Full config gvar UUID and Avrae dashboard lookup link.
 - Point to **`!westmarch check`** and **`!westmarch show`**.
-- Optional footer: “Re-run setup anytime for the full guide.”
+- Page index for the rest of the setup guide.
+
+## Pages
+
+| # | Page | Purpose |
+|---|------|---------|
+| 1 | **Initial Setup** | Subscribe, create starter config gvar inline, add editors, wire svar, run check |
+| 2 | **General Configuration** | Explain svar → config gvar loading, dashboard link, check/show workflow |
+| 3 | **Exploration Subsystem** | Exploration toggles and config fields (`enc_biome_source`, distribution, cooldowns) |
+| 4 | **World Data** | High-level `world_data` map and implemented surfaces |
+| 5 | **Biomes and Locations** | Biome registry, encounter-pool gvars, location inference |
+| 6 | **Monster Data** | `world_data.monsters` overrides for hunt/loot |
 
 ## Onboarding content (MVP)
 
@@ -39,91 +53,31 @@ Embed sections in order:
 - Open the template or preset in the workshop (UUID in [docs/setup.md](../../../../../docs/setup.md) when published / engine env `TEMPLATE_CONFIG_GVAR`).
 - **Duplicate** it into your workshop, then edit subsystem toggles.
 
-**Option B — create from scratch**
+**Create from scratch**
 
-Avrae assigns a UUID when you create a gvar. Multi-line config is easiest via the editor after a minimal create:
-
-```
-!gvar create # westmarch config — replace via editor
-```
-
-Avrae replies with your new gvar **UUID**. Then open the editor and paste the starter body:
+Avrae assigns a UUID when you create a gvar. The setup page prints a compact starter directly in the command:
 
 ```
-!gvar editor <your-gvar-uuid>
-```
-
-**Starter body** (valid Draconic module — no `<drac2>` delimiters):
-
-```py
+!gvar create # westmarch config
 subsystems = {
-    "exploration": {
-        "enabled": False,
-        "commands": {
-            "enc": False,
-            "forage": False,
-            "fish": False,
-            "mine": False,
-            "lumber": False,
-            "hunt": False,
-            "loot": False,
-        },
-        "config": {
-            "enc_biome_source": "auto",
-            "distribution_policy": "random",
-            "distribution": {"combat": 25, "quest": 25, "gather": 50},
-        },
-    },
-    "travel": {
-        "enabled": False,
-        "commands": {
-            "travel": False,
-            "location": False,
-            "time": False,
-            "weather": False,
-        },
-    },
-    "downtime": {"enabled": False},
-    "crafting": {
-        "enabled": False,
-        "commands": {
-            "craft": False,
-            "brew": False,
-            "enchant": False,
-            "scribe": False,
-        },
-    },
-    "economy": {
-        "enabled": False,
-        "commands": {
-            "job": False,
-            "buy": False,
-            "sell": False,
-            "wallet": False,
-        },
-    },
-    "content": {
-        "enabled": False,
-        "commands": {
-            "library": False,
-            "read": False,
-        },
-        "config": {
-            "library_topic_source": "manual",
-            "allowed_topics": [],
-        },
-    },
-    "misc": {
-        "enabled": False,
-        "commands": {
-            "quest": False,
-            "recipe": False,
-        },
-    },
+    "exploration": {"enabled": False, "commands": {"enc": False, ...}},
 }
 ```
 
-Optional **`policies`** — house rules: [data-shapes.md § Server policies](../../data-shapes.md#server-policies). **`subsystems.*.config`** — per-subsystem behaviour (e.g. exploration encounter mix, library topic source): [data-shapes.md § Subsystem entry](../../data-shapes.md#subsystem-entry). Omitted keys use engine defaults ([starter.gvar](../../../../src/gvars/configs/starter.gvar)).
+Open or edit later:
+
+```text
+!gvar editor <your-gvar-uuid>
+https://avrae.io/dashboard/gvars?lookup=<your-gvar-uuid>
+```
+
+Add another editor:
+
+```text
+!gvar editor <your-gvar-uuid> @TheirDiscordName
+```
+
+Optional **`policies`** — house rules: [data-shapes.md § Server policies](../../data-shapes.md#server-policies). **`subsystems.*.config`** — per-subsystem behaviour. Omitted keys use engine defaults ([starter.gvar](../../../../src/gvars/configs/starter.gvar)).
 
 Replace starter **`subsystems`** toggles for your server. Enable subsystems and add world data (`locations`, tables, etc.) as you port each vertical — see [server-config.md](../../server-config.md).
 
@@ -133,6 +87,7 @@ Point this Discord server at your config gvar UUID:
 
 ```
 !svar westmarch_config <your-gvar-uuid>
+!westmarch check
 ```
 
 - **Svar name** is fixed: **`westmarch_config`** (see [solution-statement.md](../../solution-statement.md)).

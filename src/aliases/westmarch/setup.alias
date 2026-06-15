@@ -13,58 +13,314 @@ if not ok:
     return get_embed(desc=msg)
 
 argslist = &ARGS&
+args = argparse(argslist)
+
+PAGE_TOTAL = 6
+PAGE_TITLES = {
+    1: "Initial Setup",
+    2: "General Configuration",
+    3: "Exploration Subsystem",
+    4: "World Data",
+    5: "Biomes and Locations",
+    6: "Monster Data",
+}
+
+
+def _short_uuid(uuid):
+    if uuid == None:
+        return "<your-gvar-uuid>"
+    text = str(uuid).strip()
+    if text == "":
+        return "<your-gvar-uuid>"
+    if len(text) > 12:
+        return text[0:8] + "..."
+    return text
+
+
+def _gvar_ref(uuid):
+    if uuid == None or str(uuid).strip() == "":
+        return "<your-gvar-uuid>"
+    return str(uuid).strip()
+
+
+def _gvar_link(uuid):
+    return f"https://avrae.io/dashboard/gvars?lookup={_gvar_ref(uuid)}"
+
+
+def _page_index(prefix):
+    lines = ["**Setup pages**"]
+    for page in range(1, PAGE_TOTAL + 1):
+        title = PAGE_TITLES[page]
+        lines.append(f"{page}. **{title}** - `{prefix}westmarch setup -p {page}`")
+    lines.append("")
+    lines.append(f"You can also use a page title, e.g. `{prefix}westmarch setup -p \"Initial Setup\"`.")
+    return "\n".join(lines)
+
+
+def _find_page(value):
+    if value == None:
+        return None
+    text = str(value).strip()
+    if text == "":
+        return None
+    try:
+        num = int(text)
+        if num >= 1 and num <= PAGE_TOTAL:
+            return num
+    except:
+        pass
+    normalized = text.lower().replace(" ", "").replace("-", "").replace("_", "")
+    aliases = {
+        "initialsetup": 1,
+        "setup": 1,
+        "generalconfiguration": 2,
+        "configuration": 2,
+        "config": 2,
+        "explorationsubsystem": 3,
+        "subsystems": 3,
+        "configuringsubsystems": 3,
+        "exploration": 3,
+        "worlddata": 4,
+        "world": 4,
+        "biomesandlocations": 5,
+        "biomeslocations": 5,
+        "biomes": 5,
+        "locations": 5,
+        "monsterdata": 6,
+        "monsters": 6,
+    }
+    if normalized in aliases:
+        return aliases[normalized]
+    return None
+
+
+def _requested_page(default_page):
+    raw = args.last("p", None)
+    if raw == None and len(argslist) > 0:
+        first = str(argslist[0]).strip()
+        if first not in ["help", "?"]:
+            raw = first
+    found = _find_page(raw)
+    if found != None:
+        return found
+    if raw != None and str(raw).strip() != "":
+        return 0
+    return default_page
+
+
+def _page_footer(prefix):
+    return (
+        f"View this page again with `{prefix}westmarch setup -p <page>` "
+        f"or `{prefix}westmarch setup -p \"{PAGE_TITLES[1]}\"`."
+    )
+
+
+def _default_config_body():
+    return """subsystems = {
+    "exploration": {
+        "enabled": False,
+        "commands": {
+            "enc": False, "forage": False, "fish": False,
+            "mine": False, "lumber": False, "hunt": False, "loot": False,
+        },
+        "config": {
+            "enc_biome_source": "auto",
+            "distribution_policy": "random",
+            "distribution": {"combat": 25, "quest": 25, "gather": 50},
+            "repeat_exclude_window": 5,
+        },
+    },
+}"""
+
+
+def _initial_setup(prefix, svar_name, uuid):
+    body = _default_config_body()
+    desc = f"""**1 - Subscribe to the engine**
+Subscribe to the **westmarch-generic** workshop on Avrae. You also need **Dragonspeaker** or **Server Aliaser** here.
+
+**2 - Create a config gvar**
+Copy this whole command, then keep the UUID Avrae returns:
+```py
+{prefix}gvar create # westmarch config
+{body}
+```
+
+To open it later:
+```text
+{prefix}gvar editor <your-gvar-uuid>
+```
+
+To add another editor:
+```text
+{prefix}gvar editor <your-gvar-uuid> @TheirDiscordName
+```
+
+**3 - Wire the server svar**
+```text
+{prefix}svar {svar_name} <your-gvar-uuid>
+{prefix}westmarch check
+```
+
+**4 - Edit it later**
+Open the dashboard link with your UUID:
+{_gvar_link(uuid)}
+
+This command only shows instructions; it does not mutate svars or gvars.
+
+{_page_footer(prefix)}
+
+{_page_index(prefix)}"""
+    return desc
+
+
+def _general_configuration(prefix, svar_name, uuid, cfg):
+    loaded = cfg != None and uuid != None and str(uuid).strip() != ""
+    status = "loads OK" if loaded else "is not wired yet"
+    desc = f"""This server stores one svar named **`{svar_name}`**. Its value is a config gvar UUID. Each command reads that gvar, merges any omitted fields with engine defaults, then uses the result for toggles, display, policies, and world data.
+
+**Current config**
+`{_short_uuid(uuid)}` - {status}
+
+Dashboard:
+{_gvar_link(uuid)}
+
+**After editing**
+Run:
+```text
+{prefix}westmarch check
+{prefix}westmarch show
+```
+
+`check` reports invalid or missing wiring. `show` summarizes what the engine loaded so you can confirm changes without reading the whole gvar.
+
+Most edits apply on the next command run; you do not need to redeploy the engine workshop.
+
+{_page_index(prefix)}"""
+    return desc
+
+
+def _exploration_subsystem(prefix):
+    return f"""Only **exploration** is live as a player-facing subsystem right now.
+
+Shape:
+```py
+subsystems = {{
+    "exploration": {{
+        "enabled": True,
+        "commands": {{"enc": True, "forage": True, "fish": False, "mine": False, "lumber": False, "hunt": False, "loot": False}},
+        "config": {{
+            "enc_biome_source": "auto",
+            "distribution_policy": "random",
+            "distribution": {{"combat": 25, "quest": 25, "gather": 50}},
+            "repeat_exclude_window": 5,
+        }},
+    }},
+}}
+```
+
+**Fields**
+`enabled`: master switch for exploration.
+`commands`: per-command switches; a command must be true here and in an enabled subsystem.
+`enc_biome_source`: `auto`, `argument`, or `location`. Use `argument` for `!enc forest`; use `location` when character locations are configured.
+`distribution_policy`: `random` or `balanced`.
+`distribution`: percent mix for `combat`, `quest`, and `gather`; total must be 100.
+`repeat_exclude_window`: how many recent encounters to avoid when repeat protection is enabled.
+`command_config.<cmd>.cooldown_seconds`: optional per-command cooldown override.
+
+After changing this section, run `{prefix}westmarch check`."""
+
+
+def _world_data(prefix):
+    return f"""**`world_data`** is the server-owned data layer. It keeps your world content out of engine aliases.
+
+Implemented now:
+`biomes`: registry of biome codes to encounter-pool gvars. Exploration commands use this.
+`locations`: named places. Location mode can infer which biome to roll from.
+`default_location`: fallback location id when a character has not set one.
+`monsters`: optional owner monster entries searched before the bundled engine catalogue.
+
+Planned or partial:
+`paths`, `transport`, and calendars are documented/validated in places, but player path travel is not live yet.
+
+Use `{prefix}westmarch setup -p "Biomes and Locations"` for biome/location detail.
+Use `{prefix}westmarch setup -p "Monster Data"` for monster override detail."""
+
+
+def _biomes_locations(prefix):
+    return f"""**Biomes**
+`world_data.biomes` maps short codes to a gvar containing encounter pools:
+```py
+world_data = {{
+    "biomes": {{
+        "forest": {{"gvar_id": "engine:configs/biomes/forest", "name": "Forest"}},
+    }},
+}}
+```
+
+Each biome gvar has `pools.<activity>.<kind>` lists. For example, `pools.enc.gather` or `pools.forage.gather`.
+
+**Locations**
+Locations let commands infer biomes:
+```py
+world_data = {{
+    "default_location": "oakwood",
+    "locations": {{
+        "oakwood": {{
+            "name": "Oakwood",
+            "biome": "forest",
+            "commands": {{"enc": ["forest"], "forage": ["forest"]}},
+        }},
+    }},
+}}
+```
+
+Set exploration `enc_biome_source` to `auto` or `location` when you want commands to use character location. Run `{prefix}westmarch check` to catch missing biome codes."""
+
+
+def _monster_data(prefix):
+    return f"""The engine ships a bundled monster catalogue. Server data can override or add entries with `world_data.monsters`.
+
+Minimal entry:
+```py
+world_data = {{
+    "monsters": [
+        {{"name": "Moonlit Wolf", "cr": 1, "type_str": "Beast", "size": "M"}},
+    ],
+}}
+```
+
+Used by:
+`!hunt <creature>`: finds a creature and rolls Survival against a CR-based DC.
+`!loot <creature>`: starts a loot session and builds lootables from creature type and CR.
+
+The search checks your `world_data.monsters` first, then the bundled first-letter shard. Use exact or clear prefix names for custom entries."""
+
+
+def _render_page(page, prefix, svar_name, uuid, cfg):
+    if page == 1:
+        return PAGE_TITLES[1], _initial_setup(prefix, svar_name, uuid)
+    if page == 2:
+        return PAGE_TITLES[2], _general_configuration(prefix, svar_name, uuid, cfg)
+    if page == 3:
+        return PAGE_TITLES[3], _exploration_subsystem(prefix)
+    if page == 4:
+        return PAGE_TITLES[4], _world_data(prefix)
+    if page == 5:
+        return PAGE_TITLES[5], _biomes_locations(prefix)
+    if page == 6:
+        return PAGE_TITLES[6], _monster_data(prefix)
+    return "Setup Pages", _page_index(prefix)
 
 if len(argslist) > 0 and argslist[0] in ["help", "?"]:
-    help_text = f"""Onboard this server to westmarch-generic.
-
-Usage:
-`{ctx.prefix}westmarch setup`
-"""
-    return get_embed(desc=help_text)
+    return get_embed(title="Westmarch Setup - Pages", desc=_page_index(ctx.prefix))
 
 uuid = get_svar(config.SVAR_NAME)
 cfg = config.get_config()
+wired = cfg != None and uuid != None and str(uuid).strip() != ""
+page = _requested_page(2 if wired else 1)
 
-if cfg != None and uuid != None and str(uuid).strip() != "":
-    addr = str(uuid).strip()
-    short = addr
-    if len(short) > 12:
-        short = short[0:8] + "…"
-    desc = (
-        f"**Already wired.** This server points at config gvar `{short}` and it loads OK.\n\n"
-        f"**Verify:** `{ctx.prefix}westmarch check`\n"
-        f"**Summary:** `{ctx.prefix}westmarch show`\n\n"
-        f"Re-run **`{ctx.prefix}westmarch setup`** anytime for the full onboarding guide."
-    )
-    return get_embed(title="Setup — already wired", desc=desc)
-
-svar_name = config.SVAR_NAME
-desc = f"""**1 — Subscribe to the engine**
-Subscribe to the **westmarch-generic** workshop on Avrae and ensure you have **Dragonspeaker** or **Server Aliaser** on this server.
-
-**2 — Create a config gvar**
-Duplicate **starter.gvar** from the project repo into your workshop, or:
-```
-{ctx.prefix}gvar create # westmarch config
-{ctx.prefix}gvar editor <your-gvar-uuid>
-```
-Paste the starter body from `src/gvars/configs/starter.gvar` (see repo **docs/setup.md**).
-
-**3 — Wire the server svar**
-```
-{ctx.prefix}svar {svar_name} <your-gvar-uuid>
-```
-
-**4 — Enable subsystems**
-Edit your config gvar — turn on **`subsystems.*.enabled`** and **`commands.*`** as you port each vertical. Add **`world_data`** when travel/exploration need locations and biomes.
-
-**5 — Verify**
-```
-{ctx.prefix}westmarch check
-{ctx.prefix}westmarch show
-```
-
-This command does not mutate svars or gvars."""
-
-return get_embed(title="Westmarch setup", desc=desc)
+title, desc = _render_page(page, ctx.prefix, config.SVAR_NAME, uuid, cfg)
+if page < 1 or page > PAGE_TOTAL:
+    return get_embed(title="Westmarch Setup - Pages", desc=desc)
+return get_embed(title=f"Setup {page}/{PAGE_TOTAL} - {title}", desc=desc)
 </drac2>

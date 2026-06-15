@@ -1028,16 +1028,66 @@ def validate():
     return errors, warnings
 
 
-def _enabled_commands_summary(cfg):
+def _dashboard_link(uuid):
+    if uuid == None or str(uuid).strip() == "":
+        return "https://avrae.io/dashboard/gvars"
+    return f"https://avrae.io/dashboard/gvars?lookup={str(uuid).strip()}"
+
+
+def _subsystem_error_match(key, issue):
+    if issue == None:
+        return False
+    text = str(issue).lower()
+    if key in text:
+        return True
+    if key == "exploration":
+        return "enc_biome" in text or "distribution" in text or "world_data.biomes" in text
+    return False
+
+
+def _subsystem_has_error(key, errors):
+    for issue in errors:
+        if _subsystem_error_match(key, issue):
+            return True
+    return False
+
+
+def _command_summary(block):
+    commands = _read_field(block, "commands")
+    if commands == None or not dicts.is_dict(commands):
+        return ""
+    on = []
+    for cmd in _dict_keys(commands):
+        if _read_field(commands, cmd) == True:
+            on.append(str(cmd))
+    if len(on) == 0:
+        return "no commands enabled"
+    return "commands: " + ", ".join(on)
+
+
+def _enabled_commands_summary(cfg, errors=None):
+    if errors == None:
+        errors = []
     lines = []
     for key in SUBSYSTEM_KEYS:
         block = _read_subsystem(cfg, key)
         if block == None:
             continue
         on = _subsystem_enabled(block)
-        status = "on" if on else "off"
-        lines.append(f"**{key}**: {status}")
-    return "\n".join(lines)
+        marker = " "
+        status = "off"
+        if on:
+            marker = "+"
+            status = "on"
+        if on and _subsystem_has_error(key, errors):
+            marker = "-"
+            status = "error"
+        extra = _command_summary(block)
+        if extra != "":
+            lines.append(f"{marker} {key}: {status} ({extra})")
+        else:
+            lines.append(f"{marker} {key}: {status}")
+    return "```diff\n" + "\n".join(lines) + "\n```"
 
 
 def _policy_summary(cfg):
@@ -1169,9 +1219,14 @@ def summarize_config(section=None):
     if _nonempty_str(n):
         world_name = str(n)
     title = f"{world_name} — configuration"
+    errors, warnings = validate()
+    uuid_text = "—"
+    if uuid != None and str(uuid).strip() != "":
+        uuid_text = str(uuid).strip()
     wiring = (
         f"**Svar:** `{config.SVAR_NAME}`\n"
-        f"**Config gvar:** `{_truncate_uuid(uuid)}`\n"
+        f"**Config gvar:** `{uuid_text}`\n"
+        f"**Dashboard:** {_dashboard_link(uuid)}\n"
         f"**Load:** OK"
     )
     try:
@@ -1190,7 +1245,7 @@ def summarize_config(section=None):
     sections = {
         "wiring": wiring,
         "world": _world_summary(cfg),
-        "subsystems": _enabled_commands_summary(cfg),
+        "subsystems": _enabled_commands_summary(cfg, errors),
         "policies": _policy_summary(cfg),
         "runtime": runtime,
         "data": _world_summary(cfg),

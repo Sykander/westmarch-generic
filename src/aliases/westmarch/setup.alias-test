@@ -1,26 +1,26 @@
 !setup
 ---
-re:Wire the server svar
+re:Initial Setup|westmarch_config
 ---
-name: unwired shows onboarding steps
+name: unwired defaults to initial setup page
 vars:
   uvars:
     _wm_command: setup
 
 !setup
 ---
-re:gvar create
+re:gvar create # westmarch config|subsystems =|gvar editor
 ---
-name: onboarding mentions gvar create
+name: initial setup includes copy-paste config create command
 vars:
   uvars:
     _wm_command: setup
 
 !setup
 ---
-re:Already wired
+re:General Configuration|dashboard/gvars\?lookup=ffff1111-1111-1111-1111-111111111111
 ---
-name: wired shows short summary
+name: wired defaults to general configuration page
 vars:
   uvars:
     _wm_command: setup
@@ -29,3 +29,44 @@ vars:
   gvars:
     ffff1111-1111-1111-1111-111111111111: |
       # empty owner body
+
+!setup -p 1
+---
+re:Initial Setup|westmarch setup -p "Initial Setup"
+---
+name: page number can show initial setup even when wired
+vars:
+  uvars:
+    _wm_command: setup
+  svars:
+    westmarch_config: "ffff1111-1111-1111-1111-111111111111"
+  gvars:
+    ffff1111-1111-1111-1111-111111111111: |
+      # empty owner body
+
+!setup -p "Exploration Subsystem"
+---
+re:enc_biome_source|distribution_policy|command_config
+---
+name: title page lookup shows exploration subsystem details
+vars:
+  uvars:
+    _wm_command: setup
+
+!setup -p "World Data"
+---
+re:biomes|locations|monsters
+---
+name: world data page lists implemented data surfaces
+vars:
+  uvars:
+    _wm_command: setup
+
+!setup -p "Monster Data"
+---
+re:world_data.monsters|!hunt|!loot
+---
+name: monster data page explains hunt and loot consumers
+vars:
+  uvars:
+    _wm_command: setup

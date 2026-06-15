@@ -23,7 +23,7 @@ vars:
 
 !show
 ---
-re:exploration.*off
+"re:```diff[\\s\\S]*exploration: off"
 ---
 name: show lists subsystem status
 vars:
@@ -51,9 +51,9 @@ vars:
 
 !show wiring
 ---
-re:Config gvar
+re:ffff1111-1111-1111-1111-111111111111|dashboard/gvars\?lookup=ffff1111-1111-1111-1111-111111111111
 ---
-name: show section filter wiring
+name: show section filter wiring includes full gvar id and dashboard link
 vars:
   uvars:
     _wm_command: show
@@ -62,6 +62,44 @@ vars:
   gvars:
     ffff1111-1111-1111-1111-111111111111: |
       # empty owner body
+
+!show
+---
+"re:\\+ exploration: on|- exploration: error"
+---
+name: show marks enabled subsystem in diff block
+vars:
+  uvars:
+    _wm_command: show
+  svars:
+    westmarch_config: "ffff4444-4444-4444-4444-444444444444"
+  gvars:
+    ffff4444-4444-4444-4444-444444444444: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": False},
+          },
+      }
+
+!show
+---
+"re:- exploration: error"
+---
+name: show marks invalid enabled subsystem red in diff block
+vars:
+  uvars:
+    _wm_command: show
+  svars:
+    westmarch_config: "ffff5555-5555-5555-5555-555555555555"
+  gvars:
+    ffff5555-5555-5555-5555-555555555555: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+          },
+      }
 
 !show not_a_section
 ---

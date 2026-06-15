@@ -18,9 +18,9 @@
 
 | Section | Content |
 |---------|---------|
-| **Wiring** | Svar name, config gvar UUID (truncated ok), load status, optional **`config_version`** |
+| **Wiring** | Svar name, full config gvar UUID, Avrae dashboard lookup link, load status, optional **`config_version`** |
 | **World** | **`display.get_display()`** default title/footer/colour from base **`display`**; **`cfg.display`** fields for show copy ([display.gvar](../../gvars/display.md)) |
-| **Subsystems** | Table: subsystem → enabled/disabled; per-command toggles; non-default **`config`** keys |
+| **Subsystems** | Diff codeblock: `+` enabled and valid, neutral lines disabled and valid, `-` enabled with validation errors |
 | **Policies** | Summary of `policies.*` — auth, time, travel, downtime, crafting, economy, exploration, combat, quest, content, inventory, **`languages.allowed`**, **`display.footer_behaviour`** — [data-shapes.md § Server policies](../../data-shapes.md#server-policies) |
 | **Runtime** | **`get_rules_edition()`** — **`rules_version`** override, else Avrae, else 2014 |
 | **Data overview** | Counts where cheap: e.g. N areas, N shops, N books, catalogue sizes |
