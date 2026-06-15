@@ -7,116 +7,144 @@
     {
       "name": "westmarch",
       "file": "src/aliases/westmarch/westmarch.alias",
+      "docs_file": "docs/workshop/aliases/westmarch/westmarch.md",
       "sub_aliases": [
         {
           "name": "setup",
-          "file": "src/aliases/westmarch/setup.alias"
+          "file": "src/aliases/westmarch/setup.alias",
+          "docs_file": "docs/workshop/aliases/westmarch/setup.md"
         },
         {
           "name": "check",
-          "file": "src/aliases/westmarch/check.alias"
+          "file": "src/aliases/westmarch/check.alias",
+          "docs_file": "docs/workshop/aliases/westmarch/check.md"
         },
         {
           "name": "show",
-          "file": "src/aliases/westmarch/show.alias"
+          "file": "src/aliases/westmarch/show.alias",
+          "docs_file": "docs/workshop/aliases/westmarch/show.md"
         }
       ]
     },
     {
       "name": "enc",
-      "file": "src/aliases/exploration/enc.alias"
+      "file": "src/aliases/exploration/enc.alias",
+      "docs_file": "docs/workshop/aliases/exploration/enc.md"
     },
     {
       "name": "forage",
-      "file": "src/aliases/exploration/forage.alias"
+      "file": "src/aliases/exploration/forage.alias",
+      "docs_file": "docs/workshop/aliases/exploration/forage.md"
     },
     {
       "name": "fish",
-      "file": "src/aliases/exploration/fish.alias"
+      "file": "src/aliases/exploration/fish.alias",
+      "docs_file": "docs/workshop/aliases/exploration/fish.md"
     },
     {
       "name": "mine",
-      "file": "src/aliases/exploration/mine.alias"
+      "file": "src/aliases/exploration/mine.alias",
+      "docs_file": "docs/workshop/aliases/exploration/mine.md"
     },
     {
       "name": "lumber",
-      "file": "src/aliases/exploration/lumber.alias"
+      "file": "src/aliases/exploration/lumber.alias",
+      "docs_file": "docs/workshop/aliases/exploration/lumber.md"
     },
     {
       "name": "hunt",
-      "file": "src/aliases/exploration/hunt.alias"
+      "file": "src/aliases/exploration/hunt.alias",
+      "docs_file": "docs/workshop/aliases/exploration/hunt.md"
     },
     {
       "name": "loot",
-      "file": "src/aliases/exploration/loot.alias"
+      "file": "src/aliases/exploration/loot.alias",
+      "docs_file": "docs/workshop/aliases/exploration/loot.md"
     },
     {
       "name": "travel",
-      "file": "src/aliases/travel/travel.alias"
+      "file": "src/aliases/travel/travel.alias",
+      "docs_file": "docs/workshop/aliases/travel/travel.md"
     },
     {
       "name": "location",
-      "file": "src/aliases/travel/location.alias"
+      "file": "src/aliases/travel/location.alias",
+      "docs_file": "docs/workshop/aliases/travel/location.md"
     },
     {
       "name": "time",
-      "file": "src/aliases/travel/time.alias"
+      "file": "src/aliases/travel/time.alias",
+      "docs_file": "docs/workshop/aliases/travel/time.md"
     },
     {
       "name": "weather",
-      "file": "src/aliases/travel/weather.alias"
+      "file": "src/aliases/travel/weather.alias",
+      "docs_file": "docs/workshop/aliases/travel/weather.md"
     },
     {
       "name": "downtime",
-      "file": "src/aliases/downtime/downtime.alias"
+      "file": "src/aliases/downtime/downtime.alias",
+      "docs_file": "docs/workshop/aliases/downtime/downtime.md"
     },
     {
       "name": "craft",
-      "file": "src/aliases/crafting/craft.alias"
+      "file": "src/aliases/crafting/craft.alias",
+      "docs_file": "docs/workshop/aliases/crafting/craft.md"
     },
     {
       "name": "brew",
-      "file": "src/aliases/crafting/brew.alias"
+      "file": "src/aliases/crafting/brew.alias",
+      "docs_file": "docs/workshop/aliases/crafting/brew.md"
     },
     {
       "name": "enchant",
-      "file": "src/aliases/crafting/enchant.alias"
+      "file": "src/aliases/crafting/enchant.alias",
+      "docs_file": "docs/workshop/aliases/crafting/enchant.md"
     },
     {
       "name": "scribe",
-      "file": "src/aliases/crafting/scribe.alias"
+      "file": "src/aliases/crafting/scribe.alias",
+      "docs_file": "docs/workshop/aliases/crafting/scribe.md"
     },
     {
       "name": "job",
-      "file": "src/aliases/economy/job.alias"
+      "file": "src/aliases/economy/job.alias",
+      "docs_file": "docs/workshop/aliases/economy/job.md"
     },
     {
       "name": "buy",
-      "file": "src/aliases/economy/buy.alias"
+      "file": "src/aliases/economy/buy.alias",
+      "docs_file": "docs/workshop/aliases/economy/buy.md"
     },
     {
       "name": "sell",
-      "file": "src/aliases/economy/sell.alias"
+      "file": "src/aliases/economy/sell.alias",
+      "docs_file": "docs/workshop/aliases/economy/sell.md"
     },
     {
       "name": "wallet",
-      "file": "src/aliases/economy/wallet.alias"
+      "file": "src/aliases/economy/wallet.alias",
+      "docs_file": "docs/workshop/aliases/economy/wallet.md"
     },
     {
       "name": "library",
-      "file": "src/aliases/content/library.alias"
+      "file": "src/aliases/content/library.alias",
+      "docs_file": "docs/workshop/aliases/content/library.md"
     },
     {
       "name": "read",
-      "file": "src/aliases/content/read.alias"
+      "file": "src/aliases/content/read.alias",
+      "docs_file": "docs/workshop/aliases/content/read.md"
     },
     {
       "name": "quest",
-      "file": "src/aliases/misc/quest.alias"
+      "file": "src/aliases/misc/quest.alias",
+      "docs_file": "docs/workshop/aliases/misc/quest.md"
     },
     {
       "name": "recipe",
-      "file": "src/aliases/misc/recipe.alias"
+      "file": "src/aliases/misc/recipe.alias",
+      "docs_file": "docs/workshop/aliases/misc/recipe.md"
     }
   ],
   "snippets": [],
@@ -207,11 +235,6 @@
       "id": "d483bc13-362f-45c5-8596-efcab434123b"
     },
     {
-      "name": "exploration",
-      "file": "src/gvars/utils/exploration/exploration.gvar",
-      "id": "6b51c53f-3db9-49cd-8f24-e35866226fa2"
-    },
-    {
       "name": "encounter_lists",
       "file": "src/gvars/utils/encounters/encounter_lists.gvar",
       "id": "7497adbc-f942-44ad-aae5-7fc72eb162dc"
@@ -225,6 +248,11 @@
       "name": "encounters",
       "file": "src/gvars/utils/encounters/encounters.gvar",
       "id": "2aabdcdb-3510-431b-8f35-afd06ff04224"
+    },
+    {
+      "name": "exploration",
+      "file": "src/gvars/utils/exploration/exploration.gvar",
+      "id": "6b51c53f-3db9-49cd-8f24-e35866226fa2"
     },
     {
       "name": "f_monsters",

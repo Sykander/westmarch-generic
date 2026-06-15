@@ -4,7 +4,9 @@
   "description": "Configurable westmarch-style Avrae workshop — server setup via svars and config gvars",
   "main": "index.js",
   "scripts": {
-    "deploy": "node utils/deploy.js",
+    "deploy": "npm run deploy:dev",
+    "deploy:dev": "publish-avrae deploy --sourcemap utils/sourcemap.dev.json",
+    "deploy:prod": "publish-avrae deploy --sourcemap utils/sourcemap.prod.json",
     "generate-env": "node utils/generate-env.js",
     "generate-vars": "node utils/generate-vars.js",
     "generate:monsters": "node utils/generate-monsters.js",
@@ -12,12 +14,13 @@
     "generate:spells": "node utils/generate-spells.js",
     "generate:books": "node utils/generate-books.js",
     "generate:recipes": "node utils/generate-recipes.js",
-    "generate:catalogues": "node utils/generate-catalogues.js",
-    "test-sourcemaps": "node utils/sourcemap-test.js"
+    "lint": "find utils -name '*.js' -print0 | xargs -0 -n1 node --check",
+    "test": "avrae-ls --run-tests src --log-level INFO",
+    "test-sourcemaps": "publish-avrae check-config --sourcemap utils/sourcemap.dev.json && publish-avrae check-config --sourcemap utils/sourcemap.prod.json && publish-avrae compare-config utils/sourcemap.dev.json utils/sourcemap.prod.json"
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "publish-avrae": "^1.0.3"
+  "devDependencies": {
+    "publish-avrae": "^1.1.1"
   }
 }

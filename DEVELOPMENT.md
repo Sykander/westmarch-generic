@@ -14,7 +14,7 @@ Template sourcemaps use **real workshop UUIDs** from `unused_gvars.md`. The **`w
 
 Install:
 
-- [Node.js](https://nodejs.org/)
+- [Node.js 24](https://nodejs.org/)
 - [uv](https://docs.astral.sh/uv/) (for `avrae-ls`)
 - [Make](https://www.gnu.org/software/make/) (optional convenience)
 
@@ -33,7 +33,7 @@ make test
 
 - **Engine code** (aliases, snippets, shared gvars) → edit under `src/`.
 - **Server-specific config** → belongs in a config gvar loaded via svar, not hard-coded in aliases.
-- **Workshop layout** (new alias, snippet, or gvar slot) → edit both `utils/sourcemap.dev.json` and `utils/sourcemap.prod.json`.
+- **Workshop layout** (new alias, snippet, docs file, or gvar slot) → edit both `utils/sourcemap.dev.json` and `utils/sourcemap.prod.json`.
 
 ### 2. Implement
 
@@ -47,14 +47,13 @@ make test
 After sourcemap changes:
 
 ```bash
-make rebuild
+make build
 ```
 
-After **TSV catalogue** changes *(when generate scripts land)*:
+After **TSV catalogue** changes:
 
 ```bash
-npm run generate:catalogues   # planned — see utils/README.md
-make rebuild                  # if new shard gvars were added to sourcemaps
+make build
 ```
 
 This writes `src/gvars/env.dev.gvar`, `src/gvars/env.prod.gvar`, and `.varfile.json`. Do not hand-edit those outputs. Shard bodies under `src/gvars/utils/catalogues/` are **committed JSON** produced by generate scripts — see [content-pipeline.md](docs/internal/projects/westmarch-statement/content-pipeline.md).
@@ -65,8 +64,9 @@ This writes `src/gvars/env.dev.gvar`, `src/gvars/env.prod.gvar`, and `.varfile.j
 make test
 ```
 
-- `npm run test-sourcemaps` — dev/prod sourcemaps stay aligned (names, files, distinct ids).
-- `avrae-ls --run-tests src` — alias and gvar tests under `src/`.
+- `npm run lint` — syntax-check repo utility scripts.
+- `npm run test-sourcemaps` — `publish-avrae check-config` for dev/prod plus `compare-config`.
+- `npm test` — alias and gvar tests under `src/` via `avrae-ls`.
 
 ### Refresh cached Avrae / avrae-ls docs
 
@@ -81,19 +81,28 @@ See **`.cursor/README.md`** and **`.cursor/reference-cache.json`**. After valida
 
 ### 5. Deploy
 
-Uses [publish-avrae](https://www.npmjs.com/package/publish-avrae) via the Deploy GitHub Action (`.github/workflows/deploy.yaml`) and `npm run deploy` with `ENVIRONMENT=Development|Production`.
+Uses [publish-avrae](https://www.npmjs.com/package/publish-avrae) through CLI scripts:
+
+```bash
+npm run deploy:dev
+npm run deploy:prod
+```
+
+The unified CI workflow (`.github/workflows/ci.yml`) runs on pushes to `main` only. It runs lint, sourcemap checks, `avrae-ls` tests, and a live version check against the dev/prod `env` gvars. If checks pass, CI deploys Development. If `package.json` is higher than the deployed Production `VERSION`, CI deploys Production and tags the commit with that package version.
 
 Before first deploy:
 
 1. Create Avrae workshop slots and paste real UUIDs into sourcemaps.
-2. Run `make rebuild`.
+2. Run `make build`.
 3. Confirm `make test` passes.
 
 ## Sourcemaps
 
-Publish-avrae reads sourcemaps to know which files map to which aliases, snippets, and gvars.
+Publish-avrae reads sourcemaps to know which files map to which aliases, snippets, docs, and gvars.
 
-**Hand-edit:** `utils/sourcemap.dev.json`, `utils/sourcemap.prod.json`, sources under `src/`, `unused_gvars.md`, docs, tests.
+Use `docs_file` for Avrae help text. Docs files live under `docs/workshop/` and are deployed for aliases, subaliases, and snippets.
+
+**Hand-edit:** `utils/sourcemap.dev.json`, `utils/sourcemap.prod.json`, sources under `src/`, `docs/workshop/`, `unused_gvars.md`, docs, tests.
 
 **Generated (do not hand-edit):**
 
@@ -104,9 +113,9 @@ Publish-avrae reads sourcemaps to know which files map to which aliases, snippet
 
 See `.cursor/rules/drac2-tools-maintainer.mdc` for UUID hygiene, doc sync, and `.cursor/` reference refresh.
 
-## Pull requests
+## CI
 
-CI runs sourcemap tests and `avrae-ls --run-tests src` (see `.github/workflows/test.yaml`). Fix failures before merge.
+CI runs from `.github/workflows/ci.yml` on commits to `main`. It does not expose a manual `workflow_dispatch` trigger.
 
 ## Next steps (project roadmap)
 

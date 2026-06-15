@@ -123,7 +123,7 @@ How a server gets engine aliases ([US-1.1](user-stories.md)):
 | Model | Description | Pros | Cons |
 |-------|-------------|------|------|
 | **E1 — Public workshop subscription** | Server adds westmarch-generic workshop to Avrae bot | Single deploy benefits all ([US-4.5](user-stories.md)) | Requires published workshop + Avrae subscription UX |
-| **E2 — Self-deploy from repo** | Server owner runs `npm run deploy` to their workshop | Full control for power users | Forked workshops, upgrade friction |
+| **E2 — Self-deploy from repo** | Server owner runs `npm run deploy:dev` or `npm run deploy:prod` to their workshop | Full control for power users | Forked workshops, upgrade friction |
 | **E3 — Hybrid** | Official workshop for most; repo deploy for contributors | Flexibility | Two support paths |
 
 **Recommendation:** **E1 primary, E3 for maintainers** — engine repo deploys to an official Development/Production workshop; server owners subscribe and set svars. Document E2 for self-hosters without blocking P0 on it.
@@ -294,10 +294,10 @@ Three viable approaches; **recommended: phased extraction (M2)**.
 
 | Concern | Approach | Stories |
 |---------|----------|---------|
-| Deploy | Existing `publish-avrae` + sourcemaps; engine-only ids | US-4.4, US-4.5 |
+| Deploy | `publish-avrae` CLI + sourcemaps; engine-only ids | US-4.4, US-4.5 |
 | Env generation | `env.*.gvar` lists westmarch-generic gvars only (including vendored `core/`) | US-4.1 |
 | Alias tests | `.alias-test` with `vars.svars.westmarch_config` + fixture config gvar in `.varfile.json` | US-4.3 |
-| CI | Sourcemap tests + `avrae-ls --run-tests src` (existing) | US-4.4 |
+| CI | Unified `ci.yml`: lint, sourcemap checks, `avrae-ls`, dev deploy, version-gated prod deploy | US-4.4 |
 | Config template | `src/gvars/configs/starter.gvar` + example presets in `src/gvars/configs/` ([configs.md](gvars/configs.md)) | US-2.3 |
 | Schema docs | Per-subsection under `docs/config/` as verticals ship | US-2.2 |
 

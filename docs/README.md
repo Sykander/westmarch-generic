@@ -46,10 +46,11 @@ flowchart LR
 | `src/gvars/` | Engine workshop globals — see [src/gvars/README.md](../src/gvars/README.md) |
 | `src/gvars/configs/` | Example server config presets — [configs.md](internal/projects/westmarch-statement/gvars/configs.md) |
 | `src/gvars/utils/core/` | Vendored drac2-tools helpers — [core.md](internal/projects/westmarch-statement/gvars/core.md) |
+| `docs/workshop/` | Avrae help docs deployed from sourcemap `docs_file` entries |
 
 ## Workshop scaffold
 
-All MVP aliases and engine gvars are registered in **`utils/sourcemap.dev.json`** / **`sourcemap.prod.json`** with UUIDs from **`unused_gvars.md`**. Placeholder bodies return “not implemented” embeds until each tier is ported. Regenerate env after sourcemap edits: **`make rebuild`**.
+All MVP aliases and engine gvars are registered in **`utils/sourcemap.dev.json`** / **`sourcemap.prod.json`** with UUIDs from **`unused_gvars.md`**. Alias help docs are registered with `docs_file` and live under **`docs/workshop/`**. Placeholder bodies return “not implemented” embeds until each tier is ported. Regenerate env after sourcemap edits: **`make build`**.
 
 The **`westmarch`** hub uses sub-aliases (`setup`, `check`, `show`) — same sourcemap nesting pattern as the old bootstrap `example` alias.
 

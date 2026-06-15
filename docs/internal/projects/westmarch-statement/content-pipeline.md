@@ -38,7 +38,7 @@ flowchart LR
 
 1. **Edit** TSV (or copy from westmarch — see [public/assets/README.md](../../../public/assets/README.md)).
 2. **Run** generate script(s) — writes shard **bodies** to `src/gvars/`.
-3. **Register** new shard files in **`utils/sourcemap.*.json`** with UUIDs from **`unused_gvars.md`**; **`make rebuild`**.
+3. **Register** new shard files in **`utils/sourcemap.*.json`** with UUIDs from **`unused_gvars.md`**; **`make build`**.
 4. **Deploy** workshop — facades resolve shards via **`env.gvars.*`** at runtime.
 
 Generate scripts are **Node** (repo root), same toolchain as **`generate-env.js`**. They do **not** run inside Avrae.
@@ -129,10 +129,10 @@ Shared library: **`utils/lib/`** — `read-tsv`, `write-json-gvar`, `shard-by`, 
 
 ```bash
 npm run generate:monsters   # one catalogue
-make generate-catalogues    # all + make rebuild
+make build                  # all generators + env/var build
 ```
 
-Generators auto-register shard slots in sourcemaps (UUIDs from **`unused_gvars.md`**). Run **`make rebuild`** after.
+Generators auto-register shard slots in sourcemaps (UUIDs from **`unused_gvars.md`**). Run **`make build`** after.
 
 ---
 
@@ -145,7 +145,7 @@ Catalogue generators call **`utils/lib/sourcemap-shards.js`** automatically. For
 1. Take UUID from top of **`unused_gvars.md`**
 2. Add `{ "name": "a_monsters", "file": "src/gvars/utils/catalogues/monsters/a_monsters.gvar", "id": "…" }` to **both** sourcemaps (different ids)
 3. Delete used lines from **`unused_gvars.md`**
-4. **`make rebuild`**
+4. **`make build`**
 
 ---
 
@@ -167,11 +167,11 @@ Generate utils **do not** replace owner config — they refresh **engine referen
 | Change | Action |
 |--------|--------|
 | Updated TSV in **`public/assets/`** | Run affected **`npm run generate:*`**, commit shard outputs |
-| New shard file | Sourcemap + **`unused_gvars.md`**, **`make rebuild`** |
+| New shard file | Sourcemap + **`unused_gvars.md`**, **`make build`** |
 | Facade search logic only | Edit Draconic facade; no regenerate |
 | Owner-specific catalogue | Edit owner workshop gvar — **no** repo generate |
 
-**CI *(future)*:** fail PR if TSV hash changed but generated JSON shards were not regenerated (`npm run generate:catalogues && git diff --exit-code`).
+**CI *(future)*:** fail PR if TSV hash changed but generated JSON shards were not regenerated (`make build && git diff --exit-code`).
 
 ---
 

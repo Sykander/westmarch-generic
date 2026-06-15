@@ -1,0 +1,273 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+  sourcemap-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test sourcemaps
+        run: npm run test-sourcemaps
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: '0.9.26'
+
+      - name: Install avrae-ls
+        run: uv tool install avrae-ls
+
+      - name: Test
+        run: npm test
+        env:
+          AVRAE_TOKEN: ${{ secrets.AVRAE_TOKEN }}
+
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      package_version: ${{ steps.version-check.outputs.package_version }}
+      development_version: ${{ steps.version-check.outputs.development_version }}
+      production_version: ${{ steps.version-check.outputs.production_version }}
+      should_deploy_production: ${{ steps.version-check.outputs.should_deploy_production }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check deployed versions
+        id: version-check
+        env:
+          AVRAE_TOKEN: ${{ secrets.AVRAE_TOKEN }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { appendFileSync, readFileSync } from 'node:fs';
+          import { createRequire } from 'node:module';
+
+          const require = createRequire(import.meta.url);
+          const { getGvar } = require('publish-avrae');
+
+          const packageJson = JSON.parse(readFileSync('package.json', 'utf8'));
+          const localVersion = packageJson.version;
+          const githubOutput = process.env.GITHUB_OUTPUT;
+
+          function setOutput(name, value) {
+            if (githubOutput) {
+              appendFileSync(githubOutput, `${name}=${value}\n`);
+            }
+          }
+
+          function parseVersion(version) {
+            const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(version);
+
+            if (!match) {
+              throw new Error(`Expected a MAJOR.MINOR.PATCH version, got ${version}`);
+            }
+
+            return match.slice(1).map(Number);
+          }
+
+          function compareVersions(a, b) {
+            for (let index = 0; index < a.length; index += 1) {
+              if (a[index] !== b[index]) {
+                return a[index] - b[index];
+              }
+            }
+
+            return 0;
+          }
+
+          function loadSourceMap(filePath) {
+            return JSON.parse(readFileSync(filePath, 'utf8'));
+          }
+
+          function environmentGvarId(sourceMap) {
+            return (
+              sourceMap.workshop?.environment ||
+              sourceMap.gvars?.find(({ name }) => name === 'env')?.id
+            );
+          }
+
+          function parseEnvVersion(environment, value) {
+            const match = /^VERSION\s*=\s*["']([^"']+)["']/m.exec(value || '');
+
+            if (!match) {
+              console.log(`${environment} env gvar does not declare VERSION; treating it as 0.0.0.`);
+              return '0.0.0';
+            }
+
+            return match[1];
+          }
+
+          async function getDeployedVersion(environment, sourceMapFile) {
+            const sourceMap = loadSourceMap(sourceMapFile);
+            const gvarId = environmentGvarId(sourceMap);
+
+            if (!gvarId) {
+              throw new Error(`${environment} sourcemap does not define an env gvar id.`);
+            }
+
+            const gvar = await getGvar(gvarId);
+            return parseEnvVersion(environment, gvar?.value);
+          }
+
+          const local = parseVersion(localVersion);
+          const developmentVersion = await getDeployedVersion(
+            'Development',
+            'utils/sourcemap.dev.json',
+          );
+          const productionVersion = await getDeployedVersion(
+            'Production',
+            'utils/sourcemap.prod.json',
+          );
+          const production = parseVersion(productionVersion);
+          const productionComparison = compareVersions(local, production);
+
+          if (productionComparison < 0) {
+            setOutput('should_deploy_production', 'false');
+            throw new Error(
+              `${packageJson.name}@${localVersion} is lower than the deployed production version, ${productionVersion}.`,
+            );
+          }
+
+          const shouldDeployProduction = productionComparison > 0;
+
+          console.log(`package.json version: ${localVersion}`);
+          console.log(`deployed development version: ${developmentVersion}`);
+          console.log(`deployed production version: ${productionVersion}`);
+          console.log(`deploy production: ${shouldDeployProduction}`);
+
+          setOutput('package_version', localVersion);
+          setOutput('development_version', developmentVersion);
+          setOutput('production_version', productionVersion);
+          setOutput('should_deploy_production', String(shouldDeployProduction));
+          NODE
+
+  deploy-dev:
+    runs-on: ubuntu-latest
+    needs:
+      - lint
+      - sourcemap-tests
+      - test
+      - version
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Deploy development
+        run: npm run deploy:dev
+        env:
+          AVRAE_TOKEN: ${{ secrets.AVRAE_TOKEN }}
+
+  deploy-prod:
+    runs-on: ubuntu-latest
+    if: needs.version.outputs.should_deploy_production == 'true'
+    needs:
+      - deploy-dev
+      - version
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Deploy production
+        run: npm run deploy:prod
+        env:
+          AVRAE_TOKEN: ${{ secrets.AVRAE_TOKEN }}
+
+      - name: Tag production version
+        env:
+          PACKAGE_VERSION: ${{ needs.version.outputs.package_version }}
+        run: |
+          if git ls-remote --exit-code --tags origin "refs/tags/${PACKAGE_VERSION}" >/dev/null 2>&1; then
+            echo "::error::Tag ${PACKAGE_VERSION} already exists."
+            exit 1
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag "${PACKAGE_VERSION}" "${GITHUB_SHA}"
+          git push origin "refs/tags/${PACKAGE_VERSION}"

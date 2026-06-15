@@ -12,12 +12,12 @@ Architecture: [docs/internal/projects/westmarch-statement/content-pipeline.md](.
 |--------|-------------|---------|
 | [generate-env.js](generate-env.js) | `npm run generate-env` | Write `src/gvars/env.{dev,prod}.gvar` from sourcemaps |
 | [generate-vars.js](generate-vars.js) | `npm run generate-vars` | Write `.varfile.json` for alias-tests |
-| [sourcemap-test.js](sourcemap-test.js) | `npm run test-sourcemaps` | Dev/prod sourcemap parity |
-| [deploy.js](deploy.js) | `npm run deploy` | Publish workshop via publish-avrae |
+| `publish-avrae check-config` / `compare-config` | `npm run test-sourcemaps` | Dev/prod sourcemap validation and parity |
+| `publish-avrae deploy` | `npm run deploy:dev`, `npm run deploy:prod` | Publish workshop via sourcemap |
 
 ```bash
-make rebuild   # generate-env + generate-vars (both envs for dev target)
-make test      # sourcemap tests + avrae-ls alias tests
+make build     # run all generators, build env gvars, and refresh .varfile.json
+make test      # lint + sourcemap tests + avrae-ls alias tests
 ```
 
 ---
@@ -31,10 +31,9 @@ make test      # sourcemap tests + avrae-ls alias tests
 | [generate-spells.js](generate-spells.js) | `npm run generate:spells` | [spells.tsv](../public/assets/spells.tsv) | `spells_list.gvar` |
 | **`generate-books.js`** | `npm run generate:books` | books-forgotten-realms/real.tsv | `configs/books/{forgotten_realms,real}_all.gvar` when empty; else `{corpus}_{a-z}.gvar` |
 | [generate-recipes.js](generate-recipes.js) | `npm run generate:recipes` | [recipes.tsv](../public/assets/recipes.tsv) | `configs/recipes/recipes_list.gvar` |
-| [generate-catalogues.js](generate-catalogues.js) | `npm run generate:catalogues` | All above | Runs all generators |
 
 ```bash
-make generate-catalogues   # generate all shards + rebuild env
+make build     # run all generators, build env gvars, and refresh .varfile.json
 ```
 
 ### Shared library — [utils/lib/](lib/)
@@ -47,7 +46,7 @@ make generate-catalogues   # generate all shards + rebuild env
 | [manifest.js](lib/manifest.js) | Log row counts per shard |
 | [sourcemap-shards.js](lib/sourcemap-shards.js) | Auto-register shards in dev/prod sourcemaps |
 
-Generators register sourcemap slots automatically (two UUIDs per shard from **`unused_gvars.md`**). Then **`make rebuild`**.
+Generators register sourcemap slots automatically (two UUIDs per shard from **`unused_gvars.md`**). Then **`make build`**.
 
 ### Output format
 
@@ -61,9 +60,9 @@ Shard files are **raw JSON arrays** — loaded at runtime with `load_json(get_gv
 2. **Shard rule** — letter, type, or separate file per corpus; document in [content-pipeline.md](../docs/internal/projects/westmarch-statement/content-pipeline.md).
 3. **Implement** `utils/generate-<name>.js` using **`utils/lib/read-tsv.js`** + **`write-json-gvar.js`**.
 4. **Output paths** under `src/gvars/utils/catalogues/` for engine catalogues, or `src/gvars/configs/` for setting-specific data (biomes, books, recipes).
-5. **Sourcemap** — engine catalogue generators call **`lib/sourcemap-shards.js`**; config outputs (biomes, books, recipes) are **not** registered. Ensure enough UUIDs in **`unused_gvars.md`**, then **`make rebuild`**.
+5. **Sourcemap** — engine catalogue generators call **`lib/sourcemap-shards.js`**; config outputs (biomes, books, recipes) are **not** registered. Ensure enough UUIDs in **`unused_gvars.md`**, then **`make build`**.
 6. **Facade** — engine gvar with lazy cache; document API in `docs/internal/projects/westmarch-statement/gvars/`.
-7. **npm script** — add to `package.json`; wire optional **`generate:catalogues`** bundle.
+7. **npm script** — add to `package.json`; add a matching target to the Makefile's Generates section.
 
 ---
 
@@ -93,7 +92,7 @@ Runtime improvement: westmarch **`items.gvar`** loads all three lists at import 
 Same rules as `.cursor/rules/drac2-tools-maintainer.mdc`:
 
 - Never invent UUIDs
-- New gvar slot → **`unused_gvars.md`** → sourcemap → **`make rebuild`**
+- New gvar slot → **`unused_gvars.md`** → sourcemap → **`make build`**
 - Do not hand-edit **`env.*.gvar`**
 
 ---

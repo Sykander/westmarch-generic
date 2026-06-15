@@ -97,7 +97,7 @@ src/gvars/
 2. **Copy** into target path under `src/gvars/utils/core/` or domain folder.
 3. **Adapt** — replace external `using(env=…)` with `env.gvars.*` from this workshop; drop unused exports; fix Drac2 subset issues.
 4. **Provenance** — short header comment in the **`.gvar`** source: upstream repo, path, port date (maintainer-facing, not player docs).
-5. **Register** — add slot to **`utils/sourcemap.*.json`**, UUID from **`unused_gvars.md`**, **`make rebuild`**.
+5. **Register** — add slot to **`utils/sourcemap.*.json`**, UUID from **`unused_gvars.md`**, **`make build`**.
 6. **Test** — `.alias` + `.alias-test` for core modules that expose logic; alias-tests for domain consumers.
 7. **Document** — public API in [gvars/](README.md) or domain doc; link upstream for diffing.
 
@@ -154,4 +154,4 @@ ok = bags.modify_bag(ch, item, count, bag)
 - [README.md](README.md) — full engine gvar index
 - [pc.md](pc.md) — domain port example (westmarch + core)
 - [solution-statement.md](../solution-statement.md) — decision record, engine structure
-- [DEVELOPMENT.md](../../../../DEVELOPMENT.md) — sourcemaps, UUIDs, `make rebuild`
+- [DEVELOPMENT.md](../../../../DEVELOPMENT.md) — sourcemaps, UUIDs, `make build`

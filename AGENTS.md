@@ -23,13 +23,13 @@ Cached upstream Avrae / avrae-ls docs, refresh scripts, and perf probes live in 
 1. Update implementation under `src/`.
 2. Update **`docs/`** when the public model or API changes.
 3. Update **`.alias-test`** files when CI should cover new behavior.
-4. After sourcemap edits: **`make rebuild`**, then **`make test`**.
+4. After sourcemap edits: **`make build`**, then **`make test`**.
 
 ## Tooling
 
 - **Sourcemap tests:** `npm run test-sourcemaps`
 - **Drac2 tests:** `avrae-ls --run-tests src` (see `.github/workflows/test.yaml`)
-- **Generated files:** `src/gvars/env.*.gvar`, `.varfile.json` — from `make rebuild`; do not hand-edit
+- **Generated files:** `src/gvars/env.*.gvar`, `.varfile.json` — from `make build`; do not hand-edit
 - **Workshop UUIDs:** take from **`unused_gvars.md`**; never invent ids (`drac2-tools-maintainer.mdc`)
 
 Template sourcemaps use **placeholder UUIDs** until real Avrae workshop slots are allocated.

@@ -20,7 +20,8 @@ This repo is the **generic engine**. Per-server content lives in workshop gvars 
 | `src/snippets/` | Snippet expansions |
 | `src/gvars/` | Workshop globals (`env`, shared utils, per-server config gvars) |
 | `utils/sourcemap.*.json` | Deploy source of truth (aliases, snippets, gvar ids) |
-| `utils/*.js` | Env/var generation, sourcemap tests, deploy; **planned** TSV → catalogue shards ([utils/README.md](utils/README.md)) |
+| `docs/workshop/` | Markdown help docs deployed to Avrae aliases, subaliases, and snippets |
+| `utils/*.js` | Env/var generation and TSV → catalogue shards ([utils/README.md](utils/README.md)); sourcemap checks/deploys use the `publish-avrae` CLI |
 | `public/assets/` | TSV catalogues — input to **`utils/generate-*`** ([content-pipeline](docs/internal/projects/westmarch-statement/content-pipeline.md)) |
 | `docs/` | Design and consumer documentation |
 | `.cursor/` | Agent rules, cached Avrae/avrae-ls docs, refresh and perf scripts |
@@ -33,7 +34,7 @@ This repo is the **generic engine**. Per-server content lives in workshop gvars 
 
 ### Current status
 
-Scaffolded workshop layout: **25** player/GM aliases (including **`westmarch`** subcommands), **35** engine gvar placeholders, dev/prod sourcemaps with UUIDs from **`unused_gvars.md`**. Implementation is stub-only — see [MVP command set](docs/internal/projects/westmarch-statement/mvp-commands.md).
+Scaffolded workshop layout: **25** player/GM aliases (including **`westmarch`** subcommands), **35** engine gvar placeholders, dev/prod sourcemaps with UUIDs from **`unused_gvars.md`**, and placeholder workshop help docs. Implementation is stub-only — see [MVP command set](docs/internal/projects/westmarch-statement/mvp-commands.md).
 
 ## Documentation
 

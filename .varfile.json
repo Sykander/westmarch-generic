@@ -51,9 +51,6 @@
         "7442c996-c6cc-476c-bb9a-9dd670c1ae33": {
             "filePath": "src/gvars/utils/core/embeds.gvar"
         },
-        "e76847b7-0d90-4de5-93b3-dd92abbe94b2": {
-            "filePath": "src/gvars/utils/exploration/exploration.gvar"
-        },
         "44bcd6a8-f546-4c94-ba10-0ccccaac796f": {
             "filePath": "src/gvars/utils/encounters/encounter_lists.gvar"
         },
@@ -62,6 +59,9 @@
         },
         "da2571d9-3935-4ecd-8dcb-a80b5f0e0a94": {
             "filePath": "src/gvars/utils/encounters/encounters.gvar"
+        },
+        "e76847b7-0d90-4de5-93b3-dd92abbe94b2": {
+            "filePath": "src/gvars/utils/exploration/exploration.gvar"
         },
         "8f9f11f9-ea4b-4ab4-bc90-f879b80a44da": {
             "filePath": "src/gvars/utils/catalogues/monsters/f_monsters.gvar"

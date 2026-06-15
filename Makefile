@@ -1,13 +1,38 @@
+CATALOGUE_GENERATORS = generate-monsters generate-items generate-spells generate-books generate-recipes
+GENERATE_TARGETS = generate-env generate-vars $(CATALOGUE_GENERATORS)
+
+.PHONY: build test install_node install_avrae_ls build_dev build_prod sourcemap-tests lint unit-tests $(GENERATE_TARGETS)
+
 #
 # Useful
 #
-rebuild: rebuild_dev rebuild_prod
+build: $(CATALOGUE_GENERATORS) build_dev build_prod
 
-generate-catalogues: install_node
-	npm run generate:catalogues
-	$(MAKE) rebuild
+test: lint sourcemap-tests unit-tests
 
-test: sourcemap-tests unit-tests
+#
+# Generates
+#
+generate-env: install_node
+	npm run generate-env
+
+generate-vars: install_node
+	npm run generate-vars
+
+generate-monsters: install_node
+	npm run generate:monsters
+
+generate-items: install_node
+	npm run generate:items
+
+generate-spells: install_node
+	npm run generate:spells
+
+generate-books: install_node
+	npm run generate:books
+
+generate-recipes: install_node
+	npm run generate:recipes
 
 #
 # Installs
@@ -22,15 +47,17 @@ install_avrae_ls:
 #
 # Steps
 #
-rebuild_dev: install_node
+build_dev: install_node generate-vars
 	ENVIRONMENT=Development npm run generate-env
-	npm run generate-vars
 
-rebuild_prod: install_node
+build_prod: install_node
 	ENVIRONMENT=Production npm run generate-env
 
 sourcemap-tests: install_node
 	npm run test-sourcemaps
 
+lint: install_node
+	npm run lint
+
 unit-tests: install_avrae_ls
-	avrae-ls --run-tests src --log-level INFO
+	npm test
