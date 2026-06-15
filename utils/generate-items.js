@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Generate item catalogue shards from public/assets/items.tsv
+ * Generate item catalogue shards from assets/items.tsv
  * Output: items_list, potions_list, magic_items_list
  */
 const paths = require('./lib/paths');

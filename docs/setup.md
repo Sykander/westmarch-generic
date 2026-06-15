@@ -161,4 +161,4 @@ Also set **`display.name`** and related fields for world branding — per-subsys
 
 - [Documentation index](README.md)
 - [DEVELOPMENT.md](../DEVELOPMENT.md) — contributors and self-deploy
-- [public/assets/](public/assets/) — example TSV catalogues
+- [assets/](../assets/) — example TSV catalogues

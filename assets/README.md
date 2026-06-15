@@ -2,7 +2,7 @@
 
 Tab-separated value (`.tsv`) catalogues used to build config gvars and seed server workshops. Format matches [westmarch](https://github.com/Sykander/westmarch) `public/*.tsv` exports (Google Sheets → **Download → Tab-separated values**).
 
-**Build pipeline:** [content-pipeline.md](../../docs/internal/projects/westmarch-statement/content-pipeline.md) · **Scripts:** [utils/README.md](../../utils/README.md) — `npm run generate:*` / `make generate-catalogues`
+**Build pipeline:** [content-pipeline.md](../docs/internal/projects/westmarch-statement/content-pipeline.md) · **Scripts:** [utils/README.md](../utils/README.md) — `npm run generate:*` / `make generate-catalogues`
 
 ## Files
 
@@ -32,7 +32,7 @@ Both book files share the westmarch book schema:
 | `tags` | Comma-separated topic tags for `!library` search |
 | `read_bonus` | Optional numeric bonus (usually `0`) |
 | `image` | Optional image URL |
-| `content_link` | Optional HTTPS URL to full text (shown in-game at 100% comprehension only) — see [data-shapes.md § Book](../../docs/internal/projects/westmarch-statement/data-shapes.md#book) |
+| `content_link` | Optional HTTPS URL to full text (shown in-game at 100% comprehension only) — see [data-shapes.md § Book](../docs/internal/projects/westmarch-statement/data-shapes.md#book) |
 
 At config/build time, server owners may merge forgotten-realms + real lists, use one only, or keep them in separate extension gvars.
 
@@ -62,18 +62,18 @@ Structured crafting recipes for **`!brew`**, **`!craft`**, **`!enchant`**, and *
 
 The repo ships three **example** rows (one per `brew` / `craft` / `enchant`). Owners add server-specific recipes in their config gvar or by extending this TSV at build time.
 
-**`craft`** mundane items may also use gp value bands from config ([CRAFT_PRICE_BANDS](../../docs/internal/projects/westmarch-statement/aliases/crafting/craft.md)) without a **`recipes.tsv`** row.
+**`craft`** mundane items may also use gp value bands from config ([CRAFT_PRICE_BANDS](../docs/internal/projects/westmarch-statement/aliases/crafting/craft.md)) without a **`recipes.tsv`** row.
 
-At config/build time, load **`recipes.tsv`** into config **`recipes`** (list or dict by `id`) alongside catalogues from **`items.tsv`**. Use **`npm run generate:recipes`** or **`make generate-catalogues`** — see [utils/README.md](../../utils/README.md).
+At config/build time, load **`recipes.tsv`** into config **`recipes`** (list or dict by `id`) alongside catalogues from **`items.tsv`**. Use **`npm run generate:recipes`** or **`make generate-catalogues`** — see [utils/README.md](../utils/README.md).
 
 ## Updating from westmarch
 
 To refresh reference data (monsters, items, spells):
 
 ```bash
-cp ../westmarch/public/monsters.tsv public/assets/
-cp ../westmarch/public/items.tsv public/assets/
-cp ../westmarch/public/spells.tsv public/assets/
+cp ../westmarch/public/monsters.tsv assets/
+cp ../westmarch/public/items.tsv assets/
+cp ../westmarch/public/spells.tsv assets/
 ```
 
 Do **not** copy `westmarch/public/books.tsv` into this repo — use `books-forgotten-realms.tsv` and `books-real.tsv` instead.
@@ -82,6 +82,6 @@ Do **not** copy `westmarch/public/books.tsv` into this repo — use `books-forgo
 
 ## Related
 
-- [content-pipeline.md](../../docs/internal/projects/westmarch-statement/content-pipeline.md) — TSV → shard gvars
-- [mvp-commands.md](../../docs/internal/projects/westmarch-statement/mvp-commands.md) — which commands consume each catalogue
+- [content-pipeline.md](../docs/internal/projects/westmarch-statement/content-pipeline.md) — TSV → shard gvars
+- [mvp-commands.md](../docs/internal/projects/westmarch-statement/mvp-commands.md) — which commands consume each catalogue
 - [westmarch library architecture](https://github.com/Sykander/westmarch/blob/main/docs/library/library-architecture.md) — book engine behaviour

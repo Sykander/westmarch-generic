@@ -152,7 +152,7 @@ flowchart LR
 | **Balanced kind history cvar** | **P1** | Not in DS — see exploration audit |
 | **Kind inference table** | **P1** | Partial — formalize in DS or encounter_lists |
 | **Roll spec “port in Phase 0”** | Low | Still points at drac2-tools **`rolls`** — update to **`core/rolls`** when vendored |
-| **Catalogue row shapes** | Low | [public/assets/README.md](../../../public/assets/README.md) + [content-pipeline.md](content-pipeline.md); link from DS top-level |
+| **Catalogue row shapes** | Low | [assets/README.md](../../../../assets/README.md) + [content-pipeline.md](content-pipeline.md); link from DS top-level |
 
 ### DS score: **7/10** completeness · **8/10** clarity — **Approve with gaps** — shop + extensions before Tier F
 
@@ -399,7 +399,7 @@ Document tranches in SS and MVP § Mapping to solution phases.
 | Monsters | Tier C | **`utils/generate-monsters.js`** → letter shards; [content-pipeline.md](content-pipeline.md) |
 | Items / potions / magic | Tier E | **`generate-items.js`** → three shards |
 | Books | Tier G | **`generate-books.js`** → forgotten_realms/real shards |
-| Recipes | Tier E/H | **`recipes`** in config; [recipes.tsv](../../../public/assets/recipes.tsv) via **`generate-recipes.js`** |
+| Recipes | Tier E/H | **`recipes`** in config; [recipes.tsv](../../../../assets/recipes.tsv) via **`generate-recipes.js`** |
 
 **Decision needed:** inline vs extension vs build-time merge for **catalogues** (monsters/items/books) — before Tier E reference extraction. **Biomes** decision made: **always separate gvars**, registry on config.
 

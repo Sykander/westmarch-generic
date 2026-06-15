@@ -28,9 +28,9 @@ Every LLM-authored asset for westmarch-generic configs. Batch sizes tuned for Ch
 
 | Asset | Where | Notes |
 |-------|-------|-------|
-| Monsters | `public/assets/monsters.tsv` → generate | Hunt/loot combat references CR |
-| Items / potions / magic items | `public/assets/items.tsv` | Shop stock names must match |
-| Spells | `public/assets/spells.tsv` | Scribe recipes |
+| Monsters | `assets/monsters.tsv` → generate | Hunt/loot combat references CR |
+| Items / potions / magic items | `assets/items.tsv` | Shop stock names must match |
+| Spells | `assets/spells.tsv` | Scribe recipes |
 | Subsystems / policies | `starter.gvar` | Human toggles |
 | Display branding | config `display` dict | Short human edit or future prompt |
 | Currencies | `currencies` dict | Only if custom wallet ids beyond gp — small enough to hand-author |

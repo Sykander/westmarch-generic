@@ -2,7 +2,7 @@
 
 **Path:** `src/gvars/utils/catalogues/items.gvar` · **Phase:** 1 (Tier E/F)
 
-Search **item catalogues** from engine shards — mundane **Item**, **Potion**, and **Magic Item** pools (three generated files from [items.tsv](../../../../public/assets/items.tsv) **`type`** column).
+Search **item catalogues** from engine shards — mundane **Item**, **Potion**, and **Magic Item** pools (three generated files from [items.tsv](../../../../../assets/items.tsv) **`type`** column).
 
 Built by **`utils/generate-items.js`** — [content-pipeline.md](../content-pipeline.md). **Lazy-load:** fetch only the shard for the requested **`kind`** (westmarch loaded all three at import — generic avoids that).
 

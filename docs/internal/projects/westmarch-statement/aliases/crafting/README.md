@@ -43,7 +43,7 @@ All four aliases tell the player to **remove ingredients and downtime before rol
 
 **Generic MVP:** preserve this behaviour initially; optional config flag `CRAFTING.enforce_costs` for future strict mode ([US-3.4](../../user-stories.md) house rules).
 
-Reference asset lists: [public/assets/items.tsv](../../../../../public/assets/items.tsv), [public/assets/recipes.tsv](../../../../../public/assets/recipes.tsv).
+Reference asset lists: [assets/items.tsv](../../../../../../assets/items.tsv), [assets/recipes.tsv](../../../../../../assets/recipes.tsv).
 
 ### Generic differences (all crafting commands)
 

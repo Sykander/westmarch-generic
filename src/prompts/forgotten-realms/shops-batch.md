@@ -24,4 +24,4 @@ Paste location → service id mapping from integrated `world_data.locations`.
 
 ## Note
 
-Item names should eventually match engine [items.tsv](../../../../public/assets/items.tsv) — flag unknown names for a later items pass.
+Item names should eventually match engine [items.tsv](../../../assets/items.tsv) — flag unknown names for a later items pass.

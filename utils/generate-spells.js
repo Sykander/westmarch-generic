@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Generate spell list from public/assets/spells.tsv
+ * Generate spell list from assets/spells.tsv
  * Output: src/gvars/utils/catalogues/spells/spells_list.gvar
  */
 const paths = require('./lib/paths');

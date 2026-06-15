@@ -49,4 +49,4 @@ Planned aliases: `src/aliases/economy/`.
 
 - [travel/travel.md](../travel/travel.md) — optional shop **`location_id`** gates  
 - [server-config.md](../../server-config.md) — config layers  
-- [public/assets/items.tsv](../../../../public/assets/items.tsv) — shop stock names
+- [assets/items.tsv](../../../../../../assets/items.tsv) — shop stock names

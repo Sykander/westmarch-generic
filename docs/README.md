@@ -40,7 +40,9 @@ flowchart LR
 
 | Area | Role |
 |------|------|
-| `public/assets/` | TSV catalogues — **`utils/generate-*`** → split shard gvars ([content-pipeline.md](internal/projects/westmarch-statement/content-pipeline.md)) |
+| `assets/` | TSV catalogues - **`utils/generate-*`** -> split shard gvars ([content-pipeline.md](internal/projects/westmarch-statement/content-pipeline.md)) |
+| `editor/` | Planned React/Vite web config editor source |
+| `public/` | Planned generated GitHub Pages static output |
 | `src/aliases/` | MVP command aliases — [mvp-commands.md](internal/projects/westmarch-statement/mvp-commands.md) |
 | `src/snippets/` | *(none in MVP — combat snippets deferred)* |
 | `src/gvars/` | Engine workshop globals — see [src/gvars/README.md](../src/gvars/README.md) |

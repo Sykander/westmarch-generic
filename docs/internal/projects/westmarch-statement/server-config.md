@@ -390,7 +390,7 @@ Shape rules for world objects → [data-shapes.md](data-shapes.md). Toggle and *
 | Artifact | Path |
 |----------|------|
 | Starter config module | [src/gvars/configs/starter.gvar](../../../../src/gvars/configs/starter.gvar) |
-| Reference TSV catalogues | [public/assets/](../../../../public/assets/) — **`utils/generate-*`** → [content-pipeline.md](content-pipeline.md) |
+| Reference TSV catalogues | [assets/](../../../../assets/) — **`utils/generate-*`** → [content-pipeline.md](content-pipeline.md) |
 | Alias-test fixture gvars | `.varfile.json` + test workshop copies |
 | Reference extraction | westmarch monolith → owner config (Phase 2) |
 

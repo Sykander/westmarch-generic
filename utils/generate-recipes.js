@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Generate recipe catalogue from public/assets/recipes.tsv
+ * Generate recipe catalogue from assets/recipes.tsv
  * Output: src/gvars/configs/recipes/recipes_list.gvar (JSON array)
  */
 const paths = require('./lib/paths');

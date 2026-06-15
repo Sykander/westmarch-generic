@@ -1,6 +1,6 @@
 # Content pipeline — TSV → gvars
 
-How **reference catalogues** in [public/assets/](../../../public/assets/README.md) become **workshop gvar bodies** under `src/gvars/`, and how **runtime** loads only the shards it needs.
+How **reference catalogues** in [assets/](../../../../assets/README.md) become **workshop gvar bodies** under `src/gvars/`, and how **runtime** loads only the shards it needs.
 
 Maintainer scripts live in **[utils/README.md](../../../utils/README.md)**. This doc is the architecture; that file is the command reference.
 
@@ -10,7 +10,7 @@ Maintainer scripts live in **[utils/README.md](../../../utils/README.md)**. This
 
 | Goal | Approach |
 |------|----------|
-| Editors use spreadsheets | TSV in **`public/assets/`** (Google Sheets → export) |
+| Editors use spreadsheets | TSV in **`assets/`** (Google Sheets → export) |
 | Gvars stay under size limits | **Split shards** — same strategy as [westmarch](https://github.com/Sykander/westmarch) (`a_monsters`, `items_list`, …) |
 | Lookups stay fast | **Lazy load** one shard per search — do not import every catalogue at alias start |
 | Server owners customize | Engine presets + optional owner overrides via config **`extensions.*`** or duplicated shards |
@@ -24,7 +24,7 @@ Maintainer scripts live in **[utils/README.md](../../../utils/README.md)**. This
 
 ```mermaid
 flowchart LR
-  TSV["public/assets/*.tsv"]
+  TSV["assets/*.tsv"]
   GEN["utils/generate-*.js"]
   SHARD["src/gvars/utils/catalogues/**.gvar"]
   SM["sourcemap + unused_gvars UUIDs"]
@@ -36,7 +36,7 @@ flowchart LR
   SHARD --> FACADE --> ALIAS
 ```
 
-1. **Edit** TSV (or copy from westmarch — see [public/assets/README.md](../../../public/assets/README.md)).
+1. **Edit** TSV (or copy from westmarch — see [assets/README.md](../../../../assets/README.md)).
 2. **Run** generate script(s) — writes shard **bodies** to `src/gvars/`.
 3. **Register** new shard files in **`utils/sourcemap.*.json`** with UUIDs from **`unused_gvars.md`**; **`make build`**.
 4. **Deploy** workshop — facades resolve shards via **`env.gvars.*`** at runtime.
@@ -51,14 +51,14 @@ Large lists are **never** one monolithic gvar. Split rules:
 
 | Source TSV | Shard files *(planned)* | Split key | Facade module |
 |------------|-------------------------|-----------|---------------|
-| [monsters.tsv](../../../public/assets/monsters.tsv) | `catalogues/monsters/{a-z}_monsters.gvar` | First letter of **`name`** | [monsters.gvar](gvars/monsters.md) |
-| [items.tsv](../../../public/assets/items.tsv) | `items_list`, `potions_list`, `magic_items_list` | **`type`** column | [items.gvar](gvars/items.md) |
-| [spells.tsv](../../../public/assets/spells.tsv) | `spells/spells_list.gvar` *(split by level later if size requires)* | — | [spells.gvar](gvars/spells.md) |
-| [books-forgotten-realms.tsv](../../../public/assets/books-forgotten-realms.tsv) | `configs/books/forgotten_realms_{a-z}.gvar` or single file until count grows | First letter of **`name`** | [library.gvar](gvars/library.md) |
-| [books-real.tsv](../../../public/assets/books-real.tsv) | `configs/books/real_{a-z}.gvar` | Same | library |
+| [monsters.tsv](../../../../assets/monsters.tsv) | `catalogues/monsters/{a-z}_monsters.gvar` | First letter of **`name`** | [monsters.gvar](gvars/monsters.md) |
+| [items.tsv](../../../../assets/items.tsv) | `items_list`, `potions_list`, `magic_items_list` | **`type`** column | [items.gvar](gvars/items.md) |
+| [spells.tsv](../../../../assets/spells.tsv) | `spells/spells_list.gvar` *(split by level later if size requires)* | — | [spells.gvar](gvars/spells.md) |
+| [books-forgotten-realms.tsv](../../../../assets/books-forgotten-realms.tsv) | `configs/books/forgotten_realms_{a-z}.gvar` or single file until count grows | First letter of **`name`** | [library.gvar](gvars/library.md) |
+| [books-real.tsv](../../../../assets/books-real.tsv) | `configs/books/real_{a-z}.gvar` | Same | library |
 
 Book rows include optional **`content_link`** (full text URL) — see [data-shapes.md § Book](data-shapes.md#book). **`description`** is embed excerpt only; **`content_link`** is shown in-game only at **100%** comprehension when set.
-| [recipes.tsv](../../../public/assets/recipes.tsv) | **`configs/recipes/recipes_list.gvar`** — merge into owner config **`recipes`** or reference as extension | **`kind`** or single file | [recipe.gvar](gvars/recipe.md) |
+| [recipes.tsv](../../../../assets/recipes.tsv) | **`configs/recipes/recipes_list.gvar`** — merge into owner config **`recipes`** or reference as extension | **`kind`** or single file | [recipe.gvar](gvars/recipe.md) |
 
 **Biomes** — not TSV-driven for MVP; hand-authored or ported **`pools`** modules under [src/gvars/configs/biomes/](../../../src/gvars/configs/biomes/README.md), referenced from **`world_data.biomes.*.gvar_id`**.
 
@@ -105,7 +105,7 @@ def search(query):
     # fallback: widen search only when exact shard miss — document in monsters.gvar
 ```
 
-Row shapes match [data-shapes.md](data-shapes.md) and column docs in [public/assets/README.md](../../../public/assets/README.md).
+Row shapes match [data-shapes.md](data-shapes.md) and column docs in [assets/README.md](../../../../assets/README.md).
 
 **Alternative (later):** emit Draconic `ROWS = [...]` for Drac2-native modules — generators would share the same TSV → row-object step; only the writer differs.
 
@@ -117,11 +117,11 @@ Location: **`utils/`** at repo root — see [utils/README.md](../../../utils/REA
 
 | Script | Input | Output |
 |--------|-------|--------|
-| **`generate-monsters.js`** | `public/assets/monsters.tsv` | `src/gvars/utils/catalogues/monsters/{a-z}_monsters.gvar` |
-| **`generate-items.js`** | `public/assets/items.tsv` | `items_list`, `potions_list`, `magic_items_list` |
-| **`generate-spells.js`** | `public/assets/spells.tsv` | `spells/spells_list.gvar` |
+| **`generate-monsters.js`** | `assets/monsters.tsv` | `src/gvars/utils/catalogues/monsters/{a-z}_monsters.gvar` |
+| **`generate-items.js`** | `assets/items.tsv` | `items_list`, `potions_list`, `magic_items_list` |
+| **`generate-spells.js`** | `assets/spells.tsv` | `spells/spells_list.gvar` |
 | **`generate-books.js`** | `books-forgotten-realms.tsv`, `books-real.tsv` | `configs/books/{corpus}_all.gvar` when empty; else `{corpus}_{a-z}.gvar` |
-| **`generate-recipes.js`** | `public/assets/recipes.tsv` | `configs/recipes/recipes_list.gvar` |
+| **`generate-recipes.js`** | `assets/recipes.tsv` | `configs/recipes/recipes_list.gvar` |
 
 Shared library: **`utils/lib/`** — `read-tsv`, `write-json-gvar`, `shard-by`, `manifest`, `sourcemap-shards`.
 
@@ -166,7 +166,7 @@ Generate utils **do not** replace owner config — they refresh **engine referen
 
 | Change | Action |
 |--------|--------|
-| Updated TSV in **`public/assets/`** | Run affected **`npm run generate:*`**, commit shard outputs |
+| Updated TSV in **`assets/`** | Run affected **`npm run generate:*`**, commit shard outputs |
 | New shard file | Sourcemap + **`unused_gvars.md`**, **`make build`** |
 | Facade search logic only | Edit Draconic facade; no regenerate |
 | Owner-specific catalogue | Edit owner workshop gvar — **no** repo generate |
@@ -178,7 +178,7 @@ Generate utils **do not** replace owner config — they refresh **engine referen
 ## Related
 
 - [utils/README.md](../../../utils/README.md) — commands and porting checklist
-- [public/assets/README.md](../../../public/assets/README.md) — TSV columns
+- [assets/README.md](../../../../assets/README.md) — TSV columns
 - [gvars/core.md](gvars/core.md) — runtime helpers vs catalogue data
 - [DEVELOPMENT.md](../../../DEVELOPMENT.md) — local workflow
 - [solution-statement.md § Option C](solution-statement.md) — extension gvars for oversized tables

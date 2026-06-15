@@ -243,7 +243,7 @@ shops = {
 
 ## Recipe
 
-Explicit **brew / enchant / craft / scribe** instructions for an output item. Source TSV: [public/assets/recipes.tsv](../../../../public/assets/recipes.tsv). Stored in config as **`recipes`** — list of recipe dicts, or dict keyed by **`id`**.
+Explicit **brew / enchant / craft / scribe** instructions for an output item. Source TSV: [assets/recipes.tsv](../../../../assets/recipes.tsv). Stored in config as **`recipes`** — list of recipe dicts, or dict keyed by **`id`**.
 
 ```py
 recipe = {
@@ -279,7 +279,7 @@ recipe = {
 
 ## Book
 
-Volume entry for **`!library`** and **`!read`**. Stored in config **`books`** (list or dict) or loaded from generated catalogue shards ([content-pipeline.md](content-pipeline.md)). Authoring source: [public/assets/books-forgotten-realms.tsv](../../../../public/assets/books-forgotten-realms.tsv), [books-real.tsv](../../../../public/assets/books-real.tsv).
+Volume entry for **`!library`** and **`!read`**. Stored in config **`books`** (list or dict) or loaded from generated catalogue shards ([content-pipeline.md](content-pipeline.md)). Authoring source: [assets/books-forgotten-realms.tsv](../../../../assets/books-forgotten-realms.tsv), [books-real.tsv](../../../../assets/books-real.tsv).
 
 ```py
 book = {

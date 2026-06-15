@@ -2,7 +2,7 @@
 
 **Prompt:** [`books-batch.prompt.md`](books-batch.prompt.md)
 
-**Schema:** [public/assets book columns](../../../../public/assets/README.md#book-columns)
+**Schema:** [assets book columns](../../../assets/README.md#book-columns)
 
 ## Before you send
 

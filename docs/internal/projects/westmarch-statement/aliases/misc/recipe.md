@@ -12,14 +12,14 @@
 !recipe <name>               # show one recipe — ingredients, downtime, DC hints
 ```
 
-- **Search:** across **`recipes`** config ([data-shapes.md § Recipe](../../data-shapes.md#recipe)) plus item catalogues from [items.tsv](../../../../../public/assets/items.tsv).
+- **Search:** across **`recipes`** config ([data-shapes.md § Recipe](../../data-shapes.md#recipe)) plus item catalogues from [items.tsv](../../../../../../assets/items.tsv).
 - **Display:** `consumed`, `required`, workdays, spells; gp-band hints for mundane craft without a recipe row.
 - **Read-only** — no rolls, no bag changes.
 - Post-MVP: **`!journal recipe …`** routes here with identical behaviour — [journal.md](journal.md).
 
 ## westmarch reference
 
-None as a dedicated command. Generic uses structured **`recipes`** rows ([recipes.tsv](../../../../../public/assets/recipes.tsv)) with separate **`consumed`** and **`required`** material lists.
+None as a dedicated command. Generic uses structured **`recipes`** rows ([recipes.tsv](../../../../../../assets/recipes.tsv)) with separate **`consumed`** and **`required`** material lists.
 
 ## Generic architecture
 
@@ -45,7 +45,7 @@ Reuse **`CRAFT_PRICE_BANDS`**, **`CRAFT_RARITY_DC`** from config ([crafting/READ
 ## Prerequisites
 
 - [crafting/craft.md](../crafting/craft.md) — catalogues + config tables
-- **`recipes`** seeded from [recipes.tsv](../../../../../public/assets/recipes.tsv)
+- **`recipes`** seeded from [recipes.tsv](../../../../../../assets/recipes.tsv)
 - Config loader
 
 ## Implementation checklist

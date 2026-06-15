@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Generate monster letter shards from public/assets/monsters.tsv
+ * Generate monster letter shards from assets/monsters.tsv
  * Output: src/gvars/utils/catalogues/monsters/{a-z}_monsters.gvar
  */
 const paths = require('./lib/paths');

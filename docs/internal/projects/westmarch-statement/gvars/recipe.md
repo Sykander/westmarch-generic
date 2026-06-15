@@ -29,4 +29,4 @@ Character **known recipes** (notebook from recipe encounters) may filter results
 ## Related
 
 - [aliases/misc/recipe.md](../aliases/misc/recipe.md)
-- [public/assets/recipes.tsv](../../../../public/assets/recipes.tsv)
+- [assets/recipes.tsv](../../../../../assets/recipes.tsv)

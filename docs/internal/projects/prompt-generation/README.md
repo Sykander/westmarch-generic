@@ -13,7 +13,7 @@ How to use external LLMs (ChatGPT, etc.) to author **layer-2 world data** for a 
 | Source | Assets |
 |--------|--------|
 | **LLM prompts** (`src/prompts/`) | Locations, paths, shops, biome registry, biome encounter pools, setting recipes, setting books, calendar, transport |
-| **TSV pipeline** ([content-pipeline.md](../westmarch-statement/content-pipeline.md)) | Monsters, items, potions, magic items, spells — engine catalogues from `public/assets/*.tsv` |
+| **TSV pipeline** ([content-pipeline.md](../westmarch-statement/content-pipeline.md)) | Monsters, items, potions, magic items, spells — engine catalogues from `assets/*.tsv` |
 | **Engine presets** | Default biome modules under `src/gvars/configs/biomes/` — reference via `engine:configs/biomes/<code>` until you author custom pools |
 | **Human / starter template** | `subsystems` toggles, `policies`, `display` branding, `channel_policy`, svar wiring |
 

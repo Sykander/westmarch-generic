@@ -75,7 +75,7 @@ get_embed = display.get_display()
 
 Subsystem **`config`**: [data-shapes.md § Subsystem entry](../../data-shapes.md#subsystem-entry).
 
-Asset data: [public/assets/monsters.tsv](../../../../public/assets/monsters.tsv) (hunt, loot); biome **`pools`** in separate biome gvars ([src/gvars/configs/biomes/](../../../../src/gvars/configs/biomes/README.md)).
+Asset data: [assets/monsters.tsv](../../../../../../assets/monsters.tsv) (hunt, loot); biome **`pools`** in separate biome gvars ([src/gvars/configs/biomes/](../../../../src/gvars/configs/biomes/README.md)).
 
 ## Cooldowns
 

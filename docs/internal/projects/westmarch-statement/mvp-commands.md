@@ -95,7 +95,7 @@ When a subsystem `enabled` is `False`, all its commands respect the global off s
 | **Biome gvars** | **`world_data.biomes.*.gvar_id`** → lazy load [src/gvars/configs/biomes/](../../../../src/gvars/configs/biomes/README.md) | enc, forage, fish, mine, lumber |
 | **Encounter processing** | `encounter_templates`, `encounters` | activity commands — [gvars/](gvars/README.md), [data-shapes.md](data-shapes.md) |
 | **Monsters & loot** | `monsters` (+ shards) | hunt, loot |
-| **Items & recipes** | `items` catalogues + **`recipes`** list | craft, brew, enchant, buy, sell — [recipes.tsv](../../../../public/assets/recipes.tsv) |
+| **Items & recipes** | `items` catalogues + **`recipes`** list | craft, brew, enchant, buy, sell — [recipes.tsv](../../../../assets/recipes.tsv) |
 | **Spells** | `spells`, `spells_list` | scribe |
 | **Shops & economy** | *(new)* shops; job payouts; **`currencies`** | job, buy, sell, **wallet** |
 | **Books & library** | `library` book catalogue | library, read |

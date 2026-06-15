@@ -96,7 +96,7 @@ Target per biome (first pass): **5–10** entries each for `enc.combat`, `enc.ga
 | 6a | [`recipes-batch.prompt.md`](../../../../src/prompts/forgotten-realms/recipes-batch.prompt.md) | `config_recipes` |
 | 6b | [`books-batch.prompt.md`](../../../../src/prompts/forgotten-realms/books-batch.prompt.md) | `config_books` |
 
-- Recipes: align `name` with [items.tsv](../../../../public/assets/items.tsv) or note new items for a follow-up.
+- Recipes: align `name` with [items.tsv](../../../../assets/items.tsv) or note new items for a follow-up.
 - Books: align `tags` with `library_topics` on locations that have `library`.
 - Integrate under top-level `recipes` (list) and `books` (list) — or extension gvar when size grows.
 

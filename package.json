@@ -21,7 +21,6 @@
     "test-sourcemaps": "publish-avrae check-config --sourcemap utils/sourcemap.dev.json && publish-avrae check-config --sourcemap utils/sourcemap.prod.json && publish-avrae compare-config utils/sourcemap.dev.json utils/sourcemap.prod.json"
   },
   "author": "",
-  "license": "ISC",
   "devDependencies": {
     "publish-avrae": "^1.1.4"
   }

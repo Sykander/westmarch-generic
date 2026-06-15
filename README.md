@@ -19,10 +19,12 @@ This repo is the **generic engine**. Per-server content lives in workshop gvars 
 | `src/aliases/` | Player-facing commands |
 | `src/snippets/` | Snippet expansions |
 | `src/gvars/` | Workshop globals (`env`, shared utils, per-server config gvars) |
+| `editor/` | Planned React/Vite web config editor source |
 | `utils/sourcemap.*.json` | Deploy source of truth (aliases, snippets, gvar ids) |
 | `docs/workshop/` | Markdown help docs deployed to Avrae aliases, subaliases, and snippets |
 | `utils/*.js` | Env/var generation and TSV → catalogue shards ([utils/README.md](utils/README.md)); sourcemap checks/deploys use the `publish-avrae` CLI |
-| `public/assets/` | TSV catalogues — input to **`utils/generate-*`** ([content-pipeline](docs/internal/projects/westmarch-statement/content-pipeline.md)) |
+| `assets/` | TSV catalogues - input to **`utils/generate-*`** ([content-pipeline](docs/internal/projects/westmarch-statement/content-pipeline.md)) |
+| `public/` | Planned generated static GitHub Pages output for the editor |
 | `docs/` | Design and consumer documentation |
 | `.cursor/` | Agent rules, cached Avrae/avrae-ls docs, refresh and perf scripts |
 

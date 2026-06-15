@@ -17,4 +17,4 @@
 
 ## Note
 
-Engine ships example rows in [recipes.tsv](../../../../public/assets/recipes.tsv) — LLM batches add setting flavour.
+Engine ships example rows in [recipes.tsv](../../../assets/recipes.tsv) — LLM batches add setting flavour.

@@ -26,11 +26,11 @@ make test      # lint + sourcemap tests + avrae-ls alias tests
 
 | Script | npm command | Input | Output |
 |--------|-------------|-------|--------|
-| [generate-monsters.js](generate-monsters.js) | `npm run generate:monsters` | [monsters.tsv](../public/assets/monsters.tsv) | `{a-z}_monsters.gvar` |
-| [generate-items.js](generate-items.js) | `npm run generate:items` | [items.tsv](../public/assets/items.tsv) | `items_list`, `potions_list`, `magic_items_list` |
-| [generate-spells.js](generate-spells.js) | `npm run generate:spells` | [spells.tsv](../public/assets/spells.tsv) | `spells_list.gvar` |
+| [generate-monsters.js](generate-monsters.js) | `npm run generate:monsters` | [monsters.tsv](../assets/monsters.tsv) | `{a-z}_monsters.gvar` |
+| [generate-items.js](generate-items.js) | `npm run generate:items` | [items.tsv](../assets/items.tsv) | `items_list`, `potions_list`, `magic_items_list` |
+| [generate-spells.js](generate-spells.js) | `npm run generate:spells` | [spells.tsv](../assets/spells.tsv) | `spells_list.gvar` |
 | **`generate-books.js`** | `npm run generate:books` | books-forgotten-realms/real.tsv | `configs/books/{forgotten_realms,real}_all.gvar` when empty; else `{corpus}_{a-z}.gvar` |
-| [generate-recipes.js](generate-recipes.js) | `npm run generate:recipes` | [recipes.tsv](../public/assets/recipes.tsv) | `configs/recipes/recipes_list.gvar` |
+| [generate-recipes.js](generate-recipes.js) | `npm run generate:recipes` | [recipes.tsv](../assets/recipes.tsv) | `configs/recipes/recipes_list.gvar` |
 
 ```bash
 make build     # run all generators, build env gvars, and refresh .varfile.json
@@ -56,7 +56,7 @@ Shard files are **raw JSON arrays** — loaded at runtime with `load_json(get_gv
 
 ## Adding a new generator
 
-1. **TSV schema** — document columns in [public/assets/README.md](../public/assets/README.md).
+1. **TSV schema** — document columns in [assets/README.md](../assets/README.md).
 2. **Shard rule** — letter, type, or separate file per corpus; document in [content-pipeline.md](../docs/internal/projects/westmarch-statement/content-pipeline.md).
 3. **Implement** `utils/generate-<name>.js` using **`utils/lib/read-tsv.js`** + **`write-json-gvar.js`**.
 4. **Output paths** under `src/gvars/utils/catalogues/` for engine catalogues, or `src/gvars/configs/` for setting-specific data (biomes, books, recipes).
@@ -79,7 +79,7 @@ Reference implementations:
 
 Path layout:
 
-- `public/*.tsv` → **`public/assets/*.tsv`**
+- `public/*.tsv` → **`assets/*.tsv`**
 - Engine modules → **`src/gvars/utils/`** (auth, catalogues, world, core, …)
 - Server presets → **`src/gvars/configs/`** (not in sourcemap)
 
@@ -101,4 +101,4 @@ Same rules as `.cursor/rules/drac2-tools-maintainer.mdc`:
 
 - [content-pipeline.md](../docs/internal/projects/westmarch-statement/content-pipeline.md)
 - [DEVELOPMENT.md](../DEVELOPMENT.md)
-- [public/assets/README.md](../public/assets/README.md)
+- [assets/README.md](../assets/README.md)
