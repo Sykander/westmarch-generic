@@ -1,0 +1,27 @@
+hit = monsters.search(None, "Wolf")
+return hit != None and hit["name"] == "Wolf"
+---
+True
+---
+name: search finds engine monster shard entry
+
+hit = monsters.search(None, "NonexistentBeast")
+return hit == None
+---
+True
+---
+name: search returns None for unknown creature
+
+cfg_fixture = {
+    "world_data": {
+        "monsters": [
+            {"name": "Custom Beast", "cr": 2, "type_str": "Beast"},
+        ],
+    },
+}
+hit = monsters.search(cfg_fixture, "Custom")
+return hit != None and hit["name"] == "Custom Beast"
+---
+True
+---
+name: search checks owner monster data before engine shards

@@ -2,8 +2,10 @@
 using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(
     auth = env.gvars.auth,
-    display = env.gvars.display,
     config = env.gvars.config,
+    display = env.gvars.display,
+    monsters = env.gvars.monsters,
+    rolls = env.gvars.rolls,
 )
 
 ok, msg = auth.is_allowed()
@@ -20,16 +22,81 @@ args = argparse(&ARGS&)
 argslist = &ARGS&
 
 if len(argslist) > 0 and argslist[0] in ["help", "?"]:
-    return get_embed(desc = f"{cmd_name} help is not implemented")
+    return get_embed(desc="\n".join([
+        "**Usage**",
+        f"`!{cmd_name} <creature> [party_size] [-n roll_number] [bonuses]`",
+        "Run `!enc` first when your server uses the westmarch hunt loop.",
+        "A group hunt can pass the trail to the next hunter with `-n` and bonus flags.",
+    ]))
 
 try:
     ch = character()
 except:
     return get_embed(desc = f"{cmd_name} requires a character")
 
+cfg = config.get_config()
+
+if len(argslist) == 0:
+    return get_embed(desc=f"Provide a **creature** to hunt. Use `!{cmd_name} help` for options.")
+
+party_size = 1
+creature_parts = []
+for arg in argslist:
+    creature_parts.append(str(arg))
+
+if len(creature_parts) > 1:
+    last = creature_parts[-1]
+    try:
+        maybe_party = int(last)
+        if maybe_party > 0:
+            party_size = maybe_party
+            creature_parts = creature_parts[:-1]
+    except:
+        pass
+
+creature_name = " ".join(creature_parts).strip()
+if creature_name == "":
+    return get_embed(desc=f"Provide a **creature** to hunt. Use `!{cmd_name} help` for options.")
+
+monster = monsters.search(cfg, creature_name)
+if monster == None:
+    return get_embed(desc=f"Creature **{creature_name}** not found. Try an exact or longer creature name.")
+
+cr = monsters.monster_cr(monster)
+try:
+    dc = int((10 if party_size == 1 else 8 * party_size) + cr)
+except:
+    dc = 10 if party_size == 1 else 8 * party_size
+
+try:
+    result = rolls.get_roll(ch, "survival", args, "check", dc=dc)
+    total = result["total"]
+    full = result["full"]
+    passed = result["passed"] == True
+except:
+    rolled = vroll("1d20")
+    total = rolled.total
+    full = rolled.full
+    passed = total >= dc
+
+name = monsters.monster_name(monster)
+lines = [
+    f"**{name}**",
+    f"Survival check vs **DC {dc}**: {full}",
+]
+if passed:
+    lines.append(f"Trail found. {monsters.format_combat_block(monster)}")
+else:
+    lines.append("The trail goes cold.")
+
+if party_size > 1:
+    try:
+        next_n = args.last("n", 1, int) + 1
+    except:
+        next_n = 2
+    lines.append(f"Group hunt: party size **{party_size}**. If this hunter fails, the next hunter can run `!{cmd_name} {name} {party_size} -b {total}[previous] -n {next_n}`.")
 
 return get_embed(
-    desc=f"{cmd_name} is not implemented",
+    desc="\n\n".join(lines),
 )
 </drac2>
-

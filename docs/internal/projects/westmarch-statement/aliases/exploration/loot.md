@@ -58,10 +58,10 @@ flowchart TD
 
 ## Implementation checklist
 
-- [ ] **[loot.gvar](../../gvars/loot.md)** — `build_lootables`, session state machine helpers
-- [ ] **`loot.alias`** — loader, toggle, session state machine
-- [ ] Namespaced loot session cvar
-- [ ] **`loot.alias-test`** — help, start session, loot item smoke (multi-step may need varfile state)
+- [x] **[loot.gvar](../../gvars/loot.md)** — `build_lootables`, session state machine helpers
+- [x] **`loot.alias`** — loader, toggle, session state machine
+- [x] Namespaced loot session cvar
+- [x] **`loot.alias-test`** — help, start session, status, clear
 - [ ] Optional config overrides for GP ranges by CR
 
 ## Exit criteria

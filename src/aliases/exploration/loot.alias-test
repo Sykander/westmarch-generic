@@ -131,6 +131,8 @@ vars:
     _wm_command: loot
   svars:
     westmarch_config: "eeee7777-7777-7777-7777-777777777777"
+  cvars:
+    wg_loot_session: '{"creature": "Wolf", "items": []}'
   gvars:
     eeee7777-7777-7777-7777-777777777777: |
       subsystems = {
@@ -139,6 +141,3 @@ vars:
               "commands": {"loot": True},
           },
       }
-  character:
-    cvars:
-      wg_loot_session: '{"creature": "Wolf", "items": []}'

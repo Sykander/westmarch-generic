@@ -9,7 +9,7 @@
 | Phase | Player action | Engine |
 |-------|---------------|--------|
 | **Start** | `!loot <creature>` | Look up monster → build **lootables** list (gp bands by CR, type-based skill checks) |
-| **Extract** | `!loot <item>` | Roll vs DC → on success **`pc.modify_bag`** / **`pc.modify_gold`** |
+| **Extract** | `!loot <item>` | Roll vs DC → on success update the Loot bag or coinpurse from inside `loot.gvar` |
 | **Status / clear** | `!loot` / `!loot clear` | Read or wipe session cvar |
 
 This is **separate from**:
@@ -36,7 +36,7 @@ def clear_session(ch):
 def attempt_loot(ch, config, lootable_id, args):
     """Roll skill check; on success apply via pc; return (success, message, updated_session)."""
 
-def format_session_embed(session, config):
+def format_session(session, config):
     """Help player see remaining lootables."""
 ```
 
@@ -45,7 +45,7 @@ Optional later: config **`LOOT_RULES`** overrides CR→gp bands and type→skill
 ## Dependencies
 
 - [monsters.md](monsters.md) — creature lookup
-- [pc.md](pc.md) — sheet changes
+- [core/bags.gvar](core.md) / Avrae coinpurse — sheet changes from inside the helper
 - **`core/rolls.gvar`** via `env.gvars.rolls`
 
 ## Related

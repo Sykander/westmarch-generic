@@ -2,8 +2,9 @@
 using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(
     auth = env.gvars.auth,
-    display = env.gvars.display,
     config = env.gvars.config,
+    display = env.gvars.display,
+    loot = env.gvars.loot,
 )
 
 ok, msg = auth.is_allowed()
@@ -20,16 +21,13 @@ args = argparse(&ARGS&)
 argslist = &ARGS&
 
 if len(argslist) > 0 and argslist[0] in ["help", "?"]:
-    return get_embed(desc = f"{cmd_name} help is not implemented")
+    return get_embed(desc = loot.help_text())
 
 try:
     ch = character()
 except:
     return get_embed(desc = f"{cmd_name} requires a character")
 
-
-return get_embed(
-    desc=f"{cmd_name} is not implemented",
-)
+cfg = config.get_config()
+return loot.run(argslist, args, get_embed, cfg, ch)
 </drac2>
-

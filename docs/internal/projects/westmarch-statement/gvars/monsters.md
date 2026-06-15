@@ -1,6 +1,6 @@
 # monsters.gvar
 
-**Path:** `src/gvars/utils/catalogues/monsters.gvar` · **Phase:** 1 (Tier C)
+**Path:** `src/gvars/utils/catalogues/monsters/monsters.gvar` · **Phase:** 1 (Tier C)
 
 Search and load **monster** rows from engine catalogue shards. Source TSV: [public/assets/monsters.tsv](../../../../public/assets/monsters.tsv) → built by **`utils/generate-monsters.js`** ([content-pipeline.md](../content-pipeline.md)).
 
@@ -12,9 +12,9 @@ Search and load **monster** rows from engine catalogue shards. Source TSV: [publ
 
 ```py
 def search(config, query):
-    """Prefix / substring match — loads at most one letter shard first; widens only on miss."""
+    """Prefix / substring match against owner data first, then the first-letter engine shard."""
 
-def get(config, name):
+def get_monster(config, name):
     """Exact name or None — single letter shard."""
 
 def format_combat_block(monster, prefix="!"):

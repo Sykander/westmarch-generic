@@ -1,6 +1,242 @@
-"""monsters.gvar — placeholder.
+"""monsters.gvar - lazy facade over generated monster catalogue shards."""
 
-See docs/internal/projects/westmarch-statement/gvars/monsters.md
-"""
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(
+    config = env.gvars.config,
+    dicts = env.gvars.dicts,
+    lists = env.gvars.lists,
+)
 
-# TODO: implement monsters module
+SHARDS = {
+    "a": env.gvars.a_monsters,
+    "b": env.gvars.b_monsters,
+    "c": env.gvars.c_monsters,
+    "d": env.gvars.d_monsters,
+    "e": env.gvars.e_monsters,
+    "f": env.gvars.f_monsters,
+    "g": env.gvars.g_monsters,
+    "h": env.gvars.h_monsters,
+    "i": env.gvars.i_monsters,
+    "j": env.gvars.j_monsters,
+    "k": env.gvars.k_monsters,
+    "l": env.gvars.l_monsters,
+    "m": env.gvars.m_monsters,
+    "n": env.gvars.n_monsters,
+    "o": env.gvars.o_monsters,
+    "p": env.gvars.p_monsters,
+    "q": env.gvars.q_monsters,
+    "r": env.gvars.r_monsters,
+    "s": env.gvars.s_monsters,
+    "t": env.gvars.t_monsters,
+    "u": env.gvars.u_monsters,
+    "v": env.gvars.v_monsters,
+    "w": env.gvars.w_monsters,
+    "x": env.gvars.x_monsters,
+    "y": env.gvars.y_monsters,
+    "z": env.gvars.z_monsters,
+}
+
+_cache = {}
+
+
+def _read_field(obj, key):
+    if obj == None:
+        return None
+    try:
+        if key in obj:
+            return obj[key]
+    except:
+        pass
+    try:
+        return obj.get(key)
+    except:
+        pass
+    attrs = {
+        "world_data": lambda o: o.world_data,
+        "extensions": lambda o: o.extensions,
+        "monsters": lambda o: o.monsters,
+        "name": lambda o: o.name,
+        "cr": lambda o: o.cr,
+        "type": lambda o: o.type,
+        "type_str": lambda o: o.type_str,
+        "size": lambda o: o.size,
+        "source": lambda o: o.source,
+        "image_url": lambda o: o.image_url,
+        "token": lambda o: o.token,
+    }
+    if key in attrs:
+        try:
+            return attrs[key](obj)
+        except:
+            pass
+    return None
+
+
+def _cfg(config_override=None):
+    if config_override != None:
+        return config_override
+    return config.get_config()
+
+
+def _query_text(query):
+    if query == None:
+        return ""
+    return str(query).strip()
+
+
+def _shard_key(query):
+    text = _query_text(query).lower()
+    if text == "":
+        return None
+    key = text[0]
+    if key in SHARDS:
+        return key
+    return None
+
+
+def _load_json_entries(body):
+    if body == None or str(body).strip() == "":
+        return []
+    try:
+        data = load_json(body)
+    except:
+        return []
+    return _entries_from(data)
+
+
+def _entries_from(data):
+    if data == None:
+        return []
+    if lists.is_list(data):
+        return data
+    if dicts.is_dict(data):
+        entries = []
+        for key in data:
+            entries.append(data[key])
+        return entries
+    return []
+
+
+def _load_shard(letter):
+    if letter == None:
+        return []
+    key = str(letter).lower()
+    if key in _cache:
+        return _cache[key]
+    addr = _read_field(SHARDS, key)
+    if addr == None:
+        _cache[key] = []
+        return []
+    _cache[key] = _load_json_entries(get_gvar(addr))
+    return _cache[key]
+
+
+def _owner_entries(cfg):
+    wd = _read_field(cfg, "world_data")
+    inline = _read_field(wd, "monsters")
+    entries = _entries_from(inline)
+    ext = _read_field(cfg, "extensions")
+    ext_addr = _read_field(ext, "monsters")
+    if ext_addr != None and str(ext_addr).strip() != "":
+        entries += _load_json_entries(get_gvar(str(ext_addr).strip()))
+    return entries
+
+
+def _monster_name(monster):
+    name = _read_field(monster, "name")
+    if name == None:
+        return ""
+    return str(name).strip()
+
+
+def _find_exact(entries, query):
+    q = _query_text(query).lower()
+    if q == "":
+        return None
+    for monster in entries:
+        if _monster_name(monster).lower() == q:
+            return monster
+    return None
+
+
+def _find_loose(entries, query):
+    q = _query_text(query).lower()
+    if q == "":
+        return None
+    prefix = None
+    contains = None
+    for monster in entries:
+        name = _monster_name(monster)
+        n = name.lower()
+        if n == q:
+            return monster
+        if prefix == None and n.startswith(q):
+            prefix = monster
+        if contains == None and q in n:
+            contains = monster
+    if prefix != None:
+        return prefix
+    return contains
+
+
+def search(config_override, query):
+    """Prefix / substring match against owner data first, then the first-letter engine shard."""
+    cfg = _cfg(config_override)
+    owner = _owner_entries(cfg)
+    hit = _find_loose(owner, query)
+    if hit != None:
+        return hit
+    first = _shard_key(query)
+    if first != None:
+        hit = _find_loose(_load_shard(first), query)
+        if hit != None:
+            return hit
+    return None
+
+
+def get_monster(config_override, name):
+    """Exact name lookup against owner data first, then the matching engine shard."""
+    cfg = _cfg(config_override)
+    hit = _find_exact(_owner_entries(cfg), name)
+    if hit != None:
+        return hit
+    first = _shard_key(name)
+    if first == None:
+        return None
+    return _find_exact(_load_shard(first), name)
+
+
+def search_for_monster(query, config_override=None):
+    """Compatibility wrapper used by westmarch-style aliases."""
+    return search(config_override, query)
+
+
+def monster_name(monster):
+    name = _monster_name(monster)
+    if name == "":
+        return "Unknown Monster"
+    return name
+
+
+def monster_cr(monster):
+    cr = _read_field(monster, "cr")
+    if cr == None:
+        return 0
+    try:
+        return float(cr)
+    except:
+        return 0
+
+
+def monster_type(monster):
+    type_text = _read_field(monster, "type_str")
+    if type_text == None or str(type_text).strip() == "":
+        type_text = _read_field(monster, "type")
+    if type_text == None or str(type_text).strip() == "":
+        return "Creature"
+    return str(type_text)
+
+
+def format_combat_block(monster, prefix="!"):
+    name = monster_name(monster)
+    return f"Combat: `{prefix}i madd \"{name}\"`"

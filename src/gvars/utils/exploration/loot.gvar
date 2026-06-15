@@ -1,6 +1,336 @@
-"""loot.gvar — placeholder.
+"""loot.gvar - post-combat loot session helpers."""
 
-See docs/internal/projects/westmarch-statement/gvars/loot.md
-"""
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(
+    bags = env.gvars.bags,
+    dicts = env.gvars.dicts,
+    lists = env.gvars.lists,
+    monsters = env.gvars.monsters,
+    rolls = env.gvars.rolls,
+)
 
-# TODO: implement loot module
+CVAR_LOOT_SESSION = "wg_loot_session"
+
+
+def _read_field(obj, key):
+    if obj == None:
+        return None
+    try:
+        if key in obj:
+            return obj[key]
+    except:
+        pass
+    try:
+        return obj.get(key)
+    except:
+        pass
+    attrs = {
+        "creature": lambda o: o.creature,
+        "cr": lambda o: o.cr,
+        "type": lambda o: o.type,
+        "items": lambda o: o.items,
+        "id": lambda o: o.id,
+        "name": lambda o: o.name,
+        "skill": lambda o: o.skill,
+        "dc": lambda o: o.dc,
+        "kind": lambda o: o.kind,
+        "amount": lambda o: o.amount,
+    }
+    if key in attrs:
+        try:
+            return attrs[key](obj)
+        except:
+            pass
+    return None
+
+
+def _cr_value(monster):
+    try:
+        return float(monsters.monster_cr(monster))
+    except:
+        return 0
+
+
+def _dc_for(monster, offset=10):
+    try:
+        return int(offset + _cr_value(monster))
+    except:
+        return offset
+
+
+def _gold_amount(monster):
+    cr = _cr_value(monster)
+    amount = 5 + int(cr * 5)
+    if amount < 1:
+        amount = 1
+    return amount
+
+
+def _skill_for_type(type_text):
+    t = str(type_text).lower()
+    if "undead" in t or "fiend" in t or "celestial" in t:
+        return "Religion"
+    if "aberration" in t or "construct" in t or "elemental" in t or "fey" in t:
+        return "Arcana"
+    if "beast" in t or "dragon" in t or "giant" in t or "monstrosity" in t or "ooze" in t or "plant" in t:
+        return "Nature"
+    return "Investigation"
+
+
+def build_lootables(monster, config=None):
+    """From monster type + CR to a small list of lootable entries."""
+    name = monsters.monster_name(monster)
+    type_text = monsters.monster_type(monster)
+    dc = _dc_for(monster, 10)
+    skill = _skill_for_type(type_text)
+    return [
+        {
+            "id": "survey",
+            "name": "Survey the remains",
+            "skill": "Investigation",
+            "dc": dc,
+            "kind": "note",
+        },
+        {
+            "id": "trophy",
+            "name": f"{name} Trophy",
+            "skill": skill,
+            "dc": dc + 1,
+            "kind": "item",
+            "amount": 1,
+        },
+        {
+            "id": "coins",
+            "name": "Scattered Coin",
+            "skill": "Investigation",
+            "dc": dc,
+            "kind": "gold",
+            "amount": _gold_amount(monster),
+        },
+    ]
+
+
+def get_session(ch):
+    raw = None
+    try:
+        cv = ch.cvars
+        if CVAR_LOOT_SESSION in cv:
+            raw = cv[CVAR_LOOT_SESSION]
+    except:
+        pass
+    if raw == None:
+        try:
+            if exists(CVAR_LOOT_SESSION):
+                raw = get(CVAR_LOOT_SESSION)
+        except:
+            pass
+    if raw == None:
+        raw = ""
+    try:
+        cvar_raw = ch.get_cvar(CVAR_LOOT_SESSION)
+        if cvar_raw != None and str(cvar_raw).strip() != "":
+            raw = cvar_raw
+    except:
+        pass
+    if raw == None or str(raw).strip() == "":
+        return None
+    try:
+        session = load_json(raw)
+    except:
+        return None
+    if session == None or not dicts.is_dict(session):
+        return None
+    return session
+
+
+def set_session(ch, session):
+    ch.set_cvar(CVAR_LOOT_SESSION, dump_json(session))
+    return session
+
+
+def clear_session(ch):
+    had_session = get_session(ch) != None
+    try:
+        ch.delete_cvar(CVAR_LOOT_SESSION)
+    except:
+        try:
+            ch.set_cvar(CVAR_LOOT_SESSION, "")
+        except:
+            pass
+    return had_session
+
+
+def start_session(ch, monster, config=None):
+    session = {
+        "creature": monsters.monster_name(monster),
+        "cr": monsters.monster_cr(monster),
+        "type": monsters.monster_type(monster),
+        "items": build_lootables(monster, config),
+    }
+    return set_session(ch, session)
+
+
+def _items(session):
+    items = _read_field(session, "items")
+    if lists.is_list(items):
+        return items
+    return []
+
+
+def _lootable_name(item):
+    name = _read_field(item, "name")
+    if name == None:
+        return ""
+    return str(name).strip()
+
+
+def _find_lootable(session, query):
+    q = str(query).strip().lower()
+    if q == "":
+        return None
+    prefix = None
+    for item in _items(session):
+        item_id = _read_field(item, "id")
+        name = _lootable_name(item)
+        if item_id != None and str(item_id).lower() == q:
+            return item
+        if name.lower() == q:
+            return item
+        if prefix == None and name.lower().startswith(q):
+            prefix = item
+    return prefix
+
+
+def _remove_lootable(session, lootable):
+    kept = []
+    target_id = _read_field(lootable, "id")
+    target_name = _lootable_name(lootable)
+    for item in _items(session):
+        if _read_field(item, "id") == target_id and _lootable_name(item) == target_name:
+            continue
+        kept.append(item)
+    session["items"] = kept
+    return session
+
+
+def _apply_reward(ch, lootable):
+    kind = _read_field(lootable, "kind")
+    amount = _read_field(lootable, "amount")
+    if amount == None:
+        amount = 1
+    try:
+        amount = int(amount)
+    except:
+        amount = 1
+    name = _lootable_name(lootable)
+    if kind == "gold":
+        try:
+            ch.coinpurse.modify_coins(gp=amount)
+            return f"Gained **{amount} gp**."
+        except:
+            return f"Found **{amount} gp** (coinpurse not updated)."
+    if kind == "item":
+        ok, msg = bags.modify_bag(name, amount, "Loot", ch)
+        if ok:
+            return msg
+        return f"Recovered **{name}**."
+    return f"Recorded **{name}**."
+
+
+def format_session(session, config=None):
+    creature = _read_field(session, "creature")
+    if creature == None or str(creature).strip() == "":
+        creature = "Unknown creature"
+    lines = [f"Active loot session: **{creature}**"]
+    items = _items(session)
+    if len(items) == 0:
+        lines.append("No lootables remain. Use `!loot clear` to close the session.")
+        return "\n".join(lines)
+    lines.append("Loot table:")
+    for item in items:
+        name = _lootable_name(item)
+        skill = _read_field(item, "skill")
+        dc = _read_field(item, "dc")
+        if skill == None:
+            skill = "Investigation"
+        if dc == None:
+            dc = 10
+        lines.append(f"- **{name}** - {skill} DC {dc}")
+    return "\n".join(lines)
+
+
+def help_text():
+    return "\n".join([
+        "**Usage**",
+        "`!loot <creature>` - start a creature loot table session.",
+        "`!loot <item>` - roll for an item in the active session.",
+        "`!loot clear` - clear the active session.",
+        "`!loot` - show the active session.",
+    ])
+
+
+def attempt_loot(ch, config, lootable_id, args):
+    session = get_session(ch)
+    if session == None:
+        return False, "No active loot session. Start one with `!loot <creature>`.", None
+    lootable = _find_lootable(session, lootable_id)
+    if lootable == None:
+        return False, f"Unknown lootable **{lootable_id}**.\n\n{format_session(session, config)}", session
+    skill = _read_field(lootable, "skill")
+    if skill == None:
+        skill = "Investigation"
+    dc = _read_field(lootable, "dc")
+    if dc == None:
+        dc = 10
+    try:
+        dc = int(dc)
+    except:
+        dc = 10
+    try:
+        result = rolls.get_roll(ch, skill, args, "check", dc=dc)
+        total = _read_field(result, "total")
+        full = _read_field(result, "full")
+        passed = _read_field(result, "passed") == True
+    except:
+        rolled = vroll("1d20")
+        total = rolled.total
+        full = rolled.full
+        passed = total >= dc
+    name = _lootable_name(lootable)
+    if passed:
+        reward = _apply_reward(ch, lootable)
+        session = _remove_lootable(session, lootable)
+        if len(_items(session)) == 0:
+            clear_session(ch)
+        else:
+            set_session(ch, session)
+        return True, f"{skill} DC {dc}: {full}\n\nRecovered **{name}**. {reward}", session
+    return False, f"{skill} DC {dc}: {full}\n\nCould not recover **{name}**.", session
+
+
+def run(argslist, args, get_embed, config, ch):
+    if len(argslist) == 0:
+        session = get_session(ch)
+        if session == None:
+            return get_embed(desc="No active loot session. Use `!loot <creature>` to start one.")
+        return get_embed(desc=format_session(session, config))
+
+    first = str(argslist[0]).strip().lower()
+    if first in ["help", "?"]:
+        return get_embed(desc=help_text())
+    if first in ["clear", "reset", "end"]:
+        if clear_session(ch):
+            return get_embed(desc="Loot session cleared.")
+        return get_embed(desc="No active loot session to clear.")
+
+    text = " ".join([str(a) for a in argslist]).strip()
+    session = get_session(ch)
+    if session != None:
+        ok, msg, updated = attempt_loot(ch, config, text, args)
+        return get_embed(desc=msg)
+
+    monster = monsters.search(config, text)
+    if monster == None:
+        return get_embed(desc=f"Creature **{text}** not found. Try an exact or longer creature name.")
+    session = start_session(ch, monster, config)
+    return get_embed(desc=f"Started loot table session.\n\n{format_session(session, config)}")

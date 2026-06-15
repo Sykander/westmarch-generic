@@ -1,0 +1,14 @@
+monster = {"name": "Wolf", "cr": 0.25, "type_str": "Beast"}
+entries = loot.build_lootables(monster, {})
+return len(entries) == 3 and entries[0]["skill"] == "Investigation" and entries[1]["skill"] == "Nature"
+---
+True
+---
+name: build_lootables creates investigation and type-based entries
+
+session = {"creature": "Wolf", "items": []}
+return "Wolf" in loot.format_session(session, {}) and "No lootables" in loot.format_session(session, {})
+---
+True
+---
+name: format_session handles empty active session
