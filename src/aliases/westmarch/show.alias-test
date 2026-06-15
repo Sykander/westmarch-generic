@@ -23,7 +23,7 @@ vars:
 
 !show
 ---
-"re:```diff[\\s\\S]*exploration: off"
+"re:```diff[\\s\\S]*exploration: off[\\s\\S]*enc: off[\\s\\S]*forage: off"
 ---
 name: show lists subsystem status
 vars:
@@ -65,7 +65,7 @@ vars:
 
 !show
 ---
-"re:\\+ exploration: on|- exploration: error"
+"re:\\+ exploration: on[\\s\\S]*\\+   enc: on[\\s\\S]*forage: off"
 ---
 name: show marks enabled subsystem in diff block
 vars:
@@ -78,13 +78,24 @@ vars:
       subsystems = {
           "exploration": {
               "enabled": True,
-              "commands": {"enc": False},
+              "commands": {"enc": True, "forage": False},
+          },
+      }
+      world_data = {
+          "biomes": {"forest": {"gvar_id": "ffff6666-6666-6666-6666-666666666666"}},
+      }
+    ffff6666-6666-6666-6666-666666666666: |
+      pools = {
+          "enc": {
+              "combat": [{"name": "Wolf"}],
+              "quest": [{"name": "Tracks"}],
+              "gather": [{"name": "Herbs"}],
           },
       }
 
 !show
 ---
-"re:- exploration: error"
+"re:- exploration: error[\\s\\S]*-   enc: error"
 ---
 name: show marks invalid enabled subsystem red in diff block
 vars:

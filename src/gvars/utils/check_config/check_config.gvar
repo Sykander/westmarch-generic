@@ -1052,17 +1052,47 @@ def _subsystem_has_error(key, errors):
     return False
 
 
-def _command_summary(block):
+def _command_error_match(key, cmd, issue):
+    if issue == None:
+        return False
+    text = str(issue).lower()
+    command = str(cmd).lower()
+    path = f"subsystems.{key}"
+    if f"{path}.commands.{command}" in text:
+        return True
+    if f"{path}.command_config.{command}" in text:
+        return True
+    if f"{path}.command_display.{command}" in text:
+        return True
+    if key == "exploration" and "enabled commands" in text and "world_data.biomes" in text:
+        return True
+    return False
+
+
+def _command_has_error(key, cmd, errors):
+    for issue in errors:
+        if _command_error_match(key, cmd, issue):
+            return True
+    return False
+
+
+def _command_summary_lines(key, block, parent_has_error, errors):
     commands = _read_field(block, "commands")
     if commands == None or not dicts.is_dict(commands):
-        return ""
-    on = []
+        return []
+    lines = []
     for cmd in _dict_keys(commands):
-        if _read_field(commands, cmd) == True:
-            on.append(str(cmd))
-    if len(on) == 0:
-        return "no commands enabled"
-    return "commands: " + ", ".join(on)
+        command_on = _read_field(commands, cmd) == True
+        marker = " "
+        status = "off"
+        if command_on:
+            marker = "+"
+            status = "on"
+        if command_on and (parent_has_error or _command_has_error(key, cmd, errors)):
+            marker = "-"
+            status = "error"
+        lines.append(f"{marker}   {cmd}: {status}")
+    return lines
 
 
 def _enabled_commands_summary(cfg, errors=None):
@@ -1079,14 +1109,12 @@ def _enabled_commands_summary(cfg, errors=None):
         if on:
             marker = "+"
             status = "on"
-        if on and _subsystem_has_error(key, errors):
+        has_error = _subsystem_has_error(key, errors)
+        if on and has_error:
             marker = "-"
             status = "error"
-        extra = _command_summary(block)
-        if extra != "":
-            lines.append(f"{marker} {key}: {status} ({extra})")
-        else:
-            lines.append(f"{marker} {key}: {status}")
+        lines.append(f"{marker} {key}: {status}")
+        lines = lines + _command_summary_lines(key, block, has_error, errors)
     return "```diff\n" + "\n".join(lines) + "\n```"
 
 
