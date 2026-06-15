@@ -235,7 +235,9 @@ jobs:
     runs-on: ubuntu-latest
     if: needs.version.outputs.should_deploy_production == 'true'
     needs:
-      - deploy-dev
+      - lint
+      - sourcemap-tests
+      - test
       - version
     permissions:
       contents: write
