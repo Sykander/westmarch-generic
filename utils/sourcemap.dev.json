@@ -207,6 +207,11 @@
       "id": "7442c996-c6cc-476c-bb9a-9dd670c1ae33"
     },
     {
+      "name": "exploration",
+      "file": "src/gvars/utils/exploration/exploration.gvar",
+      "id": "e76847b7-0d90-4de5-93b3-dd92abbe94b2"
+    },
+    {
       "name": "encounter_lists",
       "file": "src/gvars/utils/encounters/encounter_lists.gvar",
       "id": "44bcd6a8-f546-4c94-ba10-0ccccaac796f"
