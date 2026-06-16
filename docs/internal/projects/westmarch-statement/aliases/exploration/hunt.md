@@ -11,7 +11,7 @@ Survival check to track a creature before combat. westmarch expects **`!enc`** i
 ```
 
 - **Help:** enc prerequisite note, usage, group hunt `-n` chaining.
-- **Creature:** prefix/exact search in monsters catalogue.
+- **Creature:** `lists.search_list` over `monsters_names`; no matches, one match, or ask for a more specific name with up to five matches.
 - **DC:** `floor((10 if party_size==1 else 8*party_size) + cr)`.
 - **Roll:** Survival check.
 - **Success:** embed with `!i madd` suggestion for combat init; if monster art exists, show it according to `subsystems.exploration.config.monster_images.hunt`.
@@ -32,7 +32,7 @@ Survival check to track a creature before combat. westmarch expects **`!enc`** i
 flowchart TD
   A[!hunt alias] --> B{get_config}
   B --> C{exploration.commands.hunt?}
-  C --> D[monsters.search_for_monster cfg]
+  C --> D[monsters.resolve cfg]
   D --> E[compute DC from CR + party]
   E --> F[survival check]
   F --> G[success / group / fail embed]

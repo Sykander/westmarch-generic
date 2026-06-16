@@ -7,144 +7,144 @@
     {
       "name": "westmarch",
       "file": "src/aliases/westmarch/westmarch.alias",
-      "docs_file": "docs/workshop/aliases/westmarch/westmarch.md",
+      "docs_file": "src/aliases/westmarch/westmarch.md",
       "sub_aliases": [
         {
           "name": "setup",
           "file": "src/aliases/westmarch/setup.alias",
-          "docs_file": "docs/workshop/aliases/westmarch/setup.md"
+          "docs_file": "src/aliases/westmarch/setup.md"
         },
         {
           "name": "check",
           "file": "src/aliases/westmarch/check.alias",
-          "docs_file": "docs/workshop/aliases/westmarch/check.md"
+          "docs_file": "src/aliases/westmarch/check.md"
         },
         {
           "name": "show",
           "file": "src/aliases/westmarch/show.alias",
-          "docs_file": "docs/workshop/aliases/westmarch/show.md"
+          "docs_file": "src/aliases/westmarch/show.md"
         }
       ]
     },
     {
       "name": "enc",
       "file": "src/aliases/exploration/enc.alias",
-      "docs_file": "docs/workshop/aliases/exploration/enc.md"
+      "docs_file": "src/aliases/exploration/enc.md"
     },
     {
       "name": "forage",
       "file": "src/aliases/exploration/forage.alias",
-      "docs_file": "docs/workshop/aliases/exploration/forage.md"
+      "docs_file": "src/aliases/exploration/forage.md"
     },
     {
       "name": "fish",
       "file": "src/aliases/exploration/fish.alias",
-      "docs_file": "docs/workshop/aliases/exploration/fish.md"
+      "docs_file": "src/aliases/exploration/fish.md"
     },
     {
       "name": "mine",
       "file": "src/aliases/exploration/mine.alias",
-      "docs_file": "docs/workshop/aliases/exploration/mine.md"
+      "docs_file": "src/aliases/exploration/mine.md"
     },
     {
       "name": "lumber",
       "file": "src/aliases/exploration/lumber.alias",
-      "docs_file": "docs/workshop/aliases/exploration/lumber.md"
+      "docs_file": "src/aliases/exploration/lumber.md"
     },
     {
       "name": "hunt",
       "file": "src/aliases/exploration/hunt.alias",
-      "docs_file": "docs/workshop/aliases/exploration/hunt.md"
+      "docs_file": "src/aliases/exploration/hunt.md"
     },
     {
       "name": "loot",
       "file": "src/aliases/exploration/loot.alias",
-      "docs_file": "docs/workshop/aliases/exploration/loot.md"
+      "docs_file": "src/aliases/exploration/loot.md"
     },
     {
       "name": "travel",
       "file": "src/aliases/travel/travel.alias",
-      "docs_file": "docs/workshop/aliases/travel/travel.md"
+      "docs_file": "src/aliases/travel/travel.md"
     },
     {
       "name": "location",
       "file": "src/aliases/travel/location.alias",
-      "docs_file": "docs/workshop/aliases/travel/location.md"
+      "docs_file": "src/aliases/travel/location.md"
     },
     {
       "name": "time",
       "file": "src/aliases/travel/time.alias",
-      "docs_file": "docs/workshop/aliases/travel/time.md"
+      "docs_file": "src/aliases/travel/time.md"
     },
     {
       "name": "weather",
       "file": "src/aliases/travel/weather.alias",
-      "docs_file": "docs/workshop/aliases/travel/weather.md"
+      "docs_file": "src/aliases/travel/weather.md"
     },
     {
       "name": "downtime",
       "file": "src/aliases/downtime/downtime.alias",
-      "docs_file": "docs/workshop/aliases/downtime/downtime.md"
+      "docs_file": "src/aliases/downtime/downtime.md"
     },
     {
       "name": "craft",
       "file": "src/aliases/crafting/craft.alias",
-      "docs_file": "docs/workshop/aliases/crafting/craft.md"
+      "docs_file": "src/aliases/crafting/craft.md"
     },
     {
       "name": "brew",
       "file": "src/aliases/crafting/brew.alias",
-      "docs_file": "docs/workshop/aliases/crafting/brew.md"
+      "docs_file": "src/aliases/crafting/brew.md"
     },
     {
       "name": "enchant",
       "file": "src/aliases/crafting/enchant.alias",
-      "docs_file": "docs/workshop/aliases/crafting/enchant.md"
+      "docs_file": "src/aliases/crafting/enchant.md"
     },
     {
       "name": "scribe",
       "file": "src/aliases/crafting/scribe.alias",
-      "docs_file": "docs/workshop/aliases/crafting/scribe.md"
+      "docs_file": "src/aliases/crafting/scribe.md"
     },
     {
       "name": "job",
       "file": "src/aliases/economy/job.alias",
-      "docs_file": "docs/workshop/aliases/economy/job.md"
+      "docs_file": "src/aliases/economy/job.md"
     },
     {
       "name": "buy",
       "file": "src/aliases/economy/buy.alias",
-      "docs_file": "docs/workshop/aliases/economy/buy.md"
+      "docs_file": "src/aliases/economy/buy.md"
     },
     {
       "name": "sell",
       "file": "src/aliases/economy/sell.alias",
-      "docs_file": "docs/workshop/aliases/economy/sell.md"
+      "docs_file": "src/aliases/economy/sell.md"
     },
     {
       "name": "wallet",
       "file": "src/aliases/economy/wallet.alias",
-      "docs_file": "docs/workshop/aliases/economy/wallet.md"
+      "docs_file": "src/aliases/economy/wallet.md"
     },
     {
       "name": "library",
       "file": "src/aliases/content/library.alias",
-      "docs_file": "docs/workshop/aliases/content/library.md"
+      "docs_file": "src/aliases/content/library.md"
     },
     {
       "name": "read",
       "file": "src/aliases/content/read.alias",
-      "docs_file": "docs/workshop/aliases/content/read.md"
+      "docs_file": "src/aliases/content/read.md"
     },
     {
       "name": "quest",
       "file": "src/aliases/misc/quest.alias",
-      "docs_file": "docs/workshop/aliases/misc/quest.md"
+      "docs_file": "src/aliases/misc/quest.md"
     },
     {
       "name": "recipe",
       "file": "src/aliases/misc/recipe.alias",
-      "docs_file": "docs/workshop/aliases/misc/recipe.md"
+      "docs_file": "src/aliases/misc/recipe.md"
     }
   ],
   "snippets": [],
@@ -155,19 +155,9 @@
       "id": "c9028316-9197-4da5-9fd3-bbb040563c05"
     },
     {
-      "name": "a_monsters",
-      "file": "src/gvars/utils/catalogues/monsters/a_monsters.gvar",
-      "id": "3251f862-418c-4ec4-b216-951439677f34"
-    },
-    {
       "name": "auth",
       "file": "src/gvars/utils/auth/auth.gvar",
       "id": "a3126246-4c37-42a6-b9e3-df2d1c57e821"
-    },
-    {
-      "name": "b_monsters",
-      "file": "src/gvars/utils/catalogues/monsters/b_monsters.gvar",
-      "id": "d513b5f7-3af2-4b07-b9cc-7724f1515e3b"
     },
     {
       "name": "bags",
@@ -275,11 +265,6 @@
       "id": "e5871a1f-2dfa-4a5e-b556-75dbbf8d27bd"
     },
     {
-      "name": "c_monsters",
-      "file": "src/gvars/utils/catalogues/monsters/c_monsters.gvar",
-      "id": "a8027d7d-19b8-4e20-b433-1e92cce119fc"
-    },
-    {
       "name": "check_config",
       "file": "src/gvars/utils/check_config/check_config.gvar",
       "id": "ff914b4f-938f-4126-b914-07f9ed12826a"
@@ -305,11 +290,6 @@
       "id": "5bd54705-0f1a-46b9-9e8b-eef559cddb8e"
     },
     {
-      "name": "d_monsters",
-      "file": "src/gvars/utils/catalogues/monsters/d_monsters.gvar",
-      "id": "d3d2428b-5527-443a-b07c-c265292ad113"
-    },
-    {
       "name": "dicts",
       "file": "src/gvars/utils/core/dicts.gvar",
       "id": "8d7b2b26-8026-4855-bc69-e55617dd95a9"
@@ -318,11 +298,6 @@
       "name": "display",
       "file": "src/gvars/utils/display/display.gvar",
       "id": "8dc8aae7-deb0-4f21-8f8a-2a101c33cc32"
-    },
-    {
-      "name": "e_monsters",
-      "file": "src/gvars/utils/catalogues/monsters/e_monsters.gvar",
-      "id": "19177b4c-6d86-4b6b-9382-4861de76548a"
     },
     {
       "name": "embeds",
@@ -350,26 +325,6 @@
       "id": "6b51c53f-3db9-49cd-8f24-e35866226fa2"
     },
     {
-      "name": "f_monsters",
-      "file": "src/gvars/utils/catalogues/monsters/f_monsters.gvar",
-      "id": "a2165486-155c-4577-afb3-abbb216cbe44"
-    },
-    {
-      "name": "g_monsters",
-      "file": "src/gvars/utils/catalogues/monsters/g_monsters.gvar",
-      "id": "84d6ba9a-0003-4ff6-aa09-d814ad4b9221"
-    },
-    {
-      "name": "h_monsters",
-      "file": "src/gvars/utils/catalogues/monsters/h_monsters.gvar",
-      "id": "bc99078e-5c7c-4967-9324-c6c8dc39663b"
-    },
-    {
-      "name": "i_monsters",
-      "file": "src/gvars/utils/catalogues/monsters/i_monsters.gvar",
-      "id": "b63dbe3b-44df-4885-8a57-ef5d61d98e89"
-    },
-    {
       "name": "items",
       "file": "src/gvars/utils/catalogues/items/items.gvar",
       "id": "573a61f9-8b12-40e2-b296-cb5445c61edd"
@@ -380,24 +335,9 @@
       "id": "d1021306-0d9e-4874-8105-9003b81bdfef"
     },
     {
-      "name": "j_monsters",
-      "file": "src/gvars/utils/catalogues/monsters/j_monsters.gvar",
-      "id": "18be1a3a-4345-4787-9e59-b9cf5570f1d6"
-    },
-    {
       "name": "journeys",
       "file": "src/gvars/utils/world/journeys.gvar",
       "id": "48d231dd-a0a9-496a-8834-38b062e063e4"
-    },
-    {
-      "name": "k_monsters",
-      "file": "src/gvars/utils/catalogues/monsters/k_monsters.gvar",
-      "id": "b78b899b-20e5-47f8-8fa9-df8d39a4689a"
-    },
-    {
-      "name": "l_monsters",
-      "file": "src/gvars/utils/catalogues/monsters/l_monsters.gvar",
-      "id": "3ea53d40-bdcf-48da-9c94-460fb9865ef7"
     },
     {
       "name": "languages",
@@ -425,11 +365,6 @@
       "id": "bbb9da79-aa74-40ec-9868-2075900bbfca"
     },
     {
-      "name": "m_monsters",
-      "file": "src/gvars/utils/catalogues/monsters/m_monsters.gvar",
-      "id": "2c9afcd4-e811-4e4d-8093-cfb36ec23a0c"
-    },
-    {
       "name": "magic_items_list",
       "file": "src/gvars/utils/catalogues/items/magic_items_list.gvar",
       "id": "7d85da39-507e-466f-bd53-e57ff42558fb"
@@ -440,19 +375,134 @@
       "id": "64f20a33-f431-47c5-8a97-ca8abb0d3c9d"
     },
     {
-      "name": "n_monsters",
-      "file": "src/gvars/utils/catalogues/monsters/n_monsters.gvar",
+      "name": "monsters_a",
+      "file": "src/gvars/utils/catalogues/monsters/monsters_a.gvar",
+      "id": "3251f862-418c-4ec4-b216-951439677f34"
+    },
+    {
+      "name": "monsters_b",
+      "file": "src/gvars/utils/catalogues/monsters/monsters_b.gvar",
+      "id": "d513b5f7-3af2-4b07-b9cc-7724f1515e3b"
+    },
+    {
+      "name": "monsters_c",
+      "file": "src/gvars/utils/catalogues/monsters/monsters_c.gvar",
+      "id": "a8027d7d-19b8-4e20-b433-1e92cce119fc"
+    },
+    {
+      "name": "monsters_d",
+      "file": "src/gvars/utils/catalogues/monsters/monsters_d.gvar",
+      "id": "d3d2428b-5527-443a-b07c-c265292ad113"
+    },
+    {
+      "name": "monsters_e",
+      "file": "src/gvars/utils/catalogues/monsters/monsters_e.gvar",
+      "id": "19177b4c-6d86-4b6b-9382-4861de76548a"
+    },
+    {
+      "name": "monsters_f",
+      "file": "src/gvars/utils/catalogues/monsters/monsters_f.gvar",
+      "id": "a2165486-155c-4577-afb3-abbb216cbe44"
+    },
+    {
+      "name": "monsters_g",
+      "file": "src/gvars/utils/catalogues/monsters/monsters_g.gvar",
+      "id": "84d6ba9a-0003-4ff6-aa09-d814ad4b9221"
+    },
+    {
+      "name": "monsters_h",
+      "file": "src/gvars/utils/catalogues/monsters/monsters_h.gvar",
+      "id": "bc99078e-5c7c-4967-9324-c6c8dc39663b"
+    },
+    {
+      "name": "monsters_i",
+      "file": "src/gvars/utils/catalogues/monsters/monsters_i.gvar",
+      "id": "b63dbe3b-44df-4885-8a57-ef5d61d98e89"
+    },
+    {
+      "name": "monsters_j",
+      "file": "src/gvars/utils/catalogues/monsters/monsters_j.gvar",
+      "id": "18be1a3a-4345-4787-9e59-b9cf5570f1d6"
+    },
+    {
+      "name": "monsters_k",
+      "file": "src/gvars/utils/catalogues/monsters/monsters_k.gvar",
+      "id": "b78b899b-20e5-47f8-8fa9-df8d39a4689a"
+    },
+    {
+      "name": "monsters_l",
+      "file": "src/gvars/utils/catalogues/monsters/monsters_l.gvar",
+      "id": "3ea53d40-bdcf-48da-9c94-460fb9865ef7"
+    },
+    {
+      "name": "monsters_m",
+      "file": "src/gvars/utils/catalogues/monsters/monsters_m.gvar",
+      "id": "2c9afcd4-e811-4e4d-8093-cfb36ec23a0c"
+    },
+    {
+      "name": "monsters_n",
+      "file": "src/gvars/utils/catalogues/monsters/monsters_n.gvar",
       "id": "f8a462b7-39a3-4dfb-8735-0423578ea83e"
     },
     {
-      "name": "o_monsters",
-      "file": "src/gvars/utils/catalogues/monsters/o_monsters.gvar",
+      "name": "monsters_o",
+      "file": "src/gvars/utils/catalogues/monsters/monsters_o.gvar",
       "id": "dfa9b97e-5141-44e4-869b-f60fceaa32dc"
     },
     {
-      "name": "p_monsters",
-      "file": "src/gvars/utils/catalogues/monsters/p_monsters.gvar",
+      "name": "monsters_p",
+      "file": "src/gvars/utils/catalogues/monsters/monsters_p.gvar",
       "id": "6dfb76b0-7793-4149-b209-9c3bcc5e60be"
+    },
+    {
+      "name": "monsters_q",
+      "file": "src/gvars/utils/catalogues/monsters/monsters_q.gvar",
+      "id": "f36fdf90-8d35-4e6c-add2-f68bc37cbd1e"
+    },
+    {
+      "name": "monsters_r",
+      "file": "src/gvars/utils/catalogues/monsters/monsters_r.gvar",
+      "id": "4eb2ec86-4bb4-4884-952b-c822c5320c84"
+    },
+    {
+      "name": "monsters_s",
+      "file": "src/gvars/utils/catalogues/monsters/monsters_s.gvar",
+      "id": "56fab4ee-0246-4441-b5a7-556b563daba9"
+    },
+    {
+      "name": "monsters_t",
+      "file": "src/gvars/utils/catalogues/monsters/monsters_t.gvar",
+      "id": "04710412-6914-422d-ab2b-5574ccbe0b77"
+    },
+    {
+      "name": "monsters_u",
+      "file": "src/gvars/utils/catalogues/monsters/monsters_u.gvar",
+      "id": "23fef75b-997b-40b7-9630-ef45a8ae67a2"
+    },
+    {
+      "name": "monsters_v",
+      "file": "src/gvars/utils/catalogues/monsters/monsters_v.gvar",
+      "id": "23820b8e-c725-45fa-9a27-4005931059bc"
+    },
+    {
+      "name": "monsters_w",
+      "file": "src/gvars/utils/catalogues/monsters/monsters_w.gvar",
+      "id": "f8449119-206a-4a05-8140-2bebc25eb8ee"
+    },
+    {
+      "name": "monsters_x",
+      "file": "src/gvars/utils/catalogues/monsters/monsters_x.gvar",
+      "id": "2149d241-dd11-401c-8757-0cfa308a44a7"
+    },
+    {
+      "name": "monsters_y",
+      "file": "src/gvars/utils/catalogues/monsters/monsters_y.gvar",
+      "id": "cf7e2fd2-6be9-44f7-bb1d-e71b720e42c9"
+    },
+    {
+      "name": "monsters_z",
+      "file": "src/gvars/utils/catalogues/monsters/monsters_z.gvar",
+      "id": "6f366ec0-1337-43ac-a325-d9316c1cfe94"
     },
     {
       "name": "paths",
@@ -470,19 +520,9 @@
       "id": "2ed21b7e-cb0f-46dd-bb2c-31a4b05df641"
     },
     {
-      "name": "q_monsters",
-      "file": "src/gvars/utils/catalogues/monsters/q_monsters.gvar",
-      "id": "f36fdf90-8d35-4e6c-add2-f68bc37cbd1e"
-    },
-    {
       "name": "quests",
       "file": "src/gvars/utils/misc/quests.gvar",
       "id": "46ee044d-1b95-437a-8cf5-66f9320e04e0"
-    },
-    {
-      "name": "r_monsters",
-      "file": "src/gvars/utils/catalogues/monsters/r_monsters.gvar",
-      "id": "4eb2ec86-4bb4-4884-952b-c822c5320c84"
     },
     {
       "name": "random",
@@ -503,11 +543,6 @@
       "name": "rolls",
       "file": "src/gvars/utils/core/rolls.gvar",
       "id": "d769f5a0-fbf9-4bde-88d0-b8de49bb9936"
-    },
-    {
-      "name": "s_monsters",
-      "file": "src/gvars/utils/catalogues/monsters/s_monsters.gvar",
-      "id": "56fab4ee-0246-4441-b5a7-556b563daba9"
     },
     {
       "name": "shops",
@@ -535,49 +570,14 @@
       "id": "1094cf3c-8b5f-4ea7-b5d6-ae18bc66680a"
     },
     {
-      "name": "t_monsters",
-      "file": "src/gvars/utils/catalogues/monsters/t_monsters.gvar",
-      "id": "04710412-6914-422d-ab2b-5574ccbe0b77"
-    },
-    {
       "name": "tools",
       "file": "src/gvars/utils/core/tools.gvar",
       "id": "d1e91227-938b-4c65-a8fd-b3d98ed32fb7"
     },
     {
-      "name": "u_monsters",
-      "file": "src/gvars/utils/catalogues/monsters/u_monsters.gvar",
-      "id": "23fef75b-997b-40b7-9630-ef45a8ae67a2"
-    },
-    {
-      "name": "v_monsters",
-      "file": "src/gvars/utils/catalogues/monsters/v_monsters.gvar",
-      "id": "23820b8e-c725-45fa-9a27-4005931059bc"
-    },
-    {
-      "name": "w_monsters",
-      "file": "src/gvars/utils/catalogues/monsters/w_monsters.gvar",
-      "id": "f8449119-206a-4a05-8140-2bebc25eb8ee"
-    },
-    {
       "name": "weather",
       "file": "src/gvars/utils/world/weather.gvar",
       "id": "d074b25e-9d6b-4588-ac0c-07bdff78eed5"
-    },
-    {
-      "name": "x_monsters",
-      "file": "src/gvars/utils/catalogues/monsters/x_monsters.gvar",
-      "id": "2149d241-dd11-401c-8757-0cfa308a44a7"
-    },
-    {
-      "name": "y_monsters",
-      "file": "src/gvars/utils/catalogues/monsters/y_monsters.gvar",
-      "id": "cf7e2fd2-6be9-44f7-bb1d-e71b720e42c9"
-    },
-    {
-      "name": "z_monsters",
-      "file": "src/gvars/utils/catalogues/monsters/z_monsters.gvar",
-      "id": "6f366ec0-1337-43ac-a325-d9316c1cfe94"
     }
   ]
 }

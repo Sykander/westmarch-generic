@@ -4,6 +4,8 @@ Avrae Drac2 workshop bootstrap: **`*.gvar`**, **`*.alias`**, **`*.alias-test`**,
 
 This repo is a **generic westmarch** — server-specific data should load via **svars → config gvar ids**, not hard-coded constants in aliases.
 
+User-entered lookup terms for catalogues or registries should resolve through **`lists.search_list`** wherever practical. Commands should handle the standard 0 / 1 / many result shape consistently: no matches, exactly one match, or ask the user to be more specific with a short match list.
+
 ## Cursor rules
 
 Rules are copied from **westmarch** and **drac2-tools**:

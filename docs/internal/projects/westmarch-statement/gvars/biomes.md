@@ -87,9 +87,10 @@ Otherwise use **manual** — first positional arg must be a registered biome cod
 
 **Manual path:**
 
-1. Parse first token from **`args`** as biome code
-2. Validate against **`world_data.biomes`**
-3. Error with **`list_biomes()`** hint when missing/unknown
+1. Parse first token from **`args`** as biome code/search text
+2. Run **`lists.search_list(list_biomes(cfg), text)`**
+3. Use the match when exactly one biome code matches
+4. Error with **`list_biomes()`** hint when missing/unknown, or ask for a more specific biome and show up to five matches when ambiguous
 
 Activity aliases call **`resolve_biome("<activity>", args, ch, cfg)`** then **`encounter_lists.get_encounter(biome, activity, …)`**.
 

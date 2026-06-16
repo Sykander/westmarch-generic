@@ -254,13 +254,29 @@ def _format_registry_hint(cfg):
     return ", ".join(codes)
 
 
+def _format_matches(matches, limit=5):
+    shown = []
+    count = 0
+    for match in matches:
+        if count >= limit:
+            break
+        shown.append(f"**{str(match)}**")
+        count += 1
+    text = ", ".join(shown)
+    if len(matches) > limit:
+        text += ", ..."
+    return text
+
+
 def _validate_code(code, cfg):
-    reg = _registry(cfg)
     key = str(code).strip().lower()
-    if _read_field(reg, key) == None:
+    matches = lists.search_list(list_biomes(cfg), key)
+    if len(matches) == 0:
         hint = _format_registry_hint(cfg)
         return None, f"Biome **{key}** is not registered. Registered: {hint}"
-    return key, None
+    if len(matches) > 1:
+        return None, f"Be more specific: **{key}** matched {_format_matches(matches)}."
+    return str(matches[0]).lower(), None
 
 
 def _biome_from_location(cfg, activity, ch):

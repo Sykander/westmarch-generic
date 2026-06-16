@@ -14,7 +14,7 @@ Two-phase loot session: select creature → loot items with skill checks. State 
 ```
 
 - **Help:** three-phase usage.
-- **Start:** derive lootables from monster type (westmarch uses Investigation/Arcana/Religion/Nature checks + gold bands by CR).
+- **Start:** resolve creature with `lists.search_list` over `monsters_names`, then derive lootables from monster type (westmarch uses Investigation/Arcana/Religion/Nature checks + gold bands by CR).
 - **Loot item:** roll configured skill vs lootable DC; on success add to bag or coinpurse.
 - **Session:** JSON cvar until cleared or empty.
 - **Monster art:** if the catalogue has `image_url`, display it according to `subsystems.exploration.config.monster_images.loot`.

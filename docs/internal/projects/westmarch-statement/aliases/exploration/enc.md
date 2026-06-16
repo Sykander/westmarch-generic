@@ -20,6 +20,8 @@ Applies to **all** exploration activity commands; **`enc`** is the reference imp
 
 **Inferred** requires travel + **`world_data.locations`** + character location — [data-shapes.md § exploration.config](../../data-shapes.md#explorationconfig).
 
+Manual biome input is matched with **`lists.search_list`** against registered biome codes. One match is accepted; no matches or multiple matches return a player-facing error.
+
 ### Encounter kind mix (`distribution_policy` + `distribution`)
 
 | Key | Values | Effect |

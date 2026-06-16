@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * Generate monster letter shards from assets/monsters.tsv
- * Output: src/gvars/utils/catalogues/monsters/{a-z}_monsters.gvar
+ * Output:
+ * - src/gvars/utils/catalogues/monsters/monsters_{a-z}.gvar
  */
 const paths = require('./lib/paths');
 const { readTsv } = require('./lib/read-tsv');
@@ -47,7 +48,7 @@ const manifest = [];
 const sourcemapEntries = [];
 
 for (const letter of LETTERS) {
-  const name = `${letter}_monsters`;
+  const name = `monsters_${letter}`;
   const file = `${OUT_DIR}/${name}.gvar`;
   const abs = paths.gvar(file);
   const contents = processed.filter(({ name: n }) => String(n).toLowerCase().startsWith(letter));

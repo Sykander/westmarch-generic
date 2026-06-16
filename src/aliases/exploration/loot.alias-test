@@ -102,6 +102,31 @@ vars:
           },
       }
 
+!loot Custom
+---
+re:Be more specific|Custom Beast|Custom Drake
+---
+name: loot reports ambiguous creature matches
+vars:
+  uvars:
+    _wm_command: loot
+  svars:
+    westmarch_config: "eeee7778-7778-7778-7778-777777777778"
+  gvars:
+    eeee7778-7778-7778-7778-777777777778: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"loot": True},
+          },
+      }
+      world_data = {
+          "monsters": [
+              {"name": "Custom Beast", "cr": 1, "type_str": "Beast"},
+              {"name": "Custom Drake", "cr": 2, "type_str": "Dragon"},
+          ],
+      }
+
 !loot clear
 ---
 re:cleared|no active|session

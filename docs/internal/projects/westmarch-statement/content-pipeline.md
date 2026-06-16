@@ -11,7 +11,7 @@ Maintainer scripts live in **[utils/README.md](../../../utils/README.md)**. This
 | Goal | Approach |
 |------|----------|
 | Editors use spreadsheets | TSV in **`assets/`** (Google Sheets → export) |
-| Gvars stay under size limits | **Split shards** — same strategy as [westmarch](https://github.com/Sykander/westmarch) (`a_monsters`, `items_list`, …) |
+| Gvars stay under size limits | **Split shards** — same strategy as [westmarch](https://github.com/Sykander/westmarch), with grouped generic names (`monsters_a`, `items_list`, …) |
 | Lookups stay fast | **Lazy load** one shard per search — do not import every catalogue at alias start |
 | Server owners customize | Engine presets + optional owner overrides via config **`extensions.*`** or duplicated shards |
 | Reproducible builds | **`npm run generate:*`** from TSV — committed outputs, CI diff optional later |
@@ -51,7 +51,7 @@ Large lists are **never** one monolithic gvar. Split rules:
 
 | Source TSV | Shard files *(planned)* | Split key | Facade module |
 |------------|-------------------------|-----------|---------------|
-| [monsters.tsv](../../../../assets/monsters.tsv) | `catalogues/monsters/{a-z}_monsters.gvar` | First letter of **`name`** | [monsters.gvar](gvars/monsters.md) |
+| [monsters.tsv](../../../../assets/monsters.tsv) | `catalogues/monsters/monsters_{a-z}.gvar` + `monsters_names.gvar` | First letter of **`name`**; names list for lookup | [monsters.gvar](gvars/monsters.md) |
 | [items.tsv](../../../../assets/items.tsv) | `items_list`, `potions_list`, `magic_items_list` | **`type`** column | [items.gvar](gvars/items.md) |
 | [spells.tsv](../../../../assets/spells.tsv) | `spells/spells_list.gvar` *(split by level later if size requires)* | — | [spells.gvar](gvars/spells.md) |
 | [books-forgotten-realms.tsv](../../../../assets/books-forgotten-realms.tsv) | `configs/books/forgotten_realms_{a-z}.gvar` or single file until count grows | First letter of **`name`** | [library.gvar](gvars/library.md) |
@@ -73,6 +73,8 @@ Book rows include optional **`content_link`** (full text URL) — see [data-shap
 
 Facades keep a **per-invocation cache** `{ shard_id: parsed_rows }` — second lookup in the same alias reuses memory without re-fetching the gvar.
 
+User-entered names should be resolved with **`lists.search_list`** over a small names/index gvar where available, then load the exact data shard only after the result is unique. Commands should report no matches, exactly one match, or ask for a more specific input and show up to five matches.
+
 ---
 
 ## Shard file format
@@ -90,7 +92,7 @@ Draconic **facade** modules map shard keys → workshop UUIDs and implement sear
 
 ```py
 # monsters.gvar (sketch)
-LETTER_GVARS = { "a": env.gvars.a_monsters, ... }
+LETTER_GVARS = { "a": env.gvars.monsters_a, ... }
 _cache = {}
 
 def _load_letter(letter):
@@ -117,7 +119,7 @@ Location: **`utils/`** at repo root — see [utils/README.md](../../../utils/REA
 
 | Script | Input | Output |
 |--------|-------|--------|
-| **`generate-monsters.js`** | `assets/monsters.tsv` | `src/gvars/utils/catalogues/monsters/{a-z}_monsters.gvar` |
+| **`generate-monsters.js`** | `assets/monsters.tsv` | `src/gvars/utils/catalogues/monsters/monsters_{a-z}.gvar`, `monsters_names.gvar` |
 | **`generate-items.js`** | `assets/items.tsv` | `items_list`, `potions_list`, `magic_items_list` |
 | **`generate-spells.js`** | `assets/spells.tsv` | `spells/spells_list.gvar` |
 | **`generate-books.js`** | `books-forgotten-realms.tsv`, `books-real.tsv` | `configs/books/{corpus}_all.gvar` when empty; else `{corpus}_{a-z}.gvar` |
@@ -143,7 +145,7 @@ Every **new shard file** needs a slot in **`utils/sourcemap.dev.json`** and **`u
 Catalogue generators call **`utils/lib/sourcemap-shards.js`** automatically. For hand-added shards:
 
 1. Take UUID from top of **`unused_gvars.md`**
-2. Add `{ "name": "a_monsters", "file": "src/gvars/utils/catalogues/monsters/a_monsters.gvar", "id": "…" }` to **both** sourcemaps (different ids)
+2. Add `{ "name": "monsters_a", "file": "src/gvars/utils/catalogues/monsters/monsters_a.gvar", "id": "…" }` to **both** sourcemaps (different ids)
 3. Delete used lines from **`unused_gvars.md`**
 4. **`make build`**
 

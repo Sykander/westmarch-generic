@@ -101,9 +101,9 @@ Before first deploy:
 
 Publish-avrae reads sourcemaps to know which files map to which aliases, snippets, docs, and gvars.
 
-Use `docs_file` for Avrae help text. Docs files live under `docs/workshop/` and are deployed for aliases, subaliases, and snippets.
+Use `docs_file` for Avrae help text. Alias docs live beside their alias sources under `src/aliases/` and are deployed for aliases and subaliases. Snippet docs should follow the same source-adjacent pattern when snippets are added.
 
-**Hand-edit:** `utils/sourcemap.dev.json`, `utils/sourcemap.prod.json`, sources under `src/`, `docs/workshop/`, `unused_gvars.md`, docs, tests.
+**Hand-edit:** `utils/sourcemap.dev.json`, `utils/sourcemap.prod.json`, sources under `src/`, `unused_gvars.md`, docs, tests.
 
 **Generated (do not hand-edit):**
 

@@ -43,16 +43,15 @@ flowchart LR
 | `assets/` | TSV catalogues - **`utils/generate-*`** -> split shard gvars ([content-pipeline.md](internal/projects/westmarch-statement/content-pipeline.md)) |
 | `editor/` | Planned React/Vite web config editor source |
 | `public/` | Planned generated GitHub Pages static output |
-| `src/aliases/` | MVP command aliases — [mvp-commands.md](internal/projects/westmarch-statement/mvp-commands.md) |
+| `src/aliases/` | MVP command aliases and Avrae help docs deployed from sourcemap `docs_file` entries — [mvp-commands.md](internal/projects/westmarch-statement/mvp-commands.md) |
 | `src/snippets/` | *(none in MVP — combat snippets deferred)* |
 | `src/gvars/` | Engine workshop globals — see [src/gvars/README.md](../src/gvars/README.md) |
 | `src/gvars/configs/` | Example server config presets — [configs.md](internal/projects/westmarch-statement/gvars/configs.md) |
 | `src/gvars/utils/core/` | Vendored drac2-tools helpers — [core.md](internal/projects/westmarch-statement/gvars/core.md) |
-| `docs/workshop/` | Avrae help docs deployed from sourcemap `docs_file` entries |
 
 ## Workshop scaffold
 
-All MVP aliases and engine gvars are registered in **`utils/sourcemap.dev.json`** / **`sourcemap.prod.json`** with UUIDs from **`unused_gvars.md`**. Alias help docs are registered with `docs_file` and live under **`docs/workshop/`**. Placeholder bodies return “not implemented” embeds until each tier is ported. Regenerate env after sourcemap edits: **`make build`**.
+All MVP aliases and engine gvars are registered in **`utils/sourcemap.dev.json`** / **`sourcemap.prod.json`** with UUIDs from **`unused_gvars.md`**. Alias help docs are registered with `docs_file` and live beside their alias sources under **`src/aliases/`**. Placeholder bodies return “not implemented” embeds until each tier is ported. Regenerate env after sourcemap edits: **`make build`**.
 
 The **`westmarch`** hub uses sub-aliases (`setup`, `check`, `show`) — same sourcemap nesting pattern as the old bootstrap `example` alias.
 

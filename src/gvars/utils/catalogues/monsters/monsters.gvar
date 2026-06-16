@@ -7,33 +7,44 @@ using(
     lists = env.gvars.lists,
 )
 
-SHARDS = {
-    "a": env.gvars.a_monsters,
-    "b": env.gvars.b_monsters,
-    "c": env.gvars.c_monsters,
-    "d": env.gvars.d_monsters,
-    "e": env.gvars.e_monsters,
-    "f": env.gvars.f_monsters,
-    "g": env.gvars.g_monsters,
-    "h": env.gvars.h_monsters,
-    "i": env.gvars.i_monsters,
-    "j": env.gvars.j_monsters,
-    "k": env.gvars.k_monsters,
-    "l": env.gvars.l_monsters,
-    "m": env.gvars.m_monsters,
-    "n": env.gvars.n_monsters,
-    "o": env.gvars.o_monsters,
-    "p": env.gvars.p_monsters,
-    "q": env.gvars.q_monsters,
-    "r": env.gvars.r_monsters,
-    "s": env.gvars.s_monsters,
-    "t": env.gvars.t_monsters,
-    "u": env.gvars.u_monsters,
-    "v": env.gvars.v_monsters,
-    "w": env.gvars.w_monsters,
-    "x": env.gvars.x_monsters,
-    "y": env.gvars.y_monsters,
-    "z": env.gvars.z_monsters,
+SHARD_GVAR_NAMES = {
+    "a": "monsters_a",
+    "b": "monsters_b",
+    "c": "monsters_c",
+    "d": "monsters_d",
+    "e": "monsters_e",
+    "f": "monsters_f",
+    "g": "monsters_g",
+    "h": "monsters_h",
+    "i": "monsters_i",
+    "j": "monsters_j",
+    "k": "monsters_k",
+    "l": "monsters_l",
+    "m": "monsters_m",
+    "n": "monsters_n",
+    "o": "monsters_o",
+    "p": "monsters_p",
+    "q": "monsters_q",
+    "r": "monsters_r",
+    "s": "monsters_s",
+    "t": "monsters_t",
+    "u": "monsters_u",
+    "v": "monsters_v",
+    "w": "monsters_w",
+    "x": "monsters_x",
+    "y": "monsters_y",
+    "z": "monsters_z",
+}
+HOTPATH_SHARDS = {
+    "dem": "abkmprs",
+    "dev": "abcdghiklo",
+    "dra": "adry",
+    "ele": "acefw",
+    "gob": "dghs",
+    "hob": "h",
+    "kob": "ikmw",
+    "ooz": "dghoprs",
+    "spi": "cfgijmnprs",
 }
 
 _cache = {}
@@ -92,9 +103,34 @@ def _shard_key(query):
     if text == "":
         return None
     key = text[0]
-    if key in SHARDS:
+    if key in SHARD_GVAR_NAMES:
         return key
     return None
+
+
+def _hotpath_keys(query):
+    keys = []
+    for token in _query_text(query).lower().replace("-", " ").replace("_", " ").split(" "):
+        if len(token) >= 3:
+            key = token[:3]
+            if key not in keys:
+                keys.append(key)
+    return keys
+
+
+def _candidate_letters(query):
+    letters = []
+    first = _shard_key(query)
+    if first != None:
+        letters.append(first)
+    for key in _hotpath_keys(query):
+        route = _read_field(HOTPATH_SHARDS, key)
+        if route == None:
+            continue
+        for letter in str(route):
+            if letter in SHARD_GVAR_NAMES and letter not in letters:
+                letters.append(letter)
+    return letters
 
 
 def _load_json_entries(body):
@@ -126,7 +162,8 @@ def _load_shard(letter):
     key = str(letter).lower()
     if key in _cache:
         return _cache[key]
-    addr = _read_field(SHARDS, key)
+    gvar_name = _read_field(SHARD_GVAR_NAMES, key)
+    addr = _read_field(env.gvars, gvar_name)
     if addr == None:
         _cache[key] = []
         return []
@@ -150,6 +187,26 @@ def _monster_name(monster):
     if name == None:
         return ""
     return str(name).strip()
+
+
+def _unique_entries(entries):
+    output = []
+    seen = set()
+    for monster in entries:
+        text = _monster_name(monster)
+        key = text.lower()
+        if text == "" or key in seen:
+            continue
+        seen.add(key)
+        output.append(monster)
+    return output
+
+
+def _catalogue_entries(cfg, query):
+    entries = _owner_entries(cfg)
+    for letter in _candidate_letters(query):
+        entries += _load_shard(letter)
+    return _unique_entries(entries)
 
 
 def _find_exact(entries, query):
@@ -182,19 +239,62 @@ def _find_loose(entries, query):
     return contains
 
 
+def search_matches(config_override, query):
+    """Return matching monster entries from owner data plus the query shard."""
+    text = _query_text(query)
+    if text == "":
+        return []
+    return lists.search_list_by_key(_catalogue_entries(_cfg(config_override), text), "name", text)
+
+
+def monster_name_matches(config_override, query):
+    """Return matching monster names using the shared list search semantics."""
+    names = []
+    for monster in search_matches(config_override, query):
+        names.append(_monster_name(monster))
+    return names
+
+
+def format_match_names(matches, limit=5):
+    shown = []
+    count = 0
+    for name in matches:
+        if count >= limit:
+            break
+        shown.append(f"**{str(name)}**")
+        count += 1
+    text = ", ".join(shown)
+    if len(matches) > limit:
+        text += ", ..."
+    return text
+
+
+def match_error(query, matches=None):
+    text = _query_text(query)
+    if matches == None:
+        matches = []
+    if len(matches) == 0:
+        return f"Found no monster matches for **{text}**."
+    if len(matches) == 1:
+        return None
+    return f"Be more specific: **{text}** matched {format_match_names(matches)}."
+
+
+def resolve(config_override, query):
+    """Resolve user text to exactly one monster, plus match details for callers."""
+    monster_matches = search_matches(config_override, query)
+    matches = []
+    for match in monster_matches:
+        matches.append(_monster_name(match))
+    if len(matches) != 1:
+        return None, matches, match_error(query, matches)
+    return monster_matches[0], matches, None
+
+
 def search(config_override, query):
-    """Prefix / substring match against owner data first, then the first-letter engine shard."""
-    cfg = _cfg(config_override)
-    owner = _owner_entries(cfg)
-    hit = _find_loose(owner, query)
-    if hit != None:
-        return hit
-    first = _shard_key(query)
-    if first != None:
-        hit = _find_loose(_load_shard(first), query)
-        if hit != None:
-            return hit
-    return None
+    """Compatibility lookup: return a monster only when the name resolves uniquely."""
+    monster, matches, error = resolve(config_override, query)
+    return monster
 
 
 def get_monster(config_override, name):

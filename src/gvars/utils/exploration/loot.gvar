@@ -212,7 +212,7 @@ def _monster_image_from_session(session, config=None):
     if creature == None or str(creature).strip() == "":
         return None
     try:
-        monster = monsters.search(config, str(creature))
+        monster = monsters.get_monster(config, str(creature))
         return monsters.monster_image(monster)
     except:
         return None
@@ -365,9 +365,9 @@ def run(argslist, args, get_embed, config, ch):
             _monster_image_from_session(updated, config),
         )
 
-    monster = monsters.search(config, text)
+    monster, matches, resolve_err = monsters.resolve(config, text)
     if monster == None:
-        return get_embed(desc=f"Creature **{text}** not found. Try an exact or longer creature name.")
+        return get_embed(desc=resolve_err)
     session = start_session(ch, monster, config)
     return exploration.embed_with_image(
         get_embed,

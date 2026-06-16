@@ -113,6 +113,50 @@ cfg_fixture = {
     },
     "world_data": {
         "biomes": {
+            "deep_forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+            "forest": {"gvar_id": "eeee6666-6666-6666-6666-666666666666"},
+        },
+    },
+}
+code, resolve_err = biomes.resolve_biome("enc", ["forest"], character(), cfg_fixture)
+return code == "forest" and resolve_err == None
+---
+True
+---
+name: resolve_biome accepts exact biome match before contains matches
+
+cfg_fixture = {
+    "subsystems": {
+        "exploration": {
+            "enabled": True,
+            "commands": {"enc": True},
+            "config": {"enc_biome_source": "argument"},
+        },
+    },
+    "world_data": {
+        "biomes": {
+            "deep_forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+            "forest": {"gvar_id": "eeee6666-6666-6666-6666-666666666666"},
+        },
+    },
+}
+code, resolve_err = biomes.resolve_biome("enc", ["for"], character(), cfg_fixture)
+return code == None and "Be more specific" in resolve_err and "forest" in resolve_err
+---
+True
+---
+name: resolve_biome reports ambiguous manual biome matches
+
+cfg_fixture = {
+    "subsystems": {
+        "exploration": {
+            "enabled": True,
+            "commands": {"enc": True},
+            "config": {"enc_biome_source": "argument"},
+        },
+    },
+    "world_data": {
+        "biomes": {
             "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
         },
     },

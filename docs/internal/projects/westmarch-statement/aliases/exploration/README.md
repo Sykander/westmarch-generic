@@ -34,6 +34,8 @@ See [enc.md](enc.md) and [data-shapes.md](../../data-shapes.md).
 
 **Biome source** — **`exploration.config.enc_biome_source`** applies to **all** activity commands (not **`enc`** only). Default **`auto`**: inferred from location when travel + **`world_data.locations`** exist; otherwise player enters biome code manually.
 
+Manual biome input resolves with **`lists.search_list`** over registered biome codes. Commands use one match, report no matches, or ask for more specificity with up to five matched codes.
+
 **Encounter data** — **`world_data.biomes`** registry on owner config; raw JSON rows tagged with **`activity.kind`** in lazy-loaded biome gvars ([biomes.gvar](../../gvars/biomes.md)). No inline **`encounter_pools`** on config.
 
 **hunt** → **loot** is the combat/loot loop (`!enc` before `!hunt` in westmarch help text).

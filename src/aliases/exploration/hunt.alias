@@ -59,9 +59,9 @@ creature_name = " ".join(creature_parts).strip()
 if creature_name == "":
     return get_embed(desc=f"Provide a **creature** to hunt. Use `!{cmd_name} help` for options.")
 
-monster = monsters.search(cfg, creature_name)
+monster, matches, resolve_err = monsters.resolve(cfg, creature_name)
 if monster == None:
-    return get_embed(desc=f"Creature **{creature_name}** not found. Try an exact or longer creature name.")
+    return get_embed(desc=resolve_err)
 
 cr = monsters.monster_cr(monster)
 try:

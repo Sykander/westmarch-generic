@@ -26,6 +26,35 @@ True
 ---
 name: search checks owner monster data before engine shards
 
+cfg_fixture = {
+    "world_data": {
+        "monsters": [
+            {"name": "Custom Beast", "cr": 2, "type_str": "Beast"},
+            {"name": "Custom Drake", "cr": 3, "type_str": "Dragon"},
+        ],
+    },
+}
+matches = monsters.monster_name_matches(cfg_fixture, "Custom")
+return len(matches) == 2 and matches[0] == "Custom Beast" and "Be more specific" in monsters.match_error("Custom", matches)
+---
+True
+---
+name: monster_name_matches reports ambiguous owner matches
+
+matches = monsters.monster_name_matches(None, "dragon")
+return len(matches) > 1 and "Adult Red Dragon" in matches and "Young Red Dragon" in matches
+---
+True
+---
+name: monster_name_matches uses hotpath buckets for dragon family lookups
+
+matches = monsters.monster_name_matches(None, "gob")
+return "Goblin" in matches and "Hobgoblin" in matches and "Dust Goblin" in matches
+---
+True
+---
+name: monster_name_matches uses hotpath buckets for goblin family lookups
+
 hit = monsters.search(None, "Goblin")
 return monsters.monster_image(hit) == "https://www.dndbeyond.com/avatars/thumbnails/30783/955/1000/1000/638062024584880857.png"
 ---

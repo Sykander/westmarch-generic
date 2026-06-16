@@ -104,7 +104,7 @@ vars:
 
 !hunt NonexistentBeast
 ---
-re:not found|unknown|Could not find
+re:Found no monster matches
 ---
 name: "planned: hunt rejects unknown creature"
 vars:
@@ -119,6 +119,31 @@ vars:
               "enabled": True,
               "commands": {"hunt": True},
           },
+      }
+
+!hunt Custom
+---
+re:Be more specific|Custom Beast|Custom Drake
+---
+name: hunt reports ambiguous creature matches
+vars:
+  uvars:
+    _wm_command: hunt
+  svars:
+    westmarch_config: "eeee7778-7778-7778-7778-777777777778"
+  gvars:
+    eeee7778-7778-7778-7778-777777777778: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"hunt": True},
+          },
+      }
+      world_data = {
+          "monsters": [
+              {"name": "Custom Beast", "cr": 1, "type_str": "Beast"},
+              {"name": "Custom Drake", "cr": 2, "type_str": "Dragon"},
+          ],
       }
 
 !hunt Wolf 3
