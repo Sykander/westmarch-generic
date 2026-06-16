@@ -42,7 +42,7 @@ End-to-end process to build a **playable** example preset (e.g. `forgotten_realm
 | 2 | [`biome-registry.prompt.md`](../../../../src/prompts/forgotten-realms/biome-registry.prompt.md) | `world_data_biomes` |
 
 - Paste the **set of biome codes** used in your locations’ `commands` exploration lists.
-- Prefer `engine:configs/biomes/<code>` for standard terrain until you author custom pools.
+- Prefer `engine:configs/biomes/<code>` for standard terrain until you author custom biome rows.
 - Integrate under `world_data.biomes`.
 
 ---
@@ -74,18 +74,18 @@ Optional: [`world-transport.prompt.md`](../../../../src/prompts/forgotten-realms
 
 ---
 
-## Phase 5 — Biome encounter pools (exploration depth)
+## Phase 5 — Biome encounter rows (exploration depth)
 
 | Step | Prompt | Output |
 |------|--------|--------|
-| 5 | [`biome-pools-batch.prompt.md`](../../../../src/prompts/forgotten-realms/biome-pools-batch.prompt.md) | `biome_pools` |
+| 5 | [`biome-pools-batch.prompt.md`](../../../../src/prompts/forgotten-realms/biome-pools-batch.prompt.md) | JSON row list |
 
 - **One chat per biome code** (forest, urban, road, …).
-- Fill `[BIOME_CODE]` and activities needed before sending.
+- Fill `[BIOME_CODE]`, `[BIOME_DISPLAY_NAME]`, biome brief, and activities needed before sending.
 - Custom pools → separate `.gvar` per biome; update registry `gvar_id` from `engine:…` to workshop UUID after publish.
-- Engine presets are enough for smoke tests; custom pools add setting flavour.
+- Engine presets are enough for smoke tests; custom rows add setting flavour.
 
-Target per biome (first pass): **5–10** entries each for `enc.combat`, `enc.gather`, `enc.quest`, plus gather pools for enabled activities (`forage`, `fish`, `mine`, `lumber`, `hunt`, `loot` as applicable).
+Target per biome (first pass): **5–10** rows each for `enc.combat`, `enc.gather`, `enc.quest`, plus rows for enabled biome-backed activity tags (`forage.gather`, `fish.gather`, `mine.gather`, `lumber.gather`). A row may list multiple tags when the same encounter belongs in several pools.
 
 ---
 

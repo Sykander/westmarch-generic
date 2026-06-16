@@ -2,41 +2,52 @@
 
 **Path:** `src/gvars/utils/encounters/encounter_templates.gvar` · **Phase:** 0–1
 
-Factory functions that return **[encounter](../data-shapes.md#encounter-input)** dicts (data only). Port from `westmarch/src/gvars/utils/encounters/encounter_templates.gvar`.
+Factory functions that expand compact JSON rows into **[encounter](../data-shapes.md#encounter-input)** dicts (data only). Used by biome gvars so one encounter row can appear in multiple pools without duplicating the full dict.
 
 Encounter field shapes and **`ectx`** callables: [data-shapes.md](../data-shapes.md).
 
-## API (MVP subset)
+## Row API
 
-Port these first (enough for **enc** / **forage** vertical slice):
+Biome rows use:
 
-| Function | Purpose |
-|----------|---------|
-| `get_gather_encounter(...)` | Skill check → item outcome |
-| `get_gold_encounter(...)` | Simple gp reward |
-| `get_damage_encounter(...)` | HP loss |
-| `get_ambush_encounter(...)` | Combat setup |
+```json
+[pool_tags_or_null, "template_name", "...args"]
+```
 
-Add remaining westmarch templates (quest, recipe, story, …) as Tier B exploration needs them.
+`encounter_templates.expand_row(row)` ignores the pool tag element and expands the template name plus args:
+
+```py
+enc = encounter_templates.expand_row([["enc.gather"], "flavour", "Wild berries", "You find ripe berries.", "gather"])
+```
+
+## Templates (MVP subset)
+
+| Template | Kind | Args |
+|----------|------|------|
+| `flavour` | `gather` by default | `name`, `description`, optional `kind` |
+| `gather_item` | `gather` | `name`, `description`, `check_name`, `dc`, `item_name`, `total`, optional `bag` |
+| `skill_check` | `gather` | `name`, `description`, `check_name`, `dc`, optional `success_text`, optional `failure_text` |
+| `combat` | `combat` | `name`, `description`, `cr`, optional `monster` or monster list |
+| `quest` | `quest` | `name`, `description`, optional `reward_hint` |
+| `gold` | `gather` | `name`, `description`, `total` |
+| `raw` | from literal | `encounter_dict` |
+
+Add remaining westmarch templates (recipe, story, damage, healing, …) as Tier B exploration needs them. Prefer new templates over large `raw` rows once a pattern repeats.
 
 ## Usage
 
 ```py
 using(templates = env.gvars.encounter_templates)
 
-enc = templates.get_gather_encounter(
-    item_name="Herbs",
-    check="survival",
-    dc=12,
-    bag="Forage",
-)
+row = [["enc.gather", "forage.gather"], "gather_item", "Wild herbs", "You find useful herbs near a damp hollow.", "Wisdom (Survival)", 12, "Herbs", 1]
+enc = templates.expand_row(row)
 encounter_result = encounters.process_encounter(enc, character, args)
 ```
 
 ## Not in this module
 
 - Rolling, embed text, sheet changes → [encounters.md](encounters.md)
-- Picking from area pools → [encounter_lists.md](encounter_lists.md) + config biome pools
+- Picking from biome rows → [encounter_lists.md](encounter_lists.md) + config biome registry
 
 ## Related
 

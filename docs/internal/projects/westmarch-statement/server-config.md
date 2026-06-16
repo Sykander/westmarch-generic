@@ -184,9 +184,9 @@ world_data = {
 }
 ```
 
-Biome **`pools`** live in the separate biome gvar ([src/gvars/configs/biomes/](../../../../src/gvars/configs/biomes/README.md)), not inline here.
+Biome JSON row lists live in the separate biome gvar ([src/gvars/configs/biomes/](../../../../src/gvars/configs/biomes/README.md)), not inline here.
 
-**Player flow:** `!enc forest` → **`distribution`** picks kind → random entry from **`pools.enc[kind]`** on loaded forest biome gvar.
+**Player flow:** `!enc forest` → **`distribution`** picks kind → random row tagged **`enc.<kind>`** on the loaded forest biome gvar.
 
 ---
 
@@ -361,7 +361,7 @@ Three layers — do not conflate:
 | Subsystem enabled but required **`world_data`** missing (e.g. travel on, no **`locations`**) | Error |
 | Biome code in locations with no **`world_data.biomes`** entry | Error |
 | **`biomes.*.gvar_id`** unloadable | Error |
-| Kind > 0% in **`distribution`** but empty **`pools[activity][kind]`** | Warning |
+| Kind > 0% in **`distribution`** but no matching biome row tag **`activity.kind`** | Warning |
 | Legacy flat **`locations`** / **`encounter_pools`** without **`world_data`** | Warning |
 | Policy / subsystem mismatch (e.g. world_clock mode without **`world_data.calendars`**) | Warning |
 | **`policies.downtime.mode: tracked`** but **`subsystems.downtime.enabled`** false | Error |

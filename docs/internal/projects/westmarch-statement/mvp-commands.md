@@ -12,7 +12,7 @@ Twenty-five top-level commands (twenty-four player-facing + setup hub **`westmar
 
 | Command | Subsystem | Enable via config | Primary config data | Source |
 |---------|-----------|-------------------|---------------------|--------|
-| **enc** | exploration | `subsystems.exploration.commands.enc` | **`world_data.biomes`**, lazy biome pools | westmarch |
+| **enc** | exploration | `subsystems.exploration.commands.enc` | **`world_data.biomes`**, lazy biome JSON rows | westmarch |
 | **forage** | exploration | `…commands.forage` | Same pipeline, `forage` activity | westmarch |
 | **fish** | exploration | `…commands.fish` | Same pipeline, `fish` activity | westmarch |
 | **mine** | exploration | `…commands.mine` | Same pipeline, `mine` activity | westmarch |
@@ -119,7 +119,7 @@ Large catalogues may require **extension gvars** ([solution-statement.md](soluti
 | **config** | [gvars/config.md](gvars/config.md) | All aliases |
 | **display** | [gvars/display.md](gvars/display.md) | All aliases that build embeds — `get_display()` |
 | **`check_config`** | [gvars/check_config.md](gvars/check_config.md) | `!westmarch check` |
-| **biomes** | [gvars/biomes.md](gvars/biomes.md) | Lazy-load biome pools |
+| **biomes** | [gvars/biomes.md](gvars/biomes.md) | Lazy-load biome JSON rows |
 | **auth** | [gvars/auth.md](gvars/auth.md) | All aliases |
 | **pc** | [gvars/pc.md](gvars/pc.md) | Sheet mutations, wallet, downtime |
 | **stats** | [gvars/stats.md](gvars/stats.md) | **`add_log()`** — command usage, cooldown timestamps |

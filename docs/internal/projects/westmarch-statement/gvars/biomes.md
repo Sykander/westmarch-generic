@@ -4,9 +4,9 @@
 
 **Biome registry resolution**, lazy-loaded biome bodies, and **biome code selection** for exploration activity commands. Biome bodies are **large** — stored in separate workshop gvars referenced from **`world_data.biomes`**, not inline in server config.
 
-**Scope:** Biome pools hold **generic wilderness** content only (`enc`, `forage`, `mine`, `fish`, `lumber`, `hunt`). Economy, crafting, content, and dungeons are **location-scoped** — see [location_encounters.gvar](location_encounters.md).
+**Scope:** Biome rows hold **generic wilderness** content only (`enc`, `forage`, `mine`, `fish`, `lumber`). Economy, crafting, content, hunt, loot, and dungeons are **location-scoped** or handled by dedicated engines — see [location_encounters.gvar](location_encounters.md).
 
-**[encounter_lists.gvar](encounter_lists.md)** calls **`get_pool_entries`** after choosing encounter **kind** — merges with location pools when present.
+**[encounter_lists.gvar](encounter_lists.md)** calls **`get_pool_entries`** after choosing encounter **kind** — filters rows by pool tag and merges with location pools when present.
 
 ## Dependencies
 
@@ -32,15 +32,15 @@ def list_biomes(config=None):
 
 def get_biome(code, config=None):
     """
-    Load and cache biome module for code.
+    Load and cache biome JSON rows for code.
     Resolves world_data.biomes[code].gvar_id — workshop UUID or engine:configs/biomes/<code>.
-    Returns biome module with .pools or None if missing / unloadable.
+    Returns JSON payload or None if missing / unloadable.
     """
 
 def get_pool_entries(code, activity, kind, config=None):
     """
-    List of encounter dicts for activity + kind from loaded biome.
-    activity: "enc" | "mine" | "forage" | "fish" | "lumber" | "hunt"
+    List of expanded encounter dicts for activity + kind from loaded biome.
+    activity: "enc" | "mine" | "forage" | "fish" | "lumber"
     kind: "combat" | "quest" | "gather"
     """
 
@@ -117,22 +117,19 @@ world_data = {
 
 ## Biome gvar body
 
-```py
-pools = {
-    "enc": {
-        "combat": [ { "kind": "combat", "name": "…", "cr": "1", "monsters": ["Wolf"], … }, … ],
-        "quest": [ … ],
-        "gather": [ … ],
-    },
-    "mine": { "gather": [ … ] },
-    "forage": { "gather": [ … ] },
-    "fish": { "gather": [ … ] },
-    "lumber": { "gather": [ … ] },
-    "hunt": { "combat": [ … ] },
-}
+Biome gvars are raw JSON row lists:
+
+```json
+[
+  [["enc.combat"], "combat", "Wolf sign", "Fresh tracks cross the wet leaves.", 1, "Wolf"],
+  [["enc.gather", "forage.gather"], "gather_item", "Wild berries", "You find ripe berries among the undergrowth.", "Wisdom (Survival)", 12, "Berries", 1],
+  [["enc.quest"], "quest", "Lost waymarker", "A marker points toward a trail absent from your map."]
+]
 ```
 
 See [data-shapes.md § Biome gvar body](../data-shapes.md#biome-gvar-body-separate-workshop-module).
+
+The first row value is a pool tag list, or `null` for every compatible pool. Tags use `activity.kind`, such as `enc.gather`, `forage.gather`, or `enc.combat`. The second value is an encounter template id from [encounter_templates.md](encounter_templates.md); remaining values are template args.
 
 westmarch **`encounters`** mega-pool + d100 **`get_encounter_list`** — **not** ported. Place-specific service content → [location encounter module](../data-shapes.md#location-encounter-module-separate-workshop-gvar).
 

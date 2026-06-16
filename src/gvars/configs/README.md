@@ -5,7 +5,7 @@ Prefab **config gvar** bodies for tests and onboarding. Full spec: [docs/interna
 | File / folder | Purpose |
 |---------------|---------|
 | **`starter.gvar`** | Minimal schema — all subsystems off, no world data |
-| **`biomes/`** | Preset biome **`pools`** modules — **`engine:configs/biomes/<code>`** |
+| **`biomes/`** | Preset biome **JSON row-list** bodies — **`engine:configs/biomes/<code>`** |
 | **`books/`** | Library corpora from TSV — **`forgotten_realms_*`**, **`real_*`** (`npm run generate:books`) |
 | **`recipes/`** | Crafting catalogue — **`recipes_list.gvar`** (`npm run generate:recipes`) |
 | `forgotten_realms_2014.gvar` | Forgotten Realms · 2014 |

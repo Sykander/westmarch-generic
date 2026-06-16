@@ -102,10 +102,10 @@ The encounter editor should support the compact JSON format discussed for explor
 Example compact row:
 
 ```json
-["gather_item", "Wild Herbs", "Survival", 12, "Herbs", 1, "Forage"]
+[["enc.gather", "forage.gather"], "gather_item", "Wild Herbs", "You find useful herbs near a damp hollow.", "Wisdom (Survival)", 12, "Herbs", 1]
 ```
 
-The UI should show template-aware labels, validate argument counts, and preview the expanded encounter object where possible. Template names should be sourced from the engine's encounter template registry rather than hard-coded separately once that registry stabilizes.
+The UI should show template-aware labels, validate argument counts, validate pool tags, and preview the expanded encounter object where possible. Template names should be sourced from the engine's encounter template registry rather than hard-coded separately once that registry stabilizes.
 
 ## Guided config check
 

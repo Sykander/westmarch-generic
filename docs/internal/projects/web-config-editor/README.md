@@ -87,13 +87,13 @@ Initial editor sections:
 - Biome and location encounter pools.
 - Loot rules and hunt rules from [exploration enrichment](../exploration-enrichment/).
 
-Encounter pool editing should support both full encounter dicts and compact JSON rows:
+Biome encounter editing emits compact JSON rows:
 
 ```json
-["gather_item", "Wild Herbs", "Survival", 12, "Herbs", 1, "Forage"]
+[["enc.gather", "forage.gather"], "gather_item", "Wild Herbs", "You find useful herbs near a damp hollow.", "Wisdom (Survival)", 12, "Herbs", 1]
 ```
 
-The editor should know registered template names and show field labels for common engine templates where possible.
+The first item is a pool-tag list or `null` for every compatible pool; the second item is the template name; remaining items are template args. The editor should know registered template names and show field labels for common engine templates where possible.
 
 ## Parsing Strategy
 

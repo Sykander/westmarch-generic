@@ -34,7 +34,7 @@ def get_pool_entries(location_id, activity, kind, config=None):
     """
 ```
 
-## Merge with biome pools
+## Merge with biome rows
 
 [encounter_lists.gvar](encounter_lists.md) combines sources at roll time:
 
@@ -47,7 +47,7 @@ Uniform random pick after union. Empty combined list → player-facing error whe
 
 ## Body shape
 
-Same **`pools`** tree as [biome gvar body](../data-shapes.md#biome-gvar-body-separate-workshop-module), but **all activity keys** allowed — not limited to exploration.
+Location encounter gvars still export a Drac2 **`pools`** tree because they may contain place-specific executable encounter dicts. Biome gvars use raw JSON row lists instead ([biome gvar body](../data-shapes.md#biome-gvar-body-separate-workshop-module)).
 
 ```py
 pools = {
@@ -87,7 +87,7 @@ Dungeon **availability** is configured on the location (**`dungeon_ids`**) — n
 ## Related
 
 - [locations.md](locations.md) — location lookup
-- [biomes.md](biomes.md) — biome pool loader
+- [biomes.md](biomes.md) — biome row-list loader
 - [encounter_lists.md](encounter_lists.md) — selection + merge
 - [data-shapes.md § Location](../data-shapes.md#location)
 - [data-shapes.md § Location encounter module](../data-shapes.md#location-encounter-module-separate-workshop-gvar)

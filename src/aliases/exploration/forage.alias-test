@@ -92,11 +92,7 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {
-          "forage": {
-              "gather": [{"kind": "gather", "name": "Wild mushrooms", "description": "Fungi on rotting logs."}],
-          },
-      }
+      [[["forage.gather"], "flavour", "Wild mushrooms", "Fungi on rotting logs.", "gather"]]
 
 !forage
 ---
@@ -123,7 +119,7 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {"forage": {"gather": [{"kind": "gather", "name": "Wild mushrooms"}]}}
+      [[["forage.gather"], "flavour", "Wild mushrooms", "", "gather"]]
 
 !forage desert
 ---
@@ -150,7 +146,7 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {"forage": {"gather": [{"kind": "gather", "name": "Wild mushrooms"}]}}
+      [[["forage.gather"], "flavour", "Wild mushrooms", "", "gather"]]
 
 !forage help
 ---
@@ -177,7 +173,7 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {"forage": {"gather": [{"kind": "gather", "name": "Wild mushrooms"}]}}
+      [[["forage.gather"], "flavour", "Wild mushrooms", "", "gather"]]
 
 !forage forest
 ---
@@ -211,7 +207,7 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {"forage": {"gather": [{"kind": "gather", "name": "Wild mushrooms"}]}}
+      [[["forage.gather"], "flavour", "Wild mushrooms", "", "gather"]]
 
 !forage
 ---
@@ -252,7 +248,7 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {"forage": {"gather": [{"kind": "gather", "name": "Wild mushrooms"}]}}
+      [[["forage.gather"], "flavour", "Wild mushrooms", "", "gather"]]
   character:
     cvars:
       wg_location: "oakwood"

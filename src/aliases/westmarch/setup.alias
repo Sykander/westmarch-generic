@@ -248,7 +248,7 @@ Use `{prefix}westmarch setup -p "Monster Data"` for monster override detail."""
 
 def _biomes_locations(prefix):
     return f"""**Biomes**
-`world_data.biomes` maps short codes to a gvar containing encounter pools:
+`world_data.biomes` maps short codes to a biome JSON gvar:
 ```py
 world_data = {{
     "biomes": {{
@@ -257,7 +257,7 @@ world_data = {{
 }}
 ```
 
-Each biome gvar has `pools.<activity>.<kind>` lists. For example, `pools.enc.gather` or `pools.forage.gather`.
+Each biome gvar body is a JSON row list. Row one is pool tags such as `enc.gather` or `forage.gather`; row two is the encounter template name; remaining row values are template args. Use `null` as the first value for every compatible pool.
 
 **Locations**
 Locations let commands infer biomes:

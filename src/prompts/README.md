@@ -21,7 +21,7 @@ Templates: [`_templates/`](_templates/) · Shared snippets: [`_shared/`](_shared
 | 2 | Biome registry | [`biome-registry.prompt.md`](forgotten-realms/biome-registry.prompt.md) | 1 |
 | 3 | Paths | [`paths-batch.prompt.md`](forgotten-realms/paths-batch.prompt.md) | 15–25 |
 | 4 | Shops | [`shops-batch.prompt.md`](forgotten-realms/shops-batch.prompt.md) | 5–10 |
-| 5 | Biome pools | [`biome-pools-batch.prompt.md`](forgotten-realms/biome-pools-batch.prompt.md) | 1 biome |
+| 5 | Biome rows | [`biome-pools-batch.prompt.md`](forgotten-realms/biome-pools-batch.prompt.md) | 1 biome |
 | 6 | Recipes | [`recipes-batch.prompt.md`](forgotten-realms/recipes-batch.prompt.md) | 8–12 |
 | 7 | Books | [`books-batch.prompt.md`](forgotten-realms/books-batch.prompt.md) | 5–8 |
 | 8 | Transport | [`world-transport.prompt.md`](forgotten-realms/world-transport.prompt.md) | 1 |

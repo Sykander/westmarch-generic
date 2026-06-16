@@ -92,11 +92,7 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {
-          "fish": {
-              "gather": [{"kind": "gather", "name": "River trout", "description": "Fish in the shallows."}],
-          },
-      }
+      [[["fish.gather"], "flavour", "River trout", "Fish in the shallows.", "gather"]]
 
 !fish
 ---
@@ -123,7 +119,7 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {"fish": {"gather": [{"kind": "gather", "name": "River trout"}]}}
+      [[["fish.gather"], "flavour", "River trout", "", "gather"]]
 
 !fish desert
 ---
@@ -150,7 +146,7 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {"fish": {"gather": [{"kind": "gather", "name": "River trout"}]}}
+      [[["fish.gather"], "flavour", "River trout", "", "gather"]]
 
 !fish help
 ---
@@ -177,7 +173,7 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {"fish": {"gather": [{"kind": "gather", "name": "River trout"}]}}
+      [[["fish.gather"], "flavour", "River trout", "", "gather"]]
 
 !fish forest
 ---
@@ -211,7 +207,7 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {"fish": {"gather": [{"kind": "gather", "name": "River trout"}]}}
+      [[["fish.gather"], "flavour", "River trout", "", "gather"]]
 
 !fish
 ---
@@ -252,7 +248,7 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {"fish": {"gather": [{"kind": "gather", "name": "River trout"}]}}
+      [[["fish.gather"], "flavour", "River trout", "", "gather"]]
   character:
     cvars:
       wg_location: "oakwood"

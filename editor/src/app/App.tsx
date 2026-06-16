@@ -100,7 +100,7 @@ const SECTION_DESCRIPTIONS: Record<Section, string> = {
   policies: "Tune encounter, repeat, footer, and distribution behavior.",
   world: "Configure locations, paths, and world-level travel data.",
   biomes: "Wire biome presets or custom biome gvars into the world registry.",
-  encounters: "Build encounter rows from templates for biome and location pools.",
+  encounters: "Build biome JSON rows from pool tags and encounter templates.",
   check: "Review browser validation before exporting or publishing.",
   export: "Copy, download, or publish the generated gvar contents.",
 };
@@ -193,8 +193,17 @@ const SKILL_OPTIONS = [
   "Persuasion",
 ];
 
-const EXPLORATION_ACTIVITIES = ["enc", "forage", "fish", "mine", "lumber", "hunt", "loot"];
+const BIOME_POOL_TAGS = [
+  "enc.combat",
+  "enc.quest",
+  "enc.gather",
+  "forage.gather",
+  "fish.gather",
+  "mine.gather",
+  "lumber.gather",
+];
 const ENCOUNTER_KIND_OPTIONS = ["combat", "quest", "gather"];
+type CompactEncounterRow = Array<string | number | string[] | null>;
 
 const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
   {
@@ -203,11 +212,12 @@ const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     description: "Skill check that grants an item or resource outcome.",
     fields: [
       { key: "title", label: "Title", type: "text" },
+      { key: "description", label: "Description", type: "text" },
       { key: "skill", label: "Skill", type: "select", values: SKILL_OPTIONS },
       { key: "dc", label: "DC", type: "number" },
       { key: "item", label: "Outcome item", type: "text" },
       { key: "qty", label: "Quantity", type: "number" },
-      { key: "activity", label: "Activity", type: "select", values: EXPLORATION_ACTIVITIES },
+      { key: "bag", label: "Bag", type: "text" },
     ],
   },
   {
@@ -216,6 +226,7 @@ const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     description: "Generic pass/fail exploration check.",
     fields: [
       { key: "title", label: "Title", type: "text" },
+      { key: "description", label: "Description", type: "text" },
       { key: "skill", label: "Skill", type: "select", values: SKILL_OPTIONS },
       { key: "dc", label: "DC", type: "number" },
       { key: "success", label: "Success text", type: "text" },
@@ -229,6 +240,7 @@ const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     fields: [
       { key: "title", label: "Title", type: "text" },
       { key: "text", label: "Text", type: "text" },
+      { key: "kind", label: "Kind", type: "select", values: ENCOUNTER_KIND_OPTIONS },
     ],
   },
   {
@@ -237,9 +249,9 @@ const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     description: "Simple monster encounter stub.",
     fields: [
       { key: "title", label: "Title", type: "text" },
-      { key: "monster", label: "Monster", type: "text" },
+      { key: "description", label: "Description", type: "text" },
       { key: "cr", label: "CR", type: "number" },
-      { key: "kind", label: "Kind", type: "select", values: ENCOUNTER_KIND_OPTIONS },
+      { key: "monster", label: "Monster", type: "text" },
     ],
   },
   {
@@ -250,6 +262,16 @@ const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
       { key: "title", label: "Title", type: "text" },
       { key: "hook", label: "Hook", type: "text" },
       { key: "reward", label: "Reward", type: "text" },
+    ],
+  },
+  {
+    id: "gold",
+    label: "Gold",
+    description: "Simple coin reward encounter.",
+    fields: [
+      { key: "title", label: "Title", type: "text" },
+      { key: "description", label: "Description", type: "text" },
+      { key: "gold", label: "Gold", type: "number" },
     ],
   },
 ];
@@ -1682,13 +1704,12 @@ function BiomesView({
         />
         <PlannedFeatureButton
           feature={{
-            title: "Biome pool editor",
+            title: "Biome row editor",
             detail:
-              "Biome pool editing will manage pools[activity][kind] for enc, forage, fish, mine, lumber, hunt, and loot.",
+              "Biome row editing will manage pool tags such as enc.gather, forage.gather, and enc.combat.",
             plannedItems: [
-              "Activity and kind selectors",
-              "Encounter list insertion",
-              "Pool shape validation",
+              "Biome JSON row validation",
+              "Template preview",
               "Generated biome gvar export",
             ],
           }}
@@ -1805,7 +1826,9 @@ function EncountersView() {
   const [values, setValues] = useState<Record<string, string | number>>(() =>
     defaultEncounterValues(template),
   );
-  const [rows, setRows] = useState<Array<Array<string | number>>>([]);
+  const [useAnyPool, setUseAnyPool] = useState(false);
+  const [selectedPools, setSelectedPools] = useState<string[]>(["enc.gather", "forage.gather"]);
+  const [rows, setRows] = useState<CompactEncounterRow[]>([]);
 
   function changeTemplate(nextTemplateId: string) {
     const nextTemplate =
@@ -1818,7 +1841,16 @@ function EncountersView() {
     setValues((current) => ({ ...current, [key]: value }));
   }
 
-  const compactRow = [
+  function togglePoolTag(tag: string, checked: boolean) {
+    setSelectedPools((current) => {
+      if (checked) return current.includes(tag) ? current : [...current, tag];
+      const next = current.filter((item) => item !== tag);
+      return next.length > 0 ? next : ["enc.gather"];
+    });
+  }
+
+  const compactRow: CompactEncounterRow = [
+    useAnyPool ? null : selectedPools,
     template.id,
     ...template.fields.map((field) => values[field.key] ?? ""),
   ];
@@ -1832,7 +1864,7 @@ function EncountersView() {
       <SectionTitle
         icon={<FileCode2 size={20} />}
         title="Encounters"
-        help="Build compact JSON rows for exploration pools, then paste or export them into biome gvars."
+        help="Build compact JSON rows for biome gvars, with pool tags first and template args after."
       />
       <div className="form-grid">
         <SelectField
@@ -1850,6 +1882,31 @@ function EncountersView() {
             key={field.key}
           />
         ))}
+        <div className="field span-2">
+          <span>Pool tags</span>
+          <label className="switch-line">
+            <input
+              type="checkbox"
+              checked={useAnyPool}
+              onChange={(event) => setUseAnyPool(event.target.checked)}
+            />
+            <span>Any compatible pool</span>
+          </label>
+          {!useAnyPool ? (
+            <div className="checkbox-grid compact">
+              {BIOME_POOL_TAGS.map((tag) => (
+                <label className="switch-line" key={tag}>
+                  <input
+                    type="checkbox"
+                    checked={selectedPools.includes(tag)}
+                    onChange={(event) => togglePoolTag(tag, event.target.checked)}
+                  />
+                  <span>{tag}</span>
+                </label>
+              ))}
+            </div>
+          ) : null}
+        </div>
         <label className="field span-2">
           <span>Current row</span>
           <textarea
@@ -1866,7 +1923,7 @@ function EncountersView() {
           </button>
         </div>
         <label className="field span-2">
-          <span>Encounter rows</span>
+          <span>Biome gvar JSON rows</span>
           <textarea
             className="code-input"
             rows={8}
@@ -1878,14 +1935,14 @@ function EncountersView() {
       <div className="planned-grid">
         <PlannedFeatureButton
           feature={{
-            title: "Insert into biome pool",
+            title: "Export biome gvar",
             detail:
-              "The next step is choosing a biome, activity, and kind, then inserting these rows directly into the generated biome gvar body.",
+              "The generated rows can be used as the entire body of a custom biome gvar.",
             plannedItems: [
               "Biome selector",
-              "Activity selector",
-              "Kind selector",
-              "Pool row insertion",
+              "Row validation",
+              "Copy JSON body",
+              "Publish custom biome gvar",
             ],
           }}
         />
@@ -1917,11 +1974,15 @@ function defaultEncounterValues(template: EncounterTemplate) {
       }
       if (field.type === "select") return [field.key, field.values?.[0] ?? ""];
       if (field.key === "title") return [field.key, "Wild Herbs"];
+      if (field.key === "description") {
+        return [field.key, "You find useful herbs near a damp hollow."];
+      }
       if (field.key === "item") return [field.key, "Herbs"];
       if (field.key === "text") return [field.key, "A quiet moment changes the tone of the road."];
       if (field.key === "monster") return [field.key, "Wolf"];
       if (field.key === "hook") return [field.key, "A local asks for help."];
       if (field.key === "reward") return [field.key, "Favor"];
+      if (field.key === "bag") return [field.key, "Forage"];
       return [field.key, ""];
     }),
   ) as Record<string, string | number>;

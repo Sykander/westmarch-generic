@@ -18,11 +18,46 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {
-          "enc": {
-              "gather": [{"kind": "gather", "name": "Berries in the Wild"}],
+      [[["enc.gather"], "flavour", "Berries in the Wild", "", "gather"]]
+
+entries = biomes.get_pool_entries("forest", "forage", "gather")
+return len(entries) == 1 and entries[0]["name"] == "Shared Berries"
+---
+True
+---
+name: get_pool_entries reuses row across multiple pool tags
+vars:
+  svars:
+    westmarch_config: "eeee3333-3333-3333-3333-333333333333"
+  gvars:
+    eeee3333-3333-3333-3333-333333333333: |
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
           },
       }
+    eeee5555-5555-5555-5555-555555555555: |
+      [[["enc.gather", "forage.gather"], "flavour", "Shared Berries", "", "gather"]]
+
+entries = biomes.get_pool_entries("forest", "forage", "gather")
+combat_entries = biomes.get_pool_entries("forest", "forage", "combat")
+return len(entries) == 1 and entries[0]["name"] == "Any Gather" and len(combat_entries) == 0
+---
+True
+---
+name: null pool tag applies only to compatible kind
+vars:
+  svars:
+    westmarch_config: "eeee3333-3333-3333-3333-333333333333"
+  gvars:
+    eeee3333-3333-3333-3333-333333333333: |
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+          },
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      [[null, "flavour", "Any Gather", "", "gather"]]
 
 cfg_fixture = {
     "subsystems": {

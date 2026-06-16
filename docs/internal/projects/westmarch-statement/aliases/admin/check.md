@@ -39,7 +39,7 @@ Implemented in **[check_config.gvar](../../gvars/check_config.md)** — **`check
 | `exploration.config.distribution` sum ≠ 100 | Error | Percentages must total 100 (combat + quest + gather) |
 | Unknown key in `exploration.config.distribution` | Error | Only `combat`, `quest`, `gather` allowed |
 | Invalid `distribution_policy` value | Error | Must be `random` or `balanced` |
-| Kind > 0% in `distribution` but no entries in biome **`pools[activity][kind]`** | Warning | e.g. `quest: 25` but forest biome has empty quest bucket |
+| Kind > 0% in `distribution` but no biome rows tagged **`activity.kind`** | Warning | e.g. `quest: 25` but forest biome has no `enc.quest` row |
 | `policies.time.mode == "world_clock"` but no **`world_data.calendars`** | Warning | Time policy expects calendar data |
 | **`policies.downtime.mode == "tracked"`** but **`subsystems.downtime.enabled`** false | Error | Tracked downtime requires **`!downtime`** subsystem enabled |
 | **`policies.downtime.max_workdays`** set and **< 1** | Error | max_workdays must be positive or omitted |

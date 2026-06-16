@@ -26,7 +26,7 @@ Engine gvars read **`world_data`** — they do not duplicate it:
 | [journeys.gvar](journeys.md) | **`paths`**, **`locations`**, active transport |
 | [clock.gvar](clock.md) | **`calendars`**, location **`calendar_id`** |
 | [biomes.gvar](biomes.md) | **`biomes`** registry → lazy-load gvar bodies |
-| [encounter_lists.gvar](encounter_lists.md) | biome pools via **`biomes.gvar`** |
+| [encounter_lists.gvar](encounter_lists.md) | biome JSON rows via **`biomes.gvar`** |
 
 ## Travel / location requirement
 

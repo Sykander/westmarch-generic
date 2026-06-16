@@ -13,7 +13,7 @@ Biome resolution follows **`exploration.config.enc_biome_source`** (same as **en
 | Manual | `!mine <biome> [bonuses]` |
 | Inferred | `!mine [bonuses]` |
 
-Mining-flavoured encounter from **`pools.mine[kind]`** on the resolved biome gvar. Cooldown: **120s** via **[stats.gvar](../../gvars/stats.md)** + **`pc.check_cooldown(ch, "mine")`**.
+Mining-flavoured encounter from JSON rows tagged **`mine.<kind>`** on the resolved biome gvar. Cooldown: **120s** via **[stats.gvar](../../gvars/stats.md)** + **`pc.check_cooldown(ch, "mine")`**.
 
 ## westmarch reference
 
@@ -27,7 +27,7 @@ Diff from **enc**:
 | Aspect | enc | mine |
 |--------|-----|------|
 | Activity | `"enc"` | `"mine"` |
-| Pool on biome gvar | **`pools.enc[kind]`** | **`pools.mine[kind]`** |
+| Biome row tag | **`enc.<kind>`** | **`mine.<kind>`** |
 | Cooldown key | **`"enc"`** | **`"mine"`** |
 | Title/footer | **`command_display.enc`** | **`command_display.mine`** — via **`display.get_display()`** |
 
@@ -36,7 +36,7 @@ No journey integration in westmarch (enc-only).
 ## Prerequisites
 
 - [enc.md](enc.md) Phase 0 complete
-- Biome gvar includes **`pools.mine`** for fixture biomes
+- Biome gvar includes rows tagged **`mine.gather`** for fixture biomes
 
 ## Implementation checklist
 
@@ -45,7 +45,7 @@ No journey integration in westmarch (enc-only).
 - [ ] **`encounter_lists.get_encounter(biome, "mine", ch, cfg)`**
 - [ ] **`stats.add_log(ch, extras={ biome, encounter_kind })`**
 - [ ] Toggle `exploration.commands.mine`
-- [ ] `mine.alias-test` + biome **`pools.mine`** fixture
+- [ ] `mine.alias-test` + biome **`mine.gather`** row fixture
 
 ## Exit criteria
 

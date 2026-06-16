@@ -14,7 +14,7 @@ Every LLM-authored asset for westmarch-generic configs. Batch sizes tuned for Ch
 | 2 | Biome registry | `forgotten-realms/biome-registry` | 1 shot | `world_data_biomes` | Location biome codes |
 | 3 | Paths | `forgotten-realms/paths-batch` | 15–25 | `world_data_paths` | Location ids |
 | 4 | Shops | `forgotten-realms/shops-batch` | 5–10 | `config_shops` | Locations + services |
-| 5 | Biome pools | `forgotten-realms/biome-pools-batch` | 1 biome | `biome_pools` | Registry code |
+| 5 | Biome rows | `forgotten-realms/biome-pools-batch` | 1 biome | JSON row list | Registry code |
 | 6 | Recipes | `forgotten-realms/recipes-batch` | 8–12 | `config_recipes` | — |
 | 7 | Books | `forgotten-realms/books-batch` | 5–8 | `config_books` | `library_topics` (optional) |
 | 8 | Transport | `forgotten-realms/world-transport` | 1 shot | `world_data_transport` | — |
@@ -50,7 +50,7 @@ Every LLM-authored asset for westmarch-generic configs. Batch sizes tuned for Ch
 | `config_shops` | top-level `shops` |
 | `config_recipes` | top-level `recipes` |
 | `config_books` | top-level `books` |
-| `biome_pools` | separate biome `.gvar` body → publish → set `gvar_id` in registry |
+| JSON row list | separate biome `.gvar` body -> publish -> set `gvar_id` in registry |
 
 Schema links: [Location](../westmarch-statement/data-shapes.md#location) · [Path](../westmarch-statement/data-shapes.md#path) · [Shop](../westmarch-statement/data-shapes.md#shop) · [Encounter](../westmarch-statement/data-shapes.md#encounter-input) · [Biome gvar body](../westmarch-statement/data-shapes.md#biome-gvar-body-separate-workshop-module) · [Recipe](../westmarch-statement/data-shapes.md#recipe)
 
@@ -80,11 +80,11 @@ Maintainer snippet: [`src/prompts/_shared/biome-codes.md`](../../../../src/promp
 - **Wilderness loops:** 3–5 location chains with 1–2 encounter steps between nodes.
 - **Transport variants:** duplicate `from`/`to` with different `requirements.transport` only when steps differ materially.
 
-### Biome pools
+### Biome rows
 
 - Start with **3–5 biomes** your locations actually use.
 - Use **engine presets** for the rest until you need custom flavour.
-- One biome chat ≈ 30–60 encounter dicts if you fill enc + one gather activity — split into two chats (“forest enc only”, “forest forage/lumber”) if output truncates.
+- One biome chat ≈ 30–60 compact rows if you fill enc + one gather activity — split into two chats (“forest enc only”, “forest forage/lumber”) if output truncates.
 
 ### Shops
 

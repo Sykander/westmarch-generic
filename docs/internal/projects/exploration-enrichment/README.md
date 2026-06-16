@@ -91,47 +91,22 @@ If there is an active session and the input matches neither a lootable nor a ses
 - `!loot start <creature>` starts or replaces a session.
 - `!loot clear` closes the current session.
 
-## JSON-Friendly Encounter Pools
+## JSON-Friendly Biome Rows
 
-Biome and location encounter gvars should keep exposing a `pools` variable, but `pools` should accept compact JSON-compatible rows as well as full Drac2 encounter dicts.
-
-Current full-dict shape stays valid:
-
-```py
-pools = {
-    "enc": {
-        "gather": [
-            { "name": "Wild Herbs", "description": "Fresh herbs grow near the path.", "kind": "gather" },
-        ],
-    },
-}
-```
-
-New compact shape:
+Biome gvars are raw JSON row lists. Location encounter gvars may still use their own module shape, but biome content should use pool tags to avoid duplicating shared encounters.
 
 ```json
-{
-  "enc": {
-    "gather": [
-      ["gather_item", "Wild Herbs", "Survival", 12, "Herbs", 1, "Forage"],
-      ["gold_find", "Lost Coinpurse", "Investigation", 13, "1d6"]
-    ],
-    "combat": [
-      ["ambush", "Goblin Ambush", "Goblin", "1d4", "A crude net snaps up from the brush."]
-    ]
-  },
-  "forage": {
-    "gather": [
-      ["gather_item", "Bitterroot", "Nature", 11, "Bitterroot", 1, "Forage"]
-    ]
-  }
-}
+[
+  [["enc.gather", "forage.gather"], "gather_item", "Wild Herbs", "Fresh herbs grow near the path.", "Wisdom (Survival)", 12, "Herbs", 1],
+  [["enc.combat"], "combat", "Goblin Ambush", "A crude net snaps up from the brush.", 1, "Goblin"]
+]
 ```
 
 Each row is a 2D-list entry:
 
 ```text
 [
+  pool_tags_or_null,
   template_name,
   arg_1,
   arg_2,
@@ -141,7 +116,8 @@ Each row is a 2D-list entry:
 
 Rules:
 
-- The first value is the registered encounter template name.
+- The first value is a list of pool tags such as `enc.gather`, or `null` for every compatible pool.
+- The second value is the registered encounter template name.
 - Remaining values are positional arguments passed to that template.
 - `null` means "skip this argument and use the template default" for JSON authors.
 - Rows must expand to normal [encounter](../westmarch-statement/data-shapes.md#encounter-input) dicts before selection or processing.

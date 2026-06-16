@@ -12,9 +12,9 @@ How to use external LLMs (ChatGPT, etc.) to author **layer-2 world data** for a 
 
 | Source | Assets |
 |--------|--------|
-| **LLM prompts** (`src/prompts/`) | Locations, paths, shops, biome registry, biome encounter pools, setting recipes, setting books, calendar, transport |
+| **LLM prompts** (`src/prompts/`) | Locations, paths, shops, biome registry, biome encounter rows, setting recipes, setting books, calendar, transport |
 | **TSV pipeline** ([content-pipeline.md](../westmarch-statement/content-pipeline.md)) | Monsters, items, potions, magic items, spells — engine catalogues from `assets/*.tsv` |
-| **Engine presets** | Default biome modules under `src/gvars/configs/biomes/` — reference via `engine:configs/biomes/<code>` until you author custom pools |
+| **Engine presets** | Default biome modules under `src/gvars/configs/biomes/` — reference via `engine:configs/biomes/<code>` until you author custom biome rows |
 | **Human / starter template** | `subsystems` toggles, `policies`, `display` branding, `channel_policy`, svar wiring |
 
 A **rich** server enables subsystems in [starter.gvar](../../../../src/gvars/configs/starter.gvar), then fills world data and catalogues. Prompts cover the bulk **authoring** work; Cursor integrates validated Python into `src/gvars/configs/<preset>.gvar`.
@@ -27,7 +27,7 @@ A **rich** server enables subsystems in [starter.gvar](../../../../src/gvars/con
 
 1. **Context limits** — 100 locations + paths + encounters exceed one chat.
 2. **Validation** — smaller outputs are easier to check before merge.
-3. **Dependencies** — paths need location ids; shops need location `services`; biome pools need registry codes.
+3. **Dependencies** — paths need location ids; shops need location `services`; biome rows need registry codes.
 4. **Parallelism** — biome pool chats run one per biome while you batch locations elsewhere.
 
 See [assets.md](assets.md) for the full catalog, batch sizes, and dependencies.
@@ -63,7 +63,7 @@ flowchart TD
   BR[2 Biome registry]
   P[3 Paths batches]
   S[4 Shops batches]
-  BP[5 Biome pools per biome]
+  BP[5 Biome rows per biome]
   R[6 Recipes batches]
   B[7 Books batches]
   WT[8 Transport + calendar]
@@ -92,7 +92,7 @@ Detailed steps: [workflow.md](workflow.md).
 | **Demo / small** | ~10 | One chat, `Mode: bootstrap` |
 | **Small campaign** | 20–40 | Bootstrap + 1–2 `Mode: expand` + paths/shops for hub region |
 | **Regional westmarch** | 50–100 | Many location batches by geography (coast, valley, wilds); paths in subgraphs; shops at hubs only |
-| **Large westmarch** | 100+ | Location batches by **region** (never one 100-key dict); biome pools only for biomes you actually use; engine presets for generic terrain |
+| **Large westmarch** | 100+ | Location batches by **region** (never one 100-key dict); biome rows only for biomes you actually use; engine presets for generic terrain |
 
 **Rule of thumb:** one ChatGPT response ≈ **10–15 locations**, **15–25 paths**, **5–10 shops**, or **one biome’s pool slice**. Expand with [`expand-batch.prompt.md`](../../../../src/prompts/_templates/expand-batch.prompt.md) in the same chat.
 

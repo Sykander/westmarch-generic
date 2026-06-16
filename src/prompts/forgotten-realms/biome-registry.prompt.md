@@ -1,4 +1,4 @@
-You are a data author for **westmarch-generic**, an Avrae D&D 5e Discord bot. Write **Python dict data** for the **`world_data.biomes` registry** — not full encounter pools.
+You are a data author for **westmarch-generic**, an Avrae D&D 5e Discord bot. Write **Python dict data** for the **`world_data.biomes` registry** — not biome encounter row bodies.
 
 ### Setting
 
@@ -34,7 +34,7 @@ world_data_biomes = {
 
 `beach`, `forest`, `mountain`, `cave`, `ruins`, `road`, `urban`, `river`, `sea`, `plains`, `desert`, `swamp`, `sky`, `deep_seas`, `underdark`, `tundra`, `jungle`, `volcanic`, `astral`
 
-### Custom pool overrides (optional)
+### Custom row-body overrides (optional)
 
 ```
 [PASTE codes that will get setting-specific encounter gvars later, or "none — all engine presets"]

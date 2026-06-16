@@ -34,7 +34,7 @@ See [enc.md](enc.md) and [data-shapes.md](../../data-shapes.md).
 
 **Biome source** — **`exploration.config.enc_biome_source`** applies to **all** activity commands (not **`enc`** only). Default **`auto`**: inferred from location when travel + **`world_data.locations`** exist; otherwise player enters biome code manually.
 
-**Encounter data** — **`world_data.biomes`** registry on owner config; **`pools[activity][kind]`** on lazy-loaded biome gvars ([biomes.gvar](../../gvars/biomes.md)). No inline **`encounter_pools`** on config.
+**Encounter data** — **`world_data.biomes`** registry on owner config; raw JSON rows tagged with **`activity.kind`** in lazy-loaded biome gvars ([biomes.gvar](../../gvars/biomes.md)). No inline **`encounter_pools`** on config.
 
 **hunt** → **loot** is the combat/loot loop (`!enc` before `!hunt` in westmarch help text).
 
@@ -75,7 +75,7 @@ get_embed = display.get_display()
 
 Subsystem **`config`**: [data-shapes.md § Subsystem entry](../../data-shapes.md#subsystem-entry).
 
-Asset data: [assets/monsters.tsv](../../../../../../assets/monsters.tsv) (hunt, loot); biome **`pools`** in separate biome gvars ([src/gvars/configs/biomes/](../../../../src/gvars/configs/biomes/README.md)).
+Asset data: [assets/monsters.tsv](../../../../../../assets/monsters.tsv) (hunt, loot); biome JSON rows in separate biome gvars ([src/gvars/configs/biomes/](../../../../src/gvars/configs/biomes/README.md)).
 
 ## Cooldowns
 

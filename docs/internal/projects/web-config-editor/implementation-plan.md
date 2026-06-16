@@ -104,7 +104,7 @@ Acceptance:
 - Add encounter template registry model.
 - Add compact JSON row builder.
 - Add full encounter dict editor.
-- Add pool editor for `enc`, `forage`, `fish`, `mine`, `lumber`, `hunt`, and `loot`.
+- Add pool tag editor for `enc.combat`, `enc.quest`, `enc.gather`, `forage.gather`, `fish.gather`, `mine.gather`, and `lumber.gather`.
 - Add custom biome gvar editor with export as separate gvar body.
 - Add multi-gvar export manifest.
 

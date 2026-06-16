@@ -60,7 +60,7 @@ Large lists are **never** one monolithic gvar. Split rules:
 Book rows include optional **`content_link`** (full text URL) — see [data-shapes.md § Book](data-shapes.md#book). **`description`** is embed excerpt only; **`content_link`** is shown in-game only at **100%** comprehension when set.
 | [recipes.tsv](../../../../assets/recipes.tsv) | **`configs/recipes/recipes_list.gvar`** — merge into owner config **`recipes`** or reference as extension | **`kind`** or single file | [recipe.gvar](gvars/recipe.md) |
 
-**Biomes** — not TSV-driven for MVP; hand-authored or ported **`pools`** modules under [src/gvars/configs/biomes/](../../../src/gvars/configs/biomes/README.md), referenced from **`world_data.biomes.*.gvar_id`**.
+**Biomes** — not TSV-driven for MVP; hand-authored or ported raw JSON row-list modules under [src/gvars/configs/biomes/](../../../src/gvars/configs/biomes/README.md), referenced from **`world_data.biomes.*.gvar_id`**.
 
 ### westmarch vs westmarch-generic runtime
 

@@ -14,7 +14,7 @@ world_data = {
 
 After publish, **`engine:configs/biomes/forest`** resolves to this folder’s workshop UUID (sourcemap slot).
 
-**Scope:** Exploration & gathering only — `enc`, `forage`, `mine`, `fish`, `lumber`, `hunt`. Jobs, shops, libraries, and workshops belong on **locations** ([location encounter modules](../../../docs/internal/projects/westmarch-statement/gvars/location_encounters.md)), not biome presets.
+**Scope:** Exploration & gathering only — `enc`, `forage`, `mine`, `fish`, `lumber`. Jobs, shops, libraries, and workshops belong on **locations** ([location encounter modules](../../../docs/internal/projects/westmarch-statement/gvars/location_encounters.md)), not biome presets.
 
 Not to be confused with **`src/gvars/utils/config/`** — the engine **`config.gvar`** loader (`get_config()`).
 
@@ -44,7 +44,7 @@ Not to be confused with **`src/gvars/utils/config/`** — the engine **`config.g
 
 ## Body shape
 
-Each `.gvar` exports **`pools`** — exploration activities → kind → encounter list. See [data-shapes.md § Biome gvar body](../../../../docs/internal/projects/westmarch-statement/data-shapes.md#biome-gvar-body-separate-workshop-module).
+Each `.gvar` body is a raw **JSON row list**. Rows are `[pool_tags_or_null, "template_name", ...args]`, where pool tags look like `enc.gather` or `forage.gather`. See [data-shapes.md § Biome gvar body](../../../../docs/internal/projects/westmarch-statement/data-shapes.md#biome-gvar-body-separate-workshop-module).
 
 MVP presets include at least one **`gather`** entry per enabled activity for alias-test smoke; combat/quest entries grow with Tier B.
 
@@ -52,8 +52,8 @@ MVP presets include at least one **`gather`** entry per enabled activity for ali
 
 Reference westmarch `src/gvars/utils/encounters/biomes/*.gvar` for flavour and encounter ideas. When porting:
 
-- Split legacy **`encounters`** + **`combat_encounters`** into **`pools.enc.combat`** / **`.gather`** / **`.quest`**
-- Route **generic wilderness** beats to biome pools; **named-place** hints (merchants, libraries, jobs) to **location encounter gvars** — see [biome-data-shape-investigation.md §4–5](../../../../docs/internal/projects/westmarch-statement/biome-data-shape-investigation.md)
+- Split legacy **`encounters`** + **`combat_encounters`** into compact rows tagged **`enc.combat`** / **`enc.gather`** / **`enc.quest`**
+- Route **generic wilderness** beats to biome rows; **named-place** hints (merchants, libraries, jobs) to **location encounter gvars** — see [biome-data-shape-investigation.md §4–5](../../../../docs/internal/projects/westmarch-statement/biome-data-shape-investigation.md)
 - Drop d100 list-builder weights — kind mix comes from **`subsystems.exploration.config.distribution`**
 - **`enc_encounters`** in westmarch is often empty; **`encounters`** was the real pool — do not copy that structure literally
 

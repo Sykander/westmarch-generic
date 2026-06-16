@@ -1,4 +1,4 @@
-"""biomes.gvar — biome registry, lazy load, resolve_biome."""
+"""biomes.gvar — biome registry, lazy JSON row load, resolve_biome."""
 
 using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(
@@ -6,6 +6,7 @@ using(
     dicts = env.gvars.dicts,
     lists = env.gvars.lists,
     journeys = env.gvars.journeys,
+    templates = env.gvars.encounter_templates,
 )
 
 ENGINE_BIOME_PREFIX = "engine:configs/biomes/"
@@ -35,7 +36,7 @@ def _read_field(obj, key):
         "gvar_id": lambda o: o.gvar_id,
         "name": lambda o: o.name,
         "default_location": lambda o: o.default_location,
-        "pools": lambda o: o.pools,
+        "encounters": lambda o: o.encounters,
         "enc": lambda o: o.enc,
         "forage": lambda o: o.forage,
         "fish": lambda o: o.fish,
@@ -97,7 +98,7 @@ def _resolve_gvar_addr(gvar_id):
 
 
 def get_biome(code, config=None):
-    """Load and cache biome module for code."""
+    """Load and cache biome JSON rows for code."""
     if code == None:
         return None
     key = str(code).strip().lower()
@@ -116,30 +117,74 @@ def get_biome(code, config=None):
     if body == None or str(body).strip() == "":
         return None
     try:
-        using(_biome_mod=addr)
-        _cache[key] = _biome_mod
-        return _biome_mod
+        payload = load_json(body)
+        _cache[key] = payload
+        return payload
     except:
         return None
 
 
-def get_pool_entries(code, activity, kind, config=None):
-    """Encounter dicts for activity + kind from loaded biome."""
-    mod = get_biome(code, config)
-    if mod == None:
-        return []
-    pools = _read_field(mod, "pools")
-    if pools == None or not dicts.is_dict(pools):
-        return []
-    act = _read_field(pools, activity)
-    if act == None or not dicts.is_dict(act):
-        return []
-    bucket = _read_field(act, kind)
-    if bucket == None:
-        return []
-    if lists.is_list(bucket):
-        return bucket
+def _pool_token_matches(token, activity, kind):
+    text = str(token).strip().lower()
+    act = str(activity).strip().lower()
+    branch = str(kind).strip().lower()
+    if text in ["*", "any"]:
+        return True
+    if text == act:
+        return True
+    if text == branch:
+        return True
+    if text == f"{act}.{branch}":
+        return True
+    if text == f"{act}.*":
+        return True
+    if text == f"*.{branch}":
+        return True
+    return False
+
+
+def _row_pool_matches(pool_tags, activity, kind):
+    if pool_tags == None:
+        return True
+    if lists.is_list(pool_tags):
+        for token in pool_tags:
+            if _pool_token_matches(token, activity, kind):
+                return True
+        return False
+    return _pool_token_matches(pool_tags, activity, kind)
+
+
+def _rows_for_payload(payload):
+    if lists.is_list(payload):
+        return payload
+    rows = _read_field(payload, "encounters")
+    if rows != None and lists.is_list(rows):
+        return rows
     return []
+
+
+def get_pool_entries(code, activity, kind, config=None):
+    """Expanded encounter dicts for activity + kind from loaded biome rows."""
+    payload = get_biome(code, config)
+    if payload == None:
+        return []
+    rows = _rows_for_payload(payload)
+    entries = []
+    for row in rows:
+        if row == None or not lists.is_list(row) or len(row) < 2:
+            continue
+        enc = templates.expand_row(row)
+        if enc == None or not dicts.is_dict(enc):
+            continue
+        enc_kind = _read_field(enc, "kind")
+        if enc_kind == None:
+            enc["kind"] = kind
+        elif str(enc_kind).strip().lower() != str(kind).strip().lower():
+            continue
+        if not _row_pool_matches(row[0], activity, kind):
+            continue
+        entries.append(enc)
+    return entries
 
 
 def _exploration_config(cfg):

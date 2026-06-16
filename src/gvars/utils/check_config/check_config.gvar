@@ -5,6 +5,7 @@ See docs/internal/projects/westmarch-statement/gvars/check_config.md
 
 using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(
+    biomes = env.gvars.biomes,
     config = env.gvars.config,
     dicts = env.gvars.dicts,
     lists = env.gvars.lists,
@@ -252,7 +253,6 @@ def _read_field(obj, key):
         "loot": lambda o: o.loot,
         "footer_behaviour": lambda o: o.footer_behaviour,
         "default_location": lambda o: o.default_location,
-        "pools": lambda o: o.pools,
         "policies": lambda o: o.policies,
     }
     if key in attrs:
@@ -640,41 +640,6 @@ def _exploration_commands_on(block):
     return on
 
 
-def _biome_gvar_id(registry, code):
-    entry = _read_field(registry, code)
-    if entry == None:
-        return None
-    return _read_field(entry, "gvar_id")
-
-
-def _load_biome_pools(gvar_id):
-    if not _nonempty_str(gvar_id):
-        return None
-    addr = str(gvar_id).strip()
-    body = get_gvar(addr)
-    if body == None or str(body).strip() == "":
-        return None
-    try:
-        using(_biome_mod=addr)
-        return _read_field(_biome_mod, "pools")
-    except:
-        return None
-
-
-def _pool_entry_count(pools, activity, kind):
-    if pools == None or not dicts.is_dict(pools):
-        return 0
-    act = _read_field(pools, activity)
-    if act == None or not dicts.is_dict(act):
-        return 0
-    bucket = _read_field(act, kind)
-    if bucket == None:
-        return 0
-    if lists.is_list(bucket):
-        return len(bucket)
-    return 0
-
-
 def _check_exploration_command_config(block, errors, warnings):
     cmd_cfg = _read_field(block, "command_config")
     if cmd_cfg == None:
@@ -732,17 +697,13 @@ def _check_exploration_pool_coverage(cfg, distribution, active_cmds, warnings):
     if registry == None or not dicts.is_dict(registry):
         return
     for code in _dict_keys(registry):
-        gid = _biome_gvar_id(registry, code)
-        pools = _load_biome_pools(gid)
-        if pools == None:
-            continue
         for activity in pool_cmds:
             for kind in kinds_over_zero:
-                if _pool_entry_count(pools, activity, kind) == 0:
+                if len(biomes.get_pool_entries(code, activity, kind, cfg)) == 0:
                     pct = _read_field(distribution, kind)
                     warnings.append(
                         f"**{kind}** is **{pct}%** in exploration distribution but biome **{code}** "
-                        f"has no **{kind}** entries in **pools.{activity}**."
+                        f"has no **{activity}.{kind}** entries."
                     )
 
 

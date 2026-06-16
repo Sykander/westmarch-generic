@@ -13,7 +13,7 @@ Biome resolution follows **`exploration.config.enc_biome_source`** (same as **en
 | Manual | `!fish <biome> [bonuses]` |
 | Inferred | `!fish [bonuses]` |
 
-Fishing-flavoured encounter from **`pools.fish[kind]`** on the resolved biome gvar. Cooldown: **120s** via **[stats.gvar](../../gvars/stats.md)** + **`pc.check_cooldown(ch, "fish")`**.
+Fishing-flavoured encounter from JSON rows tagged **`fish.<kind>`** on the resolved biome gvar. Cooldown: **120s** via **[stats.gvar](../../gvars/stats.md)** + **`pc.check_cooldown(ch, "fish")`**.
 
 ## westmarch reference
 
@@ -27,7 +27,7 @@ westmarch **`get_encounter_list(code, "fish")`** → generic **`biomes.resolve_b
 ## Prerequisites
 
 - Shared engine gvars from **enc** Phase 0
-- Biome gvar **`pools.fish`** for at least one water-adjacent biome in fixture (e.g. river/sea codes)
+- Biome gvar rows tagged **`fish.gather`** for at least one water-adjacent biome in fixture (e.g. river/sea codes)
 
 ## Implementation checklist
 

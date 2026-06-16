@@ -86,7 +86,7 @@ flowchart TD
 ### Phase 0
 
 - [ ] Defaults + **`!westmarch check`** (distribution sum, **`enc_biome_source`** cross-subsystem rules)
-- [ ] **`enc.alias-test`** — **`random`** mode with fixture biome gvar **`pools.enc.*`**
+- [ ] **`enc.alias-test`** — **`random`** mode with fixture biome rows tagged **`enc.*`**
 - [ ] Minimal pools: at least one gather encounter (combat optional until Tier C)
 
 ### Phase 1

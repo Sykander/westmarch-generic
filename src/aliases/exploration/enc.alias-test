@@ -94,13 +94,11 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {
-          "enc": {
-              "combat": [{"kind": "combat", "name": "Forest ambush"}],
-              "quest": [{"kind": "quest", "name": "Lost traveller"}],
-              "gather": [{"kind": "gather", "name": "Berries in the Wild", "description": "Edible berries."}],
-          },
-      }
+      [
+        [["enc.combat"], "combat", "Forest ambush", "", 1],
+        [["enc.quest"], "quest", "Lost traveller", ""],
+        [["enc.gather"], "flavour", "Berries in the Wild", "Edible berries.", "gather"]
+      ]
 
 !enc
 ---
@@ -130,11 +128,7 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {
-          "enc": {
-              "gather": [{"kind": "gather", "name": "Berries in the Wild"}],
-          },
-      }
+      [[["enc.gather"], "flavour", "Berries in the Wild", "", "gather"]]
 
 !enc desert
 ---
@@ -161,7 +155,7 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {"enc": {"gather": [{"kind": "gather", "name": "Berries in the Wild"}]}}
+      [[["enc.gather"], "flavour", "Berries in the Wild", "", "gather"]]
 
 !enc forest
 ---
@@ -195,11 +189,7 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {
-          "enc": {
-              "gather": [{"kind": "gather", "name": "Berries in the Wild"}],
-          },
-      }
+      [[["enc.gather"], "flavour", "Berries in the Wild", "", "gather"]]
 
 !enc help
 ---
@@ -226,7 +216,7 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {"enc": {"gather": [{"kind": "gather", "name": "Berries in the Wild"}]}}
+      [[["enc.gather"], "flavour", "Berries in the Wild", "", "gather"]]
 
 !enc
 ---
@@ -267,11 +257,7 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {
-          "enc": {
-              "gather": [{"kind": "gather", "name": "Berries in the Wild"}],
-          },
-      }
+      [[["enc.gather"], "flavour", "Berries in the Wild", "", "gather"]]
   character:
     cvars:
       wg_location: "oakwood"
@@ -305,12 +291,10 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {
-          "enc": {
-              "combat": [{"kind": "combat", "name": "Forest ambush", "description": "Something stirs."}],
-              "gather": [{"kind": "gather", "name": "Berries in the Wild"}],
-          },
-      }
+      [
+        [["enc.combat"], "combat", "Forest ambush", "Something stirs.", 1],
+        [["enc.gather"], "flavour", "Berries in the Wild", "", "gather"]
+      ]
 
 !enc forest
 ---
@@ -343,13 +327,11 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {
-          "enc": {
-              "combat": [{"kind": "combat", "name": "Forest ambush"}],
-              "quest": [{"kind": "quest", "name": "Lost traveller", "description": "A plea for help."}],
-              "gather": [{"kind": "gather", "name": "Berries in the Wild"}],
-          },
-      }
+      [
+        [["enc.combat"], "combat", "Forest ambush", "", 1],
+        [["enc.quest"], "quest", "Lost traveller", "A plea for help."],
+        [["enc.gather"], "flavour", "Berries in the Wild", "", "gather"]
+      ]
 
 !enc forest
 ---
@@ -379,34 +361,30 @@ vars:
           },
       }
     eeee8891-8891-8891-8891-888888889191: |
-      pools = {
-          "enc": {
-              "gather": [
-                  {"kind": "gather", "name": "Herb patch 01"},
-                  {"kind": "gather", "name": "Herb patch 02"},
-                  {"kind": "gather", "name": "Herb patch 03"},
-                  {"kind": "gather", "name": "Herb patch 04"},
-                  {"kind": "gather", "name": "Herb patch 05"},
-                  {"kind": "gather", "name": "Herb patch 06"},
-                  {"kind": "gather", "name": "Herb patch 07"},
-                  {"kind": "gather", "name": "Herb patch 08"},
-                  {"kind": "gather", "name": "Herb patch 09"},
-                  {"kind": "gather", "name": "Herb patch 10"},
-                  {"kind": "gather", "name": "Herb patch 11"},
-                  {"kind": "gather", "name": "Herb patch 12"},
-                  {"kind": "gather", "name": "Herb patch 13"},
-                  {"kind": "gather", "name": "Herb patch 14"},
-                  {"kind": "gather", "name": "Herb patch 15"},
-                  {"kind": "gather", "name": "Herb patch 16"},
-                  {"kind": "gather", "name": "Herb patch 17"},
-                  {"kind": "gather", "name": "Herb patch 18"},
-                  {"kind": "gather", "name": "Herb patch 19"},
-                  {"kind": "gather", "name": "Herb patch 20"},
-              ],
-              "combat": [{"kind": "combat", "name": "Forest ambush"}],
-              "quest": [{"kind": "quest", "name": "Lost traveller"}],
-          },
-      }
+      [
+        [["enc.gather"], "flavour", "Herb patch 01", "", "gather"],
+        [["enc.gather"], "flavour", "Herb patch 02", "", "gather"],
+        [["enc.gather"], "flavour", "Herb patch 03", "", "gather"],
+        [["enc.gather"], "flavour", "Herb patch 04", "", "gather"],
+        [["enc.gather"], "flavour", "Herb patch 05", "", "gather"],
+        [["enc.gather"], "flavour", "Herb patch 06", "", "gather"],
+        [["enc.gather"], "flavour", "Herb patch 07", "", "gather"],
+        [["enc.gather"], "flavour", "Herb patch 08", "", "gather"],
+        [["enc.gather"], "flavour", "Herb patch 09", "", "gather"],
+        [["enc.gather"], "flavour", "Herb patch 10", "", "gather"],
+        [["enc.gather"], "flavour", "Herb patch 11", "", "gather"],
+        [["enc.gather"], "flavour", "Herb patch 12", "", "gather"],
+        [["enc.gather"], "flavour", "Herb patch 13", "", "gather"],
+        [["enc.gather"], "flavour", "Herb patch 14", "", "gather"],
+        [["enc.gather"], "flavour", "Herb patch 15", "", "gather"],
+        [["enc.gather"], "flavour", "Herb patch 16", "", "gather"],
+        [["enc.gather"], "flavour", "Herb patch 17", "", "gather"],
+        [["enc.gather"], "flavour", "Herb patch 18", "", "gather"],
+        [["enc.gather"], "flavour", "Herb patch 19", "", "gather"],
+        [["enc.gather"], "flavour", "Herb patch 20", "", "gather"],
+        [["enc.combat"], "combat", "Forest ambush", "", 1],
+        [["enc.quest"], "quest", "Lost traveller", ""]
+      ]
 
 !enc forest
 ---
@@ -436,14 +414,4 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {
-          "enc": {
-              "gather": [{
-                  "kind": "gather",
-                  "name": "Treasure cache",
-                  "description": "Coins glint in the dirt.",
-                  "outcomes": [{"type": "gold", "total": "5"}],
-              }],
-          },
-      }
-
+      [[["enc.gather"], "gold", "Treasure cache", "Coins glint in the dirt.", 5]]

@@ -13,7 +13,7 @@ Biome resolution follows **`exploration.config.enc_biome_source`** (same as **en
 | Manual | `!lumber <biome> [bonuses]` |
 | Inferred | `!lumber [bonuses]` |
 
-Lumbering-flavoured encounter from **`pools.lumber[kind]`** on the resolved biome gvar. Cooldown: **120s** via **[stats.gvar](../../gvars/stats.md)** + **`pc.check_cooldown(ch, "lumber")`**.
+Lumbering-flavoured encounter from JSON rows tagged **`lumber.<kind>`** on the resolved biome gvar. Cooldown: **120s** via **[stats.gvar](../../gvars/stats.md)** + **`pc.check_cooldown(ch, "lumber")`**.
 
 ## westmarch reference
 
@@ -27,7 +27,7 @@ westmarch **`get_encounter_list(code, "lumber")`** → generic **`biomes.resolve
 ## Prerequisites
 
 - Shared encounter engine from **enc** Phase 0
-- Biome gvar **`pools.lumber`** for test biomes
+- Biome gvar rows tagged **`lumber.gather`** for test biomes
 
 ## Implementation checklist
 

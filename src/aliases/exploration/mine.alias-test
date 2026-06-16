@@ -93,11 +93,7 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {
-          "mine": {
-              "gather": [{"kind": "gather", "name": "Iron seam", "description": "A promising vein."}],
-          },
-      }
+      [[["mine.gather"], "flavour", "Iron seam", "A promising vein.", "gather"]]
 
 !mine
 ---
@@ -124,7 +120,7 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {"mine": {"gather": [{"kind": "gather", "name": "Iron seam"}]}}
+      [[["mine.gather"], "flavour", "Iron seam", "", "gather"]]
 
 !mine desert
 ---
@@ -151,7 +147,7 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {"mine": {"gather": [{"kind": "gather", "name": "Iron seam"}]}}
+      [[["mine.gather"], "flavour", "Iron seam", "", "gather"]]
 
 !mine help
 ---
@@ -178,7 +174,7 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {"mine": {"gather": [{"kind": "gather", "name": "Iron seam"}]}}
+      [[["mine.gather"], "flavour", "Iron seam", "", "gather"]]
 
 !mine forest
 ---
@@ -212,7 +208,7 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {"mine": {"gather": [{"kind": "gather", "name": "Iron seam"}]}}
+      [[["mine.gather"], "flavour", "Iron seam", "", "gather"]]
 
 !mine
 ---
@@ -253,7 +249,7 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {"mine": {"gather": [{"kind": "gather", "name": "Iron seam"}]}}
+      [[["mine.gather"], "flavour", "Iron seam", "", "gather"]]
   character:
     cvars:
       wg_location: "oakwood"

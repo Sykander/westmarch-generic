@@ -351,6 +351,16 @@ th {
   gap: 10px;
 }
 
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px 12px;
+}
+
+.checkbox-grid.compact {
+  margin-top: 2px;
+}
+
 .field {
   display: flex;
   flex-direction: column;

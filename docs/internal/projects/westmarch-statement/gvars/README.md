@@ -17,7 +17,7 @@ Shared **engine workshop** modules under `src/gvars/`. Aliases `using()` these v
 | **pc** | [pc.md](pc.md) | 0–1 | Player character state — gp, wallet, bags, downtime; cooldown reads from stats |
 | **stats** | [stats.md](stats.md) | 0–1 | **`add_log()`** — per-command usage, cooldown timestamps, exploration aggregates |
 | **encounter_templates** | [encounter_templates.md](encounter_templates.md) | 0–1 | Build [encounter](../data-shapes.md#encounter-input) dicts |
-| **encounter_lists** | [encounter_lists.md](encounter_lists.md) | 0–1 | Kind-first pick + random encounter from biome pools |
+| **encounter_lists** | [encounter_lists.md](encounter_lists.md) | 0–1 | Kind-first pick + random encounter from biome row tags |
 | **encounters** | [encounters.md](encounters.md) | 0–1 | Rolls, `ectx` callables, outcomes, `encounter_result` |
 | **biomes** | [biomes.md](biomes.md) | 0–1 | Lazy-load biome gvar bodies from **`world_data.biomes`** |
 | **location_encounters** | [location_encounters.md](location_encounters.md) | 1 | Lazy-load place-specific pools from **`encounters_gvar_id`** |
@@ -84,7 +84,7 @@ src/gvars/
     recipe.gvar
   configs/                 # example server configs + preset bodies — see configs.md
     starter.gvar             # minimal empty schema
-    biomes/                  # preset biome pool modules — engine:configs/biomes/<code>
+    biomes/                  # preset biome JSON row-list bodies — engine:configs/biomes/<code>
     books/                   # generate-books.js — forgotten_realms_*, real_*
     recipes/                 # generate-recipes.js — recipes_list.gvar
     forgotten_realms_2014.gvar

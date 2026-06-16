@@ -24,13 +24,11 @@ vars:
     wg_stats: '{"enc": {"kinds": {"combat": 33, "quest": 33, "gather": 32}}}'
   gvars:
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {
-          "enc": {
-              "combat": [{"kind": "combat", "name": "Forest ambush"}],
-              "quest": [{"kind": "quest", "name": "Lost traveller"}],
-              "gather": [{"kind": "gather", "name": "Berries in the Wild"}],
-          },
-      }
+      [
+        [["enc.combat"], "combat", "Forest ambush", "", 1],
+        [["enc.quest"], "quest", "Lost traveller", ""],
+        [["enc.gather"], "flavour", "Berries in the Wild", "", "gather"]
+      ]
 
 cfg_fixture = {
     "subsystems": {
@@ -58,13 +56,11 @@ vars:
     wg_stats: '{"enc": {"kinds": {"combat": 20, "quest": 0, "gather": 10}}}'
   gvars:
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {
-          "enc": {
-              "combat": [{"kind": "combat", "name": "Forest ambush"}],
-              "quest": [{"kind": "quest", "name": "Lost traveller"}],
-              "gather": [{"kind": "gather", "name": "Berries in the Wild"}],
-          },
-      }
+      [
+        [["enc.combat"], "combat", "Forest ambush", "", 1],
+        [["enc.quest"], "quest", "Lost traveller", ""],
+        [["enc.gather"], "flavour", "Berries in the Wild", "", "gather"]
+      ]
 
 cfg_fixture = {
     "subsystems": {
@@ -90,9 +86,6 @@ name: empty quest pool falls back to combat entries
 vars:
   gvars:
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {
-          "enc": {
-              "combat": [{"kind": "combat", "name": "Forest ambush"}],
-              "quest": [],
-          },
-      }
+      [
+        [["enc.combat"], "combat", "Forest ambush", "", 1]
+      ]

@@ -13,7 +13,7 @@ Biome resolution follows **`exploration.config.enc_biome_source`** (same as **en
 | Manual (`argument` / **`auto`** without locations) | `!forage <biome> [bonuses]` |
 | Inferred (`location` / **`auto`** with locations) | `!forage [bonuses]` |
 
-Foraging-flavoured encounter from **`pools.forage[kind]`** on the resolved biome gvar. Cooldown: **120s** via **[stats.gvar](../../gvars/stats.md)** + **`pc.check_cooldown(ch, "forage")`**.
+Foraging-flavoured encounter from JSON rows tagged **`forage.<kind>`** on the resolved biome gvar. Cooldown: **120s** via **[stats.gvar](../../gvars/stats.md)** + **`pc.check_cooldown(ch, "forage")`**.
 
 ## westmarch reference
 
@@ -31,7 +31,7 @@ Validates activity dispatch on shared pipeline after the reference **enc** port.
 ## Prerequisites
 
 - [enc.md](enc.md) Phase 0 engine complete
-- Biome gvar includes **`pools.forage.gather`** (and other kinds per **`distribution`**) for test biomes
+- Biome gvar includes rows tagged **`forage.gather`** (and other kinds per **`distribution`**) for test biomes
 
 ## Implementation checklist
 

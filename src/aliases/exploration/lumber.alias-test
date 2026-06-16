@@ -92,11 +92,7 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {
-          "lumber": {
-              "gather": [{"kind": "gather", "name": "Fallen oak", "description": "Good timber."}],
-          },
-      }
+      [[["lumber.gather"], "flavour", "Fallen oak", "Good timber.", "gather"]]
 
 !lumber
 ---
@@ -123,7 +119,7 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {"lumber": {"gather": [{"kind": "gather", "name": "Fallen oak"}]}}
+      [[["lumber.gather"], "flavour", "Fallen oak", "", "gather"]]
 
 !lumber desert
 ---
@@ -150,7 +146,7 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {"lumber": {"gather": [{"kind": "gather", "name": "Fallen oak"}]}}
+      [[["lumber.gather"], "flavour", "Fallen oak", "", "gather"]]
 
 !lumber help
 ---
@@ -177,7 +173,7 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {"lumber": {"gather": [{"kind": "gather", "name": "Fallen oak"}]}}
+      [[["lumber.gather"], "flavour", "Fallen oak", "", "gather"]]
 
 !lumber forest
 ---
@@ -211,7 +207,7 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {"lumber": {"gather": [{"kind": "gather", "name": "Fallen oak"}]}}
+      [[["lumber.gather"], "flavour", "Fallen oak", "", "gather"]]
 
 !lumber
 ---
@@ -252,7 +248,7 @@ vars:
           },
       }
     eeee5555-5555-5555-5555-555555555555: |
-      pools = {"lumber": {"gather": [{"kind": "gather", "name": "Fallen oak"}]}}
+      [[["lumber.gather"], "flavour", "Fallen oak", "", "gather"]]
   character:
     cvars:
       wg_location: "oakwood"

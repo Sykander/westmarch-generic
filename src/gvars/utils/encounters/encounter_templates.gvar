@@ -1,6 +1,215 @@
-"""encounter_templates.gvar — placeholder.
+"""encounter_templates.gvar — compact row factories.
 
 See docs/internal/projects/westmarch-statement/gvars/encounter_templates.md
 """
 
-# TODO: implement encounter_templates module
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(
+    dicts = env.gvars.dicts,
+    lists = env.gvars.lists,
+)
+
+
+def _arg(args, index, default=None):
+    if args == None:
+        return default
+    try:
+        if index < len(args):
+            return args[index]
+    except:
+        pass
+    return default
+
+
+def _text(value, default=""):
+    if value == None:
+        return default
+    try:
+        return str(value)
+    except:
+        return default
+
+
+def _int_or_text(value, default=0):
+    if value == None:
+        return default
+    try:
+        return int(value)
+    except:
+        return value
+
+
+def _is_numberish(value):
+    try:
+        int(value)
+        return True
+    except:
+        pass
+    try:
+        float(value)
+        return True
+    except:
+        return False
+
+
+def _ability_for_check(check_name):
+    text = _text(check_name).lower()
+    if "athletics" in text:
+        return "str"
+    if "acrobatics" in text or "sleight" in text or "stealth" in text:
+        return "dex"
+    if "arcana" in text or "history" in text or "investigation" in text or "nature" in text or "religion" in text:
+        return "int"
+    if "animal" in text or "insight" in text or "medicine" in text or "perception" in text or "survival" in text:
+        return "wis"
+    if "deception" in text or "intimidation" in text or "performance" in text or "persuasion" in text:
+        return "cha"
+    return "wis"
+
+
+def _roll(check_name, dc):
+    return {
+        "type": "check",
+        "name": _text(check_name, "Wisdom (Survival)"),
+        "ability": _ability_for_check(check_name),
+        "dc": _text(dc, "12"),
+    }
+
+
+def _base(kind, name, description):
+    return {
+        "kind": kind,
+        "name": _text(name, "Encounter"),
+        "description": _text(description),
+    }
+
+
+def gather_item(args):
+    """Skill check that can award an item.
+
+    Canonical args: name, description, check_name, dc, item_name, total, bag?
+    Legacy editor args accepted: name, check_name, dc, item_name, total, activity?
+    """
+    if len(args) >= 5 and _is_numberish(_arg(args, 2)):
+        name = _arg(args, 0, "Useful find")
+        check_name = _arg(args, 1, "Wisdom (Survival)")
+        dc = _arg(args, 2, "12")
+        item = _arg(args, 3, "Supplies")
+        total = _arg(args, 4, 1)
+        bag = None
+        desc = f"You gather **{item}** from the area."
+    else:
+        name = _arg(args, 0, "Useful find")
+        desc = _arg(args, 1, "You find useful supplies in the wild.")
+        check_name = _arg(args, 2, "Wisdom (Survival)")
+        dc = _arg(args, 3, "12")
+        item = _arg(args, 4, "Supplies")
+        total = _arg(args, 5, 1)
+        bag = _arg(args, 6)
+    enc = _base("gather", name, desc)
+    enc["rolls"] = [_roll(check_name, dc)]
+    outcome = {"type": "item", "name": _text(item, "Supplies"), "total": _int_or_text(total, 1)}
+    if bag != None and _text(bag).strip() != "":
+        outcome["bag"] = _text(bag)
+    enc["outcomes"] = [outcome]
+    return enc
+
+
+def skill_check(args):
+    """Generic skill-check encounter.
+
+    Args: name, description, check_name, dc, success_text?, failure_text?
+    """
+    name = _arg(args, 0, "Skill check")
+    desc = _arg(args, 1, "A careful approach may reveal something useful.")
+    check_name = _arg(args, 2, "Wisdom (Survival)")
+    dc = _arg(args, 3, "12")
+    enc = _base("gather", name, desc)
+    enc["rolls"] = [_roll(check_name, dc)]
+    success = _arg(args, 4)
+    failure = _arg(args, 5)
+    if success != None:
+        enc["success"] = _text(success)
+    if failure != None:
+        enc["failure"] = _text(failure)
+    return enc
+
+
+def flavour(args):
+    """Non-reward descriptive beat. Args: name, description, kind?"""
+    kind = _text(_arg(args, 2, "gather"), "gather").strip().lower()
+    if kind not in ["combat", "quest", "gather"]:
+        kind = "gather"
+    return _base(kind, _arg(args, 0, "Forest sign"), _arg(args, 1, "You notice a quiet detail in the wild."))
+
+
+def combat_template(args):
+    """Simple combat encounter. Args: name, description, cr, monsters?"""
+    name = _arg(args, 0, "Hostile creatures")
+    desc = _arg(args, 1, "Something dangerous moves nearby.")
+    cr = _arg(args, 2, 1)
+    monsters = _arg(args, 3)
+    enc = _base("combat", name, desc)
+    enc["cr"] = cr
+    if monsters != None and _text(monsters).strip() != "":
+        if lists.is_list(monsters):
+            enc["monsters"] = monsters
+        else:
+            enc["monsters"] = [_text(monsters)]
+    return enc
+
+
+def quest(args):
+    """Quest hook. Args: name, description, reward_hint?"""
+    enc = _base("quest", _arg(args, 0, "Unfinished business"), _arg(args, 1, "A hook asks for follow-up."))
+    reward = _arg(args, 2)
+    if reward != None and _text(reward).strip() != "":
+        enc["reward"] = _text(reward)
+    return enc
+
+
+def gold(args):
+    """Simple gp reward. Args: name, description, total"""
+    enc = _base("gather", _arg(args, 0, "Treasure cache"), _arg(args, 1, "Coins glint in the dirt."))
+    enc["outcomes"] = [{"type": "gold", "total": _int_or_text(_arg(args, 2, 1), 1)}]
+    return enc
+
+
+def raw(args):
+    """Return a literal encounter dict. Args: encounter_dict"""
+    value = _arg(args, 0)
+    if value != None and dicts.is_dict(value):
+        return value
+    return None
+
+
+def expand(template_name, args):
+    """Return an encounter dict from a template name + arg list."""
+    key = _text(template_name).strip().lower()
+    if args == None:
+        args = []
+    if key in ["gather_item", "gather"]:
+        return gather_item(args)
+    if key in ["skill_check", "check"]:
+        return skill_check(args)
+    if key in ["flavour", "flavor", "static"]:
+        return flavour(args)
+    if key in ["combat", "ambush"]:
+        return combat_template(args)
+    if key in ["quest", "hook"]:
+        return quest(args)
+    if key in ["gold", "gp"]:
+        return gold(args)
+    if key in ["raw", "encounter"]:
+        return raw(args)
+    return None
+
+
+def expand_row(row):
+    """Expand [pool_tags|null, template_name, *args] to an encounter dict."""
+    if row == None or not lists.is_list(row) or len(row) < 2:
+        return None
+    args = []
+    for index in range(2, len(row)):
+        args.append(row[index])
+    return expand(row[1], args)

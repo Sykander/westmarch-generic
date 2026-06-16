@@ -617,50 +617,57 @@ biomes = {
 | **`gvar_id`** | yes | Workshop UUID string, or engine preset slug **`engine:configs/biomes/<code>`** resolving to shipped [src/gvars/configs/biomes/](../../../../src/gvars/configs/biomes/README.md) |
 | `name` | no | Display name for help / errors; defaults to title-cased code |
 
-**Lazy load** — [biomes.gvar](gvars/biomes.md) loads the biome module on first **`get_encounter(biome, …)`** for that code; caches per alias invocation. Unused biomes never load.
+**Lazy load** — [biomes.gvar](gvars/biomes.md) loads the biome JSON on first **`get_encounter(biome, …)`** for that code; caches per alias invocation. Unused biomes never load.
 
 **Biome codes** in **`locations.activities.*`** and **`!enc <code>`** must exist in this registry.
 
 #### Biome gvar body *(separate workshop module)*
 
-Simplified vs westmarch — **no d100 synthetic lists**, **no mega-pool mixing** at runtime.
+Biome gvars are **raw JSON**, not Drac2 modules. The body is one list of compact encounter rows:
 
-```py
-# Loaded from biome gvar — exploration & gathering only
-pools = {
-    "enc": {
-        "combat": [ encounter, … ],
-        "quest": [ encounter, … ],
-        "gather": [ encounter, … ],
-    },
-    "forage": { "gather": [ … ] },
-    "fish": { "gather": [ … ] },
-    "mine": { "gather": [ … ] },
-    "lumber": { "gather": [ … ] },
-    "hunt": { "combat": [ … ] },
-}
+```json
+[
+  [["enc.gather", "forage.gather"], "gather_item", "Wild berries", "You find a patch of ripe berries under thorny leaves.", "Wisdom (Survival)", 12, "Berries", 1],
+  [["enc.combat"], "combat", "Wolf sign", "Fresh tracks and a low growl warn you that a hungry pack is close.", 1, "Wolf"],
+  [["enc.quest"], "quest", "Lost waymarker", "A weathered marker points toward a trail that is not on any current map."],
+  [null, "flavour", "Old campsite", "You find a cold fire ring and bootprints softened by rain.", "gather"]
+]
 ```
+
+Each row is:
+
+```json
+[pool_tags_or_null, "template_name", ...template_args]
+```
+
+| Row part | Required | Notes |
+|----------|----------|-------|
+| `pool_tags_or_null` | yes | `null` = every compatible pool; otherwise list pool tags such as `enc.combat`, `enc.quest`, `enc.gather`, `forage.gather`, `fish.gather`, `mine.gather`, `lumber.gather` |
+| `template_name` | yes | Engine encounter template id from [encounter_templates.gvar](gvars/encounter_templates.md) |
+| `template_args` | no | Positional JSON values passed to that template |
+
+Compatibility is checked after the template expands: a `combat` template only appears when the selected kind is `combat`, `quest` only in `quest`, and `gather` only in `gather`. This lets a single row appear in multiple pools without duplicating the encounter body.
 
 | westmarch | westmarch-generic |
 |-----------|-------------------|
-| **`encounters`** mega-list + random mix into 100 slots | Dropped — wilderness entries under biome **`pools[activity][kind]`** |
+| **`encounters`** mega-list + random mix into 100 slots | Dropped — wilderness entries are tagged compact rows |
 | Library / merchant / job hints in **`encounters`** | **Location encounter gvar** — not biome ([investigation §4–5](biome-data-shape-investigation.md)) |
-| **`enc_encounters`**, **`mine_encounters`**, … as flat lists | **`pools.mine.gather`**, etc. on **biome** |
-| **`combat_encounters`** mixed into every roll | **`pools.<activity>.combat`** only |
+| **`enc_encounters`**, **`mine_encounters`**, … as flat lists | Row pool tags such as **`enc.gather`**, **`mine.gather`** |
+| **`combat_encounters`** mixed into every roll | Row pool tags such as **`enc.combat`** |
 | **`recipe_encounters`** mixed globally | Recipe-tagged **`gather`** entries or **`economy`** catalogues |
 | d100 **`get_encounter_list`** | **Kind first** ([exploration.config](#explorationconfig) **`distribution`**) → uniform random within matching subset |
 
-Each **`encounter`** dict matches [Encounter *(input)*](#encounter-input) with explicit **`kind`** when not inferrable.
+Expanded template output matches [Encounter *(input)*](#encounter-input) with explicit **`kind`**.
 
 **Selection algorithm** ([encounter_lists.gvar](gvars/encounter_lists.md)):
 
 1. Resolve biome code → load biome gvar if needed
 2. Resolve character location → load location encounter gvar when **`encounters_gvar_id`** set
 3. Choose **`kind`** ∈ **`{ combat, quest, gather }`** using **`distribution_policy`** + **`distribution`** *(exploration activities)*
-4. Build candidate list — biome **`pools[activity][kind]`** ∪ location **`pools[activity][kind]`** (exploration); service activities use location pool only
+4. Build candidate list — biome rows whose pool tags match **`activity.kind`** ∪ location pools (exploration); service activities use location pool only
 5. Empty list → player-facing error; else uniform random pick — **not** d100
 
-**Biome pools** — exploration & gathering only. Economy, crafting, content, dungeons — **location-scoped** ([investigation §3–5](biome-data-shape-investigation.md)).
+**Biome rows** — exploration & gathering only. Economy, crafting, content, dungeons — **location-scoped** ([investigation §3–5](biome-data-shape-investigation.md)).
 
 #### Engine preset biomes
 
@@ -1204,7 +1211,7 @@ Applies to **every** exploration activity command (**`enc`**, **`forage`**, **`m
 
 #### Encounter kind mix (`distribution_policy` + `distribution`)
 
-Before picking a concrete encounter, **`encounter_lists`** + **[biomes.gvar](gvars/biomes.md)** choose a **kind**: **`combat`**, **`quest`**, or **`gather`**. **No d100 table** — kind is decided first from **`distribution`**, then one encounter is chosen uniformly at random from **`pools[activity][kind]`** on the loaded biome gvar.
+Before picking a concrete encounter, **`encounter_lists`** + **[biomes.gvar](gvars/biomes.md)** choose a **kind**: **`combat`**, **`quest`**, or **`gather`**. **No d100 table** — kind is decided first from **`distribution`**, then one encounter is chosen uniformly at random from biome rows tagged **`activity.kind`**.
 
 | `distribution_policy` | Behaviour |
 |---------------------|-----------|
@@ -1220,7 +1227,7 @@ Both modes honour the same **`distribution`** percentages; only the selection al
 - Sum of **`distribution`** values ≠ **100**
 - Invalid **`distribution_policy`** value
 
-Warning when a kind has **> 0%** but no entries in **`pools[activity][kind]`** for any biome referenced by enabled commands/locations.
+Warning when a kind has **> 0%** but no matching **`activity.kind`** rows for any biome referenced by enabled commands/locations.
 
 Future activity clones (**forage**, **fish**, …) share the same kind-first pick and **`enc_biome_source`** policy — see [aliases/exploration/README.md](aliases/exploration/README.md).
 

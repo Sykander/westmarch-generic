@@ -2,7 +2,7 @@
 
 **Path:** `src/gvars/utils/encounters/encounter_lists.gvar` · **Phase:** 0–1
 
-Pick **one encounter** for an activity command. Resolves **biome** pools + optional **location** pools ([location_encounters.gvar](location_encounters.md)).
+Pick **one encounter** for an activity command. Resolves **biome** JSON row tags + optional **location** pools ([location_encounters.gvar](location_encounters.md)).
 
 ## Dependencies
 
@@ -53,7 +53,7 @@ Pick one entry at random. Error if list empty.
 
 ## Pool shape
 
-**Biome gvar** — exploration activities only ([data-shapes § Biome gvar body](../data-shapes.md#biome-gvar-body-separate-workshop-module)).
+**Biome gvar** — raw JSON row list for exploration activities only ([data-shapes § Biome gvar body](../data-shapes.md#biome-gvar-body-separate-workshop-module)). Candidate rows match the selected `activity.kind` tag, or `null` when the expanded template kind is compatible.
 
 **Location encounter gvar** — any activity enabled on that place ([data-shapes § Location encounter module](../data-shapes.md#location-encounter-module-separate-workshop-gvar)).
 
@@ -63,7 +63,7 @@ Pick one entry at random. Error if list empty.
 |-----------|-------------------|
 | **`get_encounter_list`** → 100 mixed entries | **Dropped** |
 | Random from d100 | **Kind first**, then random in kind bucket |
-| **`encounters`** + **`combat_encounters`** mix | **`pools.<activity>.<kind>`** only |
+| **`encounters`** + **`combat_encounters`** mix | Compact rows tagged with **`activity.kind`** |
 
 ## Combat scaling
 

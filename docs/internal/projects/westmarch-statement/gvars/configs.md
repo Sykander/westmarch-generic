@@ -72,7 +72,7 @@ Do **not** add ad-hoc top-level keys beyond [data-shapes.md § Top-level config 
 src/gvars/configs/
   README.md
   starter.gvar                   # minimal schema — all subsystems off
-  biomes/                        # preset pool modules — engine:configs/biomes/<code>
+  biomes/                        # preset JSON row-list bodies — engine:configs/biomes/<code>
     README.md
     forest.gvar                  # … (planned)
   forgotten_realms_2014.gvar
@@ -82,7 +82,7 @@ src/gvars/configs/
   spelljammer_2014.gvar
 ```
 
-**Status:** Folder and files are **planned** — content lands incrementally as subsystems port (exploration pools first, then travel, catalogues, etc.). Early Phase 0 tests may use **`src/gvars/configs/starter.gvar`** or a thin slice of **`generic_fantasy_2014.gvar`** only.
+**Status:** Folder and files are **planned** — content lands incrementally as subsystems port (exploration rows first, then travel, catalogues, etc.). Early Phase 0 tests may use **`src/gvars/configs/starter.gvar`** or a thin slice of **`generic_fantasy_2014.gvar`** only.
 
 ---
 
@@ -101,7 +101,7 @@ Example configs get **workshop gvar slots** in dev/prod sourcemaps when ready to
 
 ## Growth order *(suggested)*
 
-1. **`generic_fantasy_2014.gvar`** — first vertical slice (exploration + minimal pools); simplest test fixture.
+1. **`generic_fantasy_2014.gvar`** — first vertical slice (exploration + minimal biome rows); simplest test fixture.
 2. **`forgotten_realms_2014.gvar`** — reference westmarch extraction target.
 3. **`generic_fantasy_2024.gvar`** / **`forgotten_realms_2024.gvar`** — when 2024 catalogue branches exist.
 4. **`spelljammer_2014.gvar`** — after travel/journeys and location model are stable.

@@ -85,13 +85,11 @@ vars:
           "biomes": {"forest": {"gvar_id": "ffff6666-6666-6666-6666-666666666666"}},
       }
     ffff6666-6666-6666-6666-666666666666: |
-      pools = {
-          "enc": {
-              "combat": [{"name": "Wolf"}],
-              "quest": [{"name": "Tracks"}],
-              "gather": [{"name": "Herbs"}],
-          },
-      }
+      [
+        [["enc.combat"], "combat", "Wolf", "", 1],
+        [["enc.quest"], "quest", "Tracks", ""],
+        [["enc.gather"], "flavour", "Herbs", "", "gather"]
+      ]
 
 !show
 ---

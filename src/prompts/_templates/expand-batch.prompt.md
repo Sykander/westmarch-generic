@@ -11,7 +11,7 @@ Continue from the previous message in this chat. Use the **same rules and schema
 ### Output format (unchanged)
 
 1. **One** fenced `python` block only — no explanation.
-2. Same assignment variable name as the original prompt (`world_data_locations`, `world_data_paths`, `config_shops`, `biome_pools`, etc.).
+2. Same output shape as the original prompt (`world_data_locations`, `world_data_paths`, `config_shops`, or raw biome JSON rows).
 3. Double quotes; valid Python.
 
 Produce the complete data structure now.
