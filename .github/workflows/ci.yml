@@ -312,6 +312,12 @@ jobs:
       - version
     permissions:
       contents: write
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.pages-deployment.outputs.page_url }}
 
     steps:
       - name: Checkout
@@ -322,14 +328,34 @@ jobs:
         with:
           node-version: 24.x
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            editor/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci
+          npm --prefix editor ci
 
       - name: Deploy production
         run: npm run deploy:prod
         env:
           AVRAE_TOKEN: ${{ secrets.AVRAE_TOKEN }}
+
+      - name: Build editor
+        run: npm run editor:build
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload editor artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: public
+
+      - name: Deploy editor to GitHub Pages
+        id: pages-deployment
+        uses: actions/deploy-pages@v4
 
       - name: Tag production version
         env:
