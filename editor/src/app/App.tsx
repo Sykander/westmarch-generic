@@ -1,5 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import westmarchPackage from '../../../package.json';
 import {
   CheckCircle2,
   Clipboard,
@@ -54,6 +55,9 @@ import type { CompactEncounterRow } from '../domain/encounters';
 import { asRecord } from '../lib/records';
 import { SECTIONS, sectionFor, type Section } from './sections';
 import type { RunStep, SubsystemDefinition } from './types';
+
+const BRAND_LOGO_URL = `${import.meta.env.BASE_URL}westmarch-assets/brand/logo.png`;
+const WESTMARCH_VERSION = westmarchPackage.version;
 
 const STARTER_SNIPPET = `subsystems = {
     "exploration": {
@@ -248,7 +252,7 @@ export function App() {
         detail: verified ? undefined : 'Remote body did not exactly match export text.',
       };
       setSteps([...nextSteps]);
-      setStatus(verified ? 'Published and verified' : 'Published with verify warning');
+      setStatus(verified ? 'Publish complete' : 'Verify warning after publish');
     } catch (error) {
       const index = nextSteps.findIndex((item) => item.state === 'running');
       if (index >= 0) {
@@ -269,13 +273,16 @@ export function App() {
     <div className="app-shell">
       <header className="topbar">
         <div className="brand">
-          <Compass size={24} aria-hidden="true" />
-          <div>
+          <img className="brand-logo" src={BRAND_LOGO_URL} alt="" aria-hidden="true" />
+          <div className="brand-copy">
             <h1>Westmarch Config Editor</h1>
-            <span>{status}</span>
+            <span>Configuring Westmarch v{WESTMARCH_VERSION}</span>
           </div>
         </div>
         <div className="top-actions">
+          <span className="status-text" role="status" aria-live="polite">
+            {status}
+          </span>
           <span className={errorCount ? 'badge danger' : 'badge ok'}>{errorCount} errors</span>
           <span className={warningCount ? 'badge warn' : 'badge ok'}>{warningCount} warnings</span>
           <button className="icon-button" type="button" onClick={() => setRawMode(!rawMode)}>

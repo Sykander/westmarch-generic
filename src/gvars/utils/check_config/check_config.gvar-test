@@ -145,6 +145,18 @@ vars:
     ffff1111-1111-1111-1111-111111111111: |
       # empty owner body
 
+return check_config.link_summary()
+---
+"re:\\[Westmarch config editor\\]\\(https://sykander.github.io/westmarch-generic/\\?westmarch_config=ffff1111-1111-1111-1111-111111111111\\)[\\s\\S]*\\[Avrae gvar dashboard\\]\\(https://avrae.io/dashboard/gvars\\?lookup=ffff1111-1111-1111-1111-111111111111\\)"
+---
+name: link summary uses named links with wired gvar id
+vars:
+  svars:
+    westmarch_config: "ffff1111-1111-1111-1111-111111111111"
+  gvars:
+    ffff1111-1111-1111-1111-111111111111: |
+      # empty owner body
+
 return check_config.summarize_config("nope") == None
 ---
 True

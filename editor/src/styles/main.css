@@ -146,14 +146,23 @@ th {
   min-width: 0;
 }
 
-.brand svg {
-  color: #236f5a;
+.brand-logo {
+  width: 40px;
+  height: 40px;
   flex: 0 0 auto;
+  object-fit: contain;
+}
+
+.brand-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
 }
 
 .brand h1 {
   margin: 0;
   font-size: 1.05rem;
+  line-height: 1.2;
   letter-spacing: 0;
 }
 
@@ -169,6 +178,20 @@ th {
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.top-actions {
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.status-text {
+  max-width: min(36vw, 520px);
+  overflow: hidden;
+  color: #637067;
+  font-size: 0.86rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .icon-button {
@@ -1273,6 +1296,15 @@ th {
     position: static;
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .top-actions {
+    justify-content: flex-start;
+  }
+
+  .status-text {
+    max-width: 100%;
+    white-space: normal;
   }
 
   .workspace {

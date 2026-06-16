@@ -17,7 +17,7 @@ For architecture and config schema detail, see [internal westmarch-statement](in
 ## Quick path
 
 1. **Subscribe** to the westmarch-generic engine workshop on [Avrae Workshop](https://avrae.io/dashboard/workshop).
-2. **Create** a config gvar — duplicate a [starter or preset](internal/projects/westmarch-statement/gvars/configs.md) or paste via `!gvar editor`.
+2. **Create** a config gvar — duplicate a [starter or preset](internal/projects/westmarch-statement/gvars/configs.md), use the [Westmarch config editor](https://sykander.github.io/westmarch-generic/), or paste via `!gvar editor`.
 3. **Set svar** — `!svar westmarch_config <your-gvar-uuid>`
 4. **Enable** subsystems in your config gvar (`subsystems.exploration.enabled`, etc.).
 5. **Verify** — `!westmarch check` and `!westmarch show`
@@ -42,6 +42,8 @@ Your **config gvar** is a workshop module in **your** workshop. It holds toggles
 
 - [src/gvars/configs/starter.gvar](../src/gvars/configs/starter.gvar) — minimal schema, all subsystems off
 - **Example presets** — Forgotten Realms, generic fantasy, or Spelljammer ([configs doc](internal/projects/westmarch-statement/gvars/configs.md))
+
+You can edit exported or pasted config bodies in the [Westmarch config editor](https://sykander.github.io/westmarch-generic/). After your `westmarch_config` svar exists, use `?westmarch_config=<your-gvar-uuid>` to prefill the gvar id.
 
 ```text
 !gvar create # westmarch config

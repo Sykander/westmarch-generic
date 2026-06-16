@@ -11,7 +11,7 @@
 ```
 
 - **Who may run:** `auth.is_allowed()` (admin roles).
-- **Output:** embed with overall status (**OK** / **issues found**) and bullet lists of **errors** (blocking) and **warnings** (non-blocking).
+- **Output:** embed with overall status (**OK** / **issues found**), bullet lists of **errors** (blocking) and **warnings** (non-blocking), and named links to the [Westmarch config editor](https://sykander.github.io/westmarch-generic/) and Avrae gvar dashboard.
 - **Does not mutate** svars, gvars, or config.
 
 ## Validation logic

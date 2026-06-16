@@ -24,6 +24,9 @@ PAGE_TITLES = {
     5: "Biomes and Locations",
     6: "Monster Data",
 }
+EDITOR_URL = "https://sykander.github.io/westmarch-generic/"
+WORKSHOP_URL = "https://avrae.io/dashboard/workshop"
+GVAR_DASHBOARD_URL = "https://avrae.io/dashboard/gvars"
 
 
 def _short_uuid(uuid):
@@ -37,14 +40,32 @@ def _short_uuid(uuid):
     return text
 
 
-def _gvar_ref(uuid):
+def _markdown_link(name, url):
+    return f"[{name}]({url})"
+
+
+def _gvar_url(uuid):
     if uuid == None or str(uuid).strip() == "":
-        return "<your-gvar-uuid>"
-    return str(uuid).strip()
+        return GVAR_DASHBOARD_URL
+    return f"{GVAR_DASHBOARD_URL}?lookup={str(uuid).strip()}"
+
+
+def _editor_url(uuid):
+    if uuid == None or str(uuid).strip() == "":
+        return EDITOR_URL
+    return f"{EDITOR_URL}?westmarch_config={str(uuid).strip()}"
 
 
 def _gvar_link(uuid):
-    return f"https://avrae.io/dashboard/gvars?lookup={_gvar_ref(uuid)}"
+    return _markdown_link("Avrae gvar dashboard", _gvar_url(uuid))
+
+
+def _editor_link(uuid):
+    return _markdown_link("Westmarch config editor", _editor_url(uuid))
+
+
+def _setup_links(uuid):
+    return f"- {_editor_link(uuid)}\n- {_gvar_link(uuid)}"
 
 
 def _page_index(prefix):
@@ -136,7 +157,7 @@ def _default_config_body():
 def _initial_setup(prefix, svar_name, uuid):
     body = _default_config_body()
     desc = f"""**1 - Subscribe to the engine**
-Subscribe to the **westmarch-generic** workshop on Avrae. You also need **Dragonspeaker** or **Server Aliaser** here.
+Subscribe to the **westmarch-generic** workshop on {_markdown_link("Avrae Workshop", WORKSHOP_URL)}. You also need **Dragonspeaker** or **Server Aliaser** here.
 
 **2 - Create a config gvar**
 Copy this whole command, then keep the UUID Avrae returns:
@@ -162,8 +183,8 @@ To add another editor:
 ```
 
 **4 - Edit it later**
-Open the dashboard link with your UUID:
-{_gvar_link(uuid)}
+Open the editor or dashboard with your UUID:
+{_setup_links(uuid)}
 
 This command only shows instructions; it does not mutate svars or gvars.
 
@@ -181,8 +202,8 @@ def _general_configuration(prefix, svar_name, uuid, cfg):
 **Current config**
 `{_short_uuid(uuid)}` - {status}
 
-Dashboard:
-{_gvar_link(uuid)}
+**Links**
+{_setup_links(uuid)}
 
 **After editing**
 Run:

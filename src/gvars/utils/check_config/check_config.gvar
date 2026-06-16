@@ -19,6 +19,8 @@ VALID_RULES_VERSION = ["2014", "2024"]
 VALID_FOOTER_BEHAVIOUR = ["helpful_tips", "string", "help", "credits", "balanced"]
 VALID_AVOID_REPEAT = ["off", "same_biome", "global"]
 VALID_MONSTER_IMAGE_MODES = ["thumbnail", "thumb", "image", "off", "none"]
+EDITOR_URL = "https://sykander.github.io/westmarch-generic/"
+GVAR_DASHBOARD_URL = "https://avrae.io/dashboard/gvars"
 POOL_ACTIVITY_COMMANDS = [
     "enc",
     "forage",
@@ -1045,9 +1047,35 @@ def validate():
 
 
 def _dashboard_link(uuid):
+    return _markdown_link("Avrae gvar dashboard", _dashboard_url(uuid))
+
+
+def _dashboard_url(uuid):
     if uuid == None or str(uuid).strip() == "":
-        return "https://avrae.io/dashboard/gvars"
-    return f"https://avrae.io/dashboard/gvars?lookup={str(uuid).strip()}"
+        return GVAR_DASHBOARD_URL
+    return f"{GVAR_DASHBOARD_URL}?lookup={str(uuid).strip()}"
+
+
+def _editor_link(uuid):
+    return _markdown_link("Westmarch config editor", _editor_url(uuid))
+
+
+def _editor_url(uuid):
+    if uuid == None or str(uuid).strip() == "":
+        return EDITOR_URL
+    return f"{EDITOR_URL}?westmarch_config={str(uuid).strip()}"
+
+
+def _markdown_link(name, url):
+    return f"[{name}]({url})"
+
+
+def link_summary(uuid=None):
+    """Return named setup links for admin embeds."""
+    target = uuid
+    if target == None:
+        target = get_svar(config.SVAR_NAME)
+    return f"**Editor:** {_editor_link(target)}\n**Dashboard:** {_dashboard_link(target)}"
 
 
 def _subsystem_error_match(key, issue):
@@ -1266,7 +1294,8 @@ def summarize_config(section=None):
             "title": "Configuration summary",
             "desc": (
                 "No config loaded. Set **westmarch_config** svar to your config gvar UUID.\n"
-                "Run **!westmarch setup** for onboarding steps."
+                "Run **!westmarch setup** for onboarding steps.\n\n"
+                f"**Links**\n{link_summary(uuid)}"
             ),
         }
     world_name = "Westmarch"
@@ -1282,6 +1311,7 @@ def summarize_config(section=None):
     wiring = (
         f"**Svar:** `{config.SVAR_NAME}`\n"
         f"**Config gvar:** `{uuid_text}`\n"
+        f"**Editor:** {_editor_link(uuid)}\n"
         f"**Dashboard:** {_dashboard_link(uuid)}\n"
         f"**Load:** OK"
     )

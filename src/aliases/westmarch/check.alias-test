@@ -1,6 +1,6 @@
 !check
 ---
-re:westmarch_config
+"re:westmarch_config[\\s\\S]*\\[Westmarch config editor\\]\\(https://sykander.github.io/westmarch-generic/\\)"
 ---
 name: svar unset reports error
 vars:
@@ -9,7 +9,7 @@ vars:
 
 !check
 ---
-re:Configuration OK
+"re:Configuration OK[\\s\\S]*\\[Westmarch config editor\\]\\(https://sykander.github.io/westmarch-generic/\\?westmarch_config=ffff1111-1111-1111-1111-111111111111\\)[\\s\\S]*\\[Avrae gvar dashboard\\]\\(https://avrae.io/dashboard/gvars\\?lookup=ffff1111-1111-1111-1111-111111111111\\)"
 ---
 name: starter defaults pass validation
 vars:

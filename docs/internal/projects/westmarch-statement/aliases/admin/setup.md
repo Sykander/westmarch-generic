@@ -68,8 +68,12 @@ Open or edit later:
 
 ```text
 !gvar editor <your-gvar-uuid>
-https://avrae.io/dashboard/gvars?lookup=<your-gvar-uuid>
 ```
+
+Named links for browser work:
+
+- [Westmarch config editor](https://sykander.github.io/westmarch-generic/) — accepts `?westmarch_config=<your-gvar-uuid>` to prefill the gvar id.
+- [Avrae gvar dashboard](https://avrae.io/dashboard/gvars) — accepts `?lookup=<your-gvar-uuid>` for dashboard lookup.
 
 Add another editor:
 

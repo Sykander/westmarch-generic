@@ -1,6 +1,6 @@
 !setup
 ---
-re:Initial Setup|westmarch_config
+"re:Initial Setup[\\s\\S]*westmarch_config[\\s\\S]*\\[Westmarch config editor\\]\\(https://sykander.github.io/westmarch-generic/\\)"
 ---
 name: unwired defaults to initial setup page
 vars:
@@ -18,7 +18,7 @@ vars:
 
 !setup
 ---
-re:General Configuration|dashboard/gvars\?lookup=ffff1111-1111-1111-1111-111111111111
+"re:General Configuration[\\s\\S]*\\[Westmarch config editor\\]\\(https://sykander.github.io/westmarch-generic/\\?westmarch_config=ffff1111-1111-1111-1111-111111111111\\)[\\s\\S]*\\[Avrae gvar dashboard\\]\\(https://avrae.io/dashboard/gvars\\?lookup=ffff1111-1111-1111-1111-111111111111\\)"
 ---
 name: wired defaults to general configuration page
 vars:
@@ -32,7 +32,7 @@ vars:
 
 !setup -p 1
 ---
-re:Initial Setup|westmarch setup -p "Initial Setup"
+"re:Initial Setup[\\s\\S]*westmarch setup -p \"Initial Setup\"[\\s\\S]*westmarch_config=ffff1111-1111-1111-1111-111111111111"
 ---
 name: page number can show initial setup even when wired
 vars:

@@ -1,6 +1,6 @@
 # Content generation prompts
 
-Copy-paste prompts for **external LLMs** (ChatGPT, etc.) to draft bulk **world data** for example configs under [`src/gvars/configs/`](../gvars/configs/).
+Copy-paste prompts for **external LLMs** (ChatGPT, etc.) to draft bulk **world data** for example configs under [`src/gvars/configs/`](../gvars/configs/) and project visual assets for the public editor / embeds.
 
 **Full guide:** [docs/internal/projects/prompt-generation/](../../docs/internal/projects/prompt-generation/README.md) — build order, scale (20–100+ locations), asset catalog.
 
@@ -27,6 +27,14 @@ Templates: [`_templates/`](_templates/) · Shared snippets: [`_shared/`](_shared
 | 8 | Transport | [`world-transport.prompt.md`](forgotten-realms/world-transport.prompt.md) | 1 |
 | 9 | Calendar | [`world-calendar.prompt.md`](forgotten-realms/world-calendar.prompt.md) | 1 |
 
+## Visual asset prompt set
+
+| Asset | Prompt | Notes |
+|-------|--------|-------|
+| Brand + command thumbnails | [`brand-and-command-assets.prompt.md`](westmarch-assets/brand-and-command-assets.prompt.md) | Logo, favicon, banner, subsystem thumbnails, command thumbnails |
+| Asset checklist | [`brand-and-command-assets.md`](westmarch-assets/brand-and-command-assets.md) | Filenames, GitHub Pages URL shape, review checklist |
+| Single visual asset template | [`visual-asset.prompt.md`](_templates/visual-asset.prompt.md) | Reusable one-off image prompt scaffold |
+
 ## Workflow (short)
 
 1. Open the **`.prompt.md`** for the asset; fill `[PASTE …]` placeholders.
@@ -42,9 +50,10 @@ Templates: [`_templates/`](_templates/) · Shared snippets: [`_shared/`](_shared
 ```
 src/prompts/
   README.md
-  _templates/          revision, expand-batch
+  _templates/          revision, expand-batch, visual-asset
   _shared/             biome-codes snippet
   forgotten-realms/    FR Sword Coast asset pairs
+  westmarch-assets/    project logo, banner, favicon, and embed thumbnail prompts
   generic-fantasy/     (planned — fork FR prompts)
   spelljammer/         (planned)
 ```

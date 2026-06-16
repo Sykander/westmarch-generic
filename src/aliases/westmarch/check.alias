@@ -46,6 +46,12 @@ if len(errors) == 0 and len(warnings) == 0:
     lines.append("")
     lines.append("No blocking errors or warnings.")
 
+links = check_config.link_summary()
+if links != None and str(links).strip() != "":
+    lines.append("")
+    lines.append("**Links**")
+    lines.append(links)
+
 title = "Configuration OK" if len(errors) == 0 else "Configuration issues"
 return get_embed(title=title, desc="\n".join(lines))
 </drac2>

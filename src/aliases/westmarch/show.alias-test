@@ -51,9 +51,9 @@ vars:
 
 !show wiring
 ---
-re:ffff1111-1111-1111-1111-111111111111|dashboard/gvars\?lookup=ffff1111-1111-1111-1111-111111111111
+"re:ffff1111-1111-1111-1111-111111111111[\\s\\S]*\\[Westmarch config editor\\]\\(https://sykander.github.io/westmarch-generic/\\?westmarch_config=ffff1111-1111-1111-1111-111111111111\\)[\\s\\S]*\\[Avrae gvar dashboard\\]\\(https://avrae.io/dashboard/gvars\\?lookup=ffff1111-1111-1111-1111-111111111111\\)"
 ---
-name: show section filter wiring includes full gvar id and dashboard link
+name: show section filter wiring includes full gvar id and named links
 vars:
   uvars:
     _wm_command: show
