@@ -1,6 +1,6 @@
 {
   "name": "westmarch-generic",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Configurable westmarch-style Avrae workshop — server setup via svars and config gvars",
   "main": "index.js",
   "scripts": {
