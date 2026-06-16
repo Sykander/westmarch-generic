@@ -1006,7 +1006,7 @@ display = {
     "description": "Frontier expeditions from Neverwinter to the High Forest.",
     "image": "https://…/banner.png",       # optional — hero / embed image URL
     "logo": "https://…/logo.png",            # optional — thumbnail / icon URL
-    "footer": "Sword Coast Westmarch",       # optional — static footer when policies.display.footer_behaviour is string
+    "footer": ["Sword Coast Westmarch"],     # optional — fixed footer text(s) when policies.display.footer_behaviour is string
     "link": "https://discord.com/channels/…", # optional — link button / “learn more” (base / admin embeds only)
     "colour": "#5865F2",                     # optional — hex embed accent colour
 }
@@ -1018,7 +1018,7 @@ display = {
 | `description` | no | Short campaign blurb — setup/show embeds, optional embed body intro |
 | `image` | no | Wide banner — inherited by subsystem/command embeds unless overridden |
 | `logo` | no | Small image — embed thumbnail; inherited unless overridden |
-| `footer` | no | Static footer text when **`policies.display.footer_behaviour`** is **`string`**; may include `{world}` placeholder *(TBD in port)* |
+| `footer` | no | Static footer text, or list of texts to randomly choose from, when **`policies.display.footer_behaviour`** is **`string`**; may include `{world}` placeholder *(TBD in port)* |
 | `link` | no | Discord invite or wiki — optional “world info” link in admin/show embeds; **not** merged into player command embeds |
 | `colour` | no | Hex accent — **`#RRGGBB`** or **`RRGGBB`** (6 hex digits). Inherited unless overridden; omit for engine default |
 
@@ -1046,7 +1046,7 @@ embed_display = {
     "description": "…",                  # optional — short intro under title
     "image": "https://…/banner.png",     # optional — wide image
     "logo": "https://…/icon.png",        # optional — thumbnail
-    "footer": "…",                       # optional — static footer (string policy mode)
+    "footer": ["…"],                     # optional — fixed footer text(s) (string policy mode)
     "colour": "#5865F2",                 # optional — hex accent
 }
 ```
@@ -1057,7 +1057,7 @@ embed_display = {
 | `description` | yes | yes | Inherited |
 | `image` | yes | yes | Inherited |
 | `logo` | yes | yes | Inherited |
-| `footer` | yes | yes | Used when **`footer_behaviour`** is **`string`**; see [Display policy (footer)](#display-policy-footer) |
+| `footer` | yes | yes | String, or list of strings to randomly choose from, used when **`footer_behaviour`** is **`string`**; see [Display policy (footer)](#display-policy-footer) |
 | `colour` | yes | yes | Same validation as base **`display.colour`** |
 
 **`command_display`** keys must match keys in that subsystem’s **`commands`** map (e.g. **`enc`**, **`forage`**, **`library`**). Subsystems without a **`commands`** map (**`downtime`**) may still use **`command_display.downtime`** for the single **`!downtime`** command, or rely on subsystem **`display`** alone.
@@ -1733,7 +1733,7 @@ Per-command toggles under **`subsystems.misc`**. MVP ships **`quest`** and **`re
 | Value | Footer content |
 |-------|----------------|
 | **`helpful_tips`** | One random string from **`helpful_tips`**, or engine default tips when the list is empty |
-| **`string`** | Merged **`footer`** from [display inheritance](#embed-display-inheritance) (command → subsystem → base **`display.footer`**), then merged **`title`**, then **`display.name`** |
+| **`string`** | Merged **`footer`** from [display inheritance](#embed-display-inheritance) (command → subsystem → base **`display.footer`**). If the merged value is a list, one non-empty text is chosen randomly. Falls back to merged **`title`**, then **`display.name`** |
 | **`help`** | Short hint for the active command — e.g. *Use `!enc help` for options* (alias prefix from invocation context) |
 | **`credits`** | Creator / engine credits — **`policies.display.credits`** when set, else engine default |
 | **`balanced`** | **Default.** Each embed footer randomly uses one of **`helpful_tips`**, **`string`**, **`help`**, or **`credits`** (same content rules as above) |

@@ -16,6 +16,11 @@
     "generate:spells": "node utils/generate-spells.js",
     "generate:books": "node utils/generate-books.js",
     "generate:recipes": "node utils/generate-recipes.js",
+    "editor": "npm run editor:serve",
+    "editor:dev": "npm --prefix editor run dev",
+    "editor:build": "npm --prefix editor run build",
+    "editor:serve": "npm --prefix editor run dev",
+    "editor:preview": "npm --prefix editor run preview",
     "lint": "find utils -name '*.js' -print0 | xargs -0 -n1 node --check",
     "test": "avrae-ls --run-tests src --log-level INFO",
     "test-sourcemaps": "publish-avrae check-config --sourcemap utils/sourcemap.dev.json && publish-avrae check-config --sourcemap utils/sourcemap.prod.json && publish-avrae compare-config utils/sourcemap.dev.json utils/sourcemap.prod.json"

@@ -27,3 +27,22 @@ vars:
       display = {
           "name": "My Test World",
       }
+
+get_embed = display.get_display()
+return get_embed(desc="hello")
+---
+re:Footer A
+---
+name: fixed footer list resolves footer text
+vars:
+  svars:
+    westmarch_config: "22223333-3333-3333-3333-333333333333"
+  gvars:
+    22223333-3333-3333-3333-333333333333: |
+      display = {
+          "name": "My Test World",
+          "footer": ["Footer A"],
+      }
+      policies = {
+          "display": {"footer_behaviour": "string"},
+      }

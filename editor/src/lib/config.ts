@@ -1,0 +1,1056 @@
+export type AnyRecord = Record<string, unknown>;
+
+export type ConfigModel = {
+  config_version?: string;
+  rules_version?: string;
+  display: AnyRecord;
+  subsystems: Record<string, AnyRecord>;
+  policies: AnyRecord;
+  world_data: AnyRecord;
+};
+
+export type ConfigIssue = {
+  severity: "error" | "warning" | "info";
+  code: string;
+  path: string;
+  section: string;
+  title: string;
+  detail: string;
+  fix?: string;
+  canAutoFix?: boolean;
+};
+
+export type ParseResult = {
+  model: ConfigModel | null;
+  issues: ConfigIssue[];
+  mode: "empty" | "literal" | "raw";
+};
+
+const EXPLORATION_COMMANDS = [
+  "enc",
+  "forage",
+  "fish",
+  "mine",
+  "lumber",
+  "hunt",
+  "loot",
+];
+
+export const DEFAULT_SUBSYSTEM_COMMANDS: Record<string, string[]> = {
+  exploration: EXPLORATION_COMMANDS,
+  travel: ["travel", "location", "time", "weather"],
+  downtime: ["downtime"],
+  crafting: ["craft", "brew", "enchant", "scribe"],
+  economy: ["job", "buy", "sell", "wallet"],
+  content: ["library", "read"],
+  misc: ["quest", "recipe"],
+};
+
+const SUBSYSTEMS = Object.keys(DEFAULT_SUBSYSTEM_COMMANDS);
+
+const VALID_ENC_BIOME = ["auto", "argument", "location"];
+const VALID_RULES_VERSION = ["2014", "2024"];
+const VALID_FOOTER = ["helpful_tips", "string", "help", "credits", "balanced"];
+const VALID_REPEAT = ["off", "same_biome", "global"];
+const VALID_LIBRARY_TOPIC = ["inferred", "balanced", "manual", "restricted"];
+const VALID_ENGINE_BIOMES = [
+  "beach",
+  "forest",
+  "mountain",
+  "cave",
+  "ruins",
+  "road",
+  "urban",
+  "river",
+  "sea",
+  "plains",
+  "desert",
+  "swamp",
+  "sky",
+  "deep_seas",
+  "underdark",
+  "tundra",
+  "jungle",
+  "volcanic",
+  "astral",
+];
+const GVAR_ID_RE =
+  /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+
+const DEFAULT_MODEL: ConfigModel = {
+  display: {},
+  subsystems: {},
+  policies: {},
+  world_data: {},
+};
+
+function issue(
+  severity: ConfigIssue["severity"],
+  code: string,
+  section: string,
+  path: string,
+  title: string,
+  detail: string,
+  fix?: string,
+  canAutoFix = false,
+): ConfigIssue {
+  return { severity, code, section, path, title, detail, fix, canAutoFix };
+}
+
+function stripComments(source: string): string {
+  let out = "";
+  let quote: string | null = null;
+  let triple: string | null = null;
+  let escaped = false;
+
+  for (let i = 0; i < source.length; i += 1) {
+    const ch = source[i];
+    const next3 = source.slice(i, i + 3);
+
+    if (triple) {
+      if (next3 === triple) {
+        triple = null;
+        i += 2;
+      }
+      continue;
+    }
+
+    if (!quote && (next3 === "\"\"\"" || next3 === "'''")) {
+      triple = next3;
+      i += 2;
+      continue;
+    }
+
+    if (quote) {
+      out += ch;
+      if (escaped) {
+        escaped = false;
+      } else if (ch === "\\") {
+        escaped = true;
+      } else if (ch === quote) {
+        quote = null;
+      }
+      continue;
+    }
+
+    if (ch === "\"" || ch === "'") {
+      quote = ch;
+      out += ch;
+      continue;
+    }
+
+    if (ch === "#") {
+      while (i < source.length && source[i] !== "\n") i += 1;
+      out += "\n";
+      continue;
+    }
+
+    out += ch;
+  }
+
+  return out;
+}
+
+function findAssignment(source: string, name: string): string | undefined {
+  const re = new RegExp(`(^|\\n)\\s*${name}\\s*=\\s*`, "m");
+  const match = re.exec(source);
+  if (!match) return undefined;
+
+  let index = match.index + match[0].length;
+  while (/\s/.test(source[index] ?? "")) index += 1;
+
+  const first = source[index];
+  if (first === "{" || first === "[") {
+    const close = first === "{" ? "}" : "]";
+    let depth = 0;
+    let quote: string | null = null;
+    let escaped = false;
+
+    for (let i = index; i < source.length; i += 1) {
+      const ch = source[i];
+      if (quote) {
+        if (escaped) escaped = false;
+        else if (ch === "\\") escaped = true;
+        else if (ch === quote) quote = null;
+        continue;
+      }
+      if (ch === "\"" || ch === "'") {
+        quote = ch;
+        continue;
+      }
+      if (ch === first) depth += 1;
+      if (ch === close) {
+        depth -= 1;
+        if (depth === 0) return source.slice(index, i + 1);
+      }
+    }
+    return source.slice(index);
+  }
+
+  const lineEnd = source.indexOf("\n", index);
+  return source.slice(index, lineEnd === -1 ? undefined : lineEnd).trim();
+}
+
+function pyLiteralToJsonish(value: string): string {
+  let out = "";
+  let quote: string | null = null;
+  let escaped = false;
+  let stringBuffer = "";
+
+  function flushString() {
+    out += JSON.stringify(stringBuffer);
+    stringBuffer = "";
+  }
+
+  for (let i = 0; i < value.length; i += 1) {
+    const ch = value[i];
+
+    if (quote) {
+      if (escaped) {
+        stringBuffer += ch;
+        escaped = false;
+      } else if (ch === "\\") {
+        escaped = true;
+      } else if (ch === quote) {
+        quote = null;
+        flushString();
+      } else {
+        stringBuffer += ch;
+      }
+      continue;
+    }
+
+    if (ch === "'" || ch === "\"") {
+      quote = ch;
+      stringBuffer = "";
+      continue;
+    }
+
+    out += ch;
+  }
+
+  return out
+    .replace(/\bTrue\b/g, "true")
+    .replace(/\bFalse\b/g, "false")
+    .replace(/\bNone\b/g, "null")
+    .replace(/,\s*([}\]])/g, "$1");
+}
+
+function parseLiteral(value: string): unknown {
+  return JSON.parse(pyLiteralToJsonish(value));
+}
+
+function parseStringAssignment(source: string, name: string): string | undefined {
+  const value = findAssignment(source, name);
+  if (!value) return undefined;
+  try {
+    const parsed = parseLiteral(value);
+    return typeof parsed === "string" ? parsed : undefined;
+  } catch {
+    return value.replace(/^["']|["']$/g, "");
+  }
+}
+
+function parseRecordAssignment(
+  source: string,
+  name: string,
+  issues: ConfigIssue[],
+): AnyRecord {
+  const value = findAssignment(source, name);
+  if (!value) return {};
+  try {
+    const parsed = parseLiteral(value);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? (parsed as AnyRecord)
+      : {};
+  } catch (error) {
+    issues.push(
+      issue(
+        "warning",
+        `parse.${name}`,
+        "Source",
+        name,
+        `Could not parse ${name}`,
+        error instanceof Error ? error.message : "Unsupported literal syntax.",
+        "Use raw mode for this section or simplify it to literal dict/list syntax.",
+      ),
+    );
+    return {};
+  }
+}
+
+function defaultCommands(commands: string[]): AnyRecord {
+  return Object.fromEntries(commands.map((key) => [key, false]));
+}
+
+function createDefaultSubsystems(): Record<string, AnyRecord> {
+  return {
+    exploration: {
+      enabled: false,
+      commands: defaultCommands(DEFAULT_SUBSYSTEM_COMMANDS.exploration),
+      config: {
+        enc_biome_source: "auto",
+        distribution_policy: "random",
+        distribution: { combat: 25, quest: 25, gather: 50 },
+        repeat_exclude_window: 5,
+      },
+    },
+    travel: {
+      enabled: false,
+      commands: defaultCommands(DEFAULT_SUBSYSTEM_COMMANDS.travel),
+    },
+    downtime: {
+      enabled: false,
+      commands: defaultCommands(DEFAULT_SUBSYSTEM_COMMANDS.downtime),
+    },
+    crafting: {
+      enabled: false,
+      commands: defaultCommands(DEFAULT_SUBSYSTEM_COMMANDS.crafting),
+    },
+    economy: {
+      enabled: false,
+      commands: defaultCommands(DEFAULT_SUBSYSTEM_COMMANDS.economy),
+    },
+    content: {
+      enabled: false,
+      commands: defaultCommands(DEFAULT_SUBSYSTEM_COMMANDS.content),
+      config: { library_topic_source: "manual", allowed_topics: [] },
+    },
+    misc: {
+      enabled: false,
+      commands: defaultCommands(DEFAULT_SUBSYSTEM_COMMANDS.misc),
+    },
+  };
+}
+
+function mergeSubsystemDefaults(
+  subsystems: Record<string, AnyRecord>,
+): Record<string, AnyRecord> {
+  const defaults = createDefaultSubsystems();
+  const next: Record<string, AnyRecord> = {};
+
+  for (const key of SUBSYSTEMS) {
+    const defaultBlock = asRecord(defaults[key]);
+    const existingBlock = asRecord(subsystems[key]);
+    next[key] = {
+      ...defaultBlock,
+      ...existingBlock,
+      commands: {
+        ...asRecord(defaultBlock.commands),
+        ...asRecord(existingBlock.commands),
+      },
+    };
+    if (defaultBlock.config || existingBlock.config) {
+      next[key].config = {
+        ...asRecord(defaultBlock.config),
+        ...asRecord(existingBlock.config),
+      };
+    }
+  }
+
+  for (const [key, value] of Object.entries(subsystems)) {
+    if (!next[key]) next[key] = value;
+  }
+
+  return next;
+}
+
+export function parseConfig(source: string): ParseResult {
+  const issues: ConfigIssue[] = [];
+  if (!source.trim()) {
+    return { model: null, issues, mode: "empty" };
+  }
+
+  const cleaned = stripComments(source);
+  const parsedSubsystems = parseRecordAssignment(cleaned, "subsystems", issues) as Record<
+    string,
+    AnyRecord
+  >;
+  const model: ConfigModel = {
+    ...DEFAULT_MODEL,
+    config_version: parseStringAssignment(cleaned, "config_version"),
+    rules_version: parseStringAssignment(cleaned, "rules_version"),
+    display: parseRecordAssignment(cleaned, "display", issues),
+    subsystems: mergeSubsystemDefaults(parsedSubsystems),
+    policies: parseRecordAssignment(cleaned, "policies", issues),
+    world_data: parseRecordAssignment(cleaned, "world_data", issues),
+  };
+
+  if (Object.keys(parsedSubsystems).length === 0) {
+    issues.push(
+      issue(
+        "warning",
+        "parse.subsystems.missing",
+        "Subsystems",
+        "subsystems",
+        "No subsystem block parsed",
+        "The editor can still export raw source, but guided subsystem controls need a literal `subsystems = { ... }` block.",
+      ),
+    );
+  }
+
+  return {
+    model,
+    issues,
+    mode: issues.some((item) => item.code.startsWith("parse.")) ? "raw" : "literal",
+  };
+}
+
+function jsonToPy(value: unknown): string {
+  const json = JSON.stringify(value, null, 4);
+  let out = "";
+  let quote = false;
+  let escaped = false;
+
+  for (let i = 0; i < json.length; i += 1) {
+    const ch = json[i];
+    if (quote) {
+      out += ch;
+      if (escaped) escaped = false;
+      else if (ch === "\\") escaped = true;
+      else if (ch === "\"") quote = false;
+      continue;
+    }
+    if (ch === "\"") {
+      quote = true;
+      out += ch;
+      continue;
+    }
+    out += ch;
+  }
+
+  return out
+    .replace(/\btrue\b/g, "True")
+    .replace(/\bfalse\b/g, "False")
+    .replace(/\bnull\b/g, "None");
+}
+
+function compactValue(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(compactValue);
+  if (!value || typeof value !== "object") return value;
+
+  return Object.fromEntries(
+    Object.entries(value as AnyRecord)
+      .filter(([, entryValue]) => entryValue !== undefined)
+      .map(([key, entryValue]) => [key, compactValue(entryValue)]),
+  );
+}
+
+export function serializeConfig(model: ConfigModel): string {
+  const compactDisplay = compactValue(model.display) as AnyRecord;
+  const compactSubsystems = compactValue(model.subsystems) as Record<
+    string,
+    AnyRecord
+  >;
+  const compactWorldData = compactValue(model.world_data) as AnyRecord;
+  const compactPolicies = compactValue(model.policies) as AnyRecord;
+  const lines = [
+    "\"\"\"Generated by westmarch-generic web config editor.\"\"\"",
+    "",
+  ];
+
+  if (model.config_version) {
+    lines.push(`config_version = ${JSON.stringify(model.config_version)}`, "");
+  }
+  if (model.rules_version) {
+    lines.push(`rules_version = ${JSON.stringify(model.rules_version)}`, "");
+  }
+  if (Object.keys(compactDisplay).length > 0) {
+    lines.push(`display = ${jsonToPy(compactDisplay)}`, "");
+  }
+
+  lines.push(`subsystems = ${jsonToPy(compactSubsystems)}`, "");
+
+  if (Object.keys(compactWorldData).length > 0) {
+    lines.push(`world_data = ${jsonToPy(compactWorldData)}`, "");
+  }
+
+  lines.push(`policies = ${jsonToPy(compactPolicies)}`, "");
+  return `${lines.join("\n").trimEnd()}\n`;
+}
+
+function readBool(record: AnyRecord | undefined, key: string): boolean {
+  return Boolean(record?.[key]);
+}
+
+function asRecord(value: unknown): AnyRecord {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as AnyRecord)
+    : {};
+}
+
+function isHexColour(value: unknown): boolean {
+  if (value == null || value === "") return true;
+  const text = String(value).replace(/^#/, "");
+  return /^[0-9a-fA-F]{6}$/.test(text);
+}
+
+function isNonNegativeInteger(value: unknown): boolean {
+  return Number.isInteger(value) && Number(value) >= 0;
+}
+
+function footerTextCount(value: unknown): number {
+  if (typeof value === "string") return value.trim() ? 1 : 0;
+  if (!Array.isArray(value)) return 0;
+  return value.filter((item) => typeof item === "string" && item.trim()).length;
+}
+
+function validateFooterValue(
+  value: unknown,
+  section: string,
+  path: string,
+  label: string,
+  issues: ConfigIssue[],
+) {
+  if (value == null || value === "") return;
+  if (typeof value === "string") return;
+  if (Array.isArray(value)) {
+    const hasInvalidItem = value.some(
+      (item) => typeof item !== "string" || item.trim() === "",
+    );
+    if (hasInvalidItem) {
+      issues.push(
+        issue(
+          "warning",
+          "display.footer.list",
+          section,
+          path,
+          `${label} footer list has empty entries`,
+          "Footer lists should contain non-empty text strings.",
+          "Remove blank footer rows before exporting or publishing.",
+        ),
+      );
+    }
+    return;
+  }
+
+  issues.push(
+    issue(
+      "warning",
+      "display.footer.type",
+      section,
+      path,
+      `${label} footer has an unsupported shape`,
+      "Footer must be a text string or a list of text strings.",
+      "Use the guided footer text list or switch to Raw mode to correct the value.",
+    ),
+  );
+}
+
+function validateDisplayLayer(
+  value: AnyRecord,
+  section: string,
+  path: string,
+  label: string,
+  issues: ConfigIssue[],
+) {
+  if (!isHexColour(value.colour)) {
+    issues.push(
+      issue(
+        "error",
+        "display.colour",
+        section,
+        `${path}.colour`,
+        `Invalid ${label} colour`,
+        "Embed colours must be six hex digits, with or without `#`.",
+        "Use a value such as #5865F2 or leave the colour unset.",
+      ),
+    );
+  }
+  validateFooterValue(value.footer, section, `${path}.footer`, label, issues);
+}
+
+function hasAnyFooterText(model: ConfigModel): boolean {
+  if (footerTextCount(model.display.footer) > 0) return true;
+
+  for (const block of Object.values(model.subsystems)) {
+    const subsystem = asRecord(block);
+    if (footerTextCount(asRecord(subsystem.display).footer) > 0) return true;
+
+    const commandDisplay = asRecord(subsystem.command_display);
+    for (const display of Object.values(commandDisplay)) {
+      if (footerTextCount(asRecord(display).footer) > 0) return true;
+    }
+  }
+
+  return false;
+}
+
+export function validateConfig(model: ConfigModel | null, parseIssues: ConfigIssue[]) {
+  const issues: ConfigIssue[] = [...parseIssues];
+
+  if (!model) {
+    issues.push(
+      issue(
+        "info",
+        "source.empty",
+        "Setup",
+        "source",
+        "No config loaded",
+        "Paste a gvar body or load one from Avrae to run checks.",
+      ),
+    );
+    return issues;
+  }
+
+  if (model.rules_version && !VALID_RULES_VERSION.includes(model.rules_version)) {
+    issues.push(
+      issue(
+        "warning",
+        "rules.version",
+        "Display",
+        "rules_version",
+        "Unknown rules version",
+        "`rules_version` should be `2014` or `2024` when set.",
+        "Choose 2014, 2024, or omit it to infer from !servsettings.",
+      ),
+    );
+  }
+
+  validateDisplayLayer(model.display, "Display", "display", "Base display", issues);
+
+  const footerPolicy = asRecord(asRecord(model.policies.display).footer_behaviour);
+  void footerPolicy;
+  const footerBehaviour = asRecord(model.policies.display).footer_behaviour;
+  if (
+    typeof footerBehaviour === "string" &&
+    !VALID_FOOTER.includes(footerBehaviour)
+  ) {
+    issues.push(
+      issue(
+        "warning",
+        "policies.display.footer_behaviour",
+        "Policies",
+        "policies.display.footer_behaviour",
+        "Unknown footer behavior",
+        "`footer_behaviour` should be helpful_tips, string, help, credits, or balanced.",
+      ),
+    );
+  }
+  if (footerBehaviour === "string" && !hasAnyFooterText(model)) {
+    issues.push(
+      issue(
+        "warning",
+        "policies.display.footer_missing",
+        "Display",
+        "display.footer",
+        "String footer needs footer text",
+        "`footer_behaviour: string` expects `display.footer` to be configured.",
+        "Add footer text or switch footer behavior to balanced.",
+      ),
+    );
+  }
+
+  const subsystemKeys = Object.keys(model.subsystems);
+  if (subsystemKeys.length === 0) {
+    issues.push(
+      issue(
+        "error",
+        "subsystems.missing",
+        "Subsystems",
+        "subsystems",
+        "Subsystems are missing",
+        "A config should define `subsystems` so commands know what is enabled.",
+      ),
+    );
+  }
+
+  for (const key of subsystemKeys) {
+    if (!SUBSYSTEMS.includes(key)) {
+      issues.push(
+        issue(
+          "warning",
+          "subsystems.unknown",
+          "Subsystems",
+          `subsystems.${key}`,
+          `Unknown subsystem ${key}`,
+          "Unknown subsystem keys are ignored by the current engine.",
+          "Remove it or document the custom extension.",
+        ),
+      );
+    }
+
+    const block = asRecord(model.subsystems[key]);
+    const commands = asRecord(block.commands);
+    validateDisplayLayer(
+      asRecord(block.display),
+      "Subsystems",
+      `subsystems.${key}.display`,
+      `${key} display`,
+      issues,
+    );
+    const commandDisplay = asRecord(block.command_display);
+    for (const [command, display] of Object.entries(commandDisplay)) {
+      if (!(command in commands)) {
+        issues.push(
+          issue(
+            "warning",
+            "subsystems.command_display_unknown",
+            "Subsystems",
+            `subsystems.${key}.command_display.${command}`,
+            `${key} has an unknown command display override`,
+            "command_display keys should match commands in the same subsystem.",
+            "Rename the override or add the matching command key.",
+          ),
+        );
+      }
+      validateDisplayLayer(
+        asRecord(display),
+        "Subsystems",
+        `subsystems.${key}.command_display.${command}`,
+        `${key}.${command} display`,
+        issues,
+      );
+    }
+    const enabledCommands = Object.entries(commands).filter(([, on]) => on === true);
+    if (block.enabled === true && enabledCommands.length === 0) {
+      issues.push(
+        issue(
+          "warning",
+          "subsystems.enabled_no_commands",
+          "Subsystems",
+          `subsystems.${key}.commands`,
+          `${key} has no enabled commands`,
+          "The subsystem is on, but every command toggle is off.",
+          "Enable at least one command or turn the subsystem off.",
+        ),
+      );
+    }
+    if (block.enabled !== true && enabledCommands.length > 0) {
+      issues.push(
+        issue(
+          "warning",
+          "subsystems.commands_without_parent",
+          "Subsystems",
+          `subsystems.${key}.enabled`,
+          `${key} commands are on while subsystem is off`,
+          "Commands only make sense when their parent subsystem is enabled.",
+          "Turn the subsystem on or disable the commands.",
+        ),
+      );
+    }
+  }
+
+  validateExploration(model, issues);
+  validateWorld(model, issues);
+  validateTravel(model, issues);
+  validateContent(model, issues);
+
+  return issues;
+}
+
+function validateWorld(model: ConfigModel, issues: ConfigIssue[]) {
+  const biomes = asRecord(model.world_data.biomes);
+
+  for (const [code, value] of Object.entries(biomes)) {
+    const biome = asRecord(value);
+    const gvarId = biome.gvar_id;
+    if (gvarId == null || String(gvarId).trim() === "") {
+      issues.push(
+        issue(
+          "error",
+          "world.biome.gvar_missing",
+          "Biomes",
+          `world_data.biomes.${code}.gvar_id`,
+          `${code} has no biome gvar`,
+          "A biome registry entry needs an engine preset slug or a custom Avrae gvar UUID before publish.",
+          "Use a preset, paste a UUID, or export and generate the biome gvar manually.",
+        ),
+      );
+      continue;
+    }
+
+    const text = String(gvarId);
+    const enginePrefix = "engine:configs/biomes/";
+    if (text.startsWith(enginePrefix)) {
+      const preset = text.slice(enginePrefix.length);
+      if (!VALID_ENGINE_BIOMES.includes(preset)) {
+        issues.push(
+          issue(
+            "error",
+            "world.biome.engine_unknown",
+            "Biomes",
+            `world_data.biomes.${code}.gvar_id`,
+            `${code} uses an unknown engine biome`,
+            "Engine biome slugs must match a shipped preset.",
+            "Choose one of the preset values from the Biomes page.",
+          ),
+        );
+      }
+      continue;
+    }
+
+    if (!GVAR_ID_RE.test(text)) {
+      issues.push(
+        issue(
+          "error",
+          "world.biome.gvar_invalid",
+          "Biomes",
+          `world_data.biomes.${code}.gvar_id`,
+          `${code} has an invalid custom gvar id`,
+          "Custom biome gvar ids must be Avrae workshop UUIDs.",
+          "Paste a UUID, or use an engine preset slug.",
+        ),
+      );
+    }
+  }
+}
+
+function validateExploration(model: ConfigModel, issues: ConfigIssue[]) {
+  const exploration = asRecord(model.subsystems.exploration);
+  if (Object.keys(exploration).length === 0) return;
+
+  const config = asRecord(exploration.config);
+  const source = config.enc_biome_source;
+  if (typeof source === "string" && !VALID_ENC_BIOME.includes(source)) {
+    issues.push(
+      issue(
+        "error",
+        "exploration.enc_biome_source",
+        "Policies",
+        "subsystems.exploration.config.enc_biome_source",
+        "Invalid biome source",
+        "`enc_biome_source` must be auto, argument, or location.",
+      ),
+    );
+  }
+
+  if (source === "location") {
+    const travel = asRecord(model.subsystems.travel);
+    if (travel.enabled !== true) {
+      issues.push(
+        issue(
+          "error",
+          "exploration.location_requires_travel",
+          "World",
+          "subsystems.travel.enabled",
+          "Location biome source needs travel",
+          "`enc_biome_source: location` relies on the travel subsystem and world_data.locations.",
+        ),
+      );
+    }
+  }
+
+  const distribution = asRecord(config.distribution);
+  const total = ["combat", "quest", "gather"].reduce((sum, key) => {
+    const value = distribution[key];
+    if (value == null) return sum;
+    if (!isNonNegativeInteger(value)) {
+      issues.push(
+        issue(
+          "error",
+          "exploration.distribution_value",
+          "Policies",
+          `subsystems.exploration.config.distribution.${key}`,
+          "Distribution values must be non-negative integers",
+          `${key} is not a non-negative integer.`,
+        ),
+      );
+      return sum;
+    }
+    return sum + Number(value);
+  }, 0);
+
+  if (Object.keys(distribution).length > 0 && total !== 100) {
+    issues.push(
+      issue(
+        "error",
+        "exploration.distribution_total",
+        "Policies",
+        "subsystems.exploration.config.distribution",
+        "Exploration distribution must total 100",
+        `The current total is ${total}.`,
+        "Adjust combat, quest, and gather percentages.",
+      ),
+    );
+  }
+
+  const commandConfig = asRecord(exploration.command_config);
+  for (const [command, value] of Object.entries(commandConfig)) {
+    if (!EXPLORATION_COMMANDS.includes(command)) {
+      issues.push(
+        issue(
+          "warning",
+          "exploration.command_config_unknown",
+          "Policies",
+          `subsystems.exploration.command_config.${command}`,
+          "Unknown exploration command config",
+          "This command config key does not match an exploration command.",
+        ),
+      );
+      continue;
+    }
+    const cooldown = asRecord(value).cooldown_seconds;
+    if (cooldown != null && !isNonNegativeInteger(cooldown)) {
+      issues.push(
+        issue(
+          "error",
+          "exploration.cooldown",
+          "Policies",
+          `subsystems.exploration.command_config.${command}.cooldown_seconds`,
+          "Cooldown must be non-negative",
+          "Cooldown seconds must be a non-negative integer.",
+        ),
+      );
+    }
+  }
+
+  const repeat = asRecord(model.policies.exploration).avoid_repeat_encounters;
+  if (typeof repeat === "string" && !VALID_REPEAT.includes(repeat)) {
+    issues.push(
+      issue(
+        "error",
+        "policies.exploration.repeat",
+        "Policies",
+        "policies.exploration.avoid_repeat_encounters",
+        "Invalid repeat encounter policy",
+        "`avoid_repeat_encounters` must be off, same_biome, or global.",
+      ),
+    );
+  }
+
+  if (exploration.enabled === true && Object.keys(asRecord(model.world_data.biomes)).length === 0) {
+    issues.push(
+      issue(
+        "warning",
+        "world.biomes.empty",
+        "Biomes",
+        "world_data.biomes",
+        "No biome registry configured",
+        "Exploration can run with manual fallbacks, but biome-aware commands need `world_data.biomes`.",
+      ),
+    );
+  }
+}
+
+function validateTravel(model: ConfigModel, issues: ConfigIssue[]) {
+  const travel = asRecord(model.subsystems.travel);
+  if (travel.enabled !== true) return;
+
+  if (!model.world_data.default_location) {
+    issues.push(
+      issue(
+        "warning",
+        "world.default_location",
+        "World",
+        "world_data.default_location",
+        "Travel has no default location",
+        "Travel/location commands are easier to use when a default location is configured.",
+      ),
+    );
+  }
+  if (Object.keys(asRecord(model.world_data.locations)).length === 0) {
+    issues.push(
+      issue(
+        "warning",
+        "world.locations.empty",
+        "World",
+        "world_data.locations",
+        "Travel has no locations",
+        "The travel subsystem needs locations to describe where players can go.",
+      ),
+    );
+  }
+}
+
+function validateContent(model: ConfigModel, issues: ConfigIssue[]) {
+  const content = asRecord(model.subsystems.content);
+  const contentConfig = asRecord(content.config);
+  const topicSource = contentConfig.library_topic_source;
+
+  if (typeof topicSource === "string" && !VALID_LIBRARY_TOPIC.includes(topicSource)) {
+    issues.push(
+      issue(
+        "error",
+        "content.library_topic_source",
+        "Content",
+        "subsystems.content.config.library_topic_source",
+        "Invalid library topic source",
+        "Use inferred, balanced, manual, or restricted.",
+      ),
+    );
+  }
+
+  if (
+    topicSource === "restricted" &&
+    (!Array.isArray(contentConfig.allowed_topics) ||
+      contentConfig.allowed_topics.length === 0)
+  ) {
+    issues.push(
+      issue(
+        "warning",
+        "content.allowed_topics",
+        "Content",
+        "subsystems.content.config.allowed_topics",
+        "Restricted library needs allowed topics",
+        "Restricted search should define at least one allowed topic.",
+      ),
+    );
+  }
+}
+
+export function applyIssueFix(model: ConfigModel, issueCode: string): ConfigModel {
+  const next = structuredClone(model) as ConfigModel;
+
+  if (issueCode === "display.colour") {
+    next.display.colour = "#5865F2";
+  }
+  if (issueCode === "exploration.distribution_total") {
+    const exploration = asRecord(next.subsystems.exploration);
+    exploration.config = {
+      ...asRecord(exploration.config),
+      distribution: { combat: 25, quest: 25, gather: 50 },
+    };
+    next.subsystems.exploration = exploration;
+  }
+
+  return next;
+}
+
+export function createBlankConfig(): ConfigModel {
+  return structuredClone({
+    config_version: "1.0",
+    display: {
+      name: "My Westmarch",
+      footer: "My Westmarch",
+      colour: "#5865F2",
+    },
+    subsystems: createDefaultSubsystems(),
+    world_data: {
+      biomes: {},
+      locations: {},
+      paths: [],
+    },
+    policies: {
+      exploration: { enforce_cooldowns: true, avoid_repeat_encounters: "off" },
+      display: { footer_behaviour: "balanced", helpful_tips: [], credits: null },
+    },
+  });
+}
+
+export function updatePath(model: ConfigModel, path: string, value: unknown): ConfigModel {
+  const next = structuredClone(model) as AnyRecord;
+  const parts = path.split(".");
+  let cursor: AnyRecord = next;
+  for (const part of parts.slice(0, -1)) {
+    if (!cursor[part] || typeof cursor[part] !== "object") cursor[part] = {};
+    cursor = cursor[part] as AnyRecord;
+  }
+  cursor[parts[parts.length - 1]] = value;
+  return next as ConfigModel;
+}
+
+export function readPath(model: ConfigModel, path: string): unknown {
+  return path.split(".").reduce<unknown>((cursor, part) => {
+    if (!cursor || typeof cursor !== "object") return undefined;
+    return (cursor as AnyRecord)[part];
+  }, model);
+}
+
+export function safeJson(value: unknown): string {
+  return JSON.stringify(value ?? {}, null, 2);
+}
+
+export function parseJsonField(text: string): unknown {
+  return JSON.parse(text);
+}

@@ -85,7 +85,7 @@ Engine constants in this gvar (not owner config):
 | `footer_behaviour` | Footer passed to **`configure_get_embed`** |
 |--------------------|---------------------------------------------|
 | **`helpful_tips`** | Random from **`policies.display.helpful_tips`** or **`DEFAULT_HELPFUL_TIPS`** |
-| **`string`** | Merged **`footer`** → merged **`title`** → world **`name`** |
+| **`string`** | Merged **`footer`** string, or one random non-empty item from a merged **`footer`** list → merged **`title`** → world **`name`** |
 | **`help`** | e.g. *Use `!{command} help` for options* (**`ctx.prefix`**) |
 | **`credits`** | **`policies.display.credits`** or **`DEFAULT_CREDITS`** |
 | **`balanced`** | Random among the four modes above |

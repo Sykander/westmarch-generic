@@ -84,7 +84,7 @@ See **`.cursor/README.md`** and **`.cursor/reference-cache.json`**. After valida
 Uses [publish-avrae](https://www.npmjs.com/package/publish-avrae) through CLI scripts:
 
 ```bash
-npm run deploy:dev
+make deploy      # Development
 npm run deploy:prod
 ```
 

@@ -443,11 +443,19 @@ def check_biomes(cfg):
 def _display_layer_has_footer(fragment):
     if fragment == None:
         return False
+    footer = None
     try:
-        return _nonempty_str(fragment.footer)
+        footer = fragment.footer
     except:
         pass
-    return _nonempty_str(_read_field(fragment, "footer"))
+    if footer == None:
+        footer = _read_field(fragment, "footer")
+    if lists.is_list(footer):
+        for item in footer:
+            if _nonempty_str(item):
+                return True
+        return False
+    return _nonempty_str(footer)
 
 
 def _check_display_colour(path, fragment, errors):

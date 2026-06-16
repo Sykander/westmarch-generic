@@ -70,6 +70,13 @@ def _is_dict(value) -> bool:
         return False
 
 
+def _is_list(value) -> bool:
+    try:
+        return value == list(value)
+    except:
+        return False
+
+
 def _dict_copy(obj):
     if obj == None or not _is_dict(obj):
         return {}
@@ -303,7 +310,7 @@ def _footer_behaviour(cfg):
 
 def _pick_balanced_mode():
     modes = ["helpful_tips", "string", "help", "credits"]
-    idx = randint(0, len(modes) - 1)
+    idx = randint(0, len(modes))
     return modes[idx]
 
 
@@ -314,17 +321,29 @@ def _footer_helpful_tips(cfg):
         pool = DEFAULT_HELPFUL_TIPS
     if len(pool) == 0:
         return None
-    idx = randint(0, len(pool) - 1)
+    idx = randint(0, len(pool))
     return pool[idx]
 
 
 def _footer_string(merged, subsystem, command):
+    footer = None
     try:
-        footer = merged.footer
-        if footer != None and str(footer).strip() != "":
-            return str(footer)
+        footer = merged["footer"]
     except:
-        pass
+        try:
+            footer = merged.footer
+        except:
+            footer = None
+    if _is_list(footer):
+        pool = []
+        for item in footer:
+            if item != None and str(item).strip() != "":
+                pool.append(str(item))
+        if len(pool) > 0:
+            idx = randint(0, len(pool))
+            return pool[idx]
+    elif footer != None and str(footer).strip() != "":
+        return str(footer)
     title = _resolve_title(merged, subsystem, command)
     if title != None and str(title).strip() != "":
         return str(title)

@@ -116,6 +116,23 @@ vars:
     ffff4444-4444-4444-4444-444444444444: |
       display = {"name": "My Summary World"}
 
+return "footer_behaviour" in str(check_config.validate()[1])
+---
+False
+---
+name: validate string footer accepts footer list
+vars:
+  svars:
+    westmarch_config: "ffff2323-2323-2323-2323-232323232323"
+  gvars:
+    ffff2323-2323-2323-2323-232323232323: |
+      display = {
+          "footer": ["Footer A", "Footer B"],
+      }
+      policies = {
+          "display": {"footer_behaviour": "string"},
+      }
+
 return check_config.summarize_config("wiring")["desc"]
 ---
 re:westmarch_config
