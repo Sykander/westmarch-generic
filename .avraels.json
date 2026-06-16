@@ -9,9 +9,9 @@
       "ctx": {
         "author": {
           "roles": [
-            {"id": 4567, "name": "DM"},
-            {"id": 4568, "name": "Player"},
-            {"id": 4569, "name": "Dragonspeaker"}
+            { "id": 4567, "name": "DM" },
+            { "id": 4568, "name": "Player" },
+            { "id": 4569, "name": "Dragonspeaker" }
           ]
         }
       }
@@ -19,9 +19,7 @@
     "player": {
       "ctx": {
         "author": {
-          "roles": [
-            {"id": 4568, "name": "Player"}
-          ]
+          "roles": [{ "id": 4568, "name": "Player" }]
         }
       }
     }

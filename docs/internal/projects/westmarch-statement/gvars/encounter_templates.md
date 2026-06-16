@@ -24,15 +24,29 @@ enc = encounter_templates.expand_row([["enc.gather"], "flavour", "Wild berries",
 
 | Template | Kind | Args |
 |----------|------|------|
-| `flavour` | `gather` by default | `name`, `description`, optional `kind` |
+| `flavour` / `story` | `gather` by default | `name`, `description`, optional `kind` |
 | `gather_item` | `gather` | `name`, `description`, `check_name`, `dc`, `item_name`, `total`, optional `bag` |
 | `skill_check` | `gather` | `name`, `description`, `check_name`, `dc`, optional `success_text`, optional `failure_text` |
-| `combat` | `combat` | `name`, `description`, `cr`, optional `monster` or monster list |
+| `saving_throw` | `gather` | `name`, `description`, `save_name`, `dc`, optional `success_text`, optional `failure_text` |
+| `combat` | `combat` | `name`, `description`, `cr`, optional `monster` or monster list, optional `difficulty` |
+| `ambush` | `combat` | `name`, `description`, `cr`, optional `monster` or monster list, optional `difficulty`, optional `dc` |
+| `damage_combat` | `combat` | `name`, `description`, `cr`, optional `monster` or monster list, optional `difficulty`, optional `total` |
 | `quest` | `quest` | `name`, `description`, optional `reward_hint` |
 | `gold` | `gather` | `name`, `description`, `total` |
+| `healing` | `gather` | `name`, `description`, `total` |
+| `healing_check` | `gather` | `name`, `description`, `check_name`, `dc`, `total` |
+| `damage` | `gather` | `name`, `description`, `total` |
 | `raw` | from literal | `encounter_dict` |
 
-Add remaining westmarch templates (recipe, story, damage, healing, …) as Tier B exploration needs them. Prefer new templates over large `raw` rows once a pattern repeats.
+`check_name` accepts the check names understood by `rolls.gvar`: standard skills,
+ability checks such as `Strength`, and `Initiative`.
+`save_name` accepts standard ability saves plus special saves from `rolls.gvar`
+such as `Death`, `Honor`, and `Sanity`.
+
+Westmarch conditional templates such as `check_or_damage`, `check_or_gold`,
+`check_or_lose_gold`, and `check_or_monsters` need roll-gated outcomes in
+`encounters.gvar` before editor rows should emit them. Prefer new templates over
+large `raw` rows once a pattern repeats.
 
 ## Usage
 

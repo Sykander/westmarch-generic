@@ -1,0 +1,14 @@
+node_modules/
+editor/node_modules/
+.cursor/
+.cache/
+public/
+coverage/
+dist/
+build/
+
+*.tsbuildinfo
+package-lock.json
+editor/package-lock.json
+.varfile.json
+src/gvars/env.*.gvar

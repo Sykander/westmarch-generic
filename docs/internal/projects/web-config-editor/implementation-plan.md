@@ -14,7 +14,7 @@ Status: started.
 
 - Create `editor/package.json` with Vite, React, TypeScript, Tailwind, shadcn/ui, lucide-react, and test dependencies.
 - Add `editor/vite.config.ts` with `base: "/westmarch-generic/"` and output to `../public`.
-- Add root npm scripts that delegate to the editor, such as `editor:dev`, `editor:build`, `editor:preview`, and `editor:test`.
+- Add root npm scripts that delegate to the editor, such as `editor`, `editor:dev`, `editor:build`, `types`, and `editor:test`.
 - Add a minimal app shell with no domain behavior yet.
 - Add GitHub Pages workflow using `actions/upload-pages-artifact` from `public`.
 

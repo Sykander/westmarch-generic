@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { AlertTriangle } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { AlertTriangle } from 'lucide-react';
 
 type JsonFieldProps = {
   label: string;
@@ -23,7 +23,7 @@ export function JsonField({ label, value, onCommit, minRows = 8 }: JsonFieldProp
       onCommit(JSON.parse(nextText));
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Invalid JSON");
+      setError(err instanceof Error ? err.message : 'Invalid JSON');
     }
   }
 
@@ -31,7 +31,7 @@ export function JsonField({ label, value, onCommit, minRows = 8 }: JsonFieldProp
     <label className="field span-2">
       <span>{label}</span>
       <textarea
-        className={error ? "code-input invalid" : "code-input"}
+        className={error ? 'code-input invalid' : 'code-input'}
         rows={minRows}
         value={text}
         onChange={(event) => commit(event.target.value)}

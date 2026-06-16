@@ -12,12 +12,12 @@ Architecture: [docs/internal/projects/westmarch-statement/content-pipeline.md](.
 |--------|-------------|---------|
 | `publish-avrae generate-env` | `npm run generate-env` | Write `src/gvars/env.{dev,prod}.gvar` from sourcemaps |
 | [generate-vars.js](generate-vars.js) | `npm run generate-vars` | Write `.varfile.json` for alias-tests |
-| `publish-avrae check-config` / `compare-config` | `npm run test-sourcemaps` | Dev/prod sourcemap validation and parity |
+| `publish-avrae check-config` / `compare-config` | `make sourcemap-test` | Dev/prod sourcemap validation and parity |
 | `publish-avrae deploy` | `npm run deploy:dev`, `npm run deploy:prod` | Publish workshop via sourcemap |
 
 ```bash
 make build     # run all generators, build env gvars, and refresh .varfile.json
-make test      # lint + sourcemap tests + avrae-ls alias tests
+make test      # lint + types + sourcemap checks + editor tests + avrae-ls alias tests
 ```
 
 ---

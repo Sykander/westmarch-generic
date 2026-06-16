@@ -174,7 +174,7 @@ vars:
 
 !hunt Image Beast
 ---
-re:Survival check:
+"re:Survival check:"
 ---
 name: hunt can hide public check dc
 vars:

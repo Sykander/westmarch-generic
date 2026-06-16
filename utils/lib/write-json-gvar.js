@@ -10,9 +10,7 @@ const { dirname } = require('path');
 function writeJsonGvar(filePath, rows, options = {}) {
   const { pretty = false } = options;
   mkdirSync(dirname(filePath), { recursive: true });
-  const body = pretty
-    ? `${JSON.stringify(rows, null, 2)}\n`
-    : JSON.stringify(rows);
+  const body = pretty ? `${JSON.stringify(rows, null, 2)}\n` : JSON.stringify(rows);
   writeFileSync(filePath, body, 'utf8');
 }
 

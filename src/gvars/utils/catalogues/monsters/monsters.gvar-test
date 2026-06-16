@@ -27,14 +27,14 @@ True
 name: search checks owner monster data before engine shards
 
 hit = monsters.search(None, "Goblin")
-return monsters.monster_image(hit)
+return monsters.monster_image(hit) == "https://www.dndbeyond.com/avatars/thumbnails/30783/955/1000/1000/638062024584880857.png"
 ---
-"https://www.dndbeyond.com/avatars/thumbnails/30783/955/1000/1000/638062024584880857.png"
+True
 ---
 name: monster_image returns generated image_url
 
-return monsters.monster_image({"name": "Sketch Beast", "image": "https://example.test/sketch.png"})
+return monsters.monster_image({"name": "Sketch Beast", "image": "https://example.test/sketch.png"}) == "https://example.test/sketch.png"
 ---
-"https://example.test/sketch.png"
+True
 ---
 name: monster_image accepts owner image field

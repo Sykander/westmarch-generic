@@ -64,8 +64,9 @@ This writes `src/gvars/env.dev.gvar`, `src/gvars/env.prod.gvar`, and `.varfile.j
 make test
 ```
 
-- `npm run lint` — syntax-check repo utility scripts.
-- `npm run test-sourcemaps` — `publish-avrae check-config` for dev/prod plus `compare-config`.
+- `npm run lint` — ESLint/Prettier checks for the repo, including the editor.
+- `make sourcemap-test` — runs dev/prod sourcemap validation plus `compare-config`.
+- `npm run types` and `npm run editor:test` — editor typecheck and component/domain tests.
 - `npm test` — alias and gvar tests under `src/` via `avrae-ls`.
 
 ### Refresh cached Avrae / avrae-ls docs

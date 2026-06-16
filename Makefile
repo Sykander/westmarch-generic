@@ -1,23 +1,29 @@
 CATALOGUE_GENERATORS = generate-monsters generate-items generate-spells generate-books generate-recipes
 GENERATE_TARGETS = $(CATALOGUE_GENERATORS) generate-vars generate-env
 
-.PHONY: build test deploy editor editor-build install_node install_editor install_avrae_ls sourcemap-tests lint unit-tests $(GENERATE_TARGETS)
+.PHONY: build test deploy editor editor-build types editor-test install_node install_editor install_avrae_ls sourcemap-test lint unit-tests $(GENERATE_TARGETS)
 
 #
 # Useful
 #
 build: $(GENERATE_TARGETS) editor-build
 
-test: lint sourcemap-tests unit-tests
+test: lint sourcemap-test types editor-test unit-tests
 
 deploy: build
 	npm run deploy:dev
 
 editor: install_editor
-	npm run editor:serve
+	npm run editor
 
 editor-build: install_editor
 	npm run editor:build
+
+types: install_editor
+	npm run types
+
+editor-test: install_editor
+	npm run editor:test
 
 #
 # Generates
@@ -56,8 +62,10 @@ install_avrae_ls:
 	uv tool install avrae-ls
 	uv tool update avrae-ls
 
-sourcemap-tests: install_node
-	npm run test-sourcemaps
+sourcemap-test: install_node
+	npm run sourcemap:dev-check
+	npm run sourcemap:prod-check
+	npm run sourcemap:compare-check
 
 lint: install_node
 	npm run lint

@@ -30,9 +30,7 @@ function ensureShardSlots(entries) {
     }
 
     if (pool.length < 2) {
-      console.error(
-        `unused_gvars.md: need 2 UUIDs for "${name}" but only ${pool.length} left`,
-      );
+      console.error(`unused_gvars.md: need 2 UUIDs for "${name}" but only ${pool.length} left`);
       process.exit(1);
     }
 

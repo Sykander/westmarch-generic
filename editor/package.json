@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview --host 127.0.0.1"
+    "build": "npm run types && vite build",
+    "types": "tsc -b",
+    "test": "node --loader ./test/tsx-loader.mjs --test src/**/*.test.ts src/**/*.test.tsx"
   },
   "dependencies": {
     "@radix-ui/react-tooltip": "^1.2.8",

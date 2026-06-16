@@ -4,32 +4,31 @@ export type AvraeGvar = {
   name?: string;
 };
 
-const GVARS_URL = "https://api.avrae.io/customizations/gvars";
-const GVAR_DASHBOARD_URL = "https://avrae.io/dashboard/gvars";
-const GVAR_ID_RE =
-  /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/;
+const GVARS_URL = 'https://api.avrae.io/customizations/gvars';
+const GVAR_DASHBOARD_URL = 'https://avrae.io/dashboard/gvars';
+const GVAR_ID_RE = /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/;
 
 const REDIRECT_ERROR =
-  "Avrae redirected the API request instead of returning gvar JSON. Check that the gvar id is a bare UUID and the token is current, or paste the gvar source manually.";
+  'Avrae redirected the API request instead of returning gvar JSON. Check that the gvar id is a bare UUID and the token is current, or paste the gvar source manually.';
 
 function headers(token: string) {
   return {
-    Accept: "application/json, text/plain, */*",
-    "Content-Type": "application/json",
+    Accept: 'application/json, text/plain, */*',
+    'Content-Type': 'application/json',
     Authorization: token,
   };
 }
 
 export function normalizeGvarId(input: string): string {
   const trimmed = input.trim();
-  if (!trimmed) return "";
+  if (!trimmed) return '';
 
   try {
     const url = new URL(trimmed);
     const queryId =
-      url.searchParams.get("westmarch_config") ??
-      url.searchParams.get("gvar") ??
-      url.searchParams.get("id");
+      url.searchParams.get('westmarch_config') ??
+      url.searchParams.get('gvar') ??
+      url.searchParams.get('id');
     if (queryId) return normalizeGvarId(queryId);
   } catch {
     // Not a URL; fall through to UUID extraction.
@@ -39,7 +38,7 @@ export function normalizeGvarId(input: string): string {
   if (match) return match[0].toLowerCase();
 
   throw new Error(
-    "Enter a westmarch_config gvar id as a UUID, or paste an editor share link containing ?westmarch_config=<uuid>.",
+    'Enter a westmarch_config gvar id as a UUID, or paste an editor share link containing ?westmarch_config=<uuid>.',
   );
 }
 
@@ -62,12 +61,7 @@ async function parseResponse(response: Response) {
   }
 }
 
-async function requestAvrae(
-  method: "GET" | "POST",
-  id: string,
-  token: string,
-  payload?: unknown,
-) {
+async function requestAvrae(method: 'GET' | 'POST', id: string, token: string, payload?: unknown) {
   const gvarId = normalizeGvarId(id);
   let response: Response;
 
@@ -75,16 +69,16 @@ async function requestAvrae(
     response = await fetch(`${GVARS_URL}/${encodeURIComponent(gvarId)}`, {
       method,
       headers: headers(token),
-      redirect: "manual",
-      credentials: "omit",
-      mode: "cors",
+      redirect: 'manual',
+      credentials: 'omit',
+      mode: 'cors',
       body: payload === undefined ? undefined : JSON.stringify(payload),
     });
   } catch (error) {
     throw new Error(networkErrorMessage(error));
   }
 
-  if (response.type === "opaqueredirect" || response.redirected) {
+  if (response.type === 'opaqueredirect' || response.redirected) {
     throw new Error(REDIRECT_ERROR);
   }
 
@@ -94,7 +88,7 @@ async function requestAvrae(
 
   if (response.status === 0) {
     throw new Error(
-      "The browser blocked the Avrae API response. Check the token and gvar id, then retry or use paste/export mode.",
+      'The browser blocked the Avrae API response. Check the token and gvar id, then retry or use paste/export mode.',
     );
   }
 
@@ -106,29 +100,25 @@ async function requestAvrae(
 }
 
 export async function fetchGvar(id: string, token: string): Promise<AvraeGvar> {
-  const data = await requestAvrae("GET", id, token);
+  const data = await requestAvrae('GET', id, token);
 
-  if (!data || typeof data !== "object" || !("value" in data)) {
-    throw new Error("Avrae returned a response without a gvar value.");
+  if (!data || typeof data !== 'object' || !('value' in data)) {
+    throw new Error('Avrae returned a response without a gvar value.');
   }
 
   return data as AvraeGvar;
 }
 
-export async function updateGvar(
-  id: string,
-  token: string,
-  body: string,
-): Promise<unknown> {
-  return requestAvrae("POST", id, token, { value: body });
+export async function updateGvar(id: string, token: string, body: string): Promise<unknown> {
+  return requestAvrae('POST', id, token, { value: body });
 }
 
 function errorMessage(response: Response, data: unknown) {
-  if (typeof data === "object" && data && "error" in data) {
+  if (typeof data === 'object' && data && 'error' in data) {
     return String((data as { error: unknown }).error);
   }
 
-  if (typeof data === "string" && data.trim()) {
+  if (typeof data === 'string' && data.trim()) {
     return `${data.trim()} (HTTP ${response.status})`;
   }
 

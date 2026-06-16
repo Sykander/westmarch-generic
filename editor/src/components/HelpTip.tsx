@@ -1,5 +1,5 @@
-import * as Tooltip from "@radix-ui/react-tooltip";
-import { HelpCircle } from "lucide-react";
+import * as Tooltip from '@radix-ui/react-tooltip';
+import { HelpCircle } from 'lucide-react';
 
 type HelpTipProps = {
   label: string;

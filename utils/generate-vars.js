@@ -3,22 +3,20 @@
  * and quickly converts them all into a dictionary for use in the
  * var file
  */
-const { readFileSync, writeFileSync } = require('fs');
+const { writeFileSync } = require('fs');
 const prodSourceMap = require('./sourcemap.prod.json');
 const devSourceMap = require('./sourcemap.dev.json');
 
 const environmentName = Object.entries(process.env).find(
   ([key]) => key.toLowerCase() === 'environment',
 )?.[1];
-const environmentToUpdate =
-  environmentName === 'Production' ? 'Production' : 'Development';
+const environmentToUpdate = environmentName === 'Production' ? 'Production' : 'Development';
 
 console.log(`${environmentToUpdate} starting update of var file.`);
 
 const varFile = '.varfile.json';
 
-const { gvars } =
-  environmentToUpdate === 'Production' ? prodSourceMap : devSourceMap;
+const { gvars } = environmentToUpdate === 'Production' ? prodSourceMap : devSourceMap;
 
 const varDict = gvars.reduce((acc, { file, id }) => {
   acc[id] = { filePath: file };

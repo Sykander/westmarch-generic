@@ -34,7 +34,7 @@ Cached upstream Avrae / avrae-ls docs, refresh scripts, and perf probes live in 
 
 ## Tooling
 
-- **Sourcemap tests:** `npm run test-sourcemaps`
+- **Sourcemap tests:** `make sourcemap-test` or `npm run sourcemap:dev-check`, `npm run sourcemap:prod-check`, and `npm run sourcemap:compare-check`
 - **Drac2 tests:** `avrae-ls --run-tests src` (see `.github/workflows/test.yaml`)
 - **Generated files:** `src/gvars/env.*.gvar`, `.varfile.json` — from `make build`; do not hand-edit
 - **Workshop UUIDs:** take from **`unused_gvars.md`**; never invent ids (`drac2-tools-maintainer.mdc`)

@@ -18,7 +18,9 @@ function parseTags(s) {
 
 function rowToBook(row) {
   const name = String(row.name ?? '').trim();
-  const type = String(row.type ?? 'original').trim().toLowerCase();
+  const type = String(row.type ?? 'original')
+    .trim()
+    .toLowerCase();
   const readRaw = String(row.read_bonus ?? '0').trim();
   const read_bonus = Number.parseInt(readRaw, 10);
 
@@ -26,7 +28,9 @@ function rowToBook(row) {
     name,
     author: String(row.author ?? '').trim(),
     written: String(row.written ?? '').trim(),
-    rarity: String(row.rarity ?? 'common').trim().toLowerCase(),
+    rarity: String(row.rarity ?? 'common')
+      .trim()
+      .toLowerCase(),
     language: String(row.language ?? '').trim(),
     type: type === 'commentary' ? 'commentary' : 'original',
   };

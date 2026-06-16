@@ -1,0 +1,55 @@
+enc = encounter_templates.expand_row([["enc.gather"], "skill_check", "Heavy gate", "The old gate barely moves.", "Strength", 12])
+return enc["rolls"][0]["ability"] == "str"
+---
+True
+---
+name: skill_check supports ability check names
+
+enc = encounter_templates.expand_row([["enc.gather"], "skill_check", "Quick hands", "A hidden latch resists clumsy fingers.", "Sleight of Hand", 12])
+return enc["rolls"][0]["ability"] == "dex"
+---
+True
+---
+name: skill_check supports multi-word skill names
+
+enc = encounter_templates.expand_row([["enc.gather"], "skill_check", "First move", "React before the trail shifts.", "Initiative", 12])
+return enc["rolls"][0]["ability"] == "dex"
+---
+True
+---
+name: skill_check supports initiative checks
+
+enc = encounter_templates.expand_row([["enc.gather"], "saving_throw", "Falling rocks", "The ceiling gives way.", "Dexterity", 13])
+return enc["rolls"][0]["type"] == "save" and enc["rolls"][0]["ability"] == "dex"
+---
+True
+---
+name: saving_throw expands save roll specs
+
+enc = encounter_templates.expand_row([["enc.combat"], "ambush", "Forest ambush", "Shapes rush from the brush.", 1, "Wolf", "hard", 14])
+return enc["kind"] == "combat" and enc["difficulty"] == "hard" and len(enc["rolls"]) == 3 and enc["rolls"][2]["type"] == "passive"
+---
+True
+---
+name: ambush expands combat and ambush rolls
+
+enc = encounter_templates.expand_row([["enc.combat"], "damage_combat", "Thorn charge", "Thorns tear at you before the fight.", 1, "Needle blight", "medium", "1d6"])
+return enc["kind"] == "combat" and enc["outcomes"][0]["type"] == "damage" and enc["outcomes"][0]["total"] == "1d6"
+---
+True
+---
+name: damage_combat expands combat with damage outcome
+
+enc = encounter_templates.expand_row([["enc.gather"], "healing_check", "Field medicine", "Bind wounds beside the trail.", "Medicine", 12, "1d4"])
+return enc["rolls"][0]["ability"] == "wis" and enc["outcomes"][0]["type"] == "healing"
+---
+True
+---
+name: healing_check expands medicine check and healing outcome
+
+enc = encounter_templates.expand_row([["enc.gather"], "damage", "Falling branch", "A branch crashes down.", "1d4"])
+return enc["outcomes"][0]["type"] == "damage" and enc["outcomes"][0]["total"] == "1d4"
+---
+True
+---
+name: damage expands simple damage outcome

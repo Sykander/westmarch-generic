@@ -54,6 +54,36 @@ def _is_numberish(value):
 
 def _ability_for_check(check_name):
     text = _text(check_name).lower()
+    key = text.replace(" ", "").replace("_", "").replace("-", "")
+    ability_map = {
+        "strength": "str",
+        "athletics": "str",
+        "dexterity": "dex",
+        "initiative": "dex",
+        "acrobatics": "dex",
+        "sleightofhand": "dex",
+        "stealth": "dex",
+        "constitution": "con",
+        "intelligence": "int",
+        "arcana": "int",
+        "history": "int",
+        "investigation": "int",
+        "nature": "int",
+        "religion": "int",
+        "wisdom": "wis",
+        "animalhandling": "wis",
+        "insight": "wis",
+        "medicine": "wis",
+        "perception": "wis",
+        "survival": "wis",
+        "charisma": "cha",
+        "deception": "cha",
+        "intimidation": "cha",
+        "performance": "cha",
+        "persuasion": "cha",
+    }
+    if key in ability_map:
+        return ability_map[key]
     if "athletics" in text:
         return "str"
     if "acrobatics" in text or "sleight" in text or "stealth" in text:
@@ -67,6 +97,22 @@ def _ability_for_check(check_name):
     return "wis"
 
 
+def _ability_for_save(save_name):
+    text = _text(save_name).lower()
+    key = text.replace(" ", "").replace("_", "").replace("-", "")
+    ability_map = {
+        "strength": "str",
+        "dexterity": "dex",
+        "constitution": "con",
+        "intelligence": "int",
+        "wisdom": "wis",
+        "charisma": "cha",
+    }
+    if key in ability_map:
+        return ability_map[key]
+    return None
+
+
 def _roll(check_name, dc):
     return {
         "type": "check",
@@ -74,6 +120,18 @@ def _roll(check_name, dc):
         "ability": _ability_for_check(check_name),
         "dc": _text(dc, "12"),
     }
+
+
+def _save(save_name, dc):
+    result = {
+        "type": "save",
+        "name": _text(save_name, "Dexterity"),
+        "dc": _text(dc, "12"),
+    }
+    ability = _ability_for_save(save_name)
+    if ability != None:
+        result["ability"] = ability
+    return result
 
 
 def _base(kind, name, description):
@@ -135,6 +193,26 @@ def skill_check(args):
     return enc
 
 
+def saving_throw(args):
+    """Generic save encounter.
+
+    Args: name, description, save_name, dc, success_text?, failure_text?
+    """
+    name = _arg(args, 0, "Saving throw")
+    desc = _arg(args, 1, "A sudden threat demands quick reaction.")
+    save_name = _arg(args, 2, "Dexterity")
+    dc = _arg(args, 3, "12")
+    enc = _base("gather", name, desc)
+    enc["rolls"] = [_save(save_name, dc)]
+    success = _arg(args, 4)
+    failure = _arg(args, 5)
+    if success != None:
+        enc["success"] = _text(success)
+    if failure != None:
+        enc["failure"] = _text(failure)
+    return enc
+
+
 def flavour(args):
     """Non-reward descriptive beat. Args: name, description, kind?"""
     kind = _text(_arg(args, 2, "gather"), "gather").strip().lower()
@@ -143,12 +221,18 @@ def flavour(args):
     return _base(kind, _arg(args, 0, "Forest sign"), _arg(args, 1, "You notice a quiet detail in the wild."))
 
 
+def story(args):
+    """Descriptive encounter beat. Args: name, description, kind?"""
+    return flavour(args)
+
+
 def combat_template(args):
-    """Simple combat encounter. Args: name, description, cr, monsters?"""
+    """Simple combat encounter. Args: name, description, cr, monsters?, difficulty?"""
     name = _arg(args, 0, "Hostile creatures")
     desc = _arg(args, 1, "Something dangerous moves nearby.")
     cr = _arg(args, 2, 1)
     monsters = _arg(args, 3)
+    difficulty = _arg(args, 4)
     enc = _base("combat", name, desc)
     enc["cr"] = cr
     if monsters != None and _text(monsters).strip() != "":
@@ -156,6 +240,27 @@ def combat_template(args):
             enc["monsters"] = monsters
         else:
             enc["monsters"] = [_text(monsters)]
+    if difficulty != None and _text(difficulty).strip() != "":
+        enc["difficulty"] = _text(difficulty)
+    return enc
+
+
+def damage_combat(args):
+    """Combat plus damage outcome. Args: name, description, cr, monsters?, difficulty?, total?"""
+    enc = combat_template(args)
+    enc["outcomes"] = [{"type": "damage", "total": _int_or_text(_arg(args, 5, "1d4"), "1d4")}]
+    return enc
+
+
+def ambush(args):
+    """Ambush encounter. Args: name, description, cr, monsters?, difficulty?, dc?"""
+    enc = combat_template(args)
+    dc = _arg(args, 5, "12")
+    enc["rolls"] = [
+        _roll("Perception", dc),
+        _roll("Stealth", dc),
+        {"type": "passive", "name": "Perception", "ability": "wis", "dc": _text(dc, "12")},
+    ]
     return enc
 
 
@@ -172,6 +277,28 @@ def gold(args):
     """Simple gp reward. Args: name, description, total"""
     enc = _base("gather", _arg(args, 0, "Treasure cache"), _arg(args, 1, "Coins glint in the dirt."))
     enc["outcomes"] = [{"type": "gold", "total": _int_or_text(_arg(args, 2, 1), 1)}]
+    return enc
+
+
+def healing(args):
+    """Simple healing encounter. Args: name, description, total"""
+    enc = _base("gather", _arg(args, 0, "Restorative spring"), _arg(args, 1, "A restorative moment eases your wounds."))
+    enc["outcomes"] = [{"type": "healing", "total": _int_or_text(_arg(args, 2, "1d4"), "1d4")}]
+    return enc
+
+
+def healing_check(args):
+    """Healing check. Args: name, description, check_name, dc, total"""
+    enc = _base("gather", _arg(args, 0, "Field medicine"), _arg(args, 1, "Careful treatment helps the wounded recover."))
+    enc["rolls"] = [_roll(_arg(args, 2, "Medicine"), _arg(args, 3, "12"))]
+    enc["outcomes"] = [{"type": "healing", "total": _int_or_text(_arg(args, 4, "1d4"), "1d4")}]
+    return enc
+
+
+def damage(args):
+    """Simple damage encounter. Args: name, description, total"""
+    enc = _base("gather", _arg(args, 0, "Hazard"), _arg(args, 1, "The area turns dangerous."))
+    enc["outcomes"] = [{"type": "damage", "total": _int_or_text(_arg(args, 2, "1d4"), "1d4")}]
     return enc
 
 
@@ -192,14 +319,26 @@ def expand(template_name, args):
         return gather_item(args)
     if key in ["skill_check", "check"]:
         return skill_check(args)
-    if key in ["flavour", "flavor", "static"]:
-        return flavour(args)
-    if key in ["combat", "ambush"]:
+    if key in ["saving_throw", "save"]:
+        return saving_throw(args)
+    if key in ["flavour", "flavor", "static", "story"]:
+        return story(args)
+    if key in ["combat"]:
         return combat_template(args)
+    if key in ["damage_combat", "combat_damage", "hazard_combat"]:
+        return damage_combat(args)
+    if key in ["ambush"]:
+        return ambush(args)
     if key in ["quest", "hook"]:
         return quest(args)
     if key in ["gold", "gp"]:
         return gold(args)
+    if key in ["healing", "heal"]:
+        return healing(args)
+    if key in ["healing_check", "heal_check"]:
+        return healing_check(args)
+    if key in ["damage", "hazard"]:
+        return damage(args)
     if key in ["raw", "encounter"]:
         return raw(args)
     return None

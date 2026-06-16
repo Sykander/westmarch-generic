@@ -50,9 +50,7 @@ for (const letter of LETTERS) {
   const name = `${letter}_monsters`;
   const file = `${OUT_DIR}/${name}.gvar`;
   const abs = paths.gvar(file);
-  const contents = processed.filter(({ name: n }) =>
-    String(n).toLowerCase().startsWith(letter),
-  );
+  const contents = processed.filter(({ name: n }) => String(n).toLowerCase().startsWith(letter));
   writeJsonGvar(abs, contents);
   manifest.push({ name, file, count: contents.length });
   sourcemapEntries.push({ name, file });

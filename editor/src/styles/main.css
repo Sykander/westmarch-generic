@@ -1,7 +1,12 @@
 :root {
   color-scheme: light;
   font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
     sans-serif;
   color: #172026;
   background: #f5f6f3;
@@ -254,7 +259,7 @@ th {
 }
 
 .cta-bar.ready.attention .next-button::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: -9px;
   border: 2px solid rgba(35, 111, 90, 0.34);
@@ -264,7 +269,7 @@ th {
 }
 
 .cta-bar.ready.attention .next-button::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: -13px;
   border: 2px solid rgba(35, 111, 90, 0.22);
@@ -410,8 +415,7 @@ th {
 }
 
 .code-input {
-  font-family:
-    "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   font-size: 0.86rem;
   background: #fbfcfb;
 }
@@ -477,8 +481,7 @@ th {
 }
 
 .colour-text {
-  font-family:
-    "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
 }
 
 .badge {
@@ -649,8 +652,7 @@ th {
 }
 
 .step-list code {
-  font-family:
-    "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   font-size: 0.88em;
   background: #edf1f2;
   border-radius: 5px;
@@ -723,6 +725,147 @@ th {
   padding-left: 20px;
   color: #344139;
   line-height: 1.55;
+}
+
+.encounter-row-builder,
+.biome-gvar-editor,
+.collection-list {
+  display: grid;
+  gap: 12px;
+}
+
+.builder-head {
+  display: grid;
+  gap: 3px;
+  margin: 16px 0 12px;
+}
+
+.builder-head h3,
+.collection-editor h3 {
+  margin: 0;
+  font-size: 0.98rem;
+  letter-spacing: 0;
+}
+
+.builder-head span,
+.collection-empty,
+.collection-item-head span {
+  color: #637067;
+  font-size: 0.84rem;
+}
+
+.biome-gvar-workbench {
+  margin-top: 18px;
+  border-top: 1px solid #edf0ec;
+  padding-top: 16px;
+}
+
+.encounter-model-reference {
+  border: 1px solid #edf0ec;
+  border-radius: 8px;
+  background: #fbfcfb;
+  padding: 10px 12px;
+}
+
+.encounter-model-reference > summary {
+  cursor: pointer;
+  color: #155744;
+  font-weight: 700;
+}
+
+.encounter-reference-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.encounter-reference-grid h4 {
+  margin: 0 0 8px;
+  font-size: 0.86rem;
+  letter-spacing: 0;
+}
+
+.encounter-outcomes-reference {
+  grid-column: 1 / -1;
+}
+
+.option-pill-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.option-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  border: 1px solid #d9ded9;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #344139;
+  padding: 2px 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.outcome-reference-list {
+  display: grid;
+  gap: 6px;
+}
+
+.outcome-reference-row {
+  display: grid;
+  grid-template-columns: minmax(90px, 0.3fr) minmax(0, 1fr);
+  gap: 8px;
+  border: 1px solid #edf0ec;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 8px;
+}
+
+.outcome-reference-row span {
+  color: #637067;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.8rem;
+}
+
+.collection-editor {
+  display: grid;
+  gap: 10px;
+}
+
+.collection-editor-head,
+.collection-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.collection-item {
+  border: 1px solid #e1e5e0;
+  border-radius: 8px;
+  background: #fbfcfb;
+  padding: 12px;
+}
+
+.collection-item-head {
+  margin-bottom: 10px;
+}
+
+.collection-item-head > div {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.collection-empty {
+  margin: 0;
+  border: 1px dashed #d9ded9;
+  border-radius: 8px;
+  background: #f8faf8;
+  padding: 12px;
 }
 
 .biome-add-row {
@@ -1178,6 +1321,10 @@ th {
   }
 
   .biome-add-row {
+    grid-template-columns: 1fr;
+  }
+
+  .encounter-reference-grid {
     grid-template-columns: 1fr;
   }
 
