@@ -1,9 +1,10 @@
 CATALOGUE_GENERATORS = generate-monsters generate-items generate-spells generate-books generate-recipes
 GENERATE_TARGETS = $(CATALOGUE_GENERATORS) generate-vars generate-env
 AVRAE_UTILS_TEST_TARGETS = avrae-test-utils-config avrae-test-utils-catalogues avrae-test-utils-gameplay avrae-test-utils-systems
+AVRAE_SHARD_TEST_TARGETS = $(AVRAE_UTILS_TEST_TARGETS) avrae-test-aliases
 AVRAE_TEST_TARGETS = avrae-test-config avrae-test-gvars avrae-test-aliases avrae-test-utils $(AVRAE_UTILS_TEST_TARGETS)
 
-.PHONY: build test deploy editor editor-build types editor-test install_node install_editor install_avrae_ls sourcemap-test lint avrae-test unit-tests $(AVRAE_TEST_TARGETS) $(GENERATE_TARGETS)
+.PHONY: build test deploy editor editor-build types editor-test install_node install_editor install_avrae_ls sourcemap-test lint unit-tests $(AVRAE_TEST_TARGETS) $(GENERATE_TARGETS)
 
 #
 # Useful
@@ -11,7 +12,7 @@ AVRAE_TEST_TARGETS = avrae-test-config avrae-test-gvars avrae-test-aliases avrae
 build: $(GENERATE_TARGETS) editor-build
 	npm run lint:fix
 
-test: lint sourcemap-test types editor-test avrae-test
+test: lint sourcemap-test types editor-test $(AVRAE_SHARD_TEST_TARGETS)
 
 deploy: build
 	npm run deploy:dev
@@ -73,9 +74,6 @@ sourcemap-test: install_node
 lint: install_node
 	npm run lint
 
-avrae-test: install_avrae_ls
-	npm run avrae:test
-
 avrae-test-config: install_avrae_ls
 	npm run avrae:test-config
 
@@ -100,4 +98,4 @@ avrae-test-utils-gameplay: install_avrae_ls
 avrae-test-utils-systems: install_avrae_ls
 	npm run avrae:test-utils:systems
 
-unit-tests: avrae-test
+unit-tests: $(AVRAE_SHARD_TEST_TARGETS)
