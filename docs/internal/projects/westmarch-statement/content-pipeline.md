@@ -154,7 +154,7 @@ Catalogue generators call **`utils/lib/sourcemap-shards.js`** automatically. For
 | Data | Where it lives after generate |
 |------|-------------------------------|
 | **Engine defaults** | Shards in workshop; facades in **`env.gvars`** |
-| **Setting presets** | [src/gvars/configs/](gvars/configs.md) — biomes, **books**, **recipes**; not in engine sourcemap |
+| **Setting presets** | [src/gvars/configs/](gvars/configs.md) — engine biome presets sourcemapped as `biome_<code>`; **books** and **recipes** remain owner/config data |
 | **Example presets** | May **`extensions.monsters`** → engine shard set, or embed a **subset** for tests |
 | **Owner server** | Config gvar **`extensions.*`** UUIDs pointing at owner copies of shards, or inline small lists |
 

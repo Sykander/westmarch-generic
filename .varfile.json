@@ -15,6 +15,63 @@
         "cdc5f749-0a91-4073-a5bf-59961d3c97f1": {
             "filePath": "src/gvars/utils/core/bags.gvar"
         },
+        "9baefb5e-baa5-4b4d-89fd-ed653a1da8ff": {
+            "filePath": "src/gvars/configs/biomes/biome_astral.gvar"
+        },
+        "97118729-4c6c-4903-8714-d7cb04699b80": {
+            "filePath": "src/gvars/configs/biomes/biome_beach.gvar"
+        },
+        "8b2c5a91-a1e3-4f6f-8482-ed42b8034832": {
+            "filePath": "src/gvars/configs/biomes/biome_cave.gvar"
+        },
+        "cdbda779-5e4a-4753-836e-6a01b611a168": {
+            "filePath": "src/gvars/configs/biomes/biome_deep_seas.gvar"
+        },
+        "4616a68a-0301-404a-a1e1-b51572c8fb79": {
+            "filePath": "src/gvars/configs/biomes/biome_desert.gvar"
+        },
+        "f8f5dcbc-d5f9-4bc0-a676-dc726d89bbb0": {
+            "filePath": "src/gvars/configs/biomes/biome_forest.gvar"
+        },
+        "7c41bd64-1351-4ae8-b257-3ce2ebb6244e": {
+            "filePath": "src/gvars/configs/biomes/biome_jungle.gvar"
+        },
+        "56ed5993-f5ed-4b76-81ed-5294388dfae5": {
+            "filePath": "src/gvars/configs/biomes/biome_mountain.gvar"
+        },
+        "f9397f22-8a9c-461a-b8d3-b601e29130bf": {
+            "filePath": "src/gvars/configs/biomes/biome_plains.gvar"
+        },
+        "22b758bf-999a-4f00-bbce-ed22b8fa54a4": {
+            "filePath": "src/gvars/configs/biomes/biome_river.gvar"
+        },
+        "4cd39c7b-cd0c-4576-89b8-4717dc674913": {
+            "filePath": "src/gvars/configs/biomes/biome_road.gvar"
+        },
+        "0dd43e65-87f3-47cf-a7d1-49a645c3b76c": {
+            "filePath": "src/gvars/configs/biomes/biome_ruins.gvar"
+        },
+        "0eb3e67a-ad03-489c-b7c3-234eaba5efa9": {
+            "filePath": "src/gvars/configs/biomes/biome_sea.gvar"
+        },
+        "2e24f768-7316-46ef-8355-f997c22121da": {
+            "filePath": "src/gvars/configs/biomes/biome_sky.gvar"
+        },
+        "3f78d0d3-b40d-43c0-94d1-f77dba794f3b": {
+            "filePath": "src/gvars/configs/biomes/biome_swamp.gvar"
+        },
+        "e119c890-bb57-4783-afad-8431c4126a88": {
+            "filePath": "src/gvars/configs/biomes/biome_tundra.gvar"
+        },
+        "629574fe-9279-422e-ac76-a6e03a3cf810": {
+            "filePath": "src/gvars/configs/biomes/biome_underdark.gvar"
+        },
+        "83878aa8-faba-442b-b59f-fe07ad3d10d0": {
+            "filePath": "src/gvars/configs/biomes/biome_urban.gvar"
+        },
+        "50db5717-77cf-445c-ab6f-0e103567d075": {
+            "filePath": "src/gvars/configs/biomes/biome_volcanic.gvar"
+        },
         "9db668e3-5743-4ab8-b610-69877abce4a8": {
             "filePath": "src/gvars/utils/world/biomes.gvar"
         },

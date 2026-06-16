@@ -93,7 +93,14 @@ def _resolve_gvar_addr(gvar_id):
     if addr == "":
         return None
     if addr.startswith(ENGINE_BIOME_PREFIX):
-        return addr
+        code = addr[len(ENGINE_BIOME_PREFIX) :].strip().lower()
+        if code == "":
+            return None
+        for key in [f"biome_{code}", addr, code]:
+            resolved = _read_field(env.gvars, key)
+            if resolved != None:
+                return resolved
+        return None
     return addr
 
 

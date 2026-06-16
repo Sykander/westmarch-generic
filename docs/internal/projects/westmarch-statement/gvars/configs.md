@@ -74,7 +74,7 @@ src/gvars/configs/
   starter.gvar                   # minimal schema — all subsystems off
   biomes/                        # preset JSON row-list bodies — engine:configs/biomes/<code>
     README.md
-    forest.gvar                  # … (planned)
+    biome_forest.gvar            # … (planned)
   forgotten_realms_2014.gvar
   forgotten_realms_2024.gvar
   generic_fantasy_2014.gvar

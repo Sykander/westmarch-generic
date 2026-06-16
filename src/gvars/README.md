@@ -5,7 +5,7 @@ Workshop layout for the westmarch-generic engine:
 | Path | Purpose |
 |------|---------|
 | `env.dev.gvar` / `env.prod.gvar` | Generated UUID map — run `npm run generate-env` after sourcemap changes |
-| `configs/` | Server preset templates (`starter.gvar`, biome pools, …) — **not** in engine sourcemap |
+| `configs/` | Server preset templates (`starter.gvar`, books, recipes) plus engine biome presets sourcemapped as `biome_<code>` |
 | `utils/` | Engine modules deployed via `env.gvars.*` (auth, catalogues, world, core, …) |
 
 **Status:** Module contracts — [docs/internal/projects/westmarch-statement/gvars/](../../docs/internal/projects/westmarch-statement/gvars/README.md). Sourcemap — [utils/sourcemap.dev.json](../../utils/sourcemap.dev.json).
@@ -16,9 +16,9 @@ Workshop layout for the westmarch-generic engine:
 src/gvars/
   env.dev.gvar
   env.prod.gvar
-  configs/                 # owner presets (not engine env slots)
+  configs/                 # owner presets plus sourcemapped engine biome presets
     starter.gvar
-    biomes/
+    biomes/                # biome_<code>.gvar -> env.gvars.biome_<code>
     books/                 # generate-books.js — setting-specific library corpora
     recipes/               # generate-recipes.js — setting-specific crafting list
   utils/                   # engine modules (sourcemap-registered)

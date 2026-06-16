@@ -1,6 +1,6 @@
 # Engine preset biomes
 
-**Path:** `src/gvars/configs/biomes/<code>.gvar` · **Phase:** 0–1 *(bodies land incrementally)*
+**Path:** `src/gvars/configs/biomes/biome_<code>.gvar` · **Sourcemap name:** `biome_<code>` · **Phase:** 0–1 *(bodies land incrementally)*
 
 Minimal **wilderness encounter modules** shipped with the westmarch-generic engine workshop. Example configs and new servers reference them via:
 
@@ -12,7 +12,7 @@ world_data = {
 }
 ```
 
-After publish, **`engine:configs/biomes/forest`** resolves to this folder’s workshop UUID (sourcemap slot).
+After `publish-avrae create-assets`, **`engine:configs/biomes/forest`** resolves through **`env.gvars.biome_forest`** to this folder’s workshop UUID.
 
 **Scope:** Exploration & gathering only — `enc`, `forage`, `mine`, `fish`, `lumber`. Jobs, shops, libraries, and workshops belong on **locations** ([location encounter modules](../../../docs/internal/projects/westmarch-statement/gvars/location_encounters.md)), not biome presets.
 
