@@ -324,5 +324,225 @@
     "Snapping branch",
     "A dead limb breaks loose during cutting and crashes through the work area.",
     4
+  ],
+  [
+    ["enc.combat"],
+    "combat",
+    "Giant spider nest",
+    "Silken strands drape between trees where a hungry spider waits for movement below.",
+    1,
+    "Giant Spider"
+  ],
+  [
+    ["enc.combat"],
+    "ambush",
+    "Bandit bowline",
+    "Hidden archers use old hunting blinds and brush cover to spring a sudden attack along a narrow trail.",
+    2,
+    "Bandit",
+    "medium",
+    13
+  ],
+  [
+    ["enc.gather"],
+    "skill_check",
+    "Mossy waymarker",
+    "A weathered stone marker peeks from moss beside an overgrown fork in the trail.",
+    "Wisdom (Survival)",
+    12,
+    "You identify the older route and avoid losing time.",
+    "You follow a winding path that circles back on itself."
+  ],
+  [
+    ["enc.gather"],
+    "flavour",
+    "Rain-scented wind",
+    "A cool breeze carries the scent of approaching rain through the pines, and birds grow quiet.",
+    "weather"
+  ],
+  [
+    ["enc.gather"],
+    "damage",
+    "Hidden thorn patch",
+    "Dense brambles conceal hooked thorns that tear at clothing and exposed skin.",
+    3
+  ],
+  [
+    ["enc.quest"],
+    "quest",
+    "Collapsed footbridge",
+    "A stream crossing has fallen apart, forcing travelers onto a dangerous detour unless the route is restored.",
+    "Practical supplies"
+  ],
+  [
+    ["enc.quest"],
+    "quest",
+    "Strange claw marks",
+    "Fresh claw marks scar several trees near a game trail, and local wildlife avoids the area.",
+    "Useful information"
+  ],
+  [
+    ["enc.quest"],
+    "quest",
+    "Silent campsite",
+    "An abandoned camp shows signs of a hurried departure, with tracks leading deeper into the woods.",
+    "Modest reward"
+  ],
+  [
+    ["forage.gather"],
+    "gather_item",
+    "Pine resin seep",
+    "Amber resin oozes from a wounded pine and can be collected with patience.",
+    "Wisdom (Survival)",
+    12,
+    "Resin",
+    2,
+    "Forage"
+  ],
+  [
+    ["forage.gather"],
+    "gather_item",
+    "Acorn scatter",
+    "A productive oak grove has dropped a thick carpet of sound acorns.",
+    "Wisdom (Survival)",
+    10,
+    "Nuts",
+    3,
+    "Forage"
+  ],
+  [
+    ["lumber.gather"],
+    "gather_item",
+    "Dry branchfall",
+    "A sheltered grove contains many fallen limbs suitable for fuel and simple camp work.",
+    "Strength (Athletics)",
+    10,
+    "Kindling",
+    3,
+    "Lumber"
+  ],
+  [
+    ["lumber.gather"],
+    "gather_item",
+    "Bark harvest",
+    "Several mature trees can spare strips of thick bark without lasting harm if taken carefully.",
+    "Wisdom (Nature)",
+    12,
+    "Bark",
+    2,
+    "Lumber"
+  ],
+  [
+    [
+      ["enc.combat"],
+      "combat",
+      "Ravine scavengers",
+      "A deer carcass lies wedged in a shallow ravine, drawing competing scavengers that grow increasingly aggressive as anyone approaches. The narrow banks and tangled roots leave little room to maneuver once the creatures decide the intruders are rivals rather than passersby.",
+      2,
+      "Giant Hyena"
+    ],
+    [
+      ["enc.combat"],
+      "ambush",
+      "Brushline raiders",
+      "Fresh axe marks and stripped saplings suggest recent activity ahead. A small band of raiders waits where dense brush pinches the trail, hoping confusion and poor sightlines will break resistance before a proper defense can form.",
+      2,
+      "Bandit",
+      "medium",
+      14
+    ],
+
+    [
+      ["enc.gather"],
+      "skill_check",
+      "Flooded crossing",
+      "Recent rain has swollen a normally harmless stream into a fast, debris-choked obstacle. Broken branches indicate others attempted the crossing recently, but uncertain footing and hidden channels make choosing a route a meaningful risk.",
+      "Wisdom (Survival)",
+      13,
+      "You identify a stable crossing and preserve time and supplies.",
+      "A poor route forces delays and leaves signs of your passage behind."
+    ],
+    [
+      ["enc.gather"],
+      "flavour",
+      "Battlefield beneath the moss",
+      "Unearthed by erosion, rusted fragments of weapons and scattered bones emerge from a low hillside. Animal tracks avoid the area, and the ground hints at an old conflict whose traces still shape movement through the surrounding woods.",
+      "gather"
+    ],
+    [
+      ["enc.gather"],
+      "gold",
+      "Hunter's emergency stash",
+      "A deadfall has exposed a carefully concealed cache beneath a root mass. Whoever hid it expected to return, but weather and years have reclaimed the site, leaving the contents vulnerable to the next traveler willing to investigate.",
+      18
+    ],
+
+    [
+      ["enc.quest"],
+      "quest",
+      "Smoke beyond the ridge",
+      "Thin smoke rises from a section of forest where no camp should stand. Reaching it requires navigating overgrown game trails and determining whether the source is a stranded traveler, opportunistic squatters, or something more dangerous.",
+      "Information and gratitude"
+    ],
+    [
+      ["enc.quest"],
+      "quest",
+      "Trail swallowed by briars",
+      "A well-used route has become impassable beneath an unnatural surge of thorn growth. Travelers are being forced onto longer paths, and someone must determine the cause and reopen safe passage.",
+      "Useful supplies"
+    ],
+    [
+      ["enc.quest"],
+      "quest",
+      "The silent marker line",
+      "A sequence of old trail markers has been damaged or removed, leaving several woodland routes difficult to follow. Restoring the line means locating missing stones and learning what disturbed them in the first place.",
+      "Local favor"
+    ],
+
+    [
+      ["forage.gather"],
+      "gather_item",
+      "Mossbank medicinal patch",
+      "A damp hollow shelters valuable herbs, but recent rooting by animals has churned the ground into slick mud. Careful harvesting is needed before the plants are trampled or washed away by the next storm.",
+      "Wisdom (Survival)",
+      14,
+      "Herbs",
+      3,
+      "Forage"
+    ],
+    [
+      ["forage.gather"],
+      "gather_item",
+      "Beech mast bounty",
+      "A stand of mature beeches has produced an unusually heavy crop of edible nuts. Signs of feeding wildlife are everywhere, creating pressure to gather quickly before the opportunity disappears.",
+      "Wisdom (Survival)",
+      12,
+      "Nuts",
+      3,
+      "Forage"
+    ],
+
+    [
+      ["lumber.gather"],
+      "gather_item",
+      "Storm-snapped fir",
+      "A towering fir broke high above the ground during recent winds and now hangs tangled among neighboring branches. The timber is valuable, but bringing it down safely requires judgment and controlled effort.",
+      "Strength (Athletics)",
+      15,
+      "Timber",
+      3,
+      "Lumber"
+    ],
+    [
+      ["lumber.gather"],
+      "gather_item",
+      "Seasoned oak stand",
+      "Several mature oaks grow on firm ground beside an abandoned trail. The wood is dense and desirable, yet careful selection is required to avoid wasting effort on trunks hiding internal rot.",
+      "Wisdom (Nature)",
+      13,
+      "Hardwood",
+      2,
+      "Lumber"
+    ]
   ]
 ]

@@ -16,7 +16,9 @@
 
 Do not combine forest + urban in one response — output will truncate.
 
-If truncated, follow up: “Same rules - add 5 more rows tagged `enc.combat` only; full JSON array.”
+If truncated or continuing an existing biome file, follow up:
+
+> Same rules - add 5 more new rows tagged `enc.combat` only. Output only the new rows as a JSON array. Do not repeat existing titles.
 
 ## Validation
 
@@ -24,6 +26,10 @@ If truncated, follow up: “Same rules - add 5 more rows tagged `enc.combat` onl
 - [ ] Every row is `[pool_tags_or_null, "template_name", ...args]`
 - [ ] Pool tags match requested activities, e.g. `enc.gather`, `forage.gather`
 - [ ] Combat rows include CR in the template args
+- [ ] Rows feel like notable half-day travel events, not incidental finds
+- [ ] Descriptions usually land around 180-350 characters and stay under 400 characters
+- [ ] `flavour` kind is omitted or one of `combat`, `quest`, `gather`
+- [ ] No duplicate titles, copied examples, or repeated seed rows
 - [ ] No Python syntax, comments, or trailing commas
 
 ## Integration

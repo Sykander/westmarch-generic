@@ -7,6 +7,8 @@ Use when ChatGPT’s first output failed validation.
 Attach:
 
 1. The specific errors (from the asset’s validation checklist).
-2. ChatGPT’s previous Python output.
+2. ChatGPT’s previous output.
 
 Do not redesign unrelated entries — only fix what failed validation.
+
+For raw biome JSON rows, ask for a fenced `json` block. For config structures, ask for fenced `python`.

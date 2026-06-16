@@ -8,17 +8,20 @@ You previously generated content for the westmarch-generic Avrae bot config. The
 
 ### Previous output
 
-```python
+```text
 [PASTE ChatGPT's previous output here]
 ```
 
 ### Rules (still apply)
 
-1. Output **only** a single Python code block — no explanation before or after.
-2. Keep the same number of entries unless asked to add/remove.
-3. **`id`** keys: `snake_case`, lowercase, ASCII letters/numbers/underscore only.
-4. **Biome codes** must be from the allowed list in the original prompt — do not invent new codes.
-5. Do not add fields that were not in the schema (no `npcs`, `quests`, `encounters`, etc.).
+1. Output **only** a single fenced code block — no explanation before or after.
+2. Use fenced `json` for raw biome JSON rows. Use fenced `python` for Python config structures.
+3. Keep the same number of entries unless asked to add/remove.
+4. **`id`** keys: `snake_case`, lowercase, ASCII letters/numbers/underscore only.
+5. **Biome codes** must be from the allowed list in the original prompt — do not invent new codes.
+6. Do not add fields that were not in the schema (no `npcs`, `quests`, `encounters`, etc.).
+7. For raw biome rows, keep rows as `[pool_tags_or_null, "template_name", ...args]`; descriptions should feel like notable half-day travel events and stay under 400 characters.
+8. For raw biome `flavour` rows, the optional kind must be omitted or one of `combat`, `quest`, `gather`.
 
 ### Corrected output
 
