@@ -23,7 +23,7 @@
     "types": "npm --prefix editor run types",
     "lint": "npm run lint:check",
     "lint:check": "eslint . --cache --cache-location .cache/eslint/.eslintcache",
-    "lint:fix": "eslint . --fix --cache --cache-location .cache/eslint/.eslintcache",
+    "lint:fix": "eslint . --fix --cache --cache-location .cache/eslint/.eslintcache && node utils/minify-gvar-json.js",
     "test": "avrae-ls --run-tests src --log-level INFO",
     "sourcemap:dev-check": "publish-avrae check-config --sourcemap utils/sourcemap.dev.json",
     "sourcemap:prod-check": "publish-avrae check-config --sourcemap utils/sourcemap.prod.json",

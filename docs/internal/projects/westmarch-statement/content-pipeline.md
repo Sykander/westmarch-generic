@@ -79,7 +79,7 @@ User-entered names should be resolved with **`lists.search_list`** over a small 
 
 ## Shard file format
 
-Generated catalogue shards use **JSON array** as the gvar body (westmarch convention):
+Generated catalogue shards use **JSON array** as the gvar body (westmarch convention). They may be authored or generated with whitespace, but `npm run lint:fix` compacts all `src/gvars/**/*.gvar.json` files before deploy so Avrae payload size is spent on data, not formatting.
 
 ```json
 [

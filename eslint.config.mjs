@@ -89,4 +89,10 @@ export default defineConfig([
     },
   },
   prettierRecommended,
+  {
+    files: ['**/*.gvar.json'],
+    rules: {
+      'prettier/prettier': 'off',
+    },
+  },
 ]);

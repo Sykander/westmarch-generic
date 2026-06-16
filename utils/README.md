@@ -14,9 +14,10 @@ Architecture: [docs/internal/projects/westmarch-statement/content-pipeline.md](.
 | [generate-vars.js](generate-vars.js) | `npm run generate-vars` | Write `.varfile.json` for alias-tests |
 | `publish-avrae check-config` / `compare-config` | `make sourcemap-test` | Dev/prod sourcemap validation and parity |
 | `publish-avrae deploy` | `npm run deploy:dev`, `npm run deploy:prod` | Publish workshop via sourcemap |
+| [minify-gvar-json.js](minify-gvar-json.js) | `npm run lint:fix` | Compact `src/gvars/**/*.gvar.json` after JSON lint/fix so Avrae bodies stay under size limits |
 
 ```bash
-make build     # run all generators, build env gvars, and refresh .varfile.json
+make build     # run all generators, lint/fix, minify gvar JSON, build env gvars, and refresh .varfile.json
 make test      # lint + types + sourcemap checks + editor tests + avrae-ls alias tests
 ```
 
@@ -51,6 +52,8 @@ Generators register sourcemap slots automatically (two UUIDs per shard from **`u
 ### Output format
 
 Shard files are **raw JSON arrays** — loaded at runtime with `load_json(get_gvar(uuid))`. Facade gvars map shard keys to **`env.gvars.*`** and lazy-load per lookup.
+
+`*.gvar.json` files are linted as JSON, but `npm run lint:fix` minifies them instead of applying Prettier formatting. These files are Avrae gvar bodies, so whitespace counts against the workshop payload size.
 
 ---
 
