@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Generate spell list from assets/spells.tsv
- * Output: src/gvars/utils/catalogues/spells/spells_list.gvar
+ * Output: src/gvars/utils/catalogues/spells/spells_list.gvar.json
  */
 const paths = require('./lib/paths');
 const { readTsv } = require('./lib/read-tsv');
@@ -11,7 +11,7 @@ const { ensureShardSlots } = require('./lib/sourcemap-shards');
 
 const INPUT = paths.assets('spells.tsv');
 const name = 'spells_list';
-const file = 'src/gvars/utils/catalogues/spells/spells_list.gvar';
+const file = 'src/gvars/utils/catalogues/spells/spells_list.gvar.json';
 
 console.log(`Reading ${INPUT}`);
 

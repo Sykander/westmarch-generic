@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Generate book shards from books-forgotten-realms.tsv and books-real.tsv
- * Output: src/gvars/configs/books/{forgotten_realms,real}_{a-z}.gvar
+ * Output: src/gvars/configs/books/{forgotten_realms,real}_{a-z}.gvar.json
  */
 const paths = require('./lib/paths');
 const { readTsv } = require('./lib/read-tsv');
@@ -64,7 +64,7 @@ function generateCorpus(corpus, tsvName) {
   // Single shard until corpus is large enough to split by letter (content-pipeline)
   if (books.length === 0) {
     const name = `${corpus}_all`;
-    const file = `${outDir}/${name}.gvar`;
+    const file = `${outDir}/${name}.gvar.json`;
     writeJsonGvar(paths.gvar(file), []);
     manifest.push({ name, file, count: 0 });
     return { manifest, total: 0 };
@@ -73,7 +73,7 @@ function generateCorpus(corpus, tsvName) {
   const LETTER_SHARD_THRESHOLD = 100;
   if (books.length < LETTER_SHARD_THRESHOLD) {
     const name = `${corpus}_all`;
-    const file = `${outDir}/${name}.gvar`;
+    const file = `${outDir}/${name}.gvar.json`;
     writeJsonGvar(paths.gvar(file), books);
     manifest.push({ name, file, count: books.length });
     return { manifest, total: books.length };
@@ -81,7 +81,7 @@ function generateCorpus(corpus, tsvName) {
 
   for (const letter of LETTERS) {
     const name = `${corpus}_${letter}`;
-    const file = `${outDir}/${name}.gvar`;
+    const file = `${outDir}/${name}.gvar.json`;
     const contents = books.filter((b) => letterFromName(b.name) === letter);
     writeJsonGvar(paths.gvar(file), contents);
     manifest.push({ name, file, count: contents.length });

@@ -28,7 +28,7 @@ If truncated, follow up: “Same rules - add 5 more rows tagged `enc.combat` onl
 
 ## Integration
 
-> Create `src/gvars/configs/biomes/<code>_fr.gvar` (or owner workshop module) whose entire body is the JSON array. Publish; set registry `gvar_id` to UUID. Until then, keep `engine:configs/biomes/<code>` for tests.
+> Create `src/gvars/configs/biomes/<code>_fr.gvar.json` (or owner workshop module) whose entire body is the JSON array. Publish; set registry `gvar_id` to UUID. Until then, keep `engine:configs/biomes/<code>` for tests.
 
 ## Scale
 

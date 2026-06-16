@@ -85,7 +85,7 @@ vars:
 
 !loot Wolf
 ---
-re:Investigation|loot table|lootables
+re:Started loot table session|nothing to loot
 ---
 name: "planned: start loot session for creature"
 vars:
@@ -167,6 +167,27 @@ vars:
           },
       }
 
+!loot Wolf
+---
+re:Be more specific|Wolf Trophy|Wolf Ration
+---
+name: loot asks for specificity when active loot query matches multiple items
+vars:
+  uvars:
+    _wm_command: loot
+  svars:
+    westmarch_config: "eeee7777-7777-7777-7777-777777777777"
+  cvars:
+    wg_loot_session: '{"creature": "Wolf", "items": [{"id": "trophy", "name": "Wolf Trophy [CR 0.25]", "skill": "nature", "dc": 10, "kind": "item", "amount": 1}, {"id": "ration", "name": "Wolf Ration", "skill": "survival", "dc": 10, "kind": "item", "amount": 1}]}'
+  gvars:
+    eeee7777-7777-7777-7777-777777777777: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"loot": True},
+          },
+      }
+
 !loot Image Beast
 ---
 re:-image https://example.test/image-beast.png
@@ -199,9 +220,9 @@ vars:
           ],
       }
 
-!loot Quiet Beast
+!loot
 ---
-re:Investigation check
+re:Quiet Beast|Nature check
 ---
 name: loot can hide public check dcs
 vars:
@@ -209,6 +230,8 @@ vars:
     _wm_command: loot
   svars:
     westmarch_config: "eeee8989-8989-8989-8989-898989898989"
+  cvars:
+    wg_loot_session: '{"creature": "Quiet Beast", "items": [{"id": "trophy", "name": "Quiet Beast Trophy [CR 1]", "skill": "nature", "dc": 12, "kind": "item", "amount": 1}]}'
   gvars:
     eeee8989-8989-8989-8989-898989898989: |
       subsystems = {

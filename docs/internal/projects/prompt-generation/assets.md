@@ -50,7 +50,7 @@ Every LLM-authored asset for westmarch-generic configs. Batch sizes tuned for Ch
 | `config_shops` | top-level `shops` |
 | `config_recipes` | top-level `recipes` |
 | `config_books` | top-level `books` |
-| JSON row list | separate biome `.gvar` body -> publish -> set `gvar_id` in registry |
+| JSON row list | separate biome `.gvar.json` body -> publish -> set `gvar_id` in registry |
 
 Schema links: [Location](../westmarch-statement/data-shapes.md#location) · [Path](../westmarch-statement/data-shapes.md#path) · [Shop](../westmarch-statement/data-shapes.md#shop) · [Encounter](../westmarch-statement/data-shapes.md#encounter-input) · [Biome gvar body](../westmarch-statement/data-shapes.md#biome-gvar-body-separate-workshop-module) · [Recipe](../westmarch-statement/data-shapes.md#recipe)
 

@@ -6,7 +6,7 @@ Search and load **monster** rows from engine catalogue shards. Source TSV: [asse
 
 ## Shards
 
-26 letter gvars: **`catalogues/monsters/monsters_{a-z}.gvar`** — JSON arrays, one per first letter of **`name`**. The generator also writes **`catalogues/monsters/monsters_names.gvar`**, a JSON array of monster names used for consistent `lists.search_list` matching before loading a data shard.
+26 letter gvars: **`catalogues/monsters/monsters_{a-z}.gvar.json`** — JSON arrays, one per first letter of **`name`**. The generator also writes **`catalogues/monsters/monsters_names.gvar.json`**, a JSON array of monster names used for consistent `lists.search_list` matching before loading a data shard.
 
 Facade loads **`monsters_names`** first to resolve user input. If there are no matches, commands report no matches. If there are multiple matches, commands ask for a more specific name and show up to five matches. Only a single resolved name loads the matching letter shard via `get_gvar` + per-invocation cache.
 

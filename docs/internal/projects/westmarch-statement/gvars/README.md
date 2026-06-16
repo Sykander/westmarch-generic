@@ -70,8 +70,8 @@ src/gvars/
     clock.gvar
     weather.gvar
   catalogues/
-    monsters/              # generate-monsters.js → monsters_{a-z}.gvar + monsters_names.gvar
-    items/                 # generate-items.js → *_list.gvar
+    monsters/              # generate-monsters.js → monsters_{a-z}.gvar.json + monsters_names.gvar.json
+    items/                 # generate-items.js → *_list.gvar.json
     spells/
   exploration/
     loot.gvar
@@ -86,7 +86,7 @@ src/gvars/
     starter.gvar             # minimal empty schema
     biomes/                  # preset biome JSON row-list bodies — engine:configs/biomes/<code>
     books/                   # generate-books.js — forgotten_realms_*, real_*
-    recipes/                 # generate-recipes.js — recipes_list.gvar
+    recipes/                 # generate-recipes.js — recipes_list.gvar.json
     forgotten_realms_2014.gvar
     generic_fantasy_2014.gvar
     …

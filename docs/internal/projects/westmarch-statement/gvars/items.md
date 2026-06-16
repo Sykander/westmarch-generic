@@ -34,9 +34,9 @@ Config may override via **`extensions.items`** / **`potions`** / **`magic_items`
 
 | File | `type` filter |
 |------|----------------|
-| `catalogues/items/items_list.gvar` | Item |
-| `catalogues/items/potions_list.gvar` | Potion |
-| `catalogues/items/magic_items_list.gvar` | Magic Item |
+| `catalogues/items/items_list.gvar.json` | Item |
+| `catalogues/items/potions_list.gvar.json` | Potion |
+| `catalogues/items/magic_items_list.gvar.json` | Magic Item |
 
 ## Used by
 

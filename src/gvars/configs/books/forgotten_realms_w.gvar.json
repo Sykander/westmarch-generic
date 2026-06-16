@@ -1,0 +1,39 @@
+[
+  {
+    "name": "Why I Am a Harper",
+    "author": "Belbradyn Tralaer",
+    "written": "1366 DR",
+    "rarity": "uncommon",
+    "language": "Common",
+    "type": "original",
+    "description": "Belbradyn Tralaer's confessional explains why a successful merchant abandoned warehouses for coded songs and midnight rides — framed as advice to young idealists who confuse wealth with safety.\n\nThe final chapter lists debts Tralaer still owes in cities he can never visit openly again.",
+    "tags": ["harpers", "philosophy", "history"],
+    "read_bonus": 0,
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Why_I_Am_a_Harper"
+  },
+  {
+    "name": "Waterdeep – An Elven Diary",
+    "author": "Malenya Brighteyes",
+    "written": "before 1370 DR",
+    "rarity": "rare",
+    "language": "Elvish",
+    "type": "original",
+    "description": "Malenya Brighteyes records centuries of Waterdeep as seen from immortal patience — seasons of human folly, brief friendships, and the ache of outliving every garden she planted.\n\nThe diary's elven script is annotated in Common by a later reader who marked passages \"still true\" with a trembling hand.",
+    "tags": ["waterdeep", "history", "elves"],
+    "read_bonus": 0,
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Waterdeep_%E2%80%93_An_Elven_Diary"
+  },
+  {
+    "name": "Waterdeep",
+    "author": "Unknown",
+    "written": "before 1372 DR",
+    "rarity": "common",
+    "language": "Common",
+    "type": "original",
+    "description": "Waterdeep — A regional survey written for travellers who cannot afford to learn geography from dead companions. Library catalogues list no certain author; the work is dated to before 1372 DR.\n\nMaps are absent or obsolete in most copies; readers are expected to update the text with their own ink.",
+    "tags": ["waterdeep", "geography", "culture"],
+    "read_bonus": 0,
+    "image": "https://static.wikia.nocookie.net/forgottenrealms/images/6/6b/Waterdeep_symbol_5e.png/revision/latest/scale-to-width-down/258?cb=20230315214656",
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Waterdeep"
+  }
+]

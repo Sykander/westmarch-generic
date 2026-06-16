@@ -1,10 +1,24 @@
-monster = {"name": "Wolf", "cr": 0.25, "type_str": "Beast"}
-entries = loot.build_lootables(monster, {})
-return len(entries) == 3 and entries[0]["skill"] == "Investigation" and entries[1]["skill"] == "Nature"
+monster = {"name": "Wolf", "cr": 0.25, "type_str": "Beast", "size": "M"}
+categories = loot.possible_loot_categories(monster)
+return categories == ["trophy", "ration"] and loot.loot_skill_for_type("Beast") == "nature"
 ---
 True
 ---
-name: build_lootables creates investigation and type-based entries
+name: beast loot categories allow trophy and ration
+
+monster = {"name": "Goblin", "cr": 0.25, "type_str": "Humanoid", "size": "S"}
+categories = loot.possible_loot_categories(monster)
+return categories == ["coins"] and "trophy" not in categories and "ration" not in categories
+---
+True
+---
+name: person loot categories allow coins
+
+return loot.loot_skill_for_type("Undead") == "religion" and loot.loot_skill_for_type("Construct") == "arcana" and loot.loot_skill_for_type("Giant") == "survival"
+---
+True
+---
+name: westmarch loot skill mapping follows monster type
 
 session = {"creature": "Wolf", "items": []}
 return "Wolf" in loot.format_session(session, {}) and "No lootables" in loot.format_session(session, {})
@@ -16,13 +30,27 @@ name: format_session handles empty active session
 session = {
     "creature": "Wolf",
     "items": [
-        {"id": "survey", "name": "Survey", "skill": "Investigation", "dc": 10},
+        {"id": "ration", "name": "Wolf Ration", "skill": "survival", "dc": 10, "kind": "item", "amount": 3},
     ],
 }
 cfg = {"subsystems": {"exploration": {"config": {"show_check_dcs": {"loot": False}}}}}
 text = loot.format_session(session, cfg)
-return "Investigation check" in text and "DC" not in text
+return "3x Wolf Ration" in text and "Survival check" in text and "DC" not in text
 ---
 True
 ---
 name: format_session hides loot dcs when configured
+
+session = {
+    "creature": "Goblin",
+    "items": [
+        {"id": "coins", "name": "Coins", "skill": "sleightOfHand", "dc": 10, "kind": "gold", "amount": 12},
+    ],
+}
+cfg = {"subsystems": {"exploration": {"config": {"show_check_dcs": {"loot": False}}}}}
+text = loot.format_session(session, cfg)
+return "Coins" in text and "Sleight of Hand check" in text and "12" not in text
+---
+True
+---
+name: format_session hides coin amount until the roll resolves

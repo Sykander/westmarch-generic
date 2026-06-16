@@ -7,10 +7,16 @@ using(
     exploration = env.gvars.exploration,
     lists = env.gvars.lists,
     monsters = env.gvars.monsters,
+    random = env.gvars.random,
     rolls = env.gvars.rolls,
 )
 
 CVAR_LOOT_SESSION = "wg_loot_session"
+PERSON_TYPES = ["giant", "humanoid", "celestial", "fey", "fiend", "elemental", "undead", "aberration", "abberation"]
+ARCANA_TYPES = ["aberration", "elemental", "construct"]
+RELIGION_TYPES = ["celestial", "fiend", "undead"]
+NATURE_TYPES = ["beast", "plant"]
+EDIBLE_TYPES = ["beast", "plant"]
 
 
 def _read_field(obj, key):
@@ -29,6 +35,8 @@ def _read_field(obj, key):
         "creature": lambda o: o.creature,
         "cr": lambda o: o.cr,
         "type": lambda o: o.type,
+        "type_str": lambda o: o.type_str,
+        "size": lambda o: o.size,
         "items": lambda o: o.items,
         "id": lambda o: o.id,
         "name": lambda o: o.name,
@@ -36,7 +44,9 @@ def _read_field(obj, key):
         "dc": lambda o: o.dc,
         "kind": lambda o: o.kind,
         "amount": lambda o: o.amount,
+        "bag": lambda o: o.bag,
         "image": lambda o: o.image,
+        "consume_on_fail": lambda o: o.consume_on_fail,
     }
     if key in attrs:
         try:
@@ -60,56 +70,153 @@ def _dc_for(monster, offset=10):
         return offset
 
 
-def _gold_amount(monster):
-    cr = _cr_value(monster)
-    amount = 5 + int(cr * 5)
-    if amount < 1:
-        amount = 1
-    return amount
+def _floor_cr(monster):
+    try:
+        return int(_cr_value(monster))
+    except:
+        return 0
+
+
+def loot_skill_for_type(type_text):
+    t = str(type_text).lower()
+    if _has_type(t, NATURE_TYPES):
+        return "nature"
+    if _has_type(t, RELIGION_TYPES):
+        return "religion"
+    if _has_type(t, ARCANA_TYPES):
+        return "arcana"
+    return "survival"
 
 
 def _skill_for_type(type_text):
-    t = str(type_text).lower()
-    if "undead" in t or "fiend" in t or "celestial" in t:
-        return "Religion"
-    if "aberration" in t or "construct" in t or "elemental" in t or "fey" in t:
-        return "Arcana"
-    if "beast" in t or "dragon" in t or "giant" in t or "monstrosity" in t or "ooze" in t or "plant" in t:
-        return "Nature"
-    return "Investigation"
+    return loot_skill_for_type(type_text)
+
+
+def _skill_label(skill):
+    text = str(skill).strip()
+    if text.lower().startswith("sleight"):
+        return "Sleight of Hand"
+    if text == "":
+        return "Investigation"
+    return text.capitalize()
+
+
+def _has_type(type_text, type_list):
+    text = str(type_text).lower()
+    for type_name in type_list:
+        if str(type_name).lower() in text:
+            return True
+    return False
+
+
+def _monster_size(monster):
+    size = _read_field(monster, "size")
+    if size == None or str(size).strip() == "":
+        return ""
+    return str(size).strip().lower()
+
+
+def _one_in_four():
+    return random.get_random_integer(1, 4) == 1
+
+
+def _loot_dc(monster):
+    return 6 + _floor_cr(monster) + random.get_random_integer(1, 8)
+
+
+def _lowest_dice_total(count, sides, keep):
+    values = []
+    for _ in range(count):
+        values.append(random.get_random_integer(1, sides))
+    total = 0
+    taken = 0
+    while taken < keep and len(values) > 0:
+        lowest = values[0]
+        lowest_index = 0
+        for index, value in enumerate(values):
+            if value < lowest:
+                lowest = value
+                lowest_index = index
+        total += lowest
+        values.pop(lowest_index)
+        taken += 1
+    return total
+
+
+def _person_gold_amount(monster):
+    if _cr_value(monster) < 2:
+        amount = _lowest_dice_total(10, 10, 4) - 3
+    else:
+        amount = _lowest_dice_total(8, 10, 4) + random.get_random_integer(1, 4) - 4
+    if amount < 1:
+        return 1
+    return amount
+
+
+def _ration_amount(monster):
+    size = _monster_size(monster)
+    if size in ["h", "g"]:
+        return random.get_random_integer(1, 4) + 3
+    if size in ["m", "l"]:
+        return random.get_random_integer(1, 4)
+    return 1
+
+
+def possible_loot_categories(monster):
+    """Return the generic westmarch-style loot category ids this creature can roll."""
+    type_text = monsters.monster_type(monster)
+    is_person = _has_type(type_text, PERSON_TYPES)
+    is_edible = _has_type(type_text, EDIBLE_TYPES)
+    categories = []
+    if not is_person:
+        categories.append("trophy")
+    if is_person:
+        categories.append("coins")
+    if not is_person and is_edible:
+        categories.append("ration")
+    return categories
 
 
 def build_lootables(monster, config=None):
-    """From monster type + CR to a small list of lootable entries."""
+    """Roll generic westmarch-style lootables from monster type, size, and CR."""
     name = monsters.monster_name(monster)
     type_text = monsters.monster_type(monster)
-    dc = _dc_for(monster, 10)
     skill = _skill_for_type(type_text)
-    return [
-        {
-            "id": "survey",
-            "name": "Survey the remains",
-            "skill": "Investigation",
-            "dc": dc,
-            "kind": "note",
-        },
-        {
+    categories = possible_loot_categories(monster)
+    entries = []
+    if "trophy" in categories and _one_in_four():
+        entries.append({
             "id": "trophy",
-            "name": f"{name} Trophy",
+            "name": f"{name} Trophy [CR {monsters.monster_cr(monster)}]",
             "skill": skill,
-            "dc": dc + 1,
+            "dc": _loot_dc(monster),
             "kind": "item",
             "amount": 1,
-        },
-        {
+            "bag": "Trophies",
+            "consume_on_fail": True,
+        })
+    if "coins" in categories and _one_in_four():
+        entries.append({
             "id": "coins",
-            "name": "Scattered Coin",
-            "skill": "Investigation",
-            "dc": dc,
+            "name": "Coins",
+            "skill": "sleightOfHand",
+            "dc": _loot_dc(monster),
             "kind": "gold",
-            "amount": _gold_amount(monster),
-        },
-    ]
+            "amount": _person_gold_amount(monster),
+            "consume_on_fail": True,
+        })
+    if "ration" in categories and _one_in_four():
+        entries.append({
+            "id": "ration",
+            "name": f"{name} Ration",
+            "skill": "survival",
+            "dc": _loot_dc(monster),
+            "kind": "item",
+            "amount": _ration_amount(monster),
+            "bag": "Rations",
+            "consume_on_fail": True,
+        })
+    return entries
 
 
 def get_session(ch):
@@ -191,7 +298,8 @@ def _find_lootable(session, query):
     q = str(query).strip().lower()
     if q == "":
         return None
-    prefix = None
+    names = []
+    name_to_item = {}
     for item in _items(session):
         item_id = _read_field(item, "id")
         name = _lootable_name(item)
@@ -199,9 +307,29 @@ def _find_lootable(session, query):
             return item
         if name.lower() == q:
             return item
-        if prefix == None and name.lower().startswith(q):
-            prefix = item
-    return prefix
+        if name != "":
+            names.append(name)
+            name_to_item[name] = item
+    matches = lists.search_list(names, str(query).strip())
+    if len(matches) == 1:
+        return name_to_item[matches[0]]
+    return None
+
+
+def _lootable_matches(session, query):
+    q = str(query).strip()
+    if q == "":
+        return []
+    exact_id = []
+    names = []
+    for item in _items(session):
+        item_id = _read_field(item, "id")
+        if item_id != None and str(item_id).lower() == q.lower():
+            exact_id.append(_lootable_name(item))
+        names.append(_lootable_name(item))
+    if len(exact_id) > 0:
+        return exact_id
+    return lists.search_list(names, q)
 
 
 def _monster_image_from_session(session, config=None):
@@ -247,7 +375,10 @@ def _apply_reward(ch, lootable):
         except:
             return f"Found **{amount} gp** (coinpurse not updated)."
     if kind == "item":
-        ok, msg = bags.modify_bag(name, amount, "Loot", ch)
+        bag = _read_field(lootable, "bag")
+        if bag == None or str(bag).strip() == "":
+            bag = "Loot"
+        ok, msg = bags.modify_bag(name, amount, str(bag), ch)
         if ok:
             return msg
         return f"Recovered **{name}**."
@@ -273,10 +404,18 @@ def format_session(session, config=None):
             skill = "Investigation"
         if dc == None:
             dc = 10
-        check_text = f"{skill} check"
+        check_text = f"{_skill_label(skill)} check"
         if show_dc:
-            check_text = f"{skill} DC {dc}"
-        lines.append(f"- **{name}** - {check_text}")
+            check_text = f"{_skill_label(skill)} DC {dc}"
+        amount = _read_field(item, "amount")
+        kind = _read_field(item, "kind")
+        count_text = ""
+        try:
+            if int(amount) > 1 and kind != "gold":
+                count_text = f"{int(amount)}x "
+        except:
+            pass
+        lines.append(f"- **{count_text}{name}** - {check_text}")
     return "\n".join(lines)
 
 
@@ -296,6 +435,12 @@ def attempt_loot(ch, config, lootable_id, args):
         return False, "No active loot session. Start one with `!loot <creature>`.", None
     lootable = _find_lootable(session, lootable_id)
     if lootable == None:
+        matches = _lootable_matches(session, lootable_id)
+        if len(matches) > 1:
+            shown = []
+            for match in matches[:5]:
+                shown.append(f"**{match}**")
+            return False, f"Be more specific: **{lootable_id}** matched {', '.join(shown)}.\n\n{format_session(session, config)}", session
         return False, f"Unknown lootable **{lootable_id}**.\n\n{format_session(session, config)}", session
     skill = _read_field(lootable, "skill")
     if skill == None:
@@ -318,17 +463,28 @@ def attempt_loot(ch, config, lootable_id, args):
         full = rolled.full
         passed = total >= dc
     name = _lootable_name(lootable)
-    check_text = f"{skill} check"
+    check_text = f"{_skill_label(skill)} check"
     if exploration.show_check_dcs(config, "loot"):
-        check_text = f"{skill} DC {dc}"
+        check_text = f"{_skill_label(skill)} DC {dc}"
     if passed:
         reward = _apply_reward(ch, lootable)
         session = _remove_lootable(session, lootable)
+        cleared = len(_items(session)) == 0
         if len(_items(session)) == 0:
             clear_session(ch)
         else:
             set_session(ch, session)
-        return True, f"{check_text}: {full}\n\nRecovered **{name}**. {reward}", session
+        clear_text = "\n-# Loot cleared" if cleared else ""
+        return True, f"{check_text}: {full}\n\nRecovered **{name}**. {reward}{clear_text}", session
+    if _read_field(lootable, "consume_on_fail") == True:
+        session = _remove_lootable(session, lootable)
+        cleared = len(_items(session)) == 0
+        if cleared:
+            clear_session(ch)
+        else:
+            set_session(ch, session)
+        clear_text = "\n-# Loot cleared" if cleared else ""
+        return False, f"{check_text}: {full}\n\nCould not recover **{name}**.{clear_text}", session
     return False, f"{check_text}: {full}\n\nCould not recover **{name}**.", session
 
 
@@ -337,13 +493,7 @@ def run(argslist, args, get_embed, config, ch):
         session = get_session(ch)
         if session == None:
             return get_embed(desc="No active loot session. Use `!loot <creature>` to start one.")
-        return exploration.embed_with_image(
-            get_embed,
-            format_session(session, config),
-            config,
-            "loot",
-            _monster_image_from_session(session, config),
-        )
+        return get_embed(desc=format_session(session, config))
 
     first = str(argslist[0]).strip().lower()
     if first in ["help", "?"]:
@@ -357,18 +507,21 @@ def run(argslist, args, get_embed, config, ch):
     session = get_session(ch)
     if session != None:
         ok, msg, updated = attempt_loot(ch, config, text, args)
-        return exploration.embed_with_image(
-            get_embed,
-            msg,
-            config,
-            "loot",
-            _monster_image_from_session(updated, config),
-        )
+        return get_embed(desc=msg)
 
     monster, matches, resolve_err = monsters.resolve(config, text)
     if monster == None:
         return get_embed(desc=resolve_err)
     session = start_session(ch, monster, config)
+    if len(_items(session)) == 0:
+        clear_session(ch)
+        return exploration.embed_with_image(
+            get_embed,
+            f"The **{monsters.monster_name(monster)}** has nothing to loot.\n-# Loot cleared",
+            config,
+            "loot",
+            monsters.monster_image(monster),
+        )
     return exploration.embed_with_image(
         get_embed,
         f"Started loot table session.\n\n{format_session(session, config)}",

@@ -53,7 +53,7 @@ flowchart TB
 - **Registry** stays on the owner config — small, versioned with the campaign.
 - **Biome bodies** stay in **separate gvars** — large, forkable, lazy-loaded, **reused** across many locations ([solution-statement.md](solution-statement.md) Option C).
 - **Location bodies** are **optional** separate gvars — lazy-loaded when a place needs more than its biome baseline.
-- Engine presets ship at **`src/gvars/configs/biomes/biome_<code>.gvar`**; owners duplicate and point **`gvar_id`** at their copy.
+- Engine presets ship at **`src/gvars/configs/biomes/biome_<code>.gvar.json`**; owners duplicate and point **`gvar_id`** at their copy.
 
 **Division of responsibility:** Biomes answer *“what might happen in this **kind** of wilderness?”* Locations answer *“what is **unique** about **this** place?”* — commands offered, shops, jobs, library topics, dungeon access, and place-specific encounter prose all live at the **location** layer (config and/or location gvar), not on biomes.
 

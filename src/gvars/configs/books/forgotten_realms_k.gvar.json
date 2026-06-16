@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Known Networks of the North",
+    "author": "Unknown",
+    "written": "13th century DR",
+    "rarity": "uncommon",
+    "language": "Common",
+    "type": "original",
+    "description": "A trader's map in prose — overland routes, river links, and smuggling paths through the Evermoors that official caravans pretend not to know.\n\nThe thirteenth-century original is updated in margins by generations of merchants; some notes are in cipher, some in blood.",
+    "tags": ["north", "trade", "geography"],
+    "read_bonus": 0,
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Known_Networks_of_the_North"
+  },
+  {
+    "name": "Kandlekeep Dekonstruktion",
+    "author": "Isajar",
+    "written": "before 1492 DR",
+    "rarity": "uncommon",
+    "language": "Common",
+    "type": "original",
+    "description": "Kandlekeep Dekonstruktion — A chronicle preserved in northern and coastal scriptoria — dates, names, and the sort of detail merchants pretend not to need. Isajar is credited in library catalogues; the work is dated to before 1492 DR.\n\nLater hands added marginal dates and crossed out names; historians still argue which revisions were propaganda.",
+    "tags": ["history", "humor", "culture"],
+    "read_bonus": 0,
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Kandlekeep_Dekonstruktion"
+  }
+]

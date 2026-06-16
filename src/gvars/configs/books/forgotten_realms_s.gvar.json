@@ -1,0 +1,113 @@
+[
+  {
+    "name": "Sayings of the North",
+    "author": "Annath the Learned and Faeranduil of Neverwinter",
+    "written": "1312 DR",
+    "rarity": "common",
+    "language": "Common",
+    "type": "original",
+    "description": "A slim collection of proverbs gathered by Annath the Learned and Faeranduil of Neverwinter — terse counsel on weather, hospitality, steel, and silence.\n\n\"Trust the dog that growls at its master before the stranger who smiles\" is typical of the North's preference for blunt wisdom over courtly metaphor.",
+    "tags": ["north", "philosophy", "proverb"],
+    "read_bonus": 0,
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Sayings_of_the_North"
+  },
+  {
+    "name": "Secret Societies of the Sword Coast: Exposed",
+    "author": "Unknown",
+    "written": "1490 DR",
+    "rarity": "rare",
+    "language": "Common",
+    "type": "original",
+    "description": "An anonymous pamphlet naming cults, trade cabals, and masked clubs operating from Baldur's Gate to Scornubel — with dates, meeting signs, and the author's repeated insistence that he expects assassination.\n\nSeveral entries are clearly wrong; others match Harper intelligence closely enough that scholars debate whether the writer was a traitor, a hero, or both.",
+    "tags": ["sword_coast", "intrigue", "history"],
+    "read_bonus": 0,
+    "image": "https://static.wikia.nocookie.net/forgottenrealms/images/6/6b/Secret_Societies.png/revision/latest/scale-to-width-down/375?cb=20230614112929",
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Secret_Societies_of_the_Sword_Coast:_Exposed"
+  },
+  {
+    "name": "Shields Aflame: A History of Kings and Battles of the North",
+    "author": "Murtrosz Ondibran",
+    "written": "before 1372 DR",
+    "rarity": "uncommon",
+    "language": "Common",
+    "type": "original",
+    "description": "Murtrosz Ondibran chronicles northern wars from Uthgardt moots to city-state alliances — with emphasis on how shield walls fail when commanders forget supply lines.\n\nBattle maps are stylised; veterans say the prose is accurate precisely where the illustrations lie.",
+    "tags": ["north", "history", "war"],
+    "read_bonus": 0,
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Shields_Aflame:_A_History_of_Kings_and_Battles_of_the_North"
+  },
+  {
+    "name": "Sword Coast Songbook",
+    "author": "Silke Rosena",
+    "written": "before 1368 DR",
+    "rarity": "common",
+    "language": "Common",
+    "type": "original",
+    "description": "Silke Rosena collected tavern songs from Luskan to Calimport's northern ports — work chanteys, pirate refrains, and love ballads that change lyrics by city to avoid bloodshed.\n\nA folded insert lists which verses start brawls in Waterdeep versus Baldur's Gate; prudent bards memorise both.",
+    "tags": ["sword_coast", "music", "culture"],
+    "read_bonus": 0,
+    "image": "https://static.wikia.nocookie.net/forgottenrealms/images/5/56/Red_and_gold_book_bg3.png/revision/latest/scale-to-width-down/394?cb=20231002033431",
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Sword_Coast_Songbook"
+  },
+  {
+    "name": "Slumbertime Stories for Sprigs",
+    "author": "Syluné of Shadowdale",
+    "written": "1330s DR",
+    "rarity": "common",
+    "language": "Common",
+    "type": "original",
+    "description": "Slumbertime Stories for Sprigs — A popular tale in print — performed in taverns before it was ever bound between covers. Syluné of Shadowdale is credited in library catalogues; the work is dated to 1330s DR.\n\nCritics call it low art; innkeepers call it excellent for business on rainy nights.",
+    "tags": ["fiction", "religion", "culture"],
+    "read_bonus": 0,
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Slumbertime_Stories_for_Sprigs"
+  },
+  {
+    "name": "Shadows in the Firelight",
+    "author": "Glarthlyn of Silverymoon",
+    "written": "unknown",
+    "rarity": "common",
+    "language": "Common",
+    "type": "original",
+    "description": "Shadows in the Firelight — A popular tale in print — performed in taverns before it was ever bound between covers. Glarthlyn of Silverymoon is credited in library catalogues; the work is dated to unknown.\n\nCritics call it low art; innkeepers call it excellent for business on rainy nights.",
+    "tags": ["north", "fiction", "culture"],
+    "read_bonus": 0,
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Shadows_in_the_Firelight"
+  },
+  {
+    "name": "Sergeant Thuresh's 101 Essays on Military Tactics",
+    "author": "Ugrand Thuresh",
+    "written": "before 1370 DR",
+    "rarity": "common",
+    "language": "Common",
+    "type": "original",
+    "description": "Sergeant Thuresh's 101 Essays on Military Tactics — Military history and counsel from campaigns fought along the Frontier and the Sword Coast. Ugrand Thuresh is credited in library catalogues; the work is dated to before 1370 DR.\n\nVeterans annotate the margins with corrections; green officers treat those notes as insults until the first ambush.",
+    "tags": ["war", "philosophy"],
+    "read_bonus": 0,
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Sergeant_Thuresh%27s_101_Essays_on_Military_Tactics"
+  },
+  {
+    "name": "Sayings of a Wyrm",
+    "author": "Naurglaur the green dragon",
+    "written": "895 DR",
+    "rarity": "very rare",
+    "language": "Common",
+    "type": "original",
+    "description": "Sayings of a Wyrm — Legends collected from tavern verse, elder memory, and sources no scholar will swear to in court. Naurglaur the green dragon is credited in library catalogues; the work is dated to 895 DR.\n\nEach generation adds a verse; purists claim the oldest layer is true and everything since is flattery.",
+    "tags": ["monsters", "philosophy", "myth"],
+    "read_bonus": 0,
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Sayings_of_a_Wyrm"
+  },
+  {
+    "name": "S is for Scurvy: A Pirate Potboiler",
+    "author": "Unknown",
+    "written": "before 1372 DR",
+    "rarity": "common",
+    "language": "Common",
+    "type": "original",
+    "description": "S is for Scurvy: A Pirate Potboiler — A popular tale in print — performed in taverns before it was ever bound between covers. Library catalogues list no certain author; the work is dated to before 1372 DR.\n\nCritics call it low art; innkeepers call it excellent for business on rainy nights.",
+    "tags": ["fiction", "sea", "adventure"],
+    "read_bonus": 0,
+    "image": "https://static.wikia.nocookie.net/forgottenrealms/images/8/84/Nwn_bumpy_book.png/revision/latest?cb=20241119085621",
+    "content_link": "https://forgottenrealms.fandom.com/wiki/S_is_for_Scurvy%3A_A_Pirate_Potboiler"
+  }
+]

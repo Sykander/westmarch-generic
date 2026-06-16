@@ -1,4 +1,6 @@
 import js from '@eslint/js';
+import json from '@eslint/json';
+import { defineConfig } from 'eslint/config';
 import prettierRecommended from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';
@@ -9,7 +11,12 @@ const tsRecommended = tseslint.configs.recommended.map((config) => ({
   files: ['editor/**/*.{ts,tsx}'],
 }));
 
-export default [
+const jsRecommended = {
+  ...js.configs.recommended,
+  files: ['**/*.{js,mjs,cjs}'],
+};
+
+export default defineConfig([
   {
     ignores: [
       'node_modules/**',
@@ -21,16 +28,25 @@ export default [
       'dist/**',
       'build/**',
       '**/*.tsbuildinfo',
+      'package-lock.json',
+      'editor/package-lock.json',
       '.varfile.json',
       'src/gvars/env.*.gvar',
     ],
   },
-  js.configs.recommended,
+  jsRecommended,
   ...tsRecommended,
   {
+    files: ['**/*.{js,mjs,cjs,ts,tsx}'],
     rules: {
       'no-empty': ['error', { allowEmptyCatch: true }],
     },
+  },
+  {
+    files: ['**/*.json'],
+    plugins: { json },
+    language: 'json/json',
+    extends: ['json/recommended'],
   },
   {
     files: ['utils/**/*.js'],
@@ -73,4 +89,4 @@ export default [
     },
   },
   prettierRecommended,
-];
+]);

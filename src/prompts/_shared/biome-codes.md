@@ -6,4 +6,4 @@ Copy into prompts when updating the canonical list. Also embedded in location, p
 
 Do **not** invent codes (`coast`, `woodland`, `city`, …).
 
-Engine preset modules: `src/gvars/configs/biomes/biome_<code>.gvar` — referenced as `engine:configs/biomes/<code>` in config and sourcemapped as `biome_<code>`.
+Engine preset modules: `src/gvars/configs/biomes/biome_<code>.gvar.json` — referenced as `engine:configs/biomes/<code>` in config and sourcemapped as `biome_<code>`.

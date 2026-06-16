@@ -1,0 +1,86 @@
+[
+  {
+    "name": "Ghost of Conyberry",
+    "author": "Unknown",
+    "written": "before 1372 DR",
+    "rarity": "common",
+    "language": "Common",
+    "type": "original",
+    "description": "Ghost of Conyberry — Legends collected from tavern verse, elder memory, and sources no scholar will swear to in court. Library catalogues list no certain author; the work is dated to before 1372 DR.\n\nEach generation adds a verse; purists claim the oldest layer is true and everything since is flattery.",
+    "tags": ["dessarin", "myth", "fiction"],
+    "read_bonus": 0,
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Ghost_of_Conyberry"
+  },
+  {
+    "name": "Gorgomorz - Daggerford's Devil",
+    "author": "Hilgraff the Scribe",
+    "written": "1270–1372 DR",
+    "rarity": "uncommon",
+    "language": "Common",
+    "type": "original",
+    "description": "Gorgomorz - Daggerford's Devil — A chronicle preserved in northern and coastal scriptoria — dates, names, and the sort of detail merchants pretend not to need. Hilgraff the Scribe is credited in library catalogues; the work is dated to 1270–1372 DR.\n\nLater hands added marginal dates and crossed out names; historians still argue which revisions were propaganda.",
+    "tags": ["dessarin", "history", "intrigue"],
+    "read_bonus": 0,
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Gorgomorz_-_Daggerford%27s_Devil"
+  },
+  {
+    "name": "Grand History of the Realms",
+    "author": "Elminster",
+    "written": "15th century DR",
+    "rarity": "very rare",
+    "language": "Common",
+    "type": "original",
+    "description": "Grand History of the Realms — A chronicle preserved in northern and coastal scriptoria — dates, names, and the sort of detail merchants pretend not to need. Elminster is credited in library catalogues; the work is dated to 15th century DR.\n\nLater hands added marginal dates and crossed out names; historians still argue which revisions were propaganda.",
+    "tags": ["history", "faerun"],
+    "read_bonus": 0,
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Grand_History_of_the_Realms"
+  },
+  {
+    "name": "Gloryswords: An Informal and Incomplete Overview of Adventuring Bands in the Year of the Spur",
+    "author": "Ragefast",
+    "written": "1369 DR",
+    "rarity": "common",
+    "language": "Common",
+    "type": "original",
+    "description": "Gloryswords: An Informal and Incomplete Overview of Adventuring Bands in the Year of the Spur — A chronicle preserved in northern and coastal scriptoria — dates, names, and the sort of detail merchants pretend not to need. Ragefast is credited in library catalogues; the work is dated to 1369 DR.\n\nLater hands added marginal dates and crossed out names; historians still argue which revisions were propaganda.",
+    "tags": ["baldurs_gate", "history", "adventure"],
+    "read_bonus": 0,
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Gloryswords%3A_An_Informal_and_Incomplete_Overview_of_Adventuring_Bands_in_the_Year_of_the_Spur"
+  },
+  {
+    "name": "Gaurdront's Guide to Monstrous Beasts",
+    "author": "Gaurdront",
+    "written": "before 1372 DR",
+    "rarity": "common",
+    "language": "Common",
+    "type": "original",
+    "description": "Gaurdront's Guide to Monstrous Beasts — Natural history from hunters, riverfolk, and sages who went outside and wrote down what bit them. Gaurdront is credited in library catalogues; the work is dated to before 1372 DR.\n\nSeasonal addenda in surviving copies suggest the author revised the work every year they lived to see spring.",
+    "tags": ["nature", "monsters", "travel"],
+    "read_bonus": 0,
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Gaurdront%27s_Guide_to_Monstrous_Beasts"
+  },
+  {
+    "name": "Great Goblin Recipes",
+    "author": "Unknown",
+    "written": "before 1372 DR",
+    "rarity": "common",
+    "language": "Common",
+    "type": "original",
+    "description": "Great Goblin Recipes — Natural history from hunters, riverfolk, and sages who went outside and wrote down what bit them. Library catalogues list no certain author; the work is dated to before 1372 DR.\n\nSeasonal addenda in surviving copies suggest the author revised the work every year they lived to see spring.",
+    "tags": ["culture", "humor", "nature"],
+    "read_bonus": 0,
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Great_Goblin_Recipes"
+  },
+  {
+    "name": "Great Changes Aborning",
+    "author": "Mintiper Moonsilver",
+    "written": "1341 DR",
+    "rarity": "uncommon",
+    "language": "Common",
+    "type": "original",
+    "description": "Great Changes Aborning — A chronicle preserved in northern and coastal scriptoria — dates, names, and the sort of detail merchants pretend not to need. Mintiper Moonsilver is credited in library catalogues; the work is dated to 1341 DR.\n\nLater hands added marginal dates and crossed out names; historians still argue which revisions were propaganda.",
+    "tags": ["music", "history", "culture"],
+    "read_bonus": 0,
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Great_Changes_Aborning"
+  }
+]

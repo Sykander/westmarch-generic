@@ -10,61 +10,61 @@
             "filePath": "src/gvars/utils/core/bags.gvar"
         },
         "9baefb5e-baa5-4b4d-89fd-ed653a1da8ff": {
-            "filePath": "src/gvars/configs/biomes/biome_astral.gvar"
+            "filePath": "src/gvars/configs/biomes/biome_astral.gvar.json"
         },
         "97118729-4c6c-4903-8714-d7cb04699b80": {
-            "filePath": "src/gvars/configs/biomes/biome_beach.gvar"
+            "filePath": "src/gvars/configs/biomes/biome_beach.gvar.json"
         },
         "8b2c5a91-a1e3-4f6f-8482-ed42b8034832": {
-            "filePath": "src/gvars/configs/biomes/biome_cave.gvar"
+            "filePath": "src/gvars/configs/biomes/biome_cave.gvar.json"
         },
         "cdbda779-5e4a-4753-836e-6a01b611a168": {
-            "filePath": "src/gvars/configs/biomes/biome_deep_seas.gvar"
+            "filePath": "src/gvars/configs/biomes/biome_deep_seas.gvar.json"
         },
         "4616a68a-0301-404a-a1e1-b51572c8fb79": {
-            "filePath": "src/gvars/configs/biomes/biome_desert.gvar"
+            "filePath": "src/gvars/configs/biomes/biome_desert.gvar.json"
         },
         "f8f5dcbc-d5f9-4bc0-a676-dc726d89bbb0": {
-            "filePath": "src/gvars/configs/biomes/biome_forest.gvar"
+            "filePath": "src/gvars/configs/biomes/biome_forest.gvar.json"
         },
         "7c41bd64-1351-4ae8-b257-3ce2ebb6244e": {
-            "filePath": "src/gvars/configs/biomes/biome_jungle.gvar"
+            "filePath": "src/gvars/configs/biomes/biome_jungle.gvar.json"
         },
         "56ed5993-f5ed-4b76-81ed-5294388dfae5": {
-            "filePath": "src/gvars/configs/biomes/biome_mountain.gvar"
+            "filePath": "src/gvars/configs/biomes/biome_mountain.gvar.json"
         },
         "f9397f22-8a9c-461a-b8d3-b601e29130bf": {
-            "filePath": "src/gvars/configs/biomes/biome_plains.gvar"
+            "filePath": "src/gvars/configs/biomes/biome_plains.gvar.json"
         },
         "22b758bf-999a-4f00-bbce-ed22b8fa54a4": {
-            "filePath": "src/gvars/configs/biomes/biome_river.gvar"
+            "filePath": "src/gvars/configs/biomes/biome_river.gvar.json"
         },
         "4cd39c7b-cd0c-4576-89b8-4717dc674913": {
-            "filePath": "src/gvars/configs/biomes/biome_road.gvar"
+            "filePath": "src/gvars/configs/biomes/biome_road.gvar.json"
         },
         "0dd43e65-87f3-47cf-a7d1-49a645c3b76c": {
-            "filePath": "src/gvars/configs/biomes/biome_ruins.gvar"
+            "filePath": "src/gvars/configs/biomes/biome_ruins.gvar.json"
         },
         "0eb3e67a-ad03-489c-b7c3-234eaba5efa9": {
-            "filePath": "src/gvars/configs/biomes/biome_sea.gvar"
+            "filePath": "src/gvars/configs/biomes/biome_sea.gvar.json"
         },
         "2e24f768-7316-46ef-8355-f997c22121da": {
-            "filePath": "src/gvars/configs/biomes/biome_sky.gvar"
+            "filePath": "src/gvars/configs/biomes/biome_sky.gvar.json"
         },
         "3f78d0d3-b40d-43c0-94d1-f77dba794f3b": {
-            "filePath": "src/gvars/configs/biomes/biome_swamp.gvar"
+            "filePath": "src/gvars/configs/biomes/biome_swamp.gvar.json"
         },
         "e119c890-bb57-4783-afad-8431c4126a88": {
-            "filePath": "src/gvars/configs/biomes/biome_tundra.gvar"
+            "filePath": "src/gvars/configs/biomes/biome_tundra.gvar.json"
         },
         "629574fe-9279-422e-ac76-a6e03a3cf810": {
-            "filePath": "src/gvars/configs/biomes/biome_underdark.gvar"
+            "filePath": "src/gvars/configs/biomes/biome_underdark.gvar.json"
         },
         "83878aa8-faba-442b-b59f-fe07ad3d10d0": {
-            "filePath": "src/gvars/configs/biomes/biome_urban.gvar"
+            "filePath": "src/gvars/configs/biomes/biome_urban.gvar.json"
         },
         "50db5717-77cf-445c-ab6f-0e103567d075": {
-            "filePath": "src/gvars/configs/biomes/biome_volcanic.gvar"
+            "filePath": "src/gvars/configs/biomes/biome_volcanic.gvar.json"
         },
         "9db668e3-5743-4ab8-b610-69877abce4a8": {
             "filePath": "src/gvars/utils/world/biomes.gvar"
@@ -109,7 +109,7 @@
             "filePath": "src/gvars/utils/catalogues/items/items.gvar"
         },
         "b6266d70-a8ca-46a3-9250-d88f908cd8e0": {
-            "filePath": "src/gvars/utils/catalogues/items/items_list.gvar"
+            "filePath": "src/gvars/utils/catalogues/items/items_list.gvar.json"
         },
         "44734993-40b1-4ac4-8b15-d6de9bb5e50a": {
             "filePath": "src/gvars/utils/world/journeys.gvar"
@@ -130,88 +130,88 @@
             "filePath": "src/gvars/utils/exploration/loot.gvar"
         },
         "21f48275-a6ed-4218-9155-7d0676a639f7": {
-            "filePath": "src/gvars/utils/catalogues/items/magic_items_list.gvar"
+            "filePath": "src/gvars/utils/catalogues/items/magic_items_list.gvar.json"
         },
         "af7ba3ab-9ae2-41ab-8872-bdb3713ad2a0": {
             "filePath": "src/gvars/utils/catalogues/monsters/monsters.gvar"
         },
         "d91ac614-7fb1-40c6-b691-588ec1fedf63": {
-            "filePath": "src/gvars/utils/catalogues/monsters/monsters_a.gvar"
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_a.gvar.json"
         },
         "c864ea56-aeec-4a84-8fb4-8f011a248bfd": {
-            "filePath": "src/gvars/utils/catalogues/monsters/monsters_b.gvar"
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_b.gvar.json"
         },
         "c3f2a10b-f2ba-4211-9eea-45ec1e80745c": {
-            "filePath": "src/gvars/utils/catalogues/monsters/monsters_c.gvar"
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_c.gvar.json"
         },
         "c3ae479e-59a0-4379-a913-d0ec6c9fcf07": {
-            "filePath": "src/gvars/utils/catalogues/monsters/monsters_d.gvar"
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_d.gvar.json"
         },
         "2937ac5f-c38b-41e3-ad18-23faf3cfdd91": {
-            "filePath": "src/gvars/utils/catalogues/monsters/monsters_e.gvar"
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_e.gvar.json"
         },
         "8f9f11f9-ea4b-4ab4-bc90-f879b80a44da": {
-            "filePath": "src/gvars/utils/catalogues/monsters/monsters_f.gvar"
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_f.gvar.json"
         },
         "b75b57d2-a4dd-49d7-b298-327ee91044b9": {
-            "filePath": "src/gvars/utils/catalogues/monsters/monsters_g.gvar"
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_g.gvar.json"
         },
         "755efaa9-efaf-4dd5-ad77-a537e3f2acfb": {
-            "filePath": "src/gvars/utils/catalogues/monsters/monsters_h.gvar"
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_h.gvar.json"
         },
         "0ee19562-8312-4af8-81bf-84af631b85c9": {
-            "filePath": "src/gvars/utils/catalogues/monsters/monsters_i.gvar"
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_i.gvar.json"
         },
         "3a0931db-1d0d-4e46-9422-107807e6a6b0": {
-            "filePath": "src/gvars/utils/catalogues/monsters/monsters_j.gvar"
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_j.gvar.json"
         },
         "da30508b-3d30-49c1-9c4d-5800c596fdc7": {
-            "filePath": "src/gvars/utils/catalogues/monsters/monsters_k.gvar"
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_k.gvar.json"
         },
         "d3928b40-01ca-4dc7-b874-904372171e65": {
-            "filePath": "src/gvars/utils/catalogues/monsters/monsters_l.gvar"
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_l.gvar.json"
         },
         "05ae2b14-bcc8-4edf-b569-406168d9d9ae": {
-            "filePath": "src/gvars/utils/catalogues/monsters/monsters_m.gvar"
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_m.gvar.json"
         },
         "16736070-7e0b-4d3d-916c-bf6cd7eed4f3": {
-            "filePath": "src/gvars/utils/catalogues/monsters/monsters_n.gvar"
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_n.gvar.json"
         },
         "7c0f444f-a2f8-48ab-8c47-03eb275249a6": {
-            "filePath": "src/gvars/utils/catalogues/monsters/monsters_o.gvar"
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_o.gvar.json"
         },
         "9c0da8e5-2b11-4ebc-b5c1-8cc921b03cce": {
-            "filePath": "src/gvars/utils/catalogues/monsters/monsters_p.gvar"
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_p.gvar.json"
         },
         "fd7a6c8f-7fda-4d85-bc4c-06cbb8a544d8": {
-            "filePath": "src/gvars/utils/catalogues/monsters/monsters_q.gvar"
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_q.gvar.json"
         },
         "f8b76b3e-119c-4c29-87fb-e6f2cab57f12": {
-            "filePath": "src/gvars/utils/catalogues/monsters/monsters_r.gvar"
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_r.gvar.json"
         },
         "a7255f04-2e73-492b-8ad5-3c45607ccc2d": {
-            "filePath": "src/gvars/utils/catalogues/monsters/monsters_s.gvar"
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_s.gvar.json"
         },
         "60e6bfd3-c69e-464f-acd7-23f1e2336845": {
-            "filePath": "src/gvars/utils/catalogues/monsters/monsters_t.gvar"
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_t.gvar.json"
         },
         "65ef0236-f345-4c3c-a89e-f743d8c674f9": {
-            "filePath": "src/gvars/utils/catalogues/monsters/monsters_u.gvar"
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_u.gvar.json"
         },
         "bb3cdebf-2356-4fac-bb8e-9512e72013c7": {
-            "filePath": "src/gvars/utils/catalogues/monsters/monsters_v.gvar"
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_v.gvar.json"
         },
         "56e7d33b-55b4-4c9c-b5d1-7a50d69614dd": {
-            "filePath": "src/gvars/utils/catalogues/monsters/monsters_w.gvar"
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_w.gvar.json"
         },
         "62bc009b-cbd8-41d4-a548-82afabc7c10c": {
-            "filePath": "src/gvars/utils/catalogues/monsters/monsters_x.gvar"
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_x.gvar.json"
         },
         "c11a2eb2-02e1-4934-95ee-29d70d6ea9a2": {
-            "filePath": "src/gvars/utils/catalogues/monsters/monsters_y.gvar"
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_y.gvar.json"
         },
         "a3d2c2c5-a093-4014-89ba-295d6ef2d037": {
-            "filePath": "src/gvars/utils/catalogues/monsters/monsters_z.gvar"
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_z.gvar.json"
         },
         "5afe554c-6925-4f1c-bd98-809535b0b483": {
             "filePath": "src/gvars/utils/world/paths.gvar"
@@ -220,7 +220,7 @@
             "filePath": "src/gvars/utils/pc/pc.gvar"
         },
         "86800330-412d-4612-94e9-4488d2248d7b": {
-            "filePath": "src/gvars/utils/catalogues/items/potions_list.gvar"
+            "filePath": "src/gvars/utils/catalogues/items/potions_list.gvar.json"
         },
         "aacf4ece-1432-463f-9a7a-3bdbe8f059a8": {
             "filePath": "src/gvars/utils/misc/quests.gvar"
@@ -244,7 +244,7 @@
             "filePath": "src/gvars/utils/catalogues/spells/spells.gvar"
         },
         "9956e1cd-acbb-4879-93a4-84a04e089ddc": {
-            "filePath": "src/gvars/utils/catalogues/spells/spells_list.gvar"
+            "filePath": "src/gvars/utils/catalogues/spells/spells_list.gvar.json"
         },
         "047c90ea-290b-4796-a8ab-f0f29f64be8c": {
             "filePath": "src/gvars/utils/pc/stats.gvar"

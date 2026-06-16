@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Generate recipe catalogue from assets/recipes.tsv
- * Output: src/gvars/configs/recipes/recipes_list.gvar (JSON array)
+ * Output: src/gvars/configs/recipes/recipes_list.gvar.json (JSON array)
  */
 const paths = require('./lib/paths');
 const { readTsv } = require('./lib/read-tsv');
@@ -10,7 +10,7 @@ const { printManifest } = require('./lib/manifest');
 
 const INPUT = paths.assets('recipes.tsv');
 const name = 'recipes_list';
-const file = 'src/gvars/configs/recipes/recipes_list.gvar';
+const file = 'src/gvars/configs/recipes/recipes_list.gvar.json';
 
 function parseMaterialList(raw) {
   const s = String(raw || '').trim();

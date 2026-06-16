@@ -2,13 +2,13 @@
 
 **Path:** `src/gvars/utils/exploration/loot.gvar` · **Phase:** 1 (Tier C)
 
-**Post-combat loot sessions** for **`!loot`** — not random encounter drops. After a fight (often following **`!hunt`**), players run a multi-step minigame: pick a creature, roll Investigation/Arcana/Religion/Nature (by lootable type) to extract items and gp from that corpse.
+**Post-combat loot sessions** for **`!loot`** — not random encounter drops. After a fight (often following **`!hunt`**), players run a multi-step minigame: pick a creature, roll a generic westmarch-style check to extract generated items and gp from that corpse.
 
 ## What it is for
 
 | Phase | Player action | Engine |
 |-------|---------------|--------|
-| **Start** | `!loot <creature>` | Look up monster → build **lootables** list (gp bands by CR, type-based skill checks) |
+| **Start** | `!loot <creature>` | Look up monster → roll **lootables** from type, size, and CR |
 | **Extract** | `!loot <item>` | Roll vs DC → on success update the Loot bag or coinpurse from inside `loot.gvar` |
 | **Status / clear** | `!loot` / `!loot clear` | Read or wipe session cvar |
 
@@ -23,7 +23,10 @@ westmarch inlined ~100 lines in **`loot.alias`**; generic extracts table generat
 
 ```py
 def build_lootables(monster, config):
-    """From monster type + CR → list of { name, skill, dc, kind: item|gold, … }."""
+    """Roll generic westmarch-style entries from monster type, size, and CR."""
+
+def possible_loot_categories(monster):
+    """Return category ids this creature can roll: trophy, coins, ration."""
 
 def get_session(ch):
     """Active loot session dict or None."""
@@ -42,8 +45,16 @@ def format_session(session, config):
 
 Display config lives under **`subsystems.exploration.config`**:
 
-- **`monster_images.loot`**: **`thumbnail`** (default), **`image`**, or **`off`**
+- **`monster_images.loot`**: **`thumbnail`** (default), **`image`**, or **`off`** for the initial loot-session embed only
 - **`show_check_dcs.loot`**: **`True`** by default; **`False`** hides numeric DC text while still rolling against the DC
+
+Default opportunities mirror the westmarch alias:
+
+- Person-like creatures can roll **Coins** using **Sleight of Hand**.
+- Non-person creatures can roll **Trophies** using a type-based check.
+- Edible non-person creatures can roll **Rations** using **Survival**.
+
+Type-based checks are **Nature** for beast/plant, **Religion** for celestial/fiend/undead, **Arcana** for aberration/elemental/construct, and **Survival** otherwise.
 
 Optional later: config **`LOOT_RULES`** overrides CR→gp bands and type→skill mapping.
 

@@ -1,6 +1,6 @@
 # Engine preset biomes
 
-**Path:** `src/gvars/configs/biomes/biome_<code>.gvar` · **Sourcemap name:** `biome_<code>` · **Phase:** 0–1 *(bodies land incrementally)*
+**Path:** `src/gvars/configs/biomes/biome_<code>.gvar.json` · **Sourcemap name:** `biome_<code>` · **Phase:** 0–1 *(bodies land incrementally)*
 
 Minimal **wilderness encounter modules** shipped with the westmarch-generic engine workshop. Example configs and new servers reference them via:
 
@@ -44,7 +44,7 @@ Not to be confused with **`src/gvars/utils/config/`** — the engine **`config.g
 
 ## Body shape
 
-Each `.gvar` body is a raw **JSON row list**. Rows are `[pool_tags_or_null, "template_name", ...args]`, where pool tags look like `enc.gather` or `forage.gather`. See [data-shapes.md § Biome gvar body](../../../../docs/internal/projects/westmarch-statement/data-shapes.md#biome-gvar-body-separate-workshop-module).
+Each `.gvar.json` body is a raw **JSON row list**. Rows are `[pool_tags_or_null, "template_name", ...args]`, where pool tags look like `enc.gather` or `forage.gather`. See [data-shapes.md § Biome gvar body](../../../../docs/internal/projects/westmarch-statement/data-shapes.md#biome-gvar-body-separate-workshop-module).
 
 MVP presets include at least one **`gather`** entry per enabled activity for alias-test smoke; combat/quest entries grow with Tier B.
 

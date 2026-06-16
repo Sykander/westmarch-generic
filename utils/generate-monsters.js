@@ -2,7 +2,7 @@
 /**
  * Generate monster letter shards from assets/monsters.tsv
  * Output:
- * - src/gvars/utils/catalogues/monsters/monsters_{a-z}.gvar
+ * - src/gvars/utils/catalogues/monsters/monsters_{a-z}.gvar.json
  */
 const paths = require('./lib/paths');
 const { readTsv } = require('./lib/read-tsv');
@@ -49,7 +49,7 @@ const sourcemapEntries = [];
 
 for (const letter of LETTERS) {
   const name = `monsters_${letter}`;
-  const file = `${OUT_DIR}/${name}.gvar`;
+  const file = `${OUT_DIR}/${name}.gvar.json`;
   const abs = paths.gvar(file);
   const contents = processed.filter(({ name: n }) => String(n).toLowerCase().startsWith(letter));
   writeJsonGvar(abs, contents);

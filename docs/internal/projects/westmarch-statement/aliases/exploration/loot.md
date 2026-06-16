@@ -14,11 +14,21 @@ Two-phase loot session: select creature → loot items with skill checks. State 
 ```
 
 - **Help:** three-phase usage.
-- **Start:** resolve creature with `lists.search_list` over `monsters_names`, then derive lootables from monster type (westmarch uses Investigation/Arcana/Religion/Nature checks + gold bands by CR).
+- **Start:** resolve creature with shared monster lookup, then roll generic westmarch-style loot opportunities from monster type, size, and CR.
 - **Loot item:** roll configured skill vs lootable DC; on success add to bag or coinpurse.
 - **Session:** JSON cvar until cleared or empty.
-- **Monster art:** if the catalogue has `image_url`, display it according to `subsystems.exploration.config.monster_images.loot`.
+- **Monster art:** if the catalogue has `image_url`, display it on the initial session embed according to `subsystems.exploration.config.monster_images.loot`; do not repeat it on follow-up status or roll embeds.
 - **DC visibility:** `subsystems.exploration.config.show_check_dcs.loot` controls whether session and roll text include numeric DCs.
+
+Default opportunities mirror the westmarch alias:
+
+| Creature gate | Possible opportunity | Check / storage |
+|----------------|----------------------|-----------------|
+| Person-like type | `Coins` | `Sleight of Hand`; Avrae coinpurse |
+| Non-person type | `<Monster> Trophy [CR n]` | type-based check; `Trophies` bag |
+| Edible non-person type | `<Monster> Ration` | `Survival`; `Rations` bag |
+
+Type-based checks use `Nature` for beast/plant, `Religion` for celestial/fiend/undead, `Arcana` for aberration/elemental/construct, and `Survival` otherwise.
 
 ## westmarch reference
 
@@ -49,7 +59,7 @@ flowchart TD
 
 | Data | Owner |
 |------|-------|
-| Loot table rules by type/CR | **Engine** [loot.gvar](../../gvars/loot.md); tunable via config `LOOT_RULES` later |
+| Loot table rules by type/size/CR | **Engine** [loot.gvar](../../gvars/loot.md); tunable via config `LOOT_RULES` later |
 | Monster art / DC visibility | **Config** under `subsystems.exploration.config` |
 | Monster catalogue | **Config** |
 | Session cvar key | **Engine** `bags` |

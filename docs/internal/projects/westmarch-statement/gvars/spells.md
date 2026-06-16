@@ -2,7 +2,7 @@
 
 **Path:** `src/gvars/utils/catalogues/spells.gvar` · **Phase:** 1 (Tier E)
 
-Search **spell** catalogue for **`!scribe`**. Source TSV: [assets/spells.tsv](../../../../../assets/spells.tsv) → **`catalogues/spells/spells_list.gvar`** via **`utils/generate-spells.js`** ([content-pipeline.md](../content-pipeline.md)).
+Search **spell** catalogue for **`!scribe`**. Source TSV: [assets/spells.tsv](../../../../../assets/spells.tsv) → **`catalogues/spells/spells_list.gvar.json`** via **`utils/generate-spells.js`** ([content-pipeline.md](../content-pipeline.md)).
 
 Single shard for MVP; split by spell level if gvar size requires — same lazy-load pattern as [items.md](items.md).
 

@@ -18,7 +18,7 @@ src/gvars/
   env.prod.gvar
   configs/                 # owner presets plus sourcemapped engine biome presets
     starter.gvar
-    biomes/                # biome_<code>.gvar -> env.gvars.biome_<code>
+    biomes/                # biome_<code>.gvar.json -> env.gvars.biome_<code>
     books/                 # generate-books.js — setting-specific library corpora
     recipes/               # generate-recipes.js — setting-specific crafting list
   utils/                   # engine modules (sourcemap-registered)

@@ -26,11 +26,11 @@ make test      # lint + types + sourcemap checks + editor tests + avrae-ls alias
 
 | Script | npm command | Input | Output |
 |--------|-------------|-------|--------|
-| [generate-monsters.js](generate-monsters.js) | `npm run generate:monsters` | [monsters.tsv](../assets/monsters.tsv) | `monsters_{a-z}.gvar` |
-| [generate-items.js](generate-items.js) | `npm run generate:items` | [items.tsv](../assets/items.tsv) | `items_list`, `potions_list`, `magic_items_list` |
-| [generate-spells.js](generate-spells.js) | `npm run generate:spells` | [spells.tsv](../assets/spells.tsv) | `spells_list.gvar` |
-| **`generate-books.js`** | `npm run generate:books` | books-forgotten-realms/real.tsv | `configs/books/{forgotten_realms,real}_all.gvar` when empty; else `{corpus}_{a-z}.gvar` |
-| [generate-recipes.js](generate-recipes.js) | `npm run generate:recipes` | [recipes.tsv](../assets/recipes.tsv) | `configs/recipes/recipes_list.gvar` |
+| [generate-monsters.js](generate-monsters.js) | `npm run generate:monsters` | [monsters.tsv](../assets/monsters.tsv) | `monsters_{a-z}.gvar.json` |
+| [generate-items.js](generate-items.js) | `npm run generate:items` | [items.tsv](../assets/items.tsv) | `items_list.gvar.json`, `potions_list.gvar.json`, `magic_items_list.gvar.json` |
+| [generate-spells.js](generate-spells.js) | `npm run generate:spells` | [spells.tsv](../assets/spells.tsv) | `spells_list.gvar.json` |
+| **`generate-books.js`** | `npm run generate:books` | books-forgotten-realms/real.tsv | `configs/books/{forgotten_realms,real}_all.gvar.json` when empty; else `{corpus}_{a-z}.gvar.json` |
+| [generate-recipes.js](generate-recipes.js) | `npm run generate:recipes` | [recipes.tsv](../assets/recipes.tsv) | `configs/recipes/recipes_list.gvar.json` |
 
 ```bash
 make build     # run all generators, build env gvars, and refresh .varfile.json

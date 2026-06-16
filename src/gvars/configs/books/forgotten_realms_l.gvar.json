@@ -1,0 +1,111 @@
+[
+  {
+    "name": "Lines on the North",
+    "author": "Hommil Dundreth, Merchant-Mage of Hlintar",
+    "written": "1320 DR",
+    "rarity": "common",
+    "language": "Common",
+    "type": "original",
+    "description": "Hommil Dundreth, merchant-mage of Hlintar, versifies trade wisdom — when to buy furs, when to sell steel, and how winter turns copper into gold for those who survive it.\n\nThe poem is taught in counting-houses; Dundreth's enemies claim he hid loan-shark rates in the metre.",
+    "tags": ["north", "trade", "philosophy"],
+    "read_bonus": 0,
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Lines_on_the_North"
+  },
+  {
+    "name": "Luskan Threat to Neverwinter",
+    "author": "Unknown",
+    "written": "before 1374 DR",
+    "rarity": "uncommon",
+    "language": "Common",
+    "type": "original",
+    "description": "An intelligence brief on Luskan's naval ambitions — ship counts, Hosttower meddling, and the historical pattern of winter raids on Neverwinter's harbour.\n\nThe author is unnamed; Lord Neverember's seal appears on some copies, suggesting official sponsorship and selective distribution.",
+    "tags": ["neverwinter", "luskan", "war"],
+    "read_bonus": 0,
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Luskan_Threat_to_Neverwinter"
+  },
+  {
+    "name": "Legends of Icewind Dale",
+    "author": "Unknown",
+    "written": "before 1312 DR",
+    "rarity": "common",
+    "language": "Common",
+    "type": "original",
+    "description": "Legends of Icewind Dale — Legends collected from tavern verse, elder memory, and sources no scholar will swear to in court. Library catalogues list no certain author; the work is dated to before 1312 DR.\n\nEach generation adds a verse; purists claim the oldest layer is true and everything since is flattery.",
+    "tags": ["north", "myth", "legend"],
+    "read_bonus": 0,
+    "image": "https://static.wikia.nocookie.net/forgottenrealms/images/d/de/IWD2_white_book.png/revision/latest?cb=20221115133446",
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Legends_of_Icewind_Dale"
+  },
+  {
+    "name": "Lords' Writ",
+    "author": "Ahghairon",
+    "written": "1039 DR",
+    "rarity": "very rare",
+    "language": "Common",
+    "type": "original",
+    "description": "Lords' Writ — A chronicle preserved in northern and coastal scriptoria — dates, names, and the sort of detail merchants pretend not to need. Ahghairon is credited in library catalogues; the work is dated to 1039 DR.\n\nLater hands added marginal dates and crossed out names; historians still argue which revisions were propaganda.",
+    "tags": ["waterdeep", "law", "history"],
+    "read_bonus": 0,
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Lords%27_Writ"
+  },
+  {
+    "name": "Legacy of the Three Shields",
+    "author": "Iana Robinsong of Silverymoon",
+    "written": "900s DR",
+    "rarity": "uncommon",
+    "language": "Common",
+    "type": "original",
+    "description": "Legacy of the Three Shields — A chronicle preserved in northern and coastal scriptoria — dates, names, and the sort of detail merchants pretend not to need. Iana Robinsong of Silverymoon is credited in library catalogues; the work is dated to 900s DR.\n\nLater hands added marginal dates and crossed out names; historians still argue which revisions were propaganda.",
+    "tags": ["north", "history", "myth"],
+    "read_bonus": 0,
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Legacy_of_the_Three_Shields"
+  },
+  {
+    "name": "Lore of the Coast",
+    "author": "Irigoth Mmar",
+    "written": "1223 DR",
+    "rarity": "uncommon",
+    "language": "Common",
+    "type": "original",
+    "description": "Lore of the Coast — A chronicle preserved in northern and coastal scriptoria — dates, names, and the sort of detail merchants pretend not to need. Irigoth Mmar is credited in library catalogues; the work is dated to 1223 DR.\n\nLater hands added marginal dates and crossed out names; historians still argue which revisions were propaganda.",
+    "tags": ["baldurs_gate", "history", "geography"],
+    "read_bonus": 0,
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Lore_of_the_Coast"
+  },
+  {
+    "name": "Life on the Rack",
+    "author": "Shavryn Ilidar",
+    "written": "650 DR",
+    "rarity": "ancient",
+    "language": "Common",
+    "type": "original",
+    "description": "Life on the Rack — Devotional and doctrinal writing circulated among temples and faithful households along the trade routes. Shavryn Ilidar is credited in library catalogues; the work is dated to 650 DR.\n\nTemple libraries hold the cleanest editions; roadside chapbooks may omit verses the clergy prefer not to recite aloud.",
+    "tags": ["religion", "history", "philosophy"],
+    "read_bonus": 0,
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Life_on_the_Rack"
+  },
+  {
+    "name": "Lost Tales of Myth Drannor",
+    "author": "Skerrit the Green",
+    "written": "15th century DR",
+    "rarity": "very rare",
+    "language": "Common",
+    "type": "original",
+    "description": "Lost Tales of Myth Drannor — A chronicle preserved in northern and coastal scriptoria — dates, names, and the sort of detail merchants pretend not to need. Skerrit the Green is credited in library catalogues; the work is dated to 15th century DR.\n\nLater hands added marginal dates and crossed out names; historians still argue which revisions were propaganda.",
+    "tags": ["elves", "history", "myth"],
+    "read_bonus": 0,
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Lost_Tales_of_Myth_Drannor"
+  },
+  {
+    "name": "Life Beneath the Sails",
+    "author": "Anonymous",
+    "written": "1369 DR",
+    "rarity": "common",
+    "language": "Common",
+    "type": "original",
+    "description": "Life Beneath the Sails — Practical notes for wayfarers — tolls, seasons, inns, and the unwritten rules of safe passage. Anonymous is credited in library catalogues; the work is dated to 1369 DR.\n\nExperienced caravans treat the counsel as suggestion only — but rookies who ignore it seldom return to disagree.",
+    "tags": ["sea", "travel", "culture"],
+    "read_bonus": 0,
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Life_Beneath_the_Sails"
+  }
+]

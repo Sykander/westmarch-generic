@@ -61,7 +61,7 @@ const manifest = [];
 const sourcemapEntries = [];
 
 for (const { name, type } of shards) {
-  const file = `${OUT_DIR}/${name}.gvar`;
+  const file = `${OUT_DIR}/${name}.gvar.json`;
   const contents = processed.filter((row) => row.type === type);
   writeJsonGvar(paths.gvar(file), contents);
   manifest.push({ name, file, count: contents.length, required: true });

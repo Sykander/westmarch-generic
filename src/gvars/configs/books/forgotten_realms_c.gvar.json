@@ -1,0 +1,76 @@
+[
+  {
+    "name": "Codicillary Rules of Engagements for the Flaming Fist",
+    "author": "Flaming Fist High Command",
+    "written": "before 1492 DR",
+    "rarity": "uncommon",
+    "language": "Common",
+    "type": "original",
+    "description": "The Flaming Fist's formal rules of engagement for mercenary contracts — escalation ladders, prisoner treatment, and when an officer may refuse an employer's order without court-martial.\n\nOutsiders find the codicil dry; soldiers in the Outer City treat selected passages as scripture.",
+    "tags": ["baldurs_gate", "war", "law"],
+    "read_bonus": 0,
+    "image": "https://static.wikia.nocookie.net/forgottenrealms/images/5/56/Red_and_gold_book_bg3.png/revision/latest/scale-to-width-down/394?cb=20231002033431",
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Codicillary_Rules_of_Engagements_for_the_Flaming_Fist"
+  },
+  {
+    "name": "Corsairs of Luskan",
+    "author": "Unknown",
+    "written": "before 1492 DR",
+    "rarity": "common",
+    "language": "Common",
+    "type": "original",
+    "description": "Corsairs of Luskan — Military history and counsel from campaigns fought along the Frontier and the Sword Coast. Library catalogues list no certain author; the work is dated to before 1492 DR.\n\nVeterans annotate the margins with corrections; green officers treat those notes as insults until the first ambush.",
+    "tags": ["luskan", "sea", "war"],
+    "read_bonus": 0,
+    "image": "https://static.wikia.nocookie.net/forgottenrealms/images/d/d6/Brown_book_bg3.png/revision/latest/scale-to-width-down/390?cb=20231123232732",
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Corsairs_of_Luskan"
+  },
+  {
+    "name": "Cookbook of the Realms",
+    "author": "Unknown",
+    "written": "15th century DR",
+    "rarity": "common",
+    "language": "Common",
+    "type": "original",
+    "description": "Cookbook of the Realms — Commercial wisdom dressed as prose — prices, routes, guild customs, and when to walk away from a deal. Library catalogues list no certain author; the work is dated to 15th century DR.\n\nFactors along the Long Road keep folded excerpts in strongboxes next to their scales and seals.",
+    "tags": ["culture", "trade"],
+    "read_bonus": 0,
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Cookbook_of_the_Realms"
+  },
+  {
+    "name": "Chronicles of Rothilion",
+    "author": "Rothilion the Honorable",
+    "written": "before 714 DR",
+    "rarity": "ancient",
+    "language": "Common",
+    "type": "original",
+    "description": "Chronicles of Rothilion — A chronicle preserved in northern and coastal scriptoria — dates, names, and the sort of detail merchants pretend not to need. Rothilion the Honorable is credited in library catalogues; the work is dated to before 714 DR.\n\nLater hands added marginal dates and crossed out names; historians still argue which revisions were propaganda.",
+    "tags": ["elves", "history", "law"],
+    "read_bonus": 0,
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Chronicles_of_Rothilion"
+  },
+  {
+    "name": "Crown Book of the Realm of Cormyr",
+    "author": "Various",
+    "written": "continually updated",
+    "rarity": "rare",
+    "language": "Common",
+    "type": "original",
+    "description": "Crown Book of the Realm of Cormyr — A chronicle preserved in northern and coastal scriptoria — dates, names, and the sort of detail merchants pretend not to need. Various is credited in library catalogues; the work is dated to continually updated.\n\nLater hands added marginal dates and crossed out names; historians still argue which revisions were propaganda.",
+    "tags": ["cormyr", "history", "law"],
+    "read_bonus": 0,
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Crown_Book_of_the_Realm_of_Cormyr"
+  },
+  {
+    "name": "Cormyrian Customs And Scandals",
+    "author": "Asgerlan Burtrann",
+    "written": "unknown",
+    "rarity": "common",
+    "language": "Common",
+    "type": "original",
+    "description": "Cormyrian Customs And Scandals — A text that names names — or appears to — and has outlived more than one owner. Asgerlan Burtrann is credited in library catalogues; the work is dated to unknown.\n\nSeveral entries end mid-sentence, as if the author learned something and chose discretion over royalties.",
+    "tags": ["cormyr", "culture", "intrigue"],
+    "read_bonus": 0,
+    "content_link": "https://forgottenrealms.fandom.com/wiki/Cormyrian_Customs_And_Scandals"
+  }
+]

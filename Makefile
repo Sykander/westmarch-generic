@@ -7,6 +7,7 @@ GENERATE_TARGETS = $(CATALOGUE_GENERATORS) generate-vars generate-env
 # Useful
 #
 build: $(GENERATE_TARGETS) editor-build
+	npm run lint:fix
 
 test: lint sourcemap-test types editor-test unit-tests
 

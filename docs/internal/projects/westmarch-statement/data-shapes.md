@@ -1179,7 +1179,7 @@ cfg.subsystems.exploration.config.enc_biome_source
 | `enc_biome_source` | `"auto"` \| `"argument"` \| `"location"` | `"auto"` | How **all exploration activity commands** pick the biome code |
 | `distribution_policy` | `"random"` \| `"balanced"` | `"random"` | How to pick **encounter kind** (combat / quest / gather) before rolling a specific encounter |
 | `distribution` | `{ combat, quest, gather }` | see below | Target **percentages** for each kind — must sum to **100** |
-| `monster_images` | `{ hunt, loot }` | `{ "hunt": "thumbnail", "loot": "thumbnail" }` | Where hunt/loot put available monster art: `"thumbnail"`, `"image"`, or `"off"` |
+| `monster_images` | `{ hunt, loot }` | `{ "hunt": "thumbnail", "loot": "thumbnail" }` | Where hunt embeds and initial loot-session embeds put available monster art: `"thumbnail"`, `"image"`, or `"off"` |
 | `show_check_dcs` | `{ hunt, loot }` | `{ "hunt": True, "loot": True }` | Whether hunt/loot reveal the DC number in public check text |
 
 Default **`distribution`**:
@@ -1248,7 +1248,7 @@ Future activity clones (**forage**, **fish**, …) share the same kind-first pic
 }
 ```
 
-When set to **`thumbnail`**, the command passes the monster catalogue **`image_url`** as the embed thumbnail. **`image`** uses the full embed image slot. **`off`** leaves command/display branding alone. Owner monster rows may use **`image_url`** or **`image`**.
+When set to **`thumbnail`**, the command passes the monster catalogue **`image_url`** as the embed thumbnail. **`image`** uses the full embed image slot. **`off`** leaves command/display branding alone. Owner monster rows may use **`image_url`** or **`image`**. For **`loot`**, monster art is used only when a new loot session starts; active-session and loot-roll embeds do not repeat it.
 
 **`show_check_dcs`** is also keyed by command:
 
