@@ -14,8 +14,9 @@ Survival check to track a creature before combat. westmarch expects **`!enc`** i
 - **Creature:** prefix/exact search in monsters catalogue.
 - **DC:** `floor((10 if party_size==1 else 8*party_size) + cr)`.
 - **Roll:** Survival check.
-- **Success:** embed with `!i madd` suggestion for combat init.
+- **Success:** embed with `!i madd` suggestion for combat init; if monster art exists, show it according to `subsystems.exploration.config.monster_images.hunt`.
 - **Group failure:** copy-paste command for next hunter with `-b {total}[previous] -n {n+1}`.
+- **DC visibility:** `subsystems.exploration.config.show_check_dcs.hunt` controls whether public output includes the numeric DC.
 
 ## westmarch reference
 
@@ -43,6 +44,7 @@ flowchart TD
 |------|-------|
 | `monsters.gvar` search | **[monsters.gvar](../../gvars/monsters.md)**; catalogue in **config** |
 | DC formula | **Engine**; coefficients optional in config `HUNT.dc` |
+| Monster art / DC visibility | **Config** under `subsystems.exploration.config` |
 | CR from monster entry | **Config** catalogue |
 
 Large monster lists likely need Option C extension gvars ([solution-statement.md](../../solution-statement.md)).

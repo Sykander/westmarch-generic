@@ -1179,6 +1179,8 @@ cfg.subsystems.exploration.config.enc_biome_source
 | `enc_biome_source` | `"auto"` \| `"argument"` \| `"location"` | `"auto"` | How **all exploration activity commands** pick the biome code |
 | `distribution_policy` | `"random"` \| `"balanced"` | `"random"` | How to pick **encounter kind** (combat / quest / gather) before rolling a specific encounter |
 | `distribution` | `{ combat, quest, gather }` | see below | Target **percentages** for each kind — must sum to **100** |
+| `monster_images` | `{ hunt, loot }` | `{ "hunt": "thumbnail", "loot": "thumbnail" }` | Where hunt/loot put available monster art: `"thumbnail"`, `"image"`, or `"off"` |
+| `show_check_dcs` | `{ hunt, loot }` | `{ "hunt": True, "loot": True }` | Whether hunt/loot reveal the DC number in public check text |
 
 Default **`distribution`**:
 
@@ -1234,6 +1236,30 @@ Future activity clones (**forage**, **fish**, …) share the same kind-first pic
 | Key | Type | Default | Meaning |
 |-----|------|---------|---------|
 | `repeat_exclude_window` | int | `5` | When **`policies.exploration.avoid_repeat_encounters`** is on — how many recent picks from **[stats.gvar](gvars/stats.md)** to consider when excluding duplicates |
+
+#### Hunt / loot display
+
+**`monster_images`** is keyed by command:
+
+```py
+"monster_images": {
+    "hunt": "thumbnail",  # "thumbnail" | "image" | "off"
+    "loot": "thumbnail",
+}
+```
+
+When set to **`thumbnail`**, the command passes the monster catalogue **`image_url`** as the embed thumbnail. **`image`** uses the full embed image slot. **`off`** leaves command/display branding alone. Owner monster rows may use **`image_url`** or **`image`**.
+
+**`show_check_dcs`** is also keyed by command:
+
+```py
+"show_check_dcs": {
+    "hunt": True,
+    "loot": True,
+}
+```
+
+When **`False`**, the command still rolls against the same DC but prints generic check text such as **`Survival check`** or **`Investigation check`** without the numeric DC.
 
 ### `downtime.config`
 

@@ -229,6 +229,25 @@ vars:
       display = {"name": "Test World", "colour": "#112233"}
       policies = {"display": {"footer_behaviour": "helpful_tips"}}
 
+return "monster_images" in check_config.summarize_config("policies")["desc"] and "show_check_dcs" in check_config.summarize_config("policies")["desc"]
+---
+True
+---
+name: summarize policies includes hunt loot display config
+vars:
+  svars:
+    westmarch_config: "ffff4545-4545-4545-4545-454545454545"
+  gvars:
+    ffff4545-4545-4545-4545-454545454545: |
+      subsystems = {
+          "exploration": {
+              "config": {
+                  "monster_images": {"hunt": "image", "loot": "off"},
+                  "show_check_dcs": {"hunt": False, "loot": True},
+              },
+          },
+      }
+
 return "enc_biome_source: location** requires the **travel** subsystem" in str(check_config.validate()[0])
 ---
 True
@@ -441,3 +460,71 @@ vars:
         [["enc.quest"], "quest", "Lost child", ""],
         [["enc.gather"], "flavour", "Berries", "", "gather"]
       ]
+
+return len(check_config.validate()[0]) == 0
+---
+True
+---
+name: validate hunt loot display config accepts supported values
+vars:
+  svars:
+    westmarch_config: "ffff2828-2828-2828-2828-282828282828"
+  gvars:
+    ffff2828-2828-2828-2828-282828282828: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"hunt": True, "loot": True},
+              "config": {
+                  "monster_images": {"hunt": "image", "loot": "off"},
+                  "show_check_dcs": {"hunt": False, "loot": True},
+              },
+          },
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "ffff5555-5555-5555-5555-555555555555"},
+          },
+      }
+    ffff5555-5555-5555-5555-555555555555: |
+      [
+        [["enc.combat"], "combat", "Wolf", "", 1],
+        [["enc.quest"], "quest", "Lost child", ""],
+        [["enc.gather"], "flavour", "Berries", "", "gather"]
+      ]
+
+return "monster_images.hunt" in str(check_config.validate()[0])
+---
+True
+---
+name: validate bad monster image mode errors
+vars:
+  svars:
+    westmarch_config: "ffff2929-2929-2929-2929-292929292929"
+  gvars:
+    ffff2929-2929-2929-2929-292929292929: |
+      subsystems = {
+          "exploration": {
+              "config": {
+                  "monster_images": {"hunt": "poster"},
+              },
+          },
+      }
+
+return "show_check_dcs.loot" in str(check_config.validate()[0])
+---
+True
+---
+name: validate non boolean show_check_dcs errors
+vars:
+  svars:
+    westmarch_config: "ffff3030-3030-3030-3030-303030303030"
+  gvars:
+    ffff3030-3030-3030-3030-303030303030: |
+      subsystems = {
+          "exploration": {
+              "config": {
+                  "show_check_dcs": {"loot": "no"},
+              },
+          },
+      }

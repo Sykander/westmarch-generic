@@ -47,6 +47,16 @@ subsystems = {
                 "gather": 50,
             },
             "repeat_exclude_window": 5,
+            # Optional — hunt/loot monster art: "thumbnail", "image", or "off"
+            "monster_images": {
+                "hunt": "thumbnail",
+                "loot": "thumbnail",
+            },
+            # Optional — hide public DC numbers while still rolling against them
+            "show_check_dcs": {
+                "hunt": True,
+                "loot": True,
+            },
         },
         # Optional — per-command cooldowns (seconds); see data-shapes § Command config
         # "command_config": {

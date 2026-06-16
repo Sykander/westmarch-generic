@@ -4,6 +4,7 @@ using(
     auth = env.gvars.auth,
     config = env.gvars.config,
     display = env.gvars.display,
+    exploration = env.gvars.exploration,
     monsters = env.gvars.monsters,
     rolls = env.gvars.rolls,
 )
@@ -80,9 +81,12 @@ except:
     passed = total >= dc
 
 name = monsters.monster_name(monster)
+check_line = f"Survival check: {full}"
+if exploration.show_check_dcs(cfg, "hunt"):
+    check_line = f"Survival check vs **DC {dc}**: {full}"
 lines = [
     f"**{name}**",
-    f"Survival check vs **DC {dc}**: {full}",
+    check_line,
 ]
 if passed:
     lines.append(f"Trail found. {monsters.format_combat_block(monster)}")
@@ -96,7 +100,9 @@ if party_size > 1:
         next_n = 2
     lines.append(f"Group hunt: party size **{party_size}**. If this hunter fails, the next hunter can run `!{cmd_name} {name} {party_size} -b {total}[previous] -n {next_n}`.")
 
-return get_embed(
-    desc="\n\n".join(lines),
-)
+image_url = None
+if passed:
+    image_url = monsters.monster_image(monster)
+
+return exploration.embed_with_image(get_embed, "\n\n".join(lines), cfg, "hunt", image_url)
 </drac2>

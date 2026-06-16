@@ -320,7 +320,7 @@ Three layers — do not conflate:
 | Layer | Answers | Example |
 |-------|---------|---------|
 | **`policies.*`** | Whether to enforce a class of behaviour table-wide | **`downtime.mode: tracked`**, **`exploration.enforce_cooldowns`** |
-| **`subsystems.*.config`** | Wiring and subsystem defaults | **`enc_biome_source`**, **`repeat_exclude_window`** |
+| **`subsystems.*.config`** | Wiring and subsystem defaults | **`enc_biome_source`**, **`repeat_exclude_window`**, **`monster_images`**, **`show_check_dcs`** |
 | **`subsystems.*.command_config`** | Per-command seconds and workday costs | **`enc.cooldown_seconds: 120`**, **`job.workdays_cost: 0`** |
 
 **MVP policy domains** (full keys → [data-shapes.md § Policies MVP checklist](data-shapes.md#policies-mvp-checklist)):
@@ -333,7 +333,7 @@ Three layers — do not conflate:
 | **downtime** | `mode`, `max_workdays`, `acquisition` | **`tracked`** → enable **`subsystems.downtime`**; check **errors** on mismatch |
 | **crafting** | `require_downtime_before_roll`, `auto_deduct_*` | Workdays from **`command_config`** + recipe |
 | **economy** | `enforce_cooldowns`, `enforce_wallet_caps`, `starting_gold` | Job cooldown; optional wallet caps + one-time gp grant |
-| **exploration** | `enforce_cooldowns`, `avoid_repeat_encounters` | Cooldown durations in **`command_config`**; repeat window in **`exploration.config`** |
+| **exploration** | `enforce_cooldowns`, `avoid_repeat_encounters` | Cooldown durations in **`command_config`**; repeat window, hunt/loot art, and DC visibility in **`exploration.config`** |
 | **combat** | `roll_monster_hp`, scaling keys *(defer)* | HP rolls vs narrative-only; CR scaling reserved |
 | **quest** | `self_assign`, `max_active` | Auto journal from quest encounters |
 | **content** | `enforce_library_cooldowns`, `enforce_read_cooldowns` | Library default **120s**; read optional |

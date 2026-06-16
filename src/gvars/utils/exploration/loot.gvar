@@ -4,6 +4,7 @@ using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(
     bags = env.gvars.bags,
     dicts = env.gvars.dicts,
+    exploration = env.gvars.exploration,
     lists = env.gvars.lists,
     monsters = env.gvars.monsters,
     rolls = env.gvars.rolls,
@@ -35,6 +36,7 @@ def _read_field(obj, key):
         "dc": lambda o: o.dc,
         "kind": lambda o: o.kind,
         "amount": lambda o: o.amount,
+        "image": lambda o: o.image,
     }
     if key in attrs:
         try:
@@ -165,6 +167,7 @@ def start_session(ch, monster, config=None):
         "creature": monsters.monster_name(monster),
         "cr": monsters.monster_cr(monster),
         "type": monsters.monster_type(monster),
+        "image": monsters.monster_image(monster),
         "items": build_lootables(monster, config),
     }
     return set_session(ch, session)
@@ -199,6 +202,20 @@ def _find_lootable(session, query):
         if prefix == None and name.lower().startswith(q):
             prefix = item
     return prefix
+
+
+def _monster_image_from_session(session, config=None):
+    image = _read_field(session, "image")
+    if image != None and str(image).strip() != "":
+        return str(image).strip()
+    creature = _read_field(session, "creature")
+    if creature == None or str(creature).strip() == "":
+        return None
+    try:
+        monster = monsters.search(config, str(creature))
+        return monsters.monster_image(monster)
+    except:
+        return None
 
 
 def _remove_lootable(session, lootable):
@@ -247,6 +264,7 @@ def format_session(session, config=None):
         lines.append("No lootables remain. Use `!loot clear` to close the session.")
         return "\n".join(lines)
     lines.append("Loot table:")
+    show_dc = exploration.show_check_dcs(config, "loot")
     for item in items:
         name = _lootable_name(item)
         skill = _read_field(item, "skill")
@@ -255,7 +273,10 @@ def format_session(session, config=None):
             skill = "Investigation"
         if dc == None:
             dc = 10
-        lines.append(f"- **{name}** - {skill} DC {dc}")
+        check_text = f"{skill} check"
+        if show_dc:
+            check_text = f"{skill} DC {dc}"
+        lines.append(f"- **{name}** - {check_text}")
     return "\n".join(lines)
 
 
@@ -297,6 +318,9 @@ def attempt_loot(ch, config, lootable_id, args):
         full = rolled.full
         passed = total >= dc
     name = _lootable_name(lootable)
+    check_text = f"{skill} check"
+    if exploration.show_check_dcs(config, "loot"):
+        check_text = f"{skill} DC {dc}"
     if passed:
         reward = _apply_reward(ch, lootable)
         session = _remove_lootable(session, lootable)
@@ -304,8 +328,8 @@ def attempt_loot(ch, config, lootable_id, args):
             clear_session(ch)
         else:
             set_session(ch, session)
-        return True, f"{skill} DC {dc}: {full}\n\nRecovered **{name}**. {reward}", session
-    return False, f"{skill} DC {dc}: {full}\n\nCould not recover **{name}**.", session
+        return True, f"{check_text}: {full}\n\nRecovered **{name}**. {reward}", session
+    return False, f"{check_text}: {full}\n\nCould not recover **{name}**.", session
 
 
 def run(argslist, args, get_embed, config, ch):
@@ -313,7 +337,13 @@ def run(argslist, args, get_embed, config, ch):
         session = get_session(ch)
         if session == None:
             return get_embed(desc="No active loot session. Use `!loot <creature>` to start one.")
-        return get_embed(desc=format_session(session, config))
+        return exploration.embed_with_image(
+            get_embed,
+            format_session(session, config),
+            config,
+            "loot",
+            _monster_image_from_session(session, config),
+        )
 
     first = str(argslist[0]).strip().lower()
     if first in ["help", "?"]:
@@ -327,10 +357,22 @@ def run(argslist, args, get_embed, config, ch):
     session = get_session(ch)
     if session != None:
         ok, msg, updated = attempt_loot(ch, config, text, args)
-        return get_embed(desc=msg)
+        return exploration.embed_with_image(
+            get_embed,
+            msg,
+            config,
+            "loot",
+            _monster_image_from_session(updated, config),
+        )
 
     monster = monsters.search(config, text)
     if monster == None:
         return get_embed(desc=f"Creature **{text}** not found. Try an exact or longer creature name.")
     session = start_session(ch, monster, config)
-    return get_embed(desc=f"Started loot table session.\n\n{format_session(session, config)}")
+    return exploration.embed_with_image(
+        get_embed,
+        f"Started loot table session.\n\n{format_session(session, config)}",
+        config,
+        "loot",
+        monsters.monster_image(monster),
+    )

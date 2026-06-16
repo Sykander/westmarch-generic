@@ -18,6 +18,7 @@ VALID_LIBRARY_TOPIC = ["inferred", "balanced", "manual", "restricted"]
 VALID_RULES_VERSION = ["2014", "2024"]
 VALID_FOOTER_BEHAVIOUR = ["helpful_tips", "string", "help", "credits", "balanced"]
 VALID_AVOID_REPEAT = ["off", "same_biome", "global"]
+VALID_MONSTER_IMAGE_MODES = ["thumbnail", "thumb", "image", "off", "none"]
 POOL_ACTIVITY_COMMANDS = [
     "enc",
     "forage",
@@ -233,6 +234,7 @@ def _read_field(obj, key):
         "biomes": lambda o: o.biomes,
         "paths": lambda o: o.paths,
         "commands": lambda o: o.commands,
+        "config": lambda o: o.config,
         "activities": lambda o: o.activities,
         "biome": lambda o: o.biome,
         "display": lambda o: o.display,
@@ -254,6 +256,8 @@ def _read_field(obj, key):
         "footer_behaviour": lambda o: o.footer_behaviour,
         "default_location": lambda o: o.default_location,
         "policies": lambda o: o.policies,
+        "monster_images": lambda o: o.monster_images,
+        "show_check_dcs": lambda o: o.show_check_dcs,
     }
     if key in attrs:
         try:
@@ -672,6 +676,47 @@ def _check_exploration_command_config(block, errors, warnings):
                 )
 
 
+def _check_exploration_show_dcs(exp_cfg, errors, warnings):
+    dcs = _read_field(exp_cfg, "show_check_dcs")
+    if dcs == None:
+        return
+    path = "subsystems.exploration.config.show_check_dcs"
+    if not dicts.is_dict(dcs):
+        errors.append(f"**{path}** must be an object when set.")
+        return
+    for cmd in _map_keys(dcs):
+        if cmd not in ["hunt", "loot"]:
+            warnings.append(
+                f"Unknown key **{cmd}** in **{path}** — only hunt and loot use check DC display."
+            )
+        raw = _read_field(dcs, cmd)
+        if raw != True and raw != False:
+            errors.append(f"**{path}.{cmd}** must be true or false.")
+
+
+def _check_exploration_monster_images(exp_cfg, errors, warnings):
+    modes = _read_field(exp_cfg, "monster_images")
+    if modes == None:
+        return
+    path = "subsystems.exploration.config.monster_images"
+    if not dicts.is_dict(modes):
+        errors.append(f"**{path}** must be an object when set.")
+        return
+    for cmd in _map_keys(modes):
+        if cmd not in ["hunt", "loot"]:
+            warnings.append(
+                f"Unknown key **{cmd}** in **{path}** — only hunt and loot use monster images."
+            )
+        raw = _read_field(modes, cmd)
+        mode = ""
+        if raw != None:
+            mode = str(raw).strip().lower()
+        if mode not in VALID_MONSTER_IMAGE_MODES:
+            errors.append(
+                f"**{path}.{cmd}** must be thumbnail, image, or off."
+            )
+
+
 def _check_exploration_pool_coverage(cfg, distribution, active_cmds, warnings):
     if len(active_cmds) == 0:
         return
@@ -723,6 +768,8 @@ def check_exploration(cfg):
     exp_cfg = _read_field(block, "config")
     if exp_cfg == None or not dicts.is_dict(exp_cfg):
         return errors, warnings
+    _check_exploration_show_dcs(exp_cfg, errors, warnings)
+    _check_exploration_monster_images(exp_cfg, errors, warnings)
     source = _read_field(exp_cfg, "enc_biome_source")
     if source != None:
         source = str(source).strip().lower()
@@ -1102,6 +1149,18 @@ def _policy_summary(cfg):
     fb = _read_field(disp_pol, "footer_behaviour")
     if fb != None:
         lines.append(f"display.footer_behaviour: **{fb}**")
+    exp_block = _read_subsystem(cfg, "exploration")
+    exp_cfg = _read_field(exp_block, "config")
+    image_cfg = _read_field(exp_cfg, "monster_images")
+    dcs_cfg = _read_field(exp_cfg, "show_check_dcs")
+    if image_cfg != None:
+        hunt_image = _read_field(image_cfg, "hunt")
+        loot_image = _read_field(image_cfg, "loot")
+        lines.append(f"exploration.monster_images: hunt **{hunt_image}**, loot **{loot_image}**")
+    if dcs_cfg != None:
+        hunt_dcs = _read_field(dcs_cfg, "hunt")
+        loot_dcs = _read_field(dcs_cfg, "loot")
+        lines.append(f"exploration.show_check_dcs: hunt **{hunt_dcs}**, loot **{loot_dcs}**")
     return "\n".join(lines)
 
 

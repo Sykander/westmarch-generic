@@ -141,3 +141,66 @@ vars:
               "commands": {"loot": True},
           },
       }
+
+!loot Image Beast
+---
+re:-image https://example.test/image-beast.png
+---
+name: loot start can show monster art as embed image
+vars:
+  uvars:
+    _wm_command: loot
+  svars:
+    westmarch_config: "eeee8888-8888-8888-8888-888888888888"
+  gvars:
+    eeee8888-8888-8888-8888-888888888888: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"loot": True},
+              "config": {
+                  "monster_images": {"loot": "image"},
+              },
+          },
+      }
+      world_data = {
+          "monsters": [
+              {
+                  "name": "Image Beast",
+                  "cr": 1,
+                  "type_str": "Beast",
+                  "image_url": "https://example.test/image-beast.png",
+              },
+          ],
+      }
+
+!loot Quiet Beast
+---
+re:Investigation check
+---
+name: loot can hide public check dcs
+vars:
+  uvars:
+    _wm_command: loot
+  svars:
+    westmarch_config: "eeee8989-8989-8989-8989-898989898989"
+  gvars:
+    eeee8989-8989-8989-8989-898989898989: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"loot": True},
+              "config": {
+                  "show_check_dcs": {"loot": False},
+              },
+          },
+      }
+      world_data = {
+          "monsters": [
+              {
+                  "name": "Quiet Beast",
+                  "cr": 1,
+                  "type_str": "Beast",
+              },
+          ],
+      }

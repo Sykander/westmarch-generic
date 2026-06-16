@@ -17,6 +17,8 @@ Two-phase loot session: select creature → loot items with skill checks. State 
 - **Start:** derive lootables from monster type (westmarch uses Investigation/Arcana/Religion/Nature checks + gold bands by CR).
 - **Loot item:** roll configured skill vs lootable DC; on success add to bag or coinpurse.
 - **Session:** JSON cvar until cleared or empty.
+- **Monster art:** if the catalogue has `image_url`, display it according to `subsystems.exploration.config.monster_images.loot`.
+- **DC visibility:** `subsystems.exploration.config.show_check_dcs.loot` controls whether session and roll text include numeric DCs.
 
 ## westmarch reference
 
@@ -48,6 +50,7 @@ flowchart TD
 | Data | Owner |
 |------|-------|
 | Loot table rules by type/CR | **Engine** [loot.gvar](../../gvars/loot.md); tunable via config `LOOT_RULES` later |
+| Monster art / DC visibility | **Config** under `subsystems.exploration.config` |
 | Monster catalogue | **Config** |
 | Session cvar key | **Engine** `bags` |
 

@@ -64,6 +64,61 @@ def _field(obj, key):
     return None
 
 
+def _exploration_config(cfg):
+    subs = _field(cfg, "subsystems")
+    block = _field(subs, "exploration")
+    return _field(block, "config")
+
+
+def _exploration_command_value(cfg, map_key, command, default):
+    exp_cfg = _exploration_config(cfg)
+    values = _field(exp_cfg, map_key)
+    if values == None:
+        return default
+    raw = _field(values, command)
+    if raw == None:
+        return default
+    return raw
+
+
+def show_check_dcs(cfg, command):
+    raw = _exploration_command_value(cfg, "show_check_dcs", command, True)
+    return raw == True
+
+
+def monster_image_mode(cfg, command):
+    raw = _exploration_command_value(cfg, "monster_images", command, "thumbnail")
+    if raw == None:
+        return "thumbnail"
+    mode = str(raw).strip().lower()
+    if mode == "thumb":
+        return "thumbnail"
+    if mode in ["off", "none", "false", "disabled"]:
+        return "off"
+    if mode == "image":
+        return "image"
+    return "thumbnail"
+
+
+def monster_image_slot(cfg, command):
+    mode = monster_image_mode(cfg, command)
+    if mode == "off":
+        return None
+    if mode == "image":
+        return "image"
+    return "thumb"
+
+
+def embed_with_image(get_embed, desc, cfg, command, image_url):
+    slot = monster_image_slot(cfg, command)
+    if slot == None or image_url == None or str(image_url).strip() == "":
+        return get_embed(desc=desc)
+    url = str(image_url).strip()
+    if slot == "image":
+        return get_embed(desc=desc, image=url)
+    return get_embed(desc=desc, thumb=url)
+
+
 def run_activity(activity, argslist, get_embed):
     """End-to-end exploration activity handler."""
     cfg = config.get_config()

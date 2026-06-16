@@ -25,6 +25,13 @@ Cached upstream Avrae / avrae-ls docs, refresh scripts, and perf probes live in 
 3. Update **`.alias-test`** files when CI should cover new behavior.
 4. After sourcemap edits: **`make build`**, then **`make test`**.
 
+## What to do when changing config
+
+1. Update the config implementation, fixtures, and validation gvars under `src/`.
+2. Update admin-facing config commands that validate or display the shape, especially **`westmarch check`** and **`westmarch show`**.
+3. Update the web editor under `editor/` so its model, validation, and UI match the new config shape.
+4. Update **`docs/`** and relevant **`.alias-test`** / **`.gvar-test`** coverage for the new config behavior.
+
 ## Tooling
 
 - **Sourcemap tests:** `npm run test-sourcemaps`

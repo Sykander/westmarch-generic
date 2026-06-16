@@ -1,0 +1,26 @@
+cfg = {"subsystems": {"exploration": {"config": {"show_check_dcs": {"hunt": False}}}}}
+return exploration.show_check_dcs(cfg, "hunt")
+---
+False
+---
+name: show_check_dcs can hide hunt dcs
+
+cfg = {"subsystems": {"exploration": {"config": {"monster_images": {"hunt": "image"}}}}}
+return exploration.monster_image_slot(cfg, "hunt")
+---
+"image"
+---
+name: monster_image_slot supports full embed image
+
+cfg = {"subsystems": {"exploration": {"config": {"monster_images": {"loot": "off"}}}}}
+return exploration.monster_image_slot(cfg, "loot") == None
+---
+True
+---
+name: monster_image_slot supports disabling monster art
+
+return exploration.monster_image_slot({}, "loot")
+---
+"thumb"
+---
+name: monster_image_slot defaults to thumbnail

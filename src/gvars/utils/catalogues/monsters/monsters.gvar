@@ -62,6 +62,9 @@ def _read_field(obj, key):
         "size": lambda o: o.size,
         "source": lambda o: o.source,
         "image_url": lambda o: o.image_url,
+        "image": lambda o: o.image,
+        "thumb": lambda o: o.thumb,
+        "thumbnail": lambda o: o.thumbnail,
         "token": lambda o: o.token,
     }
     if key in attrs:
@@ -235,6 +238,15 @@ def monster_type(monster):
     if type_text == None or str(type_text).strip() == "":
         return "Creature"
     return str(type_text)
+
+
+def monster_image(monster):
+    """Best available URL for embeds, preferring catalogue image_url."""
+    for key in ["image_url", "image", "thumb", "thumbnail"]:
+        raw = _read_field(monster, key)
+        if raw != None and str(raw).strip() != "":
+            return str(raw).strip()
+    return None
 
 
 def format_combat_block(monster, prefix="!"):

@@ -12,3 +12,17 @@ return "Wolf" in loot.format_session(session, {}) and "No lootables" in loot.for
 True
 ---
 name: format_session handles empty active session
+
+session = {
+    "creature": "Wolf",
+    "items": [
+        {"id": "survey", "name": "Survey", "skill": "Investigation", "dc": 10},
+    ],
+}
+cfg = {"subsystems": {"exploration": {"config": {"show_check_dcs": {"loot": False}}}}}
+text = loot.format_session(session, cfg)
+return "Investigation check" in text and "DC" not in text
+---
+True
+---
+name: format_session hides loot dcs when configured

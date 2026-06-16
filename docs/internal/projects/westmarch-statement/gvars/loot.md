@@ -40,6 +40,11 @@ def format_session(session, config):
     """Help player see remaining lootables."""
 ```
 
+Display config lives under **`subsystems.exploration.config`**:
+
+- **`monster_images.loot`**: **`thumbnail`** (default), **`image`**, or **`off`**
+- **`show_check_dcs.loot`**: **`True`** by default; **`False`** hides numeric DC text while still rolling against the DC
+
 Optional later: config **`LOOT_RULES`** overrides CR→gp bands and type→skill mapping.
 
 ## Dependencies

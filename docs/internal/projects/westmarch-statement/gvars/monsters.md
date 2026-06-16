@@ -19,12 +19,15 @@ def get_monster(config, name):
 
 def format_combat_block(monster, prefix="!"):
     """Embed snippet for hunt success — monster list + !i madd suggestion."""
+
+def monster_image(monster):
+    """Best available embed image URL, preferring image_url."""
 ```
 
 Monster dict shape *(minimal)*:
 
 ```py
-{ "name": str, "cr": number | str, "type": str, "size": str, ... }
+{ "name": str, "cr": number | str, "type": str, "size": str, "image_url": str, ... }
 ```
 
 Large **owner** catalogues: config **`extensions.monsters`** UUID → same shard or single extension gvar pattern as [items.md](items.md).

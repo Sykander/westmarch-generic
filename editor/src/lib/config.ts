@@ -53,6 +53,7 @@ const VALID_RULES_VERSION = ["2014", "2024"];
 const VALID_FOOTER = ["helpful_tips", "string", "help", "credits", "balanced"];
 const VALID_REPEAT = ["off", "same_biome", "global"];
 const VALID_LIBRARY_TOPIC = ["inferred", "balanced", "manual", "restricted"];
+const VALID_MONSTER_IMAGE_MODES = ["thumbnail", "thumb", "image", "off", "none"];
 const VALID_ENGINE_BIOMES = [
   "beach",
   "forest",
@@ -293,6 +294,8 @@ function createDefaultSubsystems(): Record<string, AnyRecord> {
         distribution_policy: "random",
         distribution: { combat: 25, quest: 25, gather: 50 },
         repeat_exclude_window: 5,
+        monster_images: { hunt: "thumbnail", loot: "thumbnail" },
+        show_check_dcs: { hunt: true, loot: true },
       },
     },
     travel: {
@@ -341,10 +344,10 @@ function mergeSubsystemDefaults(
       },
     };
     if (defaultBlock.config || existingBlock.config) {
-      next[key].config = {
-        ...asRecord(defaultBlock.config),
-        ...asRecord(existingBlock.config),
-      };
+      next[key].config = mergeRecordDefaults(
+        asRecord(existingBlock.config),
+        asRecord(defaultBlock.config),
+      );
     }
   }
 
@@ -353,6 +356,32 @@ function mergeSubsystemDefaults(
   }
 
   return next;
+}
+
+function mergeRecordDefaults(owner: AnyRecord, defaults: AnyRecord): AnyRecord {
+  const merged: AnyRecord = {};
+  for (const [key, defaultValue] of Object.entries(defaults)) {
+    const ownerValue = owner[key];
+    if (
+      defaultValue &&
+      typeof defaultValue === "object" &&
+      !Array.isArray(defaultValue)
+    ) {
+      if (ownerValue == null) {
+        merged[key] = mergeRecordDefaults({}, asRecord(defaultValue));
+      } else if (ownerValue && typeof ownerValue === "object" && !Array.isArray(ownerValue)) {
+        merged[key] = mergeRecordDefaults(asRecord(ownerValue), asRecord(defaultValue));
+      } else {
+        merged[key] = ownerValue;
+      }
+    } else {
+      merged[key] = ownerValue ?? defaultValue;
+    }
+  }
+  for (const [key, ownerValue] of Object.entries(owner)) {
+    if (!(key in merged)) merged[key] = ownerValue;
+  }
+  return merged;
 }
 
 export function parseConfig(source: string): ParseResult {
@@ -473,10 +502,12 @@ function readBool(record: AnyRecord | undefined, key: string): boolean {
   return Boolean(record?.[key]);
 }
 
+function isPlainRecord(value: unknown): value is AnyRecord {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
+}
+
 function asRecord(value: unknown): AnyRecord {
-  return value && typeof value === "object" && !Array.isArray(value)
-    ? (value as AnyRecord)
-    : {};
+  return isPlainRecord(value) ? value : {};
 }
 
 function isHexColour(value: unknown): boolean {
@@ -863,6 +894,89 @@ function validateExploration(model: ConfigModel, issues: ConfigIssue[]) {
         "Adjust combat, quest, and gather percentages.",
       ),
     );
+  }
+
+  if (config.monster_images != null && !isPlainRecord(config.monster_images)) {
+    issues.push(
+      issue(
+        "error",
+        "exploration.monster_images_object",
+        "Policies",
+        "subsystems.exploration.config.monster_images",
+        "Monster image config must be an object",
+        "Use keys for hunt and loot.",
+      ),
+    );
+  }
+  const monsterImages = asRecord(config.monster_images);
+  for (const [command, value] of Object.entries(monsterImages)) {
+    if (!["hunt", "loot"].includes(command)) {
+      issues.push(
+        issue(
+          "warning",
+          "exploration.monster_images_unknown",
+          "Policies",
+          `subsystems.exploration.config.monster_images.${command}`,
+          "Unknown monster image command",
+          "Only hunt and loot use monster image config.",
+        ),
+      );
+      continue;
+    }
+    const mode = typeof value === "string" ? value.trim().toLowerCase() : "";
+    if (!VALID_MONSTER_IMAGE_MODES.includes(mode)) {
+      issues.push(
+        issue(
+          "error",
+          "exploration.monster_images_mode",
+          "Policies",
+          `subsystems.exploration.config.monster_images.${command}`,
+          "Invalid monster image mode",
+          "Use thumbnail, image, or off.",
+        ),
+      );
+    }
+  }
+
+  if (config.show_check_dcs != null && !isPlainRecord(config.show_check_dcs)) {
+    issues.push(
+      issue(
+        "error",
+        "exploration.show_check_dcs_object",
+        "Policies",
+        "subsystems.exploration.config.show_check_dcs",
+        "DC visibility config must be an object",
+        "Use boolean keys for hunt and loot.",
+      ),
+    );
+  }
+  const showCheckDcs = asRecord(config.show_check_dcs);
+  for (const [command, value] of Object.entries(showCheckDcs)) {
+    if (!["hunt", "loot"].includes(command)) {
+      issues.push(
+        issue(
+          "warning",
+          "exploration.show_check_dcs_unknown",
+          "Policies",
+          `subsystems.exploration.config.show_check_dcs.${command}`,
+          "Unknown DC visibility command",
+          "Only hunt and loot use check DC visibility config.",
+        ),
+      );
+      continue;
+    }
+    if (typeof value !== "boolean") {
+      issues.push(
+        issue(
+          "error",
+          "exploration.show_check_dcs_bool",
+          "Policies",
+          `subsystems.exploration.config.show_check_dcs.${command}`,
+          "DC visibility must be boolean",
+          "Use True or False.",
+        ),
+      );
+    }
   }
 
   const commandConfig = asRecord(exploration.command_config);

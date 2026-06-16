@@ -66,6 +66,30 @@ vars:
     aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1: |
       # owner body intentionally empty
 
+return config.cfg.subsystems.exploration.config.monster_images.hunt
+---
+"thumbnail"
+---
+name: empty owner defaults hunt monster image to thumbnail
+vars:
+  svars:
+    westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"
+  gvars:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1: |
+      # owner body intentionally empty
+
+return config.cfg.subsystems.exploration.config.show_check_dcs.loot
+---
+True
+---
+name: empty owner defaults loot check dcs visible
+vars:
+  svars:
+    westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"
+  gvars:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1: |
+      # owner body intentionally empty
+
 return config.cfg.policies.languages.allowed
 ---
 []

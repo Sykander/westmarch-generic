@@ -114,6 +114,8 @@ const STARTER_SNIPPET = `subsystems = {
             "distribution_policy": "random",
             "distribution": {"combat": 25, "quest": 25, "gather": 50},
             "repeat_exclude_window": 5,
+            "monster_images": {"hunt": "thumbnail", "loot": "thumbnail"},
+            "show_check_dcs": {"hunt": True, "loot": True},
         },
     }
 }
@@ -309,6 +311,14 @@ const FOOTER_BEHAVIOUR_HELP =
 
 const DISPLAY_OVERRIDE_HELP =
   "Overrides embed display fields for this layer. Empty fields inherit from the broader display settings.";
+
+function monsterArtSelectValue(value: unknown): string {
+  const mode = String(value ?? "thumbnail").trim().toLowerCase();
+  if (mode === "thumb") return "thumbnail";
+  if (mode === "none") return "off";
+  if (["thumbnail", "image", "off"].includes(mode)) return mode;
+  return "thumbnail";
+}
 
 const SUBSYSTEM_DETAILS: Record<
   string,
@@ -1553,6 +1563,76 @@ function PoliciesView({
           }
           minRows={6}
         />
+        <SelectField
+          label="Hunt monster art"
+          value={monsterArtSelectValue(
+            readPath(config, "subsystems.exploration.config.monster_images.hunt"),
+          )}
+          values={["thumbnail", "image", "off"]}
+          onChange={(value) =>
+            updateConfig("subsystems.exploration.config.monster_images.hunt", value)
+          }
+          help="Controls where successful hunt embeds put a monster image when one exists."
+        />
+        <SelectField
+          label="Loot monster art"
+          value={monsterArtSelectValue(
+            readPath(config, "subsystems.exploration.config.monster_images.loot"),
+          )}
+          values={["thumbnail", "image", "off"]}
+          onChange={(value) =>
+            updateConfig("subsystems.exploration.config.monster_images.loot", value)
+          }
+          help="Controls where loot session embeds put a monster image when one exists."
+        />
+        <div className="field">
+          <span>
+            Hunt DC visibility
+            <HelpTip label="Hunt DC visibility help">
+              Keep enabled to print the numeric Survival DC. Disable to roll against the same
+              DC while only showing generic check text.
+            </HelpTip>
+          </span>
+          <label className="switch-line">
+            <input
+              type="checkbox"
+              checked={
+                readPath(config, "subsystems.exploration.config.show_check_dcs.hunt") !== false
+              }
+              onChange={(event) =>
+                updateConfig(
+                  "subsystems.exploration.config.show_check_dcs.hunt",
+                  event.target.checked,
+                )
+              }
+            />
+            <span>Show hunt DC</span>
+          </label>
+        </div>
+        <div className="field">
+          <span>
+            Loot DC visibility
+            <HelpTip label="Loot DC visibility help">
+              Keep enabled to print numeric loot DCs in session and roll text. Disable to show
+              only generic check labels.
+            </HelpTip>
+          </span>
+          <label className="switch-line">
+            <input
+              type="checkbox"
+              checked={
+                readPath(config, "subsystems.exploration.config.show_check_dcs.loot") !== false
+              }
+              onChange={(event) =>
+                updateConfig(
+                  "subsystems.exploration.config.show_check_dcs.loot",
+                  event.target.checked,
+                )
+              }
+            />
+            <span>Show loot DCs</span>
+          </label>
+        </div>
       </div>
     </section>
   );

@@ -31,6 +31,14 @@ DEFAULTS = {
                     "gather": 50,
                 },
                 "repeat_exclude_window": 5,
+                "monster_images": {
+                    "hunt": "thumbnail",
+                    "loot": "thumbnail",
+                },
+                "show_check_dcs": {
+                    "hunt": True,
+                    "loot": True,
+                },
             },
         },
         "travel": {

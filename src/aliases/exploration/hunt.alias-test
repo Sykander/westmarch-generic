@@ -139,3 +139,67 @@ vars:
               "commands": {"hunt": True},
           },
       }
+
+!hunt Image Beast
+---
+re:-image https://example.test/image-beast.png
+---
+name: hunt success can show monster art as embed image
+vars:
+  uvars:
+    _wm_command: hunt
+  svars:
+    westmarch_config: "eeee8888-8888-8888-8888-888888888888"
+  gvars:
+    eeee8888-8888-8888-8888-888888888888: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"hunt": True},
+              "config": {
+                  "monster_images": {"hunt": "image"},
+              },
+          },
+      }
+      world_data = {
+          "monsters": [
+              {
+                  "name": "Image Beast",
+                  "cr": -9,
+                  "type_str": "Beast",
+                  "image_url": "https://example.test/image-beast.png",
+              },
+          ],
+      }
+
+!hunt Image Beast
+---
+re:Survival check:
+---
+name: hunt can hide public check dc
+vars:
+  uvars:
+    _wm_command: hunt
+  svars:
+    westmarch_config: "eeee8989-8989-8989-8989-898989898989"
+  gvars:
+    eeee8989-8989-8989-8989-898989898989: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"hunt": True},
+              "config": {
+                  "show_check_dcs": {"hunt": False},
+              },
+          },
+      }
+      world_data = {
+          "monsters": [
+              {
+                  "name": "Image Beast",
+                  "cr": -9,
+                  "type_str": "Beast",
+                  "image_url": "https://example.test/image-beast.png",
+              },
+          ],
+      }
