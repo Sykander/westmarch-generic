@@ -1,6 +1,7 @@
 CATALOGUE_GENERATORS = generate-monsters generate-items generate-spells generate-books generate-recipes
 GENERATE_TARGETS = $(CATALOGUE_GENERATORS) generate-vars generate-env
-AVRAE_TEST_TARGETS = avrae-test-config avrae-test-gvars avrae-test-aliases
+AVRAE_UTILS_TEST_TARGETS = avrae-test-utils-config avrae-test-utils-catalogues avrae-test-utils-gameplay avrae-test-utils-systems
+AVRAE_TEST_TARGETS = avrae-test-config avrae-test-gvars avrae-test-aliases avrae-test-utils $(AVRAE_UTILS_TEST_TARGETS)
 
 .PHONY: build test deploy editor editor-build types editor-test install_node install_editor install_avrae_ls sourcemap-test lint avrae-test unit-tests $(AVRAE_TEST_TARGETS) $(GENERATE_TARGETS)
 
@@ -83,5 +84,20 @@ avrae-test-gvars: install_avrae_ls
 
 avrae-test-aliases: install_avrae_ls
 	npm run avrae:test-aliases
+
+avrae-test-utils: install_avrae_ls
+	npm run avrae:test-utils
+
+avrae-test-utils-config: install_avrae_ls
+	npm run avrae:test-utils:config
+
+avrae-test-utils-catalogues: install_avrae_ls
+	npm run avrae:test-utils:catalogues
+
+avrae-test-utils-gameplay: install_avrae_ls
+	npm run avrae:test-utils:gameplay
+
+avrae-test-utils-systems: install_avrae_ls
+	npm run avrae:test-utils:systems
 
 unit-tests: avrae-test

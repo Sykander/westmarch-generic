@@ -32,7 +32,7 @@ vars:
 
 !setup -p 1
 ---
-"re:Initial Setup[\\s\\S]*westmarch setup -p \"Initial Setup\"[\\s\\S]*westmarch_config=ffff1111-1111-1111-1111-111111111111"
+"re:Initial Setup[\\s\\S]*westmarch_config=ffff1111-1111-1111-1111-111111111111[\\s\\S]*westmarch setup -p \"Initial Setup\""
 ---
 name: page number can show initial setup even when wired
 vars:

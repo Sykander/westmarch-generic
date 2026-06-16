@@ -121,10 +121,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - shard: config
-            npm_script: avrae:test-config
-          - shard: gvars
-            npm_script: avrae:test-gvars
+          - shard: utils-config
+            npm_script: avrae:test-utils:config
+          - shard: utils-catalogues
+            npm_script: avrae:test-utils:catalogues
+          - shard: utils-gameplay
+            npm_script: avrae:test-utils:gameplay
+          - shard: utils-systems
+            npm_script: avrae:test-utils:systems
           - shard: aliases
             npm_script: avrae:test-aliases
 
