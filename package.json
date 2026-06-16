@@ -24,7 +24,10 @@
     "lint": "npm run lint:check",
     "lint:check": "eslint . --cache --cache-location .cache/eslint/.eslintcache",
     "lint:fix": "eslint . --fix --cache --cache-location .cache/eslint/.eslintcache && node utils/minify-gvar-json.js",
-    "test": "avrae-ls --run-tests src --log-level INFO",
+    "avrae:test": "avrae-ls --run-tests src --log-level INFO",
+    "avrae:test-config": "avrae-ls --run-tests src/gvars/utils/config --log-level INFO && avrae-ls --run-tests src/gvars/utils/check_config --log-level INFO",
+    "avrae:test-gvars": "avrae-ls --run-tests src/gvars/utils/auth --log-level INFO && avrae-ls --run-tests src/gvars/utils/catalogues --log-level INFO && avrae-ls --run-tests src/gvars/utils/display --log-level INFO && avrae-ls --run-tests src/gvars/utils/encounters --log-level INFO && avrae-ls --run-tests src/gvars/utils/exploration --log-level INFO && avrae-ls --run-tests src/gvars/utils/pc --log-level INFO && avrae-ls --run-tests src/gvars/utils/world --log-level INFO",
+    "avrae:test-aliases": "avrae-ls --run-tests src/aliases --log-level INFO",
     "sourcemap:dev-check": "publish-avrae check-config --sourcemap utils/sourcemap.dev.json",
     "sourcemap:prod-check": "publish-avrae check-config --sourcemap utils/sourcemap.prod.json",
     "sourcemap:compare-check": "publish-avrae compare-config utils/sourcemap.dev.json utils/sourcemap.prod.json"

@@ -1,7 +1,8 @@
 CATALOGUE_GENERATORS = generate-monsters generate-items generate-spells generate-books generate-recipes
 GENERATE_TARGETS = $(CATALOGUE_GENERATORS) generate-vars generate-env
+AVRAE_TEST_TARGETS = avrae-test-config avrae-test-gvars avrae-test-aliases
 
-.PHONY: build test deploy editor editor-build types editor-test install_node install_editor install_avrae_ls sourcemap-test lint unit-tests $(GENERATE_TARGETS)
+.PHONY: build test deploy editor editor-build types editor-test install_node install_editor install_avrae_ls sourcemap-test lint avrae-test unit-tests $(AVRAE_TEST_TARGETS) $(GENERATE_TARGETS)
 
 #
 # Useful
@@ -9,7 +10,7 @@ GENERATE_TARGETS = $(CATALOGUE_GENERATORS) generate-vars generate-env
 build: $(GENERATE_TARGETS) editor-build
 	npm run lint:fix
 
-test: lint sourcemap-test types editor-test unit-tests
+test: lint sourcemap-test types editor-test avrae-test
 
 deploy: build
 	npm run deploy:dev
@@ -71,5 +72,16 @@ sourcemap-test: install_node
 lint: install_node
 	npm run lint
 
-unit-tests: install_avrae_ls
-	npm test
+avrae-test: install_avrae_ls
+	npm run avrae:test
+
+avrae-test-config: install_avrae_ls
+	npm run avrae:test-config
+
+avrae-test-gvars: install_avrae_ls
+	npm run avrae:test-gvars
+
+avrae-test-aliases: install_avrae_ls
+	npm run avrae:test-aliases
+
+unit-tests: avrae-test
