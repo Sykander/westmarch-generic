@@ -1,0 +1,38 @@
+!craft help
+---
+re:Create an item
+---
+name: craft help displays usage
+vars:
+  svars:
+    westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa41"
+  gvars:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa41: |
+      subsystems = {
+          "crafting": {
+              "enabled": True,
+              "commands": {"craft": True},
+          },
+      }
+
+!craft Pony
+---
+"re:Crafted \\*\\*Pony\\*\\*"
+---
+name: craft creates mundane item manually
+vars:
+  svars:
+    westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa5"
+  gvars:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa5: |
+      subsystems = {
+          "crafting": {
+              "enabled": True,
+              "commands": {"craft": True},
+              "config": {"catalogues": {"items": "engine:catalogues/items"}},
+          },
+      }
+      policies = {
+          "crafting": {"resources": {"downtime": "manual", "gold": "manual"}},
+          "inventory": {"item_handling": {"mode": "manual"}},
+      }

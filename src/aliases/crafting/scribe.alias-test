@@ -1,0 +1,87 @@
+!scribe help
+---
+re:Create a spell scroll
+---
+name: scribe help displays usage
+vars:
+  svars:
+    westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa44"
+  gvars:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa44: |
+      subsystems = {
+          "crafting": {
+              "enabled": True,
+              "commands": {"scribe": True},
+          },
+      }
+
+!scribe Fireball -l 5
+---
+"re:Scroll of Fireball \\(5th Lv\\.\\)"
+---
+name: scribe uses 2014 scroll name
+vars:
+  svars:
+    westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa7"
+  gvars:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa7: |
+      subsystems = {
+          "crafting": {
+              "enabled": True,
+              "commands": {"scribe": True},
+              "config": {"catalogues": {"spells": "engine:catalogues/spells"}},
+              "command_config": {"scribe": {"rules_version": "2014", "require_known_spell": False}},
+          },
+      }
+      policies = {
+          "crafting": {"resources": {"downtime": "manual", "gold": "manual", "spell_slot": "manual"}},
+          "inventory": {"item_handling": {"mode": "manual"}},
+      }
+
+!scribe Fireball -l 5 -sb 3 -dc 11
+---
+"re:Scroll of Fireball \\(Lv\\. 5 \\| SB \\+3 \\| DC 11\\)"
+---
+name: scribe uses 2024 scroll name with use stats
+vars:
+  svars:
+    westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa8"
+  gvars:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa8: |
+      subsystems = {
+          "crafting": {
+              "enabled": True,
+              "commands": {"scribe": True},
+              "config": {"catalogues": {"spells": "engine:catalogues/spells"}, "rules_version": "2024"},
+              "command_config": {"scribe": {"require_known_spell": False}},
+          },
+      }
+      policies = {
+          "crafting": {"resources": {"downtime": "manual", "gold": "manual", "spell_slot": "manual"}},
+          "inventory": {"item_handling": {"mode": "manual"}},
+      }
+
+!scribe House Spark
+---
+re:must know or have prepared
+---
+name: scribe rejects spell not in character spellbook by default
+vars:
+  svars:
+    westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa9"
+  gvars:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa9: |
+      subsystems = {
+          "crafting": {
+              "enabled": True,
+              "commands": {"scribe": True},
+              "config": {
+                  "rules_version": "2014",
+                  "catalogues": {"spells": {"entries": [{"name": "House Spark", "level": 1}]}},
+              },
+          },
+      }
+      policies = {
+          "crafting": {"resources": {"downtime": "manual", "gold": "manual", "spell_slot": "manual"}},
+          "inventory": {"item_handling": {"mode": "manual"}},
+      }

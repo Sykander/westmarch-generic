@@ -68,7 +68,7 @@ flowchart TD
 
 ### Config loader integration
 
-1. `auth.is_allowed()`
+1. `auth.is_allowed("location")`
 2. `journeys.get_location()` — default from config `default_location` when cvar empty
 3. `locations.get_location(cfg, id)` + `locations.display_location(...)`
 

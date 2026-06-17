@@ -2,13 +2,13 @@
 
 **Path:** `src/gvars/utils/auth/auth.gvar` · **Phase:** 0
 
-Single gate: may the invoker run **this alias in this channel**? Reads **`ctx`** and server config via [config.md](config.md). No arguments.
+Single gate: may the invoker run **this alias in this channel**? The alias passes its canonical command key; auth reads server config via [config.md](config.md) and ctx for guild, roles, character, and channel checks.
 
 ## API
 
 ```py
-def is_allowed():
-    """(success, message) — full gate for the running alias."""
+def is_allowed(command_override):
+    """(success, message) — full gate for the canonical command key."""
 ```
 
 One public entry point. Role checks, config toggles, and channel rules run **inside** this function (private helpers only — not part of the alias contract).
@@ -23,7 +23,7 @@ One public entry point. Role checks, config toggles, and channel rules run **ins
 ```py
 using(auth = env.gvars.auth)
 
-ok, msg = auth.is_allowed()
+ok, msg = auth.is_allowed("enc")
 if not ok:
     return embed(desc=msg)
 ```
@@ -52,13 +52,13 @@ COMMAND_MAP = {
 
 **Post-MVP `COMMAND_MAP` entries:** **`diary`**, **`journal`**, and hub routing for **`journal` + subcommand** → target misc command toggle.
 
-## `is_allowed()` — check order
+## `is_allowed(command_override)` — check order
 
 Each step: on failure **return `(False, message)`**; on pass, continue. Final step **return `(True, success_message)`**.
 
 | Step | What | Failure example |
 |------|------|-----------------|
-| 1 | **`_resolve_invocation()`** — map `ctx.alias` → subsystem, command, `requires_admin` | `(False, "Unknown command.")` |
+| 1 | **`_resolve_invocation()`** — map the explicit command key to subsystem, command, `requires_admin` | `(False, "Unknown command.")` |
 | 2 | **Guild** — player commands need a guild (`ctx.guild`); admin same | `(False, "This command cannot be run in DMs.")` |
 | 3 | **Avrae aliasing roles** *(only if `requires_admin`)* — engine **`ADMIN_ROLES`** only | `(False, "You need Dragonspeaker or Server Aliaser (Avrae aliasing permissions — not a GM/DM role).")` |
 | 4 | **Config** — `get_config()` (cached); `subsystems[subsystem].enabled`; command toggle *(player commands only — skipped for admin subsystem entries)* | `(False, "This server is not configured yet. …")` / disabled messages |
@@ -72,7 +72,7 @@ Admin commands skip step 6 when `cfg.channel_policy.admin_any_channel` is true (
 
 ### Internal helpers *(not exported to aliases)*
 
-- `_resolve_invocation()` — `ctx.alias` (+ hub arg fallback)
+- `_resolve_invocation(command_override)` — explicit alias command key only; no ctx alias/name inference
 - `_check_admin_roles()` — step 3; **`ADMIN_ROLES`** (`Dragonspeaker`, `Server Aliaser`) via **`ctx.author.get_roles()`** (Avrae) / **`ctx.author.roles`** (avrae-ls mock)
 - `_check_command_enabled(subsystem, command)` — step 4; calls `get_config()` internally
 - `_check_character()` — step 5; reads **`policies.auth.require_character`**
@@ -108,8 +108,8 @@ Uses **`ctx.channel.id`** and **`ctx.channel.parent.id`** when parent exists (fo
 ## Implementation sketch
 
 ```py
-def is_allowed():
-    subsystem, command, requires_admin = _resolve_invocation()
+def is_allowed(command_override):
+    subsystem, command, requires_admin = _resolve_invocation(command_override)
     if subsystem is None:
         return False, "Unknown command."
 
@@ -142,11 +142,12 @@ Every alias starts with:
 ```py
 using(auth = env.gvars.auth, display = env.gvars.display)
 
-ok, msg = auth.is_allowed()
-if not ok:
-    return embed(title="…", desc=msg)
+COMMAND = "enc"
+ok, msg = auth.is_allowed(COMMAND)
+get_embed = display.get_display(COMMAND)
 
-get_embed = display.get_display()   # configured get_embed — see display.md
+if not ok:
+    return get_embed(desc=msg)
 ```
 
 Nested Avrae subaliases whose runtime ctx still resolves to the parent command pass an explicit command key:
@@ -157,7 +158,7 @@ ok, msg = auth.is_allowed("setup")
 
 Use this for **`westmarch setup`** and **`westmarch show`** so the admin role gate is enforced even when Avrae reports the parent alias name.
 
-**`COMMAND_MAP`** is shared with [display.gvar](display.md) for **`get_display()`** ctx resolution.
+**`COMMAND_MAP`** is shared with [display.gvar](display.md) for explicit **`get_display(command)`** resolution.
 
 No other auth calls needed.
 

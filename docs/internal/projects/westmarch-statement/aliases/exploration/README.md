@@ -21,8 +21,8 @@ Implementation plans for exploration commands. Scope and toggles: [mvp-commands.
 **enc**, **mine**, **lumber**, **forage**, **fish** share one pipeline:
 
 ```text
-display.get_display()
-  → auth.is_allowed()
+display.get_display(COMMAND)
+  → auth.is_allowed(COMMAND)
   → pc.check_cooldown(ch, "<command>")
   → biomes.resolve_biome("<activity>", args, ch, cfg)
   → encounter_lists.get_encounter(biome, "<activity>", ch, cfg)
@@ -50,11 +50,12 @@ Every exploration alias starts with:
 ```py
 using(auth = env.gvars.auth, display = env.gvars.display, embeds = env.gvars.embeds)
 
-ok, msg = auth.is_allowed()
+COMMAND = "enc"
+ok, msg = auth.is_allowed(COMMAND)
 if not ok:
     return embeds.get_embed(desc=msg)
 
-get_embed = display.get_display()
+get_embed = display.get_display(COMMAND)
 ```
 
 ## Config

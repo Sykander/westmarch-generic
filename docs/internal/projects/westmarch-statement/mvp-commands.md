@@ -106,10 +106,10 @@ When a subsystem `enabled` is `False`, all its commands respect the global off s
 | **Display / identity** | *(optional)* base **`display`**; per-subsystem **`display`** + **`command_display`**; **`policies.display.footer_behaviour`** | Help embeds, command embeds, `!westmarch show`, default embed accent |
 | **Config metadata** | *(optional)* `config_version`, `rules_version` | Owner versioning; rules override |
 | **Language policy** | `policies.languages.allowed` | Setting-valid languages |
-| **Channel policy** | *(optional)* `channel_policy` | [auth `is_allowed()`](gvars/auth.md) |
+| **Channel policy** | *(optional)* `channel_policy` | [auth `is_allowed(command)`](gvars/auth.md) |
 | **Server policies** | *(optional)* `policies` | All — enforcement vs manual house rules ([data-shapes.md](data-shapes.md#server-policies)) |
 
-Rules edition and embed branding: **`config.get_rules_edition()`** and **`display.get_display()`** — [display.gvar](gvars/display.md), [data-shapes § Embed display inheritance](data-shapes.md#embed-display-inheritance).
+Rules edition and embed branding: **`config.get_rules_edition()`** and **`display.get_display(command)`** — [display.gvar](gvars/display.md), [data-shapes § Embed display inheritance](data-shapes.md#embed-display-inheritance).
 
 Large catalogues may require **extension gvars** ([solution-statement.md](solution-statement.md) Option C).
 

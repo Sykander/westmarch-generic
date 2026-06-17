@@ -1,6 +1,1385 @@
-"""crafting.gvar — placeholder.
+"""crafting.gvar - shared RAW crafting helpers for craft/brew/scribe/enchant."""
 
-See docs/internal/projects/westmarch-statement/gvars/crafting.md
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(
+    config = env.gvars.config,
+    dicts = env.gvars.dicts,
+    items = env.gvars["items"],
+    lists = env.gvars.lists,
+    pc = env.gvars.pc,
+    recipe = env.gvars.recipe,
+    rolls = env.gvars.rolls,
+    spells = env.gvars.spells,
+    tools = env.gvars.tools,
+)
+
+COMMAND_CATALOGUES = {
+    "craft": "items",
+    "brew": "potions",
+    "enchant": "magic_items",
+}
+COMMAND_OUTPUT_KIND = {
+    "craft": "item",
+    "brew": "potion",
+    "enchant": "magic_item",
+    "scribe": "scroll",
+}
+CATALOGUE_LABELS = {
+    "craft": "item",
+    "brew": "potion",
+    "enchant": "magic item",
+    "scribe": "spell",
+}
+SUBJECT_VALUE_FLAGS = [
+    "-l",
+    "-level",
+    "-ability",
+    "-score",
+    "-ability_score",
+    "-mod",
+    "-ability_mod",
+    "-pb",
+    "-sb",
+    "-dc",
+    "-bag",
+]
+SUBJECT_BOOL_FLAGS = [
+    "-str",
+    "-dex",
+    "-con",
+    "-int",
+    "-wis",
+    "-cha",
+]
+RECIPE_MODES = ["raw", "recipes", "mixed"]
+CHECK_MODES = ["none", "manual", "roll"]
+TOOL_MODES = ["off", "manual", "check"]
+DEFAULT_CHECKS = {
+    "craft": {"mode": "none", "skill": None, "ability": None, "dc": None, "require_success": True},
+    "brew": {"mode": "none", "skill": "nature", "ability": None, "dc": None, "require_success": True},
+    "enchant": {"mode": "none", "skill": "arcana", "ability": None, "dc": None, "require_success": True},
+    "scribe": {"mode": "none", "skill": "arcana", "ability": None, "dc": None, "require_success": True},
+}
+DEFAULT_TOOL_POLICY = {
+    "craft": {"mode": "off", "tools": [], "require_proficiency": True, "require_kit": False},
+    "brew": {
+        "mode": "off",
+        "tools": ["Herbalism Kit", "Alchemist's Supplies", "Brewer's Supplies"],
+        "require_proficiency": True,
+        "require_kit": False,
+    },
+    "enchant": {"mode": "off", "tools": [], "require_proficiency": True, "require_kit": False},
+    "scribe": {
+        "mode": "off",
+        "tools": ["Calligrapher's Supplies"],
+        "require_proficiency": True,
+        "require_kit": False,
+    },
+}
+
+MUNDANE_PROGRESS = {
+    "2014": 5,
+    "2024": 10,
+}
+MAGIC_ITEM_COSTS = {
+    "2014": {
+        "common": {"gold": 50, "workdays": 5},
+        "uncommon": {"gold": 200, "workdays": 10},
+        "rare": {"gold": 2000, "workdays": 50},
+        "very rare": {"gold": 20000, "workdays": 125},
+        "legendary": {"gold": 100000, "workdays": 250},
+    },
+    "2024": {
+        "common": {"gold": 50, "workdays": 5},
+        "uncommon": {"gold": 200, "workdays": 10},
+        "rare": {"gold": 2000, "workdays": 50},
+        "very rare": {"gold": 20000, "workdays": 125},
+        "legendary": {"gold": 100000, "workdays": 250},
+    },
+}
+HEALING_POTION_COSTS = {
+    "potion of healing": {"gold": 25, "workdays": 1},
+    "potion of healing, greater": {"gold": 100, "workdays": 5},
+    "potion of healing, superior": {"gold": 1000, "workdays": 15},
+    "potion of healing, supreme": {"gold": 10000, "workdays": 20},
+}
+SCROLL_COSTS_2014 = {
+    0: {"gold": 15, "workdays": 1},
+    1: {"gold": 25, "workdays": 1},
+    2: {"gold": 250, "workdays": 3},
+    3: {"gold": 500, "workdays": 5},
+    4: {"gold": 2500, "workdays": 10},
+    5: {"gold": 5000, "workdays": 20},
+    6: {"gold": 15000, "workdays": 40},
+    7: {"gold": 25000, "workdays": 80},
+    8: {"gold": 50000, "workdays": 160},
+    9: {"gold": 250000, "workdays": 240},
+}
+SCROLL_COSTS_2024 = {
+    0: {"gold": 15, "workdays": 1},
+    1: {"gold": 25, "workdays": 1},
+    2: {"gold": 250, "workdays": 3},
+    3: {"gold": 500, "workdays": 5},
+    4: {"gold": 2500, "workdays": 10},
+    5: {"gold": 5000, "workdays": 20},
+    6: {"gold": 15000, "workdays": 40},
+    7: {"gold": 25000, "workdays": 80},
+    8: {"gold": 50000, "workdays": 160},
+    9: {"gold": 250000, "workdays": 240},
+}
+
+
+def _read_field(obj, key):
+    if obj == None:
+        return None
+    if dicts.is_dict(obj):
+        if key in obj:
+            return obj[key]
+        return None
+    try:
+        return obj[key]
+    except:
+        pass
+    try:
+        return obj.get(key)
+    except:
+        pass
+    attrs = {
+        "subsystems": lambda o: o.subsystems,
+        "policies": lambda o: o.policies,
+        "crafting": lambda o: o.crafting,
+        "inventory": lambda o: o.inventory,
+        "downtime": lambda o: o.downtime,
+        "commands": lambda o: o.commands,
+        "enabled": lambda o: o.enabled,
+        "config": lambda o: o.config,
+        "command_config": lambda o: o.command_config,
+        "rules_version": lambda o: o.rules_version,
+        "rules_edition": lambda o: o.rules_edition,
+        "recipe_mode": lambda o: o.recipe_mode,
+        "checks": lambda o: o.checks,
+        "check_policy": lambda o: o.check_policy,
+        "tool_policy": lambda o: o.tool_policy,
+        "item_handling": lambda o: o.item_handling,
+        "output": lambda o: o.output,
+        "mode": lambda o: o.mode,
+        "skill": lambda o: o.skill,
+        "ability": lambda o: o.ability,
+        "require_success": lambda o: o.require_success,
+        "tools": lambda o: o.tools,
+        "tool": lambda o: o.tool,
+        "tool_options": lambda o: o.tool_options,
+        "require_proficiency": lambda o: o.require_proficiency,
+        "require_kit": lambda o: o.require_kit,
+        "kit_bag": lambda o: o.kit_bag,
+        "bag": lambda o: o.bag,
+        "bags": lambda o: o.bags,
+        "default_bag": lambda o: o.default_bag,
+        "equipment_bag": lambda o: o.equipment_bag,
+        "crafted_bag": lambda o: o.crafted_bag,
+        "potion_bag": lambda o: o.potion_bag,
+        "potions_bag": lambda o: o.potions_bag,
+        "scroll_bag": lambda o: o.scroll_bag,
+        "scrolls_bag": lambda o: o.scrolls_bag,
+        "magic_item_bag": lambda o: o.magic_item_bag,
+        "magic_items_bag": lambda o: o.magic_items_bag,
+        "materials_bag": lambda o: o.materials_bag,
+        "resources": lambda o: o.resources,
+        "resource_bag": lambda o: o.resource_bag,
+        "consume_required_items": lambda o: o.consume_required_items,
+        "require_downtime_before_roll": lambda o: o.require_downtime_before_roll,
+        "auto_deduct_materials": lambda o: o.auto_deduct_materials,
+        "auto_deduct_gold": lambda o: o.auto_deduct_gold,
+        "gold": lambda o: o.gold,
+        "materials": lambda o: o.materials,
+        "items": lambda o: o.items,
+        "spells": lambda o: o.spells,
+        "spell_slot": lambda o: o.spell_slot,
+        "spell": lambda o: o.spell,
+        "spellbook": lambda o: o.spellbook,
+        "stats": lambda o: o.stats,
+        "workdays": lambda o: o.workdays,
+        "name": lambda o: o.name,
+        "item": lambda o: o.item,
+        "qty": lambda o: o.qty,
+        "count": lambda o: o.count,
+        "dc": lambda o: o.dc,
+        "sab": lambda o: o.sab,
+        "require_known_spell": lambda o: o.require_known_spell,
+    }
+    if key in attrs:
+        try:
+            return attrs[key](obj)
+        except:
+            pass
+    return None
+
+
+def _cfg(config_override=None):
+    if config_override != None:
+        return config_override
+    return config.get_config()
+
+
+def _ceil(value):
+    try:
+        whole = int(value)
+        if float(value) > whole:
+            return whole + 1
+        return whole
+    except:
+        return 0
+
+
+def _int_value(value, fallback=0):
+    if value == None or str(value).strip() == "":
+        return fallback
+    try:
+        return int(value)
+    except:
+        try:
+            return int(float(value))
+        except:
+            return fallback
+
+
+def _float_value(value, fallback=0):
+    if value == None or str(value).strip() == "":
+        return fallback
+    try:
+        return float(value)
+    except:
+        return fallback
+
+
+def _signed(value):
+    try:
+        num = int(value)
+    except:
+        num = 0
+    if num >= 0:
+        return f"+{num}"
+    return str(num)
+
+
+def _gp_text(value):
+    try:
+        num = float(value)
+    except:
+        return "0 gp"
+    if num == int(num):
+        return f"{int(num)} gp"
+    return f"{num} gp"
+
+
+def _subsystem(cfg):
+    subs = _read_field(cfg, "subsystems")
+    return _read_field(subs, "crafting")
+
+
+def _crafting_config(cfg):
+    return _read_field(_subsystem(cfg), "config")
+
+
+def _crafting_policy(cfg):
+    policies = _read_field(cfg, "policies")
+    return _read_field(policies, "crafting")
+
+
+def _inventory_policy(cfg):
+    policies = _read_field(cfg, "policies")
+    return _read_field(policies, "inventory")
+
+
+def _command_config(cfg, command):
+    subsystem = _subsystem(cfg)
+    command_config = _read_field(subsystem, "command_config")
+    return _read_field(command_config, command)
+
+
+def command_enabled(cfg, command):
+    subsystem = _subsystem(cfg)
+    if _read_field(subsystem, "enabled") != True:
+        return False
+    commands = _read_field(subsystem, "commands")
+    return _read_field(commands, command) == True
+
+
+def rules_edition(config_override=None, command=None):
+    cfg = _cfg(config_override)
+    base = config.get_rules_edition()
+    c_cfg = _crafting_config(cfg)
+    override = _read_field(c_cfg, "rules_version")
+    if override == None:
+        override = _read_field(c_cfg, "rules_edition")
+    if command != None:
+        layer = _command_config(cfg, command)
+        command_override = _read_field(layer, "rules_version")
+        if command_override == None:
+            command_override = _read_field(layer, "rules_edition")
+        if command_override != None:
+            override = command_override
+    if override != None and str(override).strip() in ["2014", "2024"]:
+        return str(override).strip()
+    return base
+
+
+def _as_recipe_mode(value, fallback="mixed"):
+    if value == None:
+        return fallback
+    text = str(value).strip().lower()
+    if text in RECIPE_MODES:
+        return text
+    return fallback
+
+
+def _bool_value(value, fallback=False):
+    if value == None:
+        return fallback
+    if value == True:
+        return True
+    if value == False:
+        return False
+    text = str(value).strip().lower()
+    if text in ["true", "yes", "on", "1"]:
+        return True
+    if text in ["false", "no", "off", "0"]:
+        return False
+    return fallback
+
+
+def recipe_mode(config_override=None, command=None):
+    cfg = _cfg(config_override)
+    mode = _as_recipe_mode(_read_field(_crafting_config(cfg), "recipe_mode"), "mixed")
+    if command != None:
+        command_mode = _read_field(_command_config(cfg, command), "recipe_mode")
+        if command_mode != None:
+            mode = _as_recipe_mode(command_mode, mode)
+    return mode
+
+
+def require_known_spell(config_override=None, command="scribe"):
+    cfg = _cfg(config_override)
+    required = _bool_value(_read_field(_crafting_config(cfg), "require_known_spell"), True)
+    if command != None:
+        raw = _read_field(_command_config(cfg, command), "require_known_spell")
+        if raw != None:
+            required = _bool_value(raw, required)
+    return required
+
+
+def _as_check_mode(value, fallback="none"):
+    if value == True:
+        return "roll"
+    if value == False:
+        return "none"
+    if value == None:
+        return fallback
+    text = str(value).strip().lower()
+    if text in ["off", "none", "no", "false"]:
+        return "none"
+    if text in ["manual", "note"]:
+        return "manual"
+    if text in ["roll", "check", "yes", "true"]:
+        return "roll"
+    return fallback
+
+
+def _as_tool_mode(value, fallback="off"):
+    if value == True:
+        return "check"
+    if value == False:
+        return "off"
+    if value == None:
+        return fallback
+    text = str(value).strip().lower()
+    if text in ["off", "none", "no", "false"]:
+        return "off"
+    if text in ["manual", "note"]:
+        return "manual"
+    if text in ["check", "yes", "true"]:
+        return "check"
+    return fallback
+
+
+def _copy_policy(source):
+    out = {}
+    if source == None or not dicts.is_dict(source):
+        return out
+    for key in source:
+        out[key] = source[key]
+    return out
+
+
+def _policy_for_command(base, command):
+    if base == None:
+        return {}
+    if not dicts.is_dict(base):
+        return {"mode": base}
+    command_value = _read_field(base, command)
+    if command_value != None:
+        if dicts.is_dict(command_value):
+            return _copy_policy(command_value)
+        return {"mode": command_value}
+    return _copy_policy(base)
+
+
+def _merge_policy(base, override):
+    out = _copy_policy(base)
+    if override == None:
+        return out
+    if not dicts.is_dict(override):
+        out["mode"] = override
+        return out
+    for key in override:
+        out[key] = override[key]
+    return out
+
+
+def check_policy(config_override, command):
+    cfg = _cfg(config_override)
+    command_default = _read_field(DEFAULT_CHECKS, command)
+    out = _copy_policy(command_default)
+    out = _merge_policy(out, _policy_for_command(_read_field(_crafting_config(cfg), "checks"), command))
+    out = _merge_policy(out, _policy_for_command(_read_field(_crafting_config(cfg), "check_policy"), command))
+    out = _merge_policy(out, _read_field(_command_config(cfg, command), "check"))
+    out = _merge_policy(out, _policy_for_command(_read_field(_command_config(cfg, command), "checks"), command))
+    out["mode"] = _as_check_mode(_read_field(out, "mode"), "none")
+    return out
+
+
+def tool_policy(config_override, command):
+    cfg = _cfg(config_override)
+    command_default = _read_field(DEFAULT_TOOL_POLICY, command)
+    out = _copy_policy(command_default)
+    out = _merge_policy(out, _policy_for_command(_read_field(_crafting_config(cfg), "tool_policy"), command))
+    out = _merge_policy(out, _policy_for_command(_read_field(_command_config(cfg, command), "tool_policy"), command))
+    out["mode"] = _as_tool_mode(_read_field(out, "mode"), "off")
+    return out
+
+
+def _as_mode(value, fallback="manual"):
+    if value == True:
+        return "deduct"
+    if value == False:
+        return "manual"
+    if value == None:
+        return fallback
+    text = str(value).strip().lower()
+    if text in ["bags", "bag"]:
+        return "bags"
+    if text in ["manual", "check", "deduct", "off", "none"]:
+        if text in ["off", "none"]:
+            return "manual"
+        return text
+    return fallback
+
+
+def _policy_mode(policy, command, fallback="manual"):
+    if policy == None:
+        return fallback
+    if not dicts.is_dict(policy):
+        return _as_mode(policy, fallback)
+    command_value = _read_field(policy, command)
+    if command_value != None:
+        return _as_mode(command_value, fallback)
+    mode = _read_field(policy, "mode")
+    return _as_mode(mode, fallback)
+
+
+def output_policy(config_override, command, output_kind=None):
+    cfg = _cfg(config_override)
+    if output_kind == None:
+        output_kind = _read_field(COMMAND_OUTPUT_KIND, command)
+    inv = _inventory_policy(cfg)
+    craft_pol = _crafting_policy(cfg)
+    c_cfg = _crafting_config(cfg)
+    cmd_cfg = _command_config(cfg, command)
+
+    base = _read_field(inv, "item_handling")
+    if base == None:
+        base = {"mode": "manual"}
+    mode = _policy_mode(base, command, "manual")
+
+    craft_out = _read_field(craft_pol, "item_handling")
+    if craft_out != None:
+        mode = _policy_mode(craft_out, command, mode)
+    cfg_out = _read_field(c_cfg, "item_handling")
+    if cfg_out != None:
+        mode = _policy_mode(cfg_out, command, mode)
+    cmd_out = _read_field(cmd_cfg, "item_handling")
+    if cmd_out == None:
+        cmd_out = _read_field(cmd_cfg, "output")
+    if cmd_out != None:
+        mode = _policy_mode(cmd_out, command, mode)
+
+    bag = _read_bag_name(base, output_kind, "Equipment")
+    bag_override = _read_bag_name(craft_out, output_kind, None)
+    if bag_override != None:
+        bag = bag_override
+    bag_override = _read_bag_name(cfg_out, output_kind, None)
+    if bag_override != None:
+        bag = bag_override
+    bag_override = _read_bag_name(cmd_out, output_kind, None)
+    if bag_override != None:
+        bag = bag_override
+    return {"mode": mode, "bag": bag}
+
+
+def _read_bag_name(policy, output_kind, fallback):
+    if policy == None:
+        return fallback
+    if not dicts.is_dict(policy):
+        return fallback
+    direct = _read_field(policy, "bag")
+    if direct != None and str(direct).strip() != "":
+        return str(direct).strip()
+    bags = _read_field(policy, "bags")
+    keys = []
+    if output_kind == "item":
+        keys = ["crafted_bag", "default_bag", "equipment_bag"]
+    elif output_kind == "potion":
+        keys = ["potion_bag", "potions_bag", "default_bag"]
+    elif output_kind == "scroll":
+        keys = ["scroll_bag", "scrolls_bag", "default_bag"]
+    elif output_kind == "magic_item":
+        keys = ["magic_item_bag", "magic_items_bag", "equipment_bag", "default_bag"]
+    else:
+        keys = ["default_bag"]
+    for key in keys:
+        value = _read_field(policy, key)
+        if value == None:
+            value = _read_field(bags, key)
+        if value != None and str(value).strip() != "":
+            return str(value).strip()
+    if output_kind == "potion":
+        return "Potions" if fallback == None else fallback
+    if output_kind == "scroll":
+        return "Scrolls" if fallback == None else fallback
+    return fallback
+
+
+def resource_mode(config_override, command, resource):
+    cfg = _cfg(config_override)
+    policy = _crafting_policy(cfg)
+    resources = _read_field(policy, "resources")
+    command_layer = _command_config(cfg, command)
+    command_resources = _read_field(command_layer, "resources")
+
+    raw = _read_field(resources, resource)
+    command_raw = _read_field(command_resources, resource)
+    if command_raw != None:
+        raw = command_raw
+    if raw != None:
+        return _as_mode(raw, "manual")
+
+    if resource == "gold" and _read_field(policy, "auto_deduct_gold") == True:
+        return "deduct"
+    if resource in ["materials", "items"] and _read_field(policy, "auto_deduct_materials") == True:
+        return "deduct"
+    if resource == "downtime" and _read_field(policy, "require_downtime_before_roll") == True:
+        return "check"
+    return "manual"
+
+
+def _materials_bag(cfg, command):
+    command_layer = _command_config(cfg, command)
+    bag = _read_field(command_layer, "resource_bag")
+    if bag != None and str(bag).strip() != "":
+        return str(bag).strip()
+    inv = _inventory_policy(cfg)
+    item_handling = _read_field(inv, "item_handling")
+    bags = _read_field(item_handling, "bags")
+    bag = _read_field(item_handling, "materials_bag")
+    if bag == None:
+        bag = _read_field(bags, "materials_bag")
+    if bag != None and str(bag).strip() != "":
+        return str(bag).strip()
+    return "Materials"
+
+
+def _equipment_bag(cfg, command):
+    command_layer = _command_config(cfg, command)
+    bag = _read_field(command_layer, "equipment_bag")
+    if bag != None and str(bag).strip() != "":
+        return str(bag).strip()
+    inv = _inventory_policy(cfg)
+    item_handling = _read_field(inv, "item_handling")
+    bag = _read_bag_name(item_handling, "magic_item", "Equipment")
+    if bag == None:
+        return "Equipment"
+    return bag
+
+
+def _consume_required_items(config_override, command):
+    cfg = _cfg(config_override)
+    layer = _command_config(cfg, command)
+    raw = _read_field(layer, "consume_required_items")
+    if raw != None:
+        return raw == True
+    return command == "enchant"
+
+
+def subject_from_args(argslist):
+    parts = []
+    skip_next = False
+    for arg in argslist:
+        text = str(arg).strip()
+        lower = text.lower()
+        if skip_next:
+            skip_next = False
+            continue
+        if lower in SUBJECT_VALUE_FLAGS:
+            skip_next = True
+            continue
+        if lower in SUBJECT_BOOL_FLAGS:
+            continue
+        if lower.startswith("-"):
+            continue
+        parts.append(text)
+    return " ".join(parts).strip()
+
+
+def _ability_key(value):
+    if value == None:
+        return None
+    text = str(value).strip().lower()
+    if text in ["str", "strength"]:
+        return "strength"
+    if text in ["dex", "dexterity"]:
+        return "dexterity"
+    if text in ["con", "constitution"]:
+        return "constitution"
+    if text in ["int", "intelligence"]:
+        return "intelligence"
+    if text in ["wis", "wisdom"]:
+        return "wisdom"
+    if text in ["cha", "charisma"]:
+        return "charisma"
+    return None
+
+
+def _ability_from_args(args):
+    raw = args.last("ability", None)
+    ability = _ability_key(raw)
+    if ability != None:
+        return ability
+    if args.last("int"):
+        return "intelligence"
+    if args.last("wis"):
+        return "wisdom"
+    if args.last("cha"):
+        return "charisma"
+    if args.last("str"):
+        return "strength"
+    if args.last("dex"):
+        return "dexterity"
+    if args.last("con"):
+        return "constitution"
+    return None
+
+
+def _score_to_mod(score):
+    raw = int(score) - 10
+    if raw >= 0:
+        return int(raw / 2)
+    return -1 * int((abs(raw) + 1) / 2)
+
+
+def _prof_bonus(ch, args):
+    pb = args.last("pb", None, int)
+    if pb != None:
+        return _int_value(pb, 0)
+    try:
+        return int(ch.stats.prof_bonus)
+    except:
+        return 0
+
+
+def _spellbook_bonus(ch):
+    book = _read_field(ch, "spellbook")
+    try:
+        sab = _read_field(book, "sab")
+        if sab != None:
+            return int(sab)
+    except:
+        pass
+    return None
+
+
+def _spellbook_dc(ch):
+    book = _read_field(ch, "spellbook")
+    try:
+        dc = _read_field(book, "dc")
+        if dc != None:
+            return int(dc)
+    except:
+        pass
+    return None
+
+
+def _spellbook_spell_entries(ch):
+    book = _read_field(ch, "spellbook")
+    raw = _read_field(book, "spells")
+    if lists.is_list(raw):
+        return raw
+    if dicts.is_dict(raw):
+        entries = []
+        for key in raw:
+            value = raw[key]
+            if _spellbook_spell_name(value) == "":
+                value = {"name": key}
+            entries.append(value)
+        return entries
+    return []
+
+
+def _spellbook_spell_name(entry):
+    name = _read_field(entry, "name")
+    if name != None and str(name).strip() != "":
+        return str(name).strip()
+    spell = _read_field(entry, "spell")
+    name = _read_field(spell, "name")
+    if name != None and str(name).strip() != "":
+        return str(name).strip()
+    if entry != None and not dicts.is_dict(entry):
+        return str(entry).strip()
+    return ""
+
+
+def character_knows_spell(ch, spell_name):
+    target = str(spell_name).strip().lower()
+    if target == "":
+        return False
+    for entry in _spellbook_spell_entries(ch):
+        known = _spellbook_spell_name(entry).lower()
+        if known == target:
+            return True
+    return False
+
+
+def _known_spell_check(ch, cfg, spell_name):
+    if not require_known_spell(cfg, "scribe"):
+        return True, ""
+    if character_knows_spell(ch, spell_name):
+        return True, ""
+    return False, f"To scribe **{spell_name}**, the character must know or have prepared that spell."
+
+
+def scroll_stats_2024(ch, args):
+    sb = args.last("sb", None, int)
+    dc = args.last("dc", None, int)
+    if sb != None:
+        sb = _int_value(sb, None)
+    if dc != None:
+        dc = _int_value(dc, None)
+    if sb != None and dc != None:
+        return sb, dc, None
+
+    book_sb = _spellbook_bonus(ch)
+    book_dc = _spellbook_dc(ch)
+    if sb == None and book_sb != None:
+        sb = book_sb
+    if dc == None and book_dc != None:
+        dc = book_dc
+    if sb != None and dc != None:
+        return sb, dc, None
+
+    mod = args.last("mod", None, int)
+    if mod == None:
+        mod = args.last("ability_mod", None, int)
+    if mod == None:
+        score = args.last("score", None, int)
+        if score == None:
+            score = args.last("ability_score", None, int)
+        if score != None:
+            mod = _score_to_mod(score)
+    ability = _ability_from_args(args)
+    if mod == None and ability != None:
+        try:
+            mod = int(ch.stats.get_mod(ability))
+        except:
+            mod = None
+    if mod != None:
+        mod = _int_value(mod, None)
+    if mod != None:
+        pb = _prof_bonus(ch, args)
+        if sb == None:
+            sb = mod + pb
+        if dc == None:
+            dc = 8 + mod + pb
+        if sb != None and dc != None:
+            return sb, dc, None
+
+    if mod == None:
+        return None, None, "2024 spell scrolls need use stats. Pass -sb and -dc, or pass -ability/-score/-pb so the scroll can record spell bonus and save DC."
+    return None, None, "2024 spell scrolls need both spell bonus and save DC. Pass -sb/-dc, or enough ability stats to derive the missing value."
+
+
+def _ordinal(n):
+    try:
+        value = int(n)
+    except:
+        value = 0
+    if value == 0:
+        return "Cantrip"
+    tail = value % 100
+    if tail in [11, 12, 13]:
+        suffix = "th"
+    elif value % 10 == 1:
+        suffix = "st"
+    elif value % 10 == 2:
+        suffix = "nd"
+    elif value % 10 == 3:
+        suffix = "rd"
+    else:
+        suffix = "th"
+    return f"{value}{suffix}"
+
+
+def format_scroll_name(spell_name, level, edition, spell_bonus=None, save_dc=None):
+    if edition == "2024":
+        return f"Scroll of {spell_name} (Lv. {level} | SB {_signed(spell_bonus)} | DC {save_dc})"
+    if int(level) == 0:
+        return f"Scroll of {spell_name} (Cantrip)"
+    return f"Scroll of {spell_name} ({_ordinal(level)} Lv.)"
+
+
+def _cost_from_recipe(entry):
+    if entry == None:
+        return None, None, [], [], []
+    workdays = recipe.recipe_workdays(entry)
+    gold = recipe.recipe_gold(entry)
+    return workdays, gold, recipe.recipe_consumed(entry), recipe.recipe_required(entry), recipe.recipe_spells(entry)
+
+
+def _magic_item_cost(edition, rarity):
+    table = _read_field(MAGIC_ITEM_COSTS, edition)
+    if table == None:
+        table = MAGIC_ITEM_COSTS["2014"]
+    cost = _read_field(table, rarity)
+    if cost == None:
+        cost = _read_field(table, "common")
+    return cost["workdays"], cost["gold"]
+
+
+def _mundane_cost(edition, item):
+    value = items.item_value_gp(item)
+    if value <= 0:
+        return 1, 0
+    progress = _read_field(MUNDANE_PROGRESS, edition)
+    if progress == None:
+        progress = MUNDANE_PROGRESS["2014"]
+    workdays = _ceil(value / progress)
+    if workdays < 1:
+        workdays = 1
+    return workdays, value / 2
+
+
+def _potion_cost(edition, item):
+    name = items.item_name(item).lower()
+    special = _read_field(HEALING_POTION_COSTS, name)
+    if special != None:
+        return special["workdays"], special["gold"]
+    return _magic_item_cost(edition, items.item_rarity(item))
+
+
+def _scroll_cost(edition, level):
+    table = SCROLL_COSTS_2024 if edition == "2024" else SCROLL_COSTS_2014
+    cost = _read_field(table, int(level))
+    if cost == None:
+        cost = table[1]
+    return cost["workdays"], cost["gold"]
+
+
+def _resolve_recipe(cfg, command, query, required=False):
+    matches = recipe.search_matches(cfg, query, command)
+    names = []
+    for match in matches:
+        names.append(recipe.recipe_name(match))
+    if len(matches) == 0:
+        if required:
+            return None, recipe.match_error(query, names)
+        return None, None
+    if len(matches) > 1:
+        return None, recipe.match_error(query, names)
+    return matches[0], None
+
+
+def _resolve_catalogue(cfg, command, query):
+    if command == "scribe":
+        spell, matches, error = spells.resolve(cfg, query)
+        return spell, matches, error
+    catalogue = _read_field(COMMAND_CATALOGUES, command)
+    item, matches, error = items.resolve(cfg, catalogue, query)
+    return item, matches, error
+
+
+def _spell_level_from_args(spell, args):
+    base_level = spells.spell_level(spell)
+    level = args.last("l", None, int)
+    if level == None:
+        level = args.last("level", None, int)
+    if level == None:
+        level = base_level
+    if level < base_level:
+        return None, f"{spells.spell_name(spell)} is level {base_level}; the scroll level cannot be lower."
+    if level > 9:
+        return None, "Spell scroll level cannot be higher than 9."
+    return level, None
+
+
+def build_plan(config_override, command, query, args=None, ch=None):
+    cfg = _cfg(config_override)
+    if args == None:
+        args = argparse("")
+    cmd = str(command).strip().lower()
+    if not command_enabled(cfg, cmd):
+        return {"ok": False, "message": f"**{cmd}** crafting is not enabled on this server."}
+    text = str(query).strip()
+    if text == "":
+        return {"ok": False, "message": f"Provide a {CATALOGUE_LABELS[cmd]} to {cmd}."}
+
+    edition = rules_edition(cfg, cmd)
+    rmode = recipe_mode(cfg, cmd)
+    rec = None
+    if rmode in ["recipes", "mixed"]:
+        rec, recipe_error = _resolve_recipe(cfg, cmd, text, rmode == "recipes")
+        if recipe_error != None:
+            return {"ok": False, "message": recipe_error}
+
+    entry, matches, error = _resolve_catalogue(cfg, cmd, text)
+    if entry == None:
+        return {"ok": False, "message": error}
+
+    workdays, gold, consumed, required, spell_reqs = _cost_from_recipe(rec)
+    output_kind = _read_field(COMMAND_OUTPUT_KIND, cmd)
+    spell_slot_level = None
+    use_stats_note = None
+
+    if cmd == "scribe":
+        level, level_error = _spell_level_from_args(entry, args)
+        if level_error != None:
+            return {"ok": False, "message": level_error}
+        ok, known_error = _known_spell_check(ch, cfg, spells.spell_name(entry))
+        if not ok:
+            return {"ok": False, "message": known_error}
+        if workdays == None or gold == None:
+            workdays, gold = _scroll_cost(edition, level)
+        sb = None
+        dc = None
+        if edition == "2024":
+            sb, dc, stats_error = scroll_stats_2024(ch, args)
+            if stats_error != None:
+                return {"ok": False, "message": stats_error}
+            use_stats_note = f"2024 scroll use stats recorded: spell bonus **{_signed(sb)}**, save DC **{dc}**."
+        name = format_scroll_name(spells.spell_name(entry), level, edition, sb, dc)
+        spell_slot_level = level
+        if spell_slot_level == 0:
+            spell_slot_level = None
+    else:
+        name = items.item_name(entry)
+        if workdays == None or gold == None:
+            if cmd == "craft":
+                workdays, gold = _mundane_cost(edition, entry)
+            elif cmd == "brew":
+                workdays, gold = _potion_cost(edition, entry)
+            else:
+                workdays, gold = _magic_item_cost(edition, items.item_rarity(entry))
+
+    if workdays == None:
+        workdays = 0
+    if gold == None:
+        gold = 0
+
+    return {
+        "ok": True,
+        "command": cmd,
+        "edition": edition,
+        "recipe_mode": rmode,
+        "name": name,
+        "entry": entry,
+        "recipe": rec,
+        "output_kind": output_kind,
+        "workdays": int(workdays),
+        "gold": float(gold),
+        "consumed": consumed,
+        "required": required,
+        "spell_reqs": spell_reqs,
+        "spell_slot_level": spell_slot_level,
+        "use_stats_note": use_stats_note,
+    }
+
+
+def _append_manual(lines, label, value):
+    if value == None:
+        return
+    if str(value).strip() == "" or str(value).strip() == "0":
+        return
+    lines.append(f"Manual: {label} **{value}**.")
+
+
+def _check_gold(ch, amount):
+    current = pc.get_gold(ch)
+    if current == None:
+        return False, "Could not read coinpurse gp."
+    if current < amount:
+        return False, f"Not enough gold - available **{_gp_text(current)}**, needed **{_gp_text(amount)}**."
+    return True, "Gold available."
+
+
+def _check_downtime(ch, cfg, workdays):
+    mode = pc.downtime_mode(cfg)
+    if mode == "off":
+        return False, "Downtime tracking is off on this server."
+    current = pc.get_downtime(ch, cfg)
+    if current < workdays:
+        return False, f"Not enough downtime - available **{current}**, needed **{workdays}** workdays."
+    return True, "Downtime available."
+
+
+def _check_spell_slot(ch, level):
+    slots = pc.get_spell_slots(ch, level)
+    if slots == None:
+        return False, "Spell slot automation is not available for this character."
+    if slots < 1:
+        return False, f"No level {level} spell slots available."
+    return True, "Spell slot available."
+
+
+def _resource_checks(ch, cfg, plan):
+    command = plan["command"]
+    lines = []
+    checks = []
+    gold = plan["gold"]
+    workdays = plan["workdays"]
+    consumed = plan["consumed"]
+    required = plan["required"]
+    slot_level = plan["spell_slot_level"]
+    materials_bag = _materials_bag(cfg, command)
+    equipment_bag = _equipment_bag(cfg, command)
+
+    if gold > 0:
+        mode = resource_mode(cfg, command, "gold")
+        if mode == "manual":
+            _append_manual(lines, "gold cost", _gp_text(gold))
+        else:
+            checks.append(["gold", mode, gold])
+    if workdays > 0:
+        mode = resource_mode(cfg, command, "downtime")
+        if mode == "manual":
+            _append_manual(lines, "downtime cost", f"{workdays} workdays")
+        else:
+            checks.append(["downtime", mode, workdays])
+    if len(consumed) > 0:
+        mode = resource_mode(cfg, command, "materials")
+        if mode == "manual":
+            lines.append(f"Manual: materials from **{materials_bag}**.")
+        else:
+            checks.append(["materials", mode, consumed])
+    if len(required) > 0:
+        mode = resource_mode(cfg, command, "items")
+        if mode == "manual":
+            lines.append(f"Manual: required items from **{equipment_bag}**.")
+        else:
+            checks.append(["items", mode, required])
+    if slot_level != None:
+        mode = resource_mode(cfg, command, "spell_slot")
+        if mode == "manual":
+            lines.append(f"Manual: expend one level {slot_level} spell slot.")
+        else:
+            checks.append(["spell_slot", mode, slot_level])
+
+    for check in checks:
+        key = check[0]
+        mode = check[1]
+        value = check[2]
+        ok = True
+        msg = ""
+        if key == "gold":
+            ok, msg = _check_gold(ch, value)
+        elif key == "downtime":
+            ok, msg = _check_downtime(ch, cfg, value)
+        elif key == "materials":
+            ok, msg = pc.has_bag_items(ch, value, materials_bag)
+        elif key == "items":
+            ok, msg = pc.has_bag_items(ch, value, equipment_bag)
+        elif key == "spell_slot":
+            ok, msg = _check_spell_slot(ch, value)
+        if not ok:
+            return False, msg, []
+        if mode == "check":
+            lines.append(f"Checked: {msg}")
+    return True, "\n".join(lines), checks
+
+
+def _int_or_none(value):
+    if value == None or str(value).strip() == "":
+        return None
+    try:
+        return int(value)
+    except:
+        return None
+
+
+def _list_from(value):
+    if value == None:
+        return []
+    if lists.is_list(value):
+        return value
+    if str(value).strip() == "":
+        return []
+    return [str(value).strip()]
+
+
+def _recipe_tools(entry):
+    if entry == None:
+        return []
+    raw = recipe.recipe_tools(entry)
+    return _list_from(raw)
+
+
+def _configured_tools(policy, plan):
+    output = []
+    seen = {}
+    for source in [
+        _recipe_tools(plan["recipe"]),
+        _list_from(_read_field(policy, "tools")),
+        _list_from(_read_field(policy, "tool_options")),
+        _list_from(_read_field(policy, "tool")),
+    ]:
+        for item in source:
+            text = str(item).strip()
+            key = text.lower()
+            if text == "" or key in seen:
+                continue
+            seen[key] = True
+            output.append(text)
+    return output
+
+
+def _or_list(values):
+    if len(values) == 0:
+        return "an appropriate tool"
+    if len(values) == 1:
+        return f"**{values[0]}**"
+    return ", ".join([f"**{item}**" for item in values[:-1]]) + f", or **{values[-1]}**"
+
+
+def _has_tool_proficiency(ch, tool_names):
+    for tool_name in tool_names:
+        try:
+            if tools.get_has_proficiency(tool_name, ch):
+                return True, tool_name
+        except:
+            pass
+    return False, None
+
+
+def _has_tool_kit(ch, cfg, command, policy, tool_names):
+    bag = _read_field(policy, "kit_bag")
+    if bag == None or str(bag).strip() == "":
+        bag = _equipment_bag(cfg, command)
+    for tool_name in tool_names:
+        if pc.get_bag_count(ch, tool_name, bag) > 0:
+            return True, tool_name, bag
+    return False, None, bag
+
+
+def _tool_checks(ch, cfg, plan):
+    command = plan["command"]
+    policy = tool_policy(cfg, command)
+    mode = _read_field(policy, "mode")
+    if mode == "off":
+        return True, ""
+    tool_names = _configured_tools(policy, plan)
+    require_prof = _read_field(policy, "require_proficiency") != False
+    require_kit = _read_field(policy, "require_kit") == True
+    if len(tool_names) == 0:
+        if mode == "manual":
+            return True, "Manual: confirm the character has an appropriate tool proficiency or kit."
+        return False, "Tool checking is enabled, but no tool options are configured for this craft."
+    if mode == "manual":
+        bits = []
+        if require_prof:
+            bits.append(f"proficiency with {_or_list(tool_names)}")
+        if require_kit:
+            bits.append(f"a kit for {_or_list(tool_names)}")
+        if len(bits) == 0:
+            bits.append(f"access to {_or_list(tool_names)}")
+        return True, "Manual: confirm " + " and ".join(bits) + "."
+
+    lines = []
+    if require_prof:
+        ok, matched = _has_tool_proficiency(ch, tool_names)
+        if not ok:
+            return False, f"Missing tool proficiency: {_or_list(tool_names)}."
+        lines.append(f"Checked: proficient with **{matched}**.")
+    if require_kit:
+        ok, matched, bag = _has_tool_kit(ch, cfg, command, policy, tool_names)
+        if not ok:
+            return False, f"Missing tool kit in **{bag}**: {_or_list(tool_names)}."
+        lines.append(f"Checked: **{matched}** kit in **{bag}**.")
+    if len(lines) == 0:
+        lines.append(f"Checked: tool policy allows {_or_list(tool_names)}.")
+    return True, "\n".join(lines)
+
+
+def _crafting_check(ch, cfg, plan, args):
+    command = plan["command"]
+    policy = check_policy(cfg, command)
+    mode = _read_field(policy, "mode")
+    if mode == "none":
+        return True, ""
+    skill = _read_field(policy, "skill")
+    if skill == None or str(skill).strip() == "":
+        if mode == "manual":
+            return True, "Manual: resolve the configured crafting check."
+        return False, "Crafting check is enabled, but no skill is configured."
+    dc = _int_or_none(_read_field(policy, "dc"))
+    ability = _read_field(policy, "ability")
+    if ability != None and str(ability).strip() == "":
+        ability = None
+    require_success = _read_field(policy, "require_success") != False
+    if mode == "manual":
+        suffix = "" if dc == None else f" DC **{dc}**"
+        return True, f"Manual: make a **{str(skill).strip().title()}** check{suffix}."
+    result = rolls.get_roll(ch, str(skill).strip(), args, "check", ability, dc)
+    line = f"{result['full']} **{result['name']}**"
+    if dc != None:
+        line += f" vs DC **{dc}**"
+    if dc != None and require_success and result["passed"] != True:
+        return False, line + "\nCrafting check failed."
+    return True, line
+
+
+def _deduct_resources(ch, cfg, plan, checks):
+    command = plan["command"]
+    lines = []
+    materials_bag = _materials_bag(cfg, command)
+    equipment_bag = _equipment_bag(cfg, command)
+    for check in checks:
+        key = check[0]
+        mode = check[1]
+        value = check[2]
+        if mode != "deduct":
+            continue
+        ok = True
+        msg = ""
+        if key == "gold":
+            ok, msg = pc.modify_gold(ch, -1 * value)
+        elif key == "downtime":
+            ok, msg = pc.modify_downtime(ch, -1 * value, cfg)
+        elif key == "materials":
+            ok, msg = pc.modify_bag_items(ch, value, -1, materials_bag)
+        elif key == "items":
+            if _consume_required_items(cfg, command):
+                ok, msg = pc.modify_bag_items(ch, value, -1, equipment_bag)
+            else:
+                msg = "Required items checked, not consumed."
+        elif key == "spell_slot":
+            ok, msg = pc.spend_spell_slot(ch, value)
+        if not ok:
+            return False, msg
+        if msg != "":
+            lines.append(msg)
+    return True, "\n".join(lines)
+
+
+def _apply_output(ch, cfg, plan):
+    policy = output_policy(cfg, plan["command"], plan["output_kind"])
+    mode = _read_field(policy, "mode")
+    bag = _read_field(policy, "bag")
+    name = plan["name"]
+    if mode == "bags":
+        ok, msg = pc.modify_bag(ch, name, 1, bag)
+        if ok:
+            return True, msg
+        return False, msg
+    return True, f"You gained one **{name}**."
+
+
+def execute_plan(ch, config_override, plan, args=None):
+    cfg = _cfg(config_override)
+    if plan == None or _read_field(plan, "ok") != True:
+        return False, _read_field(plan, "message")
+    if args == None:
+        args = argparse("")
+    ok, check_msg, checks = _resource_checks(ch, cfg, plan)
+    if not ok:
+        return False, check_msg
+    ok, tool_msg = _tool_checks(ch, cfg, plan)
+    if not ok:
+        return False, tool_msg
+    ok, craft_check_msg = _crafting_check(ch, cfg, plan, args)
+    if not ok:
+        return False, craft_check_msg
+    ok, deduct_msg = _deduct_resources(ch, cfg, plan, checks)
+    if not ok:
+        return False, deduct_msg
+    ok, output_msg = _apply_output(ch, cfg, plan)
+    if not ok:
+        return False, output_msg
+
+    lines = [
+        f"Crafted **{plan['name']}**.",
+        f"Rules edition: **{plan['edition']}**.",
+        f"Cost baseline: **{plan['workdays']} workdays**, **{_gp_text(plan['gold'])}**.",
+    ]
+    if plan["use_stats_note"] != None:
+        lines.append(plan["use_stats_note"])
+    if check_msg != "":
+        lines.append(check_msg)
+    if tool_msg != "":
+        lines.append(tool_msg)
+    if craft_check_msg != "":
+        lines.append(craft_check_msg)
+    if deduct_msg != "":
+        lines.append(deduct_msg)
+    lines.append(output_msg)
+    rec = plan["recipe"]
+    if rec != None:
+        desc = _read_field(rec, "description")
+        if desc != None and str(desc).strip() != "":
+            lines.append(str(desc).strip())
+    return True, "\n\n".join(lines)
+
+
+def run_command(ch, config_override, command, query, args, prefix="!"):
+    plan = build_plan(config_override, command, query, args, ch)
+    if _read_field(plan, "ok") != True:
+        return False, _read_field(plan, "message")
+    return execute_plan(ch, config_override, plan, args)
+
+
+def help_text(command, prefix="!", command_name=None):
+    if command_name == None:
+        command_name = command
+    label = _read_field(CATALOGUE_LABELS, command)
+    article = "an" if label == "item" else "a"
+    cmd = f"{prefix}{command_name}"
+    if command == "scribe":
+        return f"""Create a spell scroll from the spell catalogue.
+
+**Usage**
+`{cmd} <spell> [-l level] [2024 scroll stats]`
+`spell` Spell name to scribe.
+`level` Optional scroll spell level for upcasting.
+By default, the spell must appear in your Avrae spellbook.
+`2024 scroll stats` Uses Avrae spellbook stats when available. Use -sb/-dc for explicit final values, or -ability/-score/-pb as a fallback.
+
+**Examples**
+`{cmd} Fireball`
+`{cmd} Fireball -l 5 -ability cha -score 12 -pb 2`
+`{cmd} Fireball -l 5 -sb 3 -dc 11`
 """
+    return f"""Create {article} {label} from the configured crafting catalogue.
 
-# TODO: implement crafting module
+**Usage**
+`{cmd} <{label}>`
+`{label}` Name to look up.
+
+**Examples**
+`{cmd} "Potion of Healing"`
+`{cmd} "Cloak of Protection"`
+"""

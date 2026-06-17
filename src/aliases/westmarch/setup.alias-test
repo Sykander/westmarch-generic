@@ -3,18 +3,12 @@
 "re:Initial Setup[\\s\\S]*westmarch_config[\\s\\S]*\\[Westmarch config editor\\]\\(https://sykander.github.io/westmarch-generic/\\)"
 ---
 name: unwired defaults to initial setup page
-vars:
-  uvars:
-    _wm_command: setup
 
 !setup
 ---
 re:gvar create # westmarch config|subsystems =|gvar editor
 ---
 name: initial setup includes copy-paste config create command
-vars:
-  uvars:
-    _wm_command: setup
 
 !setup
 ---
@@ -22,8 +16,6 @@ vars:
 ---
 name: wired defaults to general configuration page
 vars:
-  uvars:
-    _wm_command: setup
   svars:
     westmarch_config: "ffff1111-1111-1111-1111-111111111111"
   gvars:
@@ -35,9 +27,6 @@ vars:
 "re:General Configuration[\\s\\S]*\\[Westmarch Generic Discord\\]\\(https://discord.gg/ZAkJ44489G\\)[\\s\\S]*ask setup questions"
 ---
 name: general configuration page links support server
-vars:
-  uvars:
-    _wm_command: setup
 
 !setup -p 1
 ---
@@ -45,8 +34,6 @@ vars:
 ---
 name: page number can show initial setup even when wired
 vars:
-  uvars:
-    _wm_command: setup
   svars:
     westmarch_config: "ffff1111-1111-1111-1111-111111111111"
   gvars:
@@ -58,27 +45,18 @@ vars:
 re:enc_biome_source|distribution_policy|command_config
 ---
 name: title page lookup shows exploration subsystem details
-vars:
-  uvars:
-    _wm_command: setup
 
 !setup -p "World Data"
 ---
 re:biomes|locations|monsters
 ---
 name: world data page lists implemented data surfaces
-vars:
-  uvars:
-    _wm_command: setup
 
 !setup -p "Monster Data"
 ---
 re:world_data.monsters|!hunt|!loot
 ---
 name: monster data page explains hunt and loot consumers
-vars:
-  uvars:
-    _wm_command: setup
 
 !setup -p "Recommended Workshops"
 ---
@@ -86,5 +64,3 @@ re:vSheet[\s\S]*Bags[\s\S]*command_thumbnail
 ---
 name: recommended workshops page lists companions and player setup policy
 vars:
-  uvars:
-    _wm_command: setup

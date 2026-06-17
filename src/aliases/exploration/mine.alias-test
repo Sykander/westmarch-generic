@@ -3,9 +3,6 @@
 re:not configured
 ---
 name: blocks without server config
-vars:
-  uvars:
-    _wm_command: mine
 
 !mine
 ---
@@ -13,8 +10,6 @@ title: Mine
 ---
 name: passes auth when exploration mine enabled
 vars:
-  uvars:
-    _wm_command: mine
   svars:
     westmarch_config: "eeee1111-1111-1111-1111-111111111111"
   gvars:
@@ -32,8 +27,6 @@ re:disabled on this server
 ---
 name: rejects disabled mine command
 vars:
-  uvars:
-    _wm_command: mine
   svars:
     westmarch_config: "eeee2222-2222-2222-2222-222222222222"
   gvars:
@@ -51,8 +44,6 @@ title: Mine
 ---
 name: help stub when mine enabled
 vars:
-  uvars:
-    _wm_command: mine
   svars:
     westmarch_config: "eeee1111-1111-1111-1111-111111111111"
   gvars:
@@ -70,8 +61,6 @@ re:Iron seam
 ---
 name: "manual biome rolls mine encounter from pool"
 vars:
-  uvars:
-    _wm_command: mine
   svars:
     westmarch_config: "eeee3333-3333-3333-3333-333333333333"
   gvars:
@@ -101,8 +90,6 @@ re:biome
 ---
 name: "argument mode requires biome code"
 vars:
-  uvars:
-    _wm_command: mine
   svars:
     westmarch_config: "eeee3333-3333-3333-3333-333333333333"
   gvars:
@@ -128,8 +115,6 @@ re:registered|unknown|invalid
 ---
 name: "unknown biome code rejected"
 vars:
-  uvars:
-    _wm_command: mine
   svars:
     westmarch_config: "eeee3333-3333-3333-3333-333333333333"
   gvars:
@@ -155,8 +140,6 @@ re:forest|Biome|Usage
 ---
 name: "help lists registered biome codes"
 vars:
-  uvars:
-    _wm_command: mine
   svars:
     westmarch_config: "eeee3333-3333-3333-3333-333333333333"
   gvars:
@@ -182,8 +165,6 @@ re:cooldown|wait|seconds
 ---
 name: "cooldown blocks repeat use"
 vars:
-  uvars:
-    _wm_command: mine
   cvars:
     wg_stats: '{"mine": {"last_used_at": 9999999999}}'
   svars:
@@ -216,8 +197,6 @@ re:Iron seam
 ---
 name: "location mode infers biome from character location"
 vars:
-  uvars:
-    _wm_command: mine
   svars:
     westmarch_config: "eeee3334-3334-3334-3334-333333333334"
   gvars:

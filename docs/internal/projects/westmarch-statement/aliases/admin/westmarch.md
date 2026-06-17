@@ -55,7 +55,7 @@ When **`westmarch_config`** is set and loadable, the default embed:
 
 ## Access
 
-Bare **`!westmarch`** is open. **`setup`** and **`show`** are enforced in **`auth.is_allowed()`** with Avrae aliasing roles only. These roles gate workshop/svar setup, not narrative GM authority.
+Bare **`!westmarch`** is open. **`setup`** and **`show`** are enforced through their explicit **`auth.is_allowed("setup")`** / **`auth.is_allowed("show")`** gates with Avrae aliasing roles only. These roles gate workshop/svar setup, not narrative GM authority.
 
 ## Sourcemap layout (planned)
 

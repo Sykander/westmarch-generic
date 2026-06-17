@@ -8,8 +8,9 @@ using(
     lists = env.gvars.lists,
 )
 
-ok, msg = auth.is_allowed("show")
-get_embed = display.get_display()
+COMMAND = "show"
+ok, msg = auth.is_allowed(COMMAND)
+get_embed = display.get_display(COMMAND)
 
 if not ok:
     return get_embed(desc=msg)
@@ -22,7 +23,7 @@ if len(argslist) > 0 and argslist[0] in ["help", "?"]:
 Usage:
 `{ctx.prefix}westmarch show`
 `{ctx.prefix}westmarch show <section>`
-Sections: wiring, subsystems, policies, display, runtime, data, biomes, player_setup
+Sections: wiring, subsystems, policies, crafting, display, runtime, data, biomes, player_setup
 """
     return get_embed(desc=help_text)
 
@@ -83,6 +84,28 @@ def _read_field(obj, key):
         "gvar_id": lambda o: o.gvar_id,
         "monster_images": lambda o: o.monster_images,
         "show_check_dcs": lambda o: o.show_check_dcs,
+        "catalogues": lambda o: o.catalogues,
+        "recipe_mode": lambda o: o.recipe_mode,
+        "require_known_spell": lambda o: o.require_known_spell,
+        "checks": lambda o: o.checks,
+        "tool_policy": lambda o: o.tool_policy,
+        "items": lambda o: o.items,
+        "potions": lambda o: o.potions,
+        "spells": lambda o: o.spells,
+        "magic_items": lambda o: o.magic_items,
+        "recipes": lambda o: o.recipes,
+        "resources": lambda o: o.resources,
+        "gold": lambda o: o.gold,
+        "materials": lambda o: o.materials,
+        "spell_slot": lambda o: o.spell_slot,
+        "item_handling": lambda o: o.item_handling,
+        "default_bag": lambda o: o.default_bag,
+        "equipment_bag": lambda o: o.equipment_bag,
+        "crafted_bag": lambda o: o.crafted_bag,
+        "potions_bag": lambda o: o.potions_bag,
+        "scrolls_bag": lambda o: o.scrolls_bag,
+        "magic_items_bag": lambda o: o.magic_items_bag,
+        "materials_bag": lambda o: o.materials_bag,
         "config": lambda o: o.config,
         "exploration": lambda o: o.exploration,
         "travel": lambda o: o.travel,
@@ -120,16 +143,6 @@ def _is_dict(value):
         return False
     try:
         result = f"{dicts.is_dict(value)}"
-        return result == "True" or result == "true"
-    except:
-        return False
-
-
-def _is_list(value):
-    if _is_missing(value):
-        return False
-    try:
-        result = f"{lists.is_list(value)}"
         return result == "True" or result == "true"
     except:
         return False
@@ -181,7 +194,7 @@ def _path_count(wd):
     paths = _read_field(wd, "paths")
     if paths == None:
         return 0
-    if _is_list(paths):
+    if lists.is_list(paths):
         return len(paths)
     return _count_dict(paths)
 
@@ -317,6 +330,18 @@ def _policy_summary(cfg):
     dt_mode = _read_field(dt_pol, "mode")
     if dt_mode != None:
         lines.append(f"downtime.mode: {dt_mode}")
+    craft_pol = _read_field(policies, "crafting")
+    resources = _read_field(craft_pol, "resources")
+    if resources != None:
+        for key in ["gold", "materials", "items", "downtime", "spell_slot"]:
+            value = _read_field(resources, key)
+            if value != None:
+                lines.append(f"crafting.resources.{key}: {value}")
+    inv_pol = _read_field(policies, "inventory")
+    item_handling = _read_field(inv_pol, "item_handling")
+    ih_mode = _read_field(item_handling, "mode")
+    if ih_mode != None:
+        lines.append(f"inventory.item_handling.mode: {ih_mode}")
     disp_pol = _read_field(policies, "display")
     fb = _read_field(disp_pol, "footer_behaviour")
     if fb != None:
@@ -347,6 +372,69 @@ def _policy_summary(cfg):
     return _codeblock("yaml", lines)
 
 
+def _short_source(value):
+    if value == None:
+        return "none"
+    if lists.is_list(value):
+        return f"inline:{len(value)}"
+    if _is_dict(value):
+        gid = _read_field(value, "gvar_id")
+        if gid != None:
+            text = str(gid).strip()
+            if len(text) > 32:
+                text = text[0:29] + "..."
+            return text
+        entries = _read_field(value, "entries")
+        if lists.is_list(entries):
+            return f"inline:{len(entries)}"
+        return "object"
+    text = str(value).strip()
+    if len(text) > 32:
+        text = text[0:29] + "..."
+    return text
+
+
+def _crafting_summary(cfg):
+    block = _read_subsystem(cfg, "crafting")
+    c_cfg = _read_field(block, "config")
+    catalogues = _read_field(c_cfg, "catalogues")
+    lines = []
+    rv = _read_field(c_cfg, "rules_version")
+    if rv == None:
+        rv = "server"
+    lines.append(f"rules_version: {rv}")
+    recipe_mode = _read_field(c_cfg, "recipe_mode")
+    if recipe_mode == None:
+        recipe_mode = "mixed"
+    lines.append(f"recipe_mode: {recipe_mode}")
+    known = _read_field(c_cfg, "require_known_spell")
+    if known == None:
+        known = True
+    lines.append(f"require_known_spell: {_bool_text(known)}")
+    lines.append("catalogues:")
+    for key in ["items", "potions", "spells", "magic_items", "recipes"]:
+        lines.append(f"  {key}: {_short_source(_read_field(catalogues, key))}")
+    checks = _read_field(c_cfg, "checks")
+    if checks != None:
+        lines.append("checks:")
+        for key in ["craft", "brew", "scribe", "enchant"]:
+            lines.append(f"  {key}: {_read_field(_read_field(checks, key), 'mode')}")
+    tool_policy = _read_field(c_cfg, "tool_policy")
+    if tool_policy != None:
+        lines.append("tool_policy:")
+        for key in ["craft", "brew", "scribe", "enchant"]:
+            lines.append(f"  {key}: {_read_field(_read_field(tool_policy, key), 'mode')}")
+    policies = _read_field(cfg, "policies")
+    inv = _read_field(policies, "inventory")
+    item_handling = _read_field(inv, "item_handling")
+    lines.append(f"output.mode: {_read_field(item_handling, 'mode')}")
+    for key in ["crafted_bag", "potions_bag", "scrolls_bag", "magic_items_bag", "materials_bag"]:
+        val = _read_field(item_handling, key)
+        if val != None:
+            lines.append(f"{key}: {val}")
+    return _codeblock("yaml", lines)
+
+
 def _player_setup_summary(cfg):
     policies = _read_field(cfg, "policies")
     player_setup = _read_field(policies, "player_setup")
@@ -358,7 +446,7 @@ def _player_setup_summary(cfg):
         require_character = True
     checks = _read_field(player_setup, "checks")
     count = 0
-    if _is_list(checks):
+    if lists.is_list(checks):
         count = len(checks)
     hud = _read_field(player_setup, "hud")
     hud_enabled = True
@@ -369,7 +457,7 @@ def _player_setup_summary(cfg):
         if _read_field(hud, "enabled") == False:
             hud_enabled = False
         raw_fields = _read_field(hud, "fields")
-        if _is_list(raw_fields):
+        if lists.is_list(raw_fields):
             for field in raw_fields:
                 if _is_dict(field):
                     key = _read_field(field, "key")
@@ -445,6 +533,7 @@ def summarize_config(section=None):
         "world": _world_summary(cfg),
         "subsystems": _enabled_commands_summary(cfg),
         "policies": _policy_summary(cfg),
+        "crafting": _crafting_summary(cfg),
         "runtime": runtime,
         "data": _world_summary(cfg),
         "display": _display_summary(cfg),
@@ -464,6 +553,7 @@ def summarize_config(section=None):
         "subsystems",
         "player_setup",
         "policies",
+        "crafting",
         "display",
         "runtime",
         "data",
@@ -474,6 +564,7 @@ def summarize_config(section=None):
         "subsystems": "Subsystems",
         "player_setup": "Player setup",
         "policies": "Policies",
+        "crafting": "Crafting",
         "display": "Display",
         "runtime": "Runtime",
         "data": "Data overview",
@@ -498,7 +589,7 @@ if summary == None:
         title="Unknown section",
         desc=(
             f"Unknown section `{section}`. "
-            f"Try: wiring, subsystems, policies, display, runtime, data, biomes, player_setup"
+            f"Try: wiring, subsystems, policies, crafting, display, runtime, data, biomes, player_setup"
         ),
     )
 

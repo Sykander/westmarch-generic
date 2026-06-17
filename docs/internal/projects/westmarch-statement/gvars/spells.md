@@ -1,39 +1,20 @@
 # spells.gvar
 
-**Path:** `src/gvars/utils/catalogues/spells.gvar` · **Phase:** 1 (Tier E)
+**Path:** `src/gvars/utils/catalogues/spells/spells.gvar`
 
-Search **spell** catalogue for **`!scribe`**. Source TSV: [assets/spells.tsv](../../../../../assets/spells.tsv) → **`catalogues/spells/spells_list.gvar.json`** via **`utils/generate-spells.js`** ([content-pipeline.md](../content-pipeline.md)).
-
-Single shard for MVP; split by spell level if gvar size requires — same lazy-load pattern as [items.md](items.md).
+Spell catalogue facade for `!scribe`. Engine defaults come from `spells_list.gvar.json`; servers can override with `subsystems.crafting.config.catalogues.spells`, `world_data.catalogues.spells`, or `extensions.spells`.
 
 ## API
 
 ```py
-def search(config, query):
-    """Prefix / substring on spell name."""
-
-def get(config, name):
-    """Exact match or None."""
-
-def scroll_name(spell):
-    """e.g. 'Spell scroll (Fireball)' — for bag add on scribe success."""
+spells.catalogue_entries(cfg)
+spells.resolve(cfg, "Fireball")
+spells.search(cfg, "Fireball")
+spells.name_matches(cfg, "fire")
+spells.match_error("fire", matches)
+spells.spell_name(spell)
+spells.spell_level(spell)
+spells.spell_school(spell)
 ```
 
-Spell dict:
-
-```py
-{ "name": str, "level": int | str, "school": str, ... }
-```
-
-Config **`spells`** list or **`extensions.spells`** UUID.
-
-## Used by
-
-- **`!scribe`** — lookup, scroll cost from config **`SCRIBE_SCROLL_COSTS`**
-- Future content references
-
-## Related
-
-- [content-pipeline.md](../content-pipeline.md) · [utils/README.md](../../../../utils/README.md)
-- [aliases/crafting/scribe.md](../aliases/crafting/scribe.md)
-- [items.md](items.md)
+Resolution uses `lists.search_list_by_key` and follows the standard 0 / 1 / many result shape.

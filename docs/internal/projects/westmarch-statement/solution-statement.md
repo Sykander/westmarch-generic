@@ -209,8 +209,8 @@ Document in public setup guide: *set **`rules_version`** or align Avrae rules wi
 Introduce engine modules under `src/gvars/` — see [gvars/README.md](gvars/README.md):
 
 - **`config.gvar`** — `get_config()` ([config.md](gvars/config.md))
-- **`display.gvar`** — **`get_display()`** — returns configured **`embeds.get_embed`** for ctx ([display.md](gvars/display.md))
-- **`auth.gvar`** — `is_allowed()` — zero-arg; `(success, message)` ([auth.md](gvars/auth.md))
+- **`display.gvar`** — **`get_display(command)`** — returns configured **`embeds.get_embed`** for the canonical command key ([display.md](gvars/display.md))
+- **`auth.gvar`** — `is_allowed(command)`; `(success, message)` ([auth.md](gvars/auth.md))
 - Standard not-configured / disabled embeds (inline via **`embeds.get_embed`**, or branded via **`display.get_display()`** when config loads)
 
 All ported aliases use **config** + **auth**; no alias reads svars directly with ad hoc strings ([US-4.2](user-stories.md)).

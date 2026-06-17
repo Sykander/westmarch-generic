@@ -3,9 +3,6 @@
 re:not configured
 ---
 name: blocks without server config
-vars:
-  uvars:
-    _wm_command: library
 
 !library
 ---
@@ -13,8 +10,6 @@ re:not implemented
 ---
 name: passes auth when content library enabled
 vars:
-  uvars:
-    _wm_command: library
   svars:
     westmarch_config: "dddddddd-dddd-dddd-dddd-dddddddddddd"
   gvars:
@@ -32,8 +27,6 @@ re:disabled on this server
 ---
 name: rejects disabled library command
 vars:
-  uvars:
-    _wm_command: library
   svars:
     westmarch_config: "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"
   gvars:

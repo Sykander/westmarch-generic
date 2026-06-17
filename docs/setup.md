@@ -117,6 +117,62 @@ Example — exploration only:
 
 Downtime uses a single toggle: `"downtime": {"enabled": True}`.
 
+Crafting needs command toggles plus catalogue wiring. Engine catalogues are available as generic defaults; replace them with your own gvar UUIDs or inline lists when your server has custom items, potions, spells, magic items, or recipes.
+
+```py
+subsystems = {
+    "crafting": {
+        "enabled": True,
+        "commands": {"craft": True, "brew": True, "scribe": True, "enchant": True},
+        "config": {
+            "rules_version": None,  # None uses config.get_rules_edition()
+            "recipe_mode": "mixed",  # raw, recipes, or mixed
+            "require_known_spell": True,  # RAW scribing gate; set False if tracked elsewhere
+            "catalogues": {
+                "items": "engine:catalogues/items",
+                "potions": "engine:catalogues/potions",
+                "spells": "engine:catalogues/spells",
+                "magic_items": "engine:catalogues/magic_items",
+                "recipes": None,
+            },
+            "checks": {
+                "scribe": {"mode": "none", "skill": "arcana", "dc": None},
+            },
+            "tool_policy": {
+                "scribe": {"mode": "off", "tools": ["Calligrapher's Supplies"]},
+            },
+        },
+        "command_config": {
+            "scribe": {"rules_version": "2024"},
+        },
+    },
+}
+
+policies = {
+    "crafting": {
+        "resources": {
+            "gold": "manual",
+            "materials": "manual",
+            "items": "manual",
+            "downtime": "check",
+            "spell_slot": "manual",
+        },
+    },
+    "inventory": {
+        "item_handling": {
+            "mode": "manual",  # or "bags"
+            "crafted_bag": "Equipment",
+            "potions_bag": "Potions",
+            "scrolls_bag": "Scrolls",
+            "magic_items_bag": "Equipment",
+            "materials_bag": "Materials",
+        },
+    },
+}
+```
+
+Recipe modes are `raw`, `recipes`, or `mixed`. RAW does not require crafting rolls; set a command check mode to `manual` or `roll` only if your server wants that gate. Scribing checks the character spellbook by default; set `require_known_spell` to `False` only when your server tracks scroll eligibility outside Avrae. Tool policy modes are `off`, `manual`, or `check`. Crafting resource modes are `manual`, `check`, or `deduct`. Item output modes are `manual` or `bags`.
+
 Travel/location example:
 
 ```py

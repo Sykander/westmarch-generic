@@ -2,9 +2,9 @@
 
 **Path:** `src/gvars/utils/display/display.gvar` · **Phase:** 0
 
-Single entry point for **command-scoped embed branding**. Resolves subsystem, command, merged config display layers, and footer policy from **`ctx`** + server config, then returns a pre-configured **`get_embed`** from **`core/embeds`**.
+Single entry point for **command-scoped embed branding**. Resolves subsystem, command, merged config display layers, and footer policy from the explicit command key + server config, then returns a pre-configured **`get_embed`** from **`core/embeds`**.
 
-Call **once at the top** of each alias (after **`auth.is_allowed()`**) or pass the returned callable into snippets.
+Call **once at the top** of each alias (after **`auth.is_allowed(COMMAND)`**) or pass the returned callable into snippets.
 
 Config **data** lives on the owner gvar ([data-shapes.md § Embed display inheritance](../data-shapes.md#embed-display-inheritance)); this module owns **behaviour** — resolution, merge order, defaults, footer modes.
 
@@ -22,11 +22,11 @@ Reads merged config via **`config.get_config()`** only — does not load svars i
 ## API
 
 ```py
-def get_display():
+def get_display(command_override=None):
     """
-    Return a configured get_embed callable for this invocation.
+    Return a configured get_embed callable for this command.
 
-    No arguments — infers subsystem + command from ctx (same COMMAND_MAP as auth.gvar),
+    command_override — canonical command key from auth.gvar COMMAND_MAP.
     merges display layers + footer policy, then:
 
         return embeds.configure_get_embed(
@@ -45,7 +45,7 @@ def get_display():
     """
 ```
 
-**One public function.** Merge, footer, and ctx resolution are private helpers — not part of the alias contract.
+**One public function.** Merge, footer, and command resolution are private helpers — not part of the alias contract.
 
 ### Relationship to `core/embeds`
 
@@ -58,7 +58,7 @@ return get_embed(desc=body)                    # branded defaults
 return get_embed(title="Override", desc=body)  # per-call title override
 ```
 
-**`display.get_display()`** is the westmarch-generic wrapper that **computes** those defaults from config + **`ctx`**, then delegates to **`configure_get_embed`**.
+**`display.get_display(command_override=None)`** is the westmarch-generic wrapper that **computes** those defaults from config + the canonical command key, then delegates to **`configure_get_embed`**.
 
 Permission-denied and other pre-branding exits should use **`embeds.get_embed(...)`** directly (no server display merge).
 
@@ -66,7 +66,7 @@ Permission-denied and other pre-branding exits should use **`embeds.get_embed(..
 
 | Input | Source |
 |-------|--------|
-| Subsystem + command | **`ctx.alias`**, hub subcommand arg — same **`COMMAND_MAP`** as [auth.gvar](auth.md) |
+| Subsystem + command | Explicit command override — same **`COMMAND_MAP`** as [auth.gvar](auth.md) |
 | Display layers | **`cfg.display`** → **`subsystems[subsystem].display`** → **`command_display[command]`** |
 | Admin commands | Subsystem **`admin`** — base **`display`** only (no subsystem layer) |
 | Footer | **`policies.display.footer_behaviour`** — see [Display policy](../data-shapes.md#display-policy) |
@@ -98,15 +98,15 @@ The web config editor validates config shapes; **`display.gvar`** trusts merged 
 ### Per-invocation cache
 
 ```py
-_cached = None
+_display_cache = {}
 
-def get_display():
-    global _cached
-    if _cached is None:
-        subsystem, command, _ = _resolve_from_ctx()
+def get_display(command_override=None):
+    key = "" if command_override is None else str(command_override).strip().lower()
+    if key not in _display_cache:
+        subsystem, command, _ = _resolve_from_ctx(command_override)
         branding = _build_branding(subsystem, command)
-        _cached = embeds.configure_get_embed(**branding)
-    return _cached
+        _display_cache[key] = embeds.configure_get_embed(**branding)
+    return _display_cache[key]
 ```
 
 ## Usage
@@ -120,11 +120,12 @@ using(
     embeds = env.gvars.embeds,
 )
 
-ok, msg = auth.is_allowed()
+COMMAND = "enc"
+ok, msg = auth.is_allowed(COMMAND)
+get_embed = display.get_display(COMMAND)
+
 if not ok:
     return get_embed(desc=msg)
-
-get_embed = display.get_display()
 
 # … command logic …
 
@@ -135,18 +136,18 @@ return get_embed(title="Ambiguous match", desc=choices)  # override title when n
 **Help subcommand** — same callable; override **`desc`** / **`title`** as usual:
 
 ```py
-get_embed = display.get_display()
+get_embed = display.get_display("enc")
 return get_embed(desc=help_text)
 ```
 
 **Snippets** — parent resolves once, passes callable down (snippets do **not** call **`display.get_display()`** unless they are top-level alias entry points):
 
 ```py
-get_embed = display.get_display()
+get_embed = display.get_display("library")
 library.run_search(cfg, get_embed, query)
 ```
 
-**Admin hub** (`!westmarch show`, `check`, `setup`) — **`get_display()`** still works; ctx maps to **`admin`** + subcommand, so only base world **`display`** applies.
+**Admin hub** (`!westmarch show`, `check`, `setup`) — pass the canonical admin command key. Admin commands still resolve to subsystem **`admin`**, so only base world **`display`** applies.
 
 ## Not in this module
 
@@ -157,11 +158,11 @@ library.run_search(cfg, get_embed, query)
 
 ## Tests
 
-- **`get_display()`** for exploration **`enc`** fixture — returned callable produces embed with command **`command_display`** title/colour; **`configure_get_embed`** defaults overridable per call.
-- **`get_display()`** for **`admin` / `show`** — base **`display.name`** as default title only.
+- **`get_display("enc")`** for exploration **`enc`** fixture — returned callable produces embed with command **`command_display`** title/colour; **`configure_get_embed`** defaults overridable per call.
+- **`get_display("show")`** for **`admin` / `show`** — base **`display.name`** still applies; no subsystem display layer is used.
 - **`footer_behaviour`** each mode — deterministic PRNG seed in alias-test for **`balanced`** / **`helpful_tips`**.
 - Second **`get_display()`** in same invocation returns identical callable (cache).
-- Unknown **`ctx.alias`** — align with auth: either never reached (auth fails first) or fall back to generic westmarch branding *(match auth step 1)*.
+- Missing or unknown command override falls back to generic westmarch branding.
 
 ## Related
 

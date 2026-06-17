@@ -11,8 +11,9 @@ using(
     weather = env.gvars.weather,
 )
 
-ok, msg = auth.is_allowed()
-get_embed = display.get_display()
+COMMAND = "westmarch"
+ok, msg = auth.is_allowed(COMMAND)
+get_embed = display.get_display(COMMAND)
 
 if not ok:
     return get_embed(desc=msg)
@@ -114,16 +115,6 @@ def _is_dict(value):
         return False
 
 
-def _is_list(value):
-    if _is_missing(value):
-        return False
-    try:
-        result = f"{lists.is_list(value)}"
-        return result == "True" or result == "true"
-    except:
-        return False
-
-
 def _is_nonempty(value):
     if _is_missing(value):
         return False
@@ -131,7 +122,7 @@ def _is_nonempty(value):
         return True
     if value == False:
         return False
-    if _is_list(value):
+    if lists.is_list(value):
         return len(value) > 0
     if _is_dict(value):
         return len([k for k in value]) > 0
@@ -147,7 +138,7 @@ def _same_text(left, right):
 def _as_check_list(raw):
     if _is_missing(raw):
         return []
-    if _is_list(raw):
+    if lists.is_list(raw):
         return raw
     return []
 
@@ -275,7 +266,7 @@ def _value_passes(value, check):
         passed = _same_text(value, expected)
     else:
         allowed = _read_field(check, "one_of")
-        if _is_list(allowed):
+        if lists.is_list(allowed):
             passed = False
             for item in allowed:
                 if _same_text(value, item):
@@ -369,11 +360,11 @@ def _hud_enabled(cfg):
 
 def _hud_fields(cfg):
     hud = _hud_policy(cfg)
-    if _is_list(hud):
+    if lists.is_list(hud):
         return hud
     if _is_dict(hud):
         fields = _read_field(hud, "fields")
-        if _is_list(fields):
+        if lists.is_list(fields):
             return fields
     return DEFAULT_HUD_FIELDS
 
@@ -415,7 +406,7 @@ def _display_value(value):
             if _is_nonempty(nested):
                 return str(nested).strip()
         return None
-    if _is_list(value):
+    if lists.is_list(value):
         if len(value) == 0:
             return None
         return ", ".join([str(item).strip() for item in value if _is_nonempty(item)])

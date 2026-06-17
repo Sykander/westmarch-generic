@@ -77,7 +77,7 @@ flowchart TD
 
 ### Config loader integration
 
-1. **`display.get_display()`** + **`auth.is_allowed()`**
+1. **`display.get_display("enc")`** + **`auth.is_allowed("enc")`**
 2. **`cfg = config.get_config()`**
 3. **`biomes.resolve_biome("enc", args, ch, cfg)`**
 4. **`encounter_lists.get_encounter(biome, "enc", ch, cfg)`**

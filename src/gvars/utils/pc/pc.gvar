@@ -2,8 +2,10 @@
 
 using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(
+    bags = env.gvars.bags,
     config = env.gvars.config,
     dicts = env.gvars.dicts,
+    lists = env.gvars.lists,
     stats = env.gvars.stats,
 )
 
@@ -15,6 +17,14 @@ DEFAULT_JOB_COOLDOWN = 28800
 CVAR_DOWNTIME = "wg_downtime"
 CVAR_DOWNTIME_START = "wg_downtime_start"
 CVAR_DOWNTIME_USED = "wg_downtime_used"
+
+COIN_VALUES = {
+    "cp": 0.01,
+    "sp": 0.1,
+    "ep": 0.5,
+    "gp": 1,
+    "pp": 10,
+}
 
 
 def _read_field(obj, key):
@@ -48,6 +58,14 @@ def _read_field(obj, key):
         "hunt": lambda o: o.hunt,
         "loot": lambda o: o.loot,
         "cooldown_seconds": lambda o: o.cooldown_seconds,
+        "item": lambda o: o.item,
+        "qty": lambda o: o.qty,
+        "count": lambda o: o.count,
+        "cp": lambda o: o.cp,
+        "sp": lambda o: o.sp,
+        "ep": lambda o: o.ep,
+        "gp": lambda o: o.gp,
+        "pp": lambda o: o.pp,
     }
     if key in attrs:
         try:
@@ -66,12 +84,6 @@ def _cfg(config_override=None):
 def _read_cvar(ch, key, fallback=None):
     if ch != None:
         try:
-            val = ch.get_cvar(key, None)
-            if val != None:
-                return val
-        except:
-            pass
-        try:
             cvars = ch.cvars
             if key in cvars:
                 return cvars[key]
@@ -82,7 +94,33 @@ def _read_cvar(ch, key, fallback=None):
             return get(key)
     except:
         pass
+    if ch != None:
+        try:
+            val = ch.get_cvar(key, None)
+            if val != None:
+                return val
+        except:
+            pass
     return fallback
+
+
+def _bag_contents_from_cvar(ch, bag_name):
+    try:
+        raw = ch.cvars["bags"]
+    except:
+        return None
+    if raw == None or raw.strip() == "":
+        return None
+    try:
+        parsed = load_json(raw)
+    except:
+        return None
+    if not lists.is_list(parsed):
+        return None
+    for entry in parsed:
+        if entry[0] == bag_name:
+            return entry[1]
+    return {}
 
 
 def _set_cvar(ch, key, value):
@@ -115,6 +153,40 @@ def _character_name(ch):
         return ch.name
     except:
         return "Character"
+
+
+def _coin_value(ch, key):
+    try:
+        value = _read_field(ch.coinpurse, key)
+        if value != None:
+            return float(value)
+    except:
+        pass
+    try:
+        return float(ch.coinpurse[key])
+    except:
+        return 0
+
+
+def _coins_total_gp(ch):
+    total = 0
+    try:
+        cp = ch.coinpurse
+    except:
+        return None
+    for key in COIN_VALUES:
+        total += _coin_value(ch, key) * COIN_VALUES[key]
+    return total
+
+
+def _gp_text(value):
+    try:
+        num = float(value)
+    except:
+        return str(value)
+    if num == int(num):
+        return str(int(num))
+    return str(num)
 
 
 def _downtime_policy(cfg):
@@ -189,6 +261,130 @@ def set_downtime(ch, workdays, config_override=None):
     if not _set_cvar(ch, CVAR_DOWNTIME, value):
         return False, "Could not update downtime cvar."
     return True, f"{_character_name(ch)} has **{value}** workdays available."
+
+
+def get_bag_count(ch, item, bag="Equipment"):
+    """Return the count of an item in a character bag."""
+    contents = _bag_contents_from_cvar(ch, str(bag))
+    if contents != None:
+        raw = _read_field(contents, str(item))
+        if raw == None:
+            return 0
+        return _int_value(raw, 0)
+    try:
+        contents = bags.get_bag(str(bag), ch)
+        raw = _read_field(contents, str(item))
+        if raw == None:
+            return 0
+        return _int_value(raw, 0)
+    except:
+        return 0
+
+
+def modify_bag(ch, item, count=1, bag="Equipment"):
+    """Add or remove item stacks through the shared Bags wrapper."""
+    try:
+        return bags.modify_bag(str(item), int(count), str(bag), ch)
+    except:
+        return False, f"Could not update {_character_name(ch)}'s **{bag}** bag."
+
+
+def has_bag_items(ch, requirements, bag="Equipment"):
+    """Return (ok, message) for a list of {item, qty} requirements."""
+    missing = []
+    for req in requirements:
+        item = _read_field(req, "item")
+        qty = _read_field(req, "qty")
+        if qty == None:
+            qty = _read_field(req, "count")
+        if item == None or str(item).strip() == "":
+            continue
+        try:
+            need = int(qty)
+        except:
+            need = 1
+        have = get_bag_count(ch, str(item), bag)
+        if have < need:
+            missing.append(f"{str(item)} ({have}/{need})")
+    if len(missing) > 0:
+        return False, "Missing required items: " + ", ".join(missing) + "."
+    return True, "Required items available."
+
+
+def modify_bag_items(ch, requirements, sign=-1, bag="Equipment"):
+    """Apply item stack deltas; sign -1 spends, sign 1 grants."""
+    lines = []
+    for req in requirements:
+        item = _read_field(req, "item")
+        qty = _read_field(req, "qty")
+        if qty == None:
+            qty = _read_field(req, "count")
+        if item == None or str(item).strip() == "":
+            continue
+        try:
+            amount = int(qty)
+        except:
+            amount = 1
+        ok, msg = modify_bag(ch, str(item), sign * amount, bag)
+        if not ok:
+            return False, msg
+        lines.append(msg)
+    if len(lines) == 0:
+        return True, ""
+    return True, "\n".join(lines)
+
+
+def get_gold(ch):
+    """Return total coinpurse value in gp when readable, else None."""
+    return _coins_total_gp(ch)
+
+
+def modify_gold(ch, gp_delta):
+    """Modify coinpurse gp. Negative values spend gp."""
+    try:
+        delta = float(gp_delta)
+    except:
+        return False, "Gold amount is invalid."
+    current = get_gold(ch)
+    if delta < 0 and current != None and current + delta < 0:
+        return False, f"Not enough gold - {_character_name(ch)} has **{current} gp**."
+    try:
+        ch.coinpurse.modify_coins(gp=delta)
+        if delta < 0:
+            return True, f"Spent **{_gp_text(abs(delta))} gp**."
+        return True, f"Gained **{_gp_text(delta)} gp**."
+    except:
+        if delta < 0:
+            return False, "Could not update coinpurse gp."
+        return False, f"Found **{_gp_text(delta)} gp** (coinpurse not updated)."
+
+
+def get_spell_slots(ch, level):
+    try:
+        return int(ch.spellbook.get_slots(int(level)))
+    except:
+        pass
+    try:
+        slots = ch.spellbook.slots
+        return int(_read_field(slots, str(level)))
+    except:
+        return None
+
+
+def spend_spell_slot(ch, level):
+    """Spend one spell slot if Avrae exposes spellbook slot mutation."""
+    try:
+        lvl = int(level)
+    except:
+        return False, "Spell slot level is invalid."
+    available = get_spell_slots(ch, lvl)
+    if available != None and available < 1:
+        return False, f"No level {lvl} spell slots available."
+    try:
+        ch.spellbook.use_slot(lvl)
+        return True, f"Spent one level {lvl} spell slot."
+    except:
+        return False, "Spell slot automation is not available for this character."
 
 
 def modify_downtime(ch, workdays, config_override=None):

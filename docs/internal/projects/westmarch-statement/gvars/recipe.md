@@ -1,32 +1,22 @@
 # recipe.gvar
 
-**Path:** `src/gvars/utils/misc/recipe.gvar` · **Phase:** 1 (Tier H)
+**Path:** `src/gvars/utils/misc/recipe.gvar`
 
-**Read-only recipe browser** for **`!recipe`** — search and format rows from config **`recipes`** ([data-shapes.md § Recipe](../data-shapes.md#recipe)) plus catalogue metadata from [items.md](items.md).
-
-Does **not** consume materials or start downtime (that stays on crafting aliases).
+Optional recipe catalogue facade used by crafting commands and `!recipe`. Recipes can be inline under `subsystems.crafting.config.catalogues.recipes` or `world_data.recipes`, or loaded by UUID through `extensions.recipes`.
 
 ## API
 
 ```py
-def search(config, query, mode="name"):
-    """
-    mode: "name" | "tag" | "ingredient"
-    ingredient — match consumed/required item names.
-    """
-
-def get(config, recipe_id_or_name):
-
-def format_recipe(config, recipe):
-    """Embed — process description + structured consumed/required/spells/workdays."""
-
-def merge_sources(config):
-    """Optional — index config recipes + infer craft bands for items without recipe rows."""
+recipe.catalogue_entries(cfg, kind="brew")
+recipe.resolve(cfg, "Potion of Healing", "brew")
+recipe.search_matches(cfg, "healing", "brew")
+recipe.name_matches(cfg, "healing", "brew")
+recipe.recipe_workdays(entry)
+recipe.recipe_gold(entry)
+recipe.recipe_consumed(entry)
+recipe.recipe_required(entry)
+recipe.recipe_spells(entry)
+recipe.recipe_tools(entry)
 ```
 
-Character **known recipes** (notebook from recipe encounters) may filter results later — storage via [pc.md](pc.md) cvars or vendored **`core/notes.gvar`** when ported; MVP may show all config recipes.
-
-## Related
-
-- [aliases/misc/recipe.md](../aliases/misc/recipe.md)
-- [assets/recipes.tsv](../../../../../assets/recipes.tsv)
+Resolution uses `lists.search_list_by_key`. Crafting commands apply recipes according to `subsystems.crafting.config.recipe_mode`: `raw`, `recipes`, or `mixed`.

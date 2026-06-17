@@ -8,7 +8,7 @@
 
 ```
 !westmarch show
-!westmarch show <section>   # optional MVP stretch: exploration | travel | economy | …
+!westmarch show <section>
 ```
 
 - **Who may run:** same as [westmarch.md](westmarch.md).
@@ -22,6 +22,7 @@
 | **World** | **`display.get_display()`** default title/footer/colour from base **`display`**; **`cfg.display`** fields for show copy ([display.gvar](../../gvars/display.md)) |
 | **Subsystems** | Diff codeblock: subsystem rows with indented command rows beneath; `+` enabled and neutral lines disabled |
 | **Policies** | Summary of `policies.*` — auth, time, travel, downtime, crafting, economy, exploration, combat, quest, content, inventory, **`languages.allowed`**, **`display.footer_behaviour`** — [data-shapes.md § Server policies](../../data-shapes.md#server-policies) |
+| **Crafting** | Rules-edition override, recipe mode, known-spell scribing gate, item/potion/spell/magic-item/recipe catalogue sources, checks/tools, and item-output bag policy |
 | **Runtime** | **`get_rules_edition()`** — **`rules_version`** override, else Avrae, else 2014 |
 | **Data overview** | Counts where cheap: e.g. N areas, N shops, N books, catalogue sizes |
 | **Pointers** | Link to the web config editor for validation before publishing changes |
@@ -50,9 +51,8 @@ Validation is intentionally not run here. The web config editor is the source of
 
 ## Implementation checklist
 
-- [ ] **`admin.summarize_config(config, section=None)`**
-- [ ] **`show.alias`** under `westmarch/` — permission, optional section arg
-- [ ] **`.alias-test`** — template fixture; permission denied; no catalogue dump
+- [x] **`show.alias`** under `westmarch/` — permission, optional section arg
+- [x] **`.alias-test`** — template fixture; no catalogue dump
 - [ ] Wire env + sourcemaps (sub-alias of `westmarch`)
 
 ## Related

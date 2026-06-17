@@ -3,18 +3,12 @@
 re:Dragonspeaker|Server Aliaser
 ---
 name: unconfigured parent shows setup hint
-vars:
-  uvars:
-    _wm_command: westmarch
 
 !westmarch help
 ---
 re:New server\?
 ---
 name: explicit help shows onboarding hint
-vars:
-  uvars:
-    _wm_command: westmarch
 
 !westmarch check
 ---
@@ -22,8 +16,6 @@ re:retired|Westmarch config editor
 ---
 name: retired check points to editor
 vars:
-  uvars:
-    _wm_command: westmarch
   svars:
     westmarch_config: "ffff1111-1111-1111-1111-111111111111"
   gvars:
@@ -36,8 +28,6 @@ re:ready for this server[\s\S]*Server configurers
 ---
 name: configured parent reports ready when no player setup checks exist
 vars:
-  uvars:
-    _wm_command: westmarch
   svars:
     westmarch_config: "ffff1111-1111-1111-1111-111111111111"
   gvars:
@@ -50,8 +40,6 @@ vars:
 ---
 name: configured parent shows wallet HUD when economy wallet is enabled
 vars:
-  uvars:
-    _wm_command: westmarch
   cvars:
     wg_wallet_shards: "3"
   svars:
@@ -71,8 +59,6 @@ re:Character HUD[\s\S]*Location:\*\* Oakwood[\s\S]*Time:\*\* Highsun[\s\S]*Weath
 ---
 name: configured parent shows travel HUD fields when travel commands are enabled
 vars:
-  uvars:
-    _wm_command: westmarch
   svars:
     westmarch_config: "ffff3334-3334-3334-3334-333333333334"
   gvars:
@@ -93,8 +79,6 @@ re:Action needed[\s\S]*vSheet[\s\S]*!vsheet setup
 ---
 name: configured parent reports missing configured cvar check
 vars:
-  uvars:
-    _wm_command: westmarch
   svars:
     westmarch_config: "ffff2222-2222-2222-2222-222222222222"
   gvars:
@@ -113,8 +97,6 @@ re:Ready[\s\S]*vSheet
 ---
 name: configured parent passes configured cvar check
 vars:
-  uvars:
-    _wm_command: westmarch
   cvars:
     vsheet: "ok"
   svars:

@@ -1,0 +1,38 @@
+!brew help
+---
+re:Create a potion
+---
+name: brew help displays usage
+vars:
+  svars:
+    westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa42"
+  gvars:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa42: |
+      subsystems = {
+          "crafting": {
+              "enabled": True,
+              "commands": {"brew": True},
+          },
+      }
+
+!brew "Potion of Healing"
+---
+"re:Crafted \\*\\*Potion of Healing\\*\\*"
+---
+name: brew creates potion manually
+vars:
+  svars:
+    westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa6"
+  gvars:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa6: |
+      subsystems = {
+          "crafting": {
+              "enabled": True,
+              "commands": {"brew": True},
+              "config": {"catalogues": {"potions": "engine:catalogues/potions"}},
+          },
+      }
+      policies = {
+          "crafting": {"resources": {"downtime": "manual", "gold": "manual", "materials": "manual"}},
+          "inventory": {"item_handling": {"mode": "manual"}},
+      }

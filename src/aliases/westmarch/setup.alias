@@ -6,8 +6,9 @@ using(
     config = env.gvars.config,
 )
 
-ok, msg = auth.is_allowed("setup")
-get_embed = display.get_display()
+COMMAND = "setup"
+ok, msg = auth.is_allowed(COMMAND)
+get_embed = display.get_display(COMMAND)
 
 if not ok:
     return get_embed(desc=msg)

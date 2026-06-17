@@ -2,7 +2,6 @@
 
 using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(
-    auth = env.gvars.auth,
     biomes = env.gvars.biomes,
     config = env.gvars.config,
     encounter_lists = env.gvars.encounter_lists,
@@ -26,9 +25,7 @@ def help_text(activity, config_override=None):
     cfg = config_override
     if cfg == None:
         cfg = config.get_config()
-    cmd = auth.command_name()
-    if cmd == None:
-        cmd = activity
+    cmd = activity
     lines = ["**Usage**"]
     if biomes.uses_location_mode(cfg):
         lines.append(f"`!{cmd} [bonuses]`")
@@ -123,9 +120,7 @@ def embed_with_image(get_embed, desc, cfg, command, image_url):
 def run_activity(activity, argslist, get_embed):
     """End-to-end exploration activity handler."""
     cfg = config.get_config()
-    cmd = auth.command_name()
-    if cmd == None:
-        cmd = activity
+    cmd = activity
 
     if len(argslist) > 0 and argslist[0] in ["help", "?"]:
         return get_embed(desc=help_text(activity, cfg))

@@ -1,0 +1,60 @@
+cfg_fixture = {
+    "subsystems": {
+        "crafting": {
+            "config": {
+                "catalogues": {
+                    "recipes": [
+                        {"id": "heal", "name": "Potion of Healing", "kind": "brew", "workdays": 2, "gold": 25},
+                    ],
+                },
+            },
+        },
+    },
+}
+hit, matches, error = recipe.resolve(cfg_fixture, "healing", "brew")
+return hit != None and recipe.recipe_name(hit) == "Potion of Healing" and error == None
+---
+True
+---
+name: recipe resolves configured recipe by kind
+
+cfg_fixture = {
+    "subsystems": {
+        "crafting": {
+            "config": {
+                "catalogues": {
+                    "recipes": [
+                        {"id": "heal", "name": "Potion of Healing", "kind": "brew"},
+                        {"id": "heal_plus", "name": "Potion of Healing Plus", "kind": "brew"},
+                    ],
+                },
+            },
+        },
+    },
+}
+matches = recipe.name_matches(cfg_fixture, "healing", "brew")
+return len(matches) == 2 and "Be more specific" in recipe.match_error("healing", matches)
+---
+True
+---
+name: recipe reports ambiguous search_list matches
+
+cfg_fixture = {
+    "world_data": {
+        "recipes": [
+            {"id": "kit", "name": "Healer's Kit", "kind": "craft", "workdays": 1},
+        ],
+    },
+}
+return len(recipe.search_matches(cfg_fixture, "Healer", "brew")) == 0 and len(recipe.search_matches(cfg_fixture, "Healer", "craft")) == 1
+---
+True
+---
+name: recipe kind filter excludes other command recipes
+
+entry = {"id": "scroll", "name": "Scroll of Fireball", "kind": "scribe", "tools": ["Calligrapher's Supplies"]}
+return recipe.recipe_tools(entry)[0] == "Calligrapher's Supplies"
+---
+True
+---
+name: recipe exposes tool options

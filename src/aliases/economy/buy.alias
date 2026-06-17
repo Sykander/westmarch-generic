@@ -6,12 +6,10 @@ using(
     config = env.gvars.config,
 )
 
-ok, msg = auth.is_allowed()
-get_embed = display.get_display()
-
-cmd_name = auth.command_name()
-if cmd_name == None:
-    cmd_name = "command"
+COMMAND = "buy"
+ok, msg = auth.is_allowed(COMMAND)
+get_embed = display.get_display(COMMAND)
+cmd_name = COMMAND
 
 if not ok:
     return get_embed(desc=msg)
@@ -32,4 +30,3 @@ return get_embed(
     desc=f"{cmd_name} is not implemented",
 )
 </drac2>
-

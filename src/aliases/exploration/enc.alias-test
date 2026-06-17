@@ -3,9 +3,6 @@
 re:not configured
 ---
 name: blocks without server config
-vars:
-  uvars:
-    _wm_command: enc
 
 !enc
 ---
@@ -13,8 +10,6 @@ title: Encounter
 ---
 name: passes auth when exploration enc enabled
 vars:
-  uvars:
-    _wm_command: enc
   svars:
     westmarch_config: "eeee1111-1111-1111-1111-111111111111"
   gvars:
@@ -32,8 +27,6 @@ re:disabled on this server
 ---
 name: rejects disabled enc command
 vars:
-  uvars:
-    _wm_command: enc
   svars:
     westmarch_config: "eeee2222-2222-2222-2222-222222222222"
   gvars:
@@ -51,8 +44,6 @@ title: Encounter
 ---
 name: help stub when enc enabled
 vars:
-  uvars:
-    _wm_command: enc
   svars:
     westmarch_config: "eeee1111-1111-1111-1111-111111111111"
   gvars:
@@ -70,8 +61,6 @@ re:Berries in the Wild
 ---
 name: "manual biome rolls gather encounter from pool"
 vars:
-  uvars:
-    _wm_command: enc
   svars:
     westmarch_config: "eeee3333-3333-3333-3333-333333333333"
   gvars:
@@ -106,8 +95,6 @@ re:biome
 ---
 name: "argument mode requires biome code"
 vars:
-  uvars:
-    _wm_command: enc
   svars:
     westmarch_config: "eeee3333-3333-3333-3333-333333333333"
   gvars:
@@ -136,8 +123,6 @@ re:registered|unknown|invalid
 ---
 name: "unknown biome code rejected"
 vars:
-  uvars:
-    _wm_command: enc
   svars:
     westmarch_config: "eeee3333-3333-3333-3333-333333333333"
   gvars:
@@ -163,8 +148,6 @@ re:cooldown|wait|seconds
 ---
 name: "cooldown blocks repeat use"
 vars:
-  uvars:
-    _wm_command: enc
   cvars:
     wg_stats: '{"enc": {"last_used_at": 9999999999}}'
   svars:
@@ -197,8 +180,6 @@ re:forest|Biome|Usage
 ---
 name: "help lists registered biome codes"
 vars:
-  uvars:
-    _wm_command: enc
   svars:
     westmarch_config: "eeee3333-3333-3333-3333-333333333333"
   gvars:
@@ -224,8 +205,6 @@ re:Berries in the Wild
 ---
 name: "location mode infers biome from character location"
 vars:
-  uvars:
-    _wm_command: enc
   svars:
     westmarch_config: "eeee3334-3334-3334-3334-333333333334"
   gvars:
@@ -268,8 +247,6 @@ re:Berries in the Wild[\s\S]*Arrived in[\s\S]*Oakwood Forest[\s\S]*Completed
 ---
 name: journey encounter step completes after successful enc
 vars:
-  uvars:
-    _wm_command: enc
   cvars:
     wg_location: "river_town"
     wg_journey: '{"title":"River Town -> Oakwood Forest","from":"river_town","to":"oakwood","paths":[{"from":"river_town","to":"oakwood","steps":[{"type":"encounter","biome":"forest"}]}],"path_index":0,"step_index":0,"horse":false,"boat":false}'
@@ -314,8 +291,6 @@ re:Forest ambush|Wolf|combat
 ---
 name: combat kind from mixed distribution pool
 vars:
-  uvars:
-    _wm_command: enc
   svars:
     westmarch_config: "eeee8888-8888-8888-8888-888888888888"
   gvars:
@@ -348,8 +323,6 @@ re:Lost traveller|quest
 ---
 name: balanced distribution favours underrepresented quest kind
 vars:
-  uvars:
-    _wm_command: enc
   cvars:
     wg_stats: '{"enc": {"kinds": {"combat": 20, "quest": 0, "gather": 10}}}'
   svars:
@@ -385,8 +358,6 @@ re:Herb|Berries|Forest ambush|Lost traveller
 ---
 name: large biome pool resolves without statement limit error
 vars:
-  uvars:
-    _wm_command: enc
   svars:
     westmarch_config: "eeee8890-8890-8890-8890-888888889090"
   gvars:
@@ -438,8 +409,6 @@ re:gold|Gained
 ---
 name: encounter outcomes apply gold reward
 vars:
-  uvars:
-    _wm_command: enc
   svars:
     westmarch_config: "eeee8892-8892-8892-8892-888888889292"
   gvars:

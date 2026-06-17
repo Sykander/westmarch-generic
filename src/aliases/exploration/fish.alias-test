@@ -3,9 +3,6 @@
 re:not configured
 ---
 name: blocks without server config
-vars:
-  uvars:
-    _wm_command: fish
 
 !fish
 ---
@@ -13,8 +10,6 @@ title: Fish
 ---
 name: passes auth when exploration fish enabled
 vars:
-  uvars:
-    _wm_command: fish
   svars:
     westmarch_config: "eeee1111-1111-1111-1111-111111111111"
   gvars:
@@ -32,8 +27,6 @@ re:disabled on this server
 ---
 name: rejects disabled fish command
 vars:
-  uvars:
-    _wm_command: fish
   svars:
     westmarch_config: "eeee2222-2222-2222-2222-222222222222"
   gvars:
@@ -51,8 +44,6 @@ title: Fish
 ---
 name: help stub when fish enabled
 vars:
-  uvars:
-    _wm_command: fish
   svars:
     westmarch_config: "eeee1111-1111-1111-1111-111111111111"
   gvars:
@@ -70,8 +61,6 @@ re:River trout
 ---
 name: "manual biome rolls fish encounter from pool"
 vars:
-  uvars:
-    _wm_command: fish
   svars:
     westmarch_config: "eeee3333-3333-3333-3333-333333333333"
   gvars:
@@ -100,8 +89,6 @@ re:biome
 ---
 name: "argument mode requires biome code"
 vars:
-  uvars:
-    _wm_command: fish
   svars:
     westmarch_config: "eeee3333-3333-3333-3333-333333333333"
   gvars:
@@ -127,8 +114,6 @@ re:registered|unknown|invalid
 ---
 name: "unknown biome code rejected"
 vars:
-  uvars:
-    _wm_command: fish
   svars:
     westmarch_config: "eeee3333-3333-3333-3333-333333333333"
   gvars:
@@ -154,8 +139,6 @@ re:forest|Biome|Usage
 ---
 name: "help lists registered biome codes"
 vars:
-  uvars:
-    _wm_command: fish
   svars:
     westmarch_config: "eeee3333-3333-3333-3333-333333333333"
   gvars:
@@ -181,8 +164,6 @@ re:cooldown|wait|seconds
 ---
 name: "cooldown blocks repeat use"
 vars:
-  uvars:
-    _wm_command: fish
   cvars:
     wg_stats: '{"fish": {"last_used_at": 9999999999}}'
   svars:
@@ -215,8 +196,6 @@ re:River trout
 ---
 name: "location mode infers biome from character location"
 vars:
-  uvars:
-    _wm_command: fish
   svars:
     westmarch_config: "eeee3334-3334-3334-3334-333333333334"
   gvars:

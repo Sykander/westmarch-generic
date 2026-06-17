@@ -58,6 +58,38 @@ import type { RunStep, SubsystemDefinition } from './types';
 
 const BRAND_LOGO_URL = `${import.meta.env.BASE_URL}westmarch-assets/brand/logo.png`;
 const WESTMARCH_VERSION = westmarchPackage.version;
+const CRAFTING_RESOURCE_MODES = ['manual', 'check', 'deduct'];
+const ITEM_HANDLING_MODES = ['manual', 'bags'];
+const CRAFTING_RECIPE_MODES = ['mixed', 'raw', 'recipes'];
+const CRAFTING_CATALOGUE_DEFAULTS = {
+  items: 'engine:catalogues/items',
+  potions: 'engine:catalogues/potions',
+  spells: 'engine:catalogues/spells',
+  magic_items: 'engine:catalogues/magic_items',
+  recipes: null,
+};
+const CRAFTING_CHECK_DEFAULTS = {
+  craft: { mode: 'none', skill: null, ability: null, dc: null, require_success: true },
+  brew: { mode: 'none', skill: 'nature', ability: null, dc: null, require_success: true },
+  enchant: { mode: 'none', skill: 'arcana', ability: null, dc: null, require_success: true },
+  scribe: { mode: 'none', skill: 'arcana', ability: null, dc: null, require_success: true },
+};
+const CRAFTING_TOOL_POLICY_DEFAULTS = {
+  craft: { mode: 'off', tools: [], require_proficiency: true, require_kit: false },
+  brew: {
+    mode: 'off',
+    tools: ['Herbalism Kit', "Alchemist's Supplies", "Brewer's Supplies"],
+    require_proficiency: true,
+    require_kit: false,
+  },
+  enchant: { mode: 'off', tools: [], require_proficiency: true, require_kit: false },
+  scribe: {
+    mode: 'off',
+    tools: ["Calligrapher's Supplies"],
+    require_proficiency: true,
+    require_kit: false,
+  },
+};
 
 const STARTER_SNIPPET = `subsystems = {
     "exploration": {
@@ -71,7 +103,37 @@ const STARTER_SNIPPET = `subsystems = {
             "monster_images": {"hunt": "thumbnail", "loot": "thumbnail"},
             "show_check_dcs": {"hunt": True, "loot": True},
         },
-    }
+    },
+    "crafting": {
+        "enabled": False,
+        "commands": {"craft": False, "brew": False, "enchant": False, "scribe": False},
+            "config": {
+                "rules_version": None,
+                "recipe_mode": "mixed",
+                "require_known_spell": True,
+                "catalogues": {
+                "items": "engine:catalogues/items",
+                "potions": "engine:catalogues/potions",
+                "spells": "engine:catalogues/spells",
+                "magic_items": "engine:catalogues/magic_items",
+                "recipes": None,
+            },
+            "checks": {
+                "craft": {"mode": "none", "skill": None, "ability": None, "dc": None, "require_success": True},
+                "brew": {"mode": "none", "skill": "nature", "ability": None, "dc": None, "require_success": True},
+                "enchant": {"mode": "none", "skill": "arcana", "ability": None, "dc": None, "require_success": True},
+                "scribe": {"mode": "none", "skill": "arcana", "ability": None, "dc": None, "require_success": True},
+            },
+            "tool_policy": {
+                "craft": {"mode": "off", "tools": [], "require_proficiency": True, "require_kit": False},
+                "brew": {"mode": "off", "tools": ["Herbalism Kit", "Alchemist's Supplies", "Brewer's Supplies"], "require_proficiency": True, "require_kit": False},
+                "enchant": {"mode": "off", "tools": [], "require_proficiency": True, "require_kit": False},
+                "scribe": {"mode": "off", "tools": ["Calligrapher's Supplies"], "require_proficiency": True, "require_kit": False},
+            },
+            "item_handling": None,
+        },
+        "command_config": {"craft": {}, "brew": {}, "enchant": {}, "scribe": {}},
+    },
 }
 
 world_data = {
@@ -82,6 +144,26 @@ world_data = {
 
 policies = {
     "exploration": {"enforce_cooldowns": True, "avoid_repeat_encounters": "off"},
+    "downtime": {"mode": "off", "max_workdays": None, "acquisition": "manual"},
+    "crafting": {
+        "require_downtime_before_roll": True,
+        "auto_deduct_materials": False,
+        "auto_deduct_gold": False,
+        "resources": {"gold": "manual", "materials": "manual", "items": "manual", "downtime": "check", "spell_slot": "manual"},
+        "item_handling": None,
+    },
+    "inventory": {
+        "item_handling": {
+            "mode": "manual",
+            "default_bag": "Equipment",
+            "equipment_bag": "Equipment",
+            "crafted_bag": "Equipment",
+            "potions_bag": "Potions",
+            "scrolls_bag": "Scrolls",
+            "magic_items_bag": "Equipment",
+            "materials_bag": "Materials",
+        },
+    },
     "display": {"footer_behaviour": "balanced", "command_thumbnail": "default", "helpful_tips": [], "credits": None},
     "player_setup": {
         "enabled": True,
@@ -1044,6 +1126,170 @@ function PoliciesView({
           value={String(readPath(config, 'policies.downtime.max_workdays') ?? '')}
           onChange={(value) => updateOptionalNumber('policies.downtime.max_workdays', value)}
           help="Optional cap for the downtime ledger. Leave blank for unlimited."
+        />
+        <label className="field">
+          <span>
+            Crafting rules override
+            <HelpTip label="Crafting rules override help">
+              Leave unset to follow the server rules edition. Set a value here when the crafting
+              subsystem should use a different RAW edition.
+            </HelpTip>
+          </span>
+          <select
+            value={String(readPath(config, 'subsystems.crafting.config.rules_version') ?? '')}
+            onChange={(event) =>
+              updateConfig('subsystems.crafting.config.rules_version', event.target.value || null)
+            }
+          >
+            <option value="">Server default</option>
+            <option value="2014">2014</option>
+            <option value="2024">2024</option>
+          </select>
+        </label>
+        <SelectField
+          label="Crafting recipes"
+          value={String(readPath(config, 'subsystems.crafting.config.recipe_mode') ?? 'mixed')}
+          values={CRAFTING_RECIPE_MODES}
+          onChange={(value) => updateConfig('subsystems.crafting.config.recipe_mode', value)}
+          help="mixed uses a matching recipe when present, raw ignores recipes, recipes requires one."
+        />
+        <div className="field">
+          <span>
+            Scribe spell requirement
+            <HelpTip label="Scribe spell requirement help">
+              Keep enabled for RAW scroll scribing: the spell must appear in the character
+              spellbook. Disable only when your server tracks eligibility elsewhere.
+            </HelpTip>
+          </span>
+          <label className="switch-line">
+            <input
+              type="checkbox"
+              checked={readPath(config, 'subsystems.crafting.config.require_known_spell') !== false}
+              onChange={(event) =>
+                updateConfig('subsystems.crafting.config.require_known_spell', event.target.checked)
+              }
+            />
+            <span>Require known spell</span>
+          </label>
+        </div>
+        <SelectField
+          label="Crafting gold"
+          value={String(readPath(config, 'policies.crafting.resources.gold') ?? 'manual')}
+          values={CRAFTING_RESOURCE_MODES}
+          onChange={(value) => updateConfig('policies.crafting.resources.gold', value)}
+          help="manual prints the cost, check verifies it, deduct verifies and removes it."
+        />
+        <SelectField
+          label="Crafting materials"
+          value={String(readPath(config, 'policies.crafting.resources.materials') ?? 'manual')}
+          values={CRAFTING_RESOURCE_MODES}
+          onChange={(value) => updateConfig('policies.crafting.resources.materials', value)}
+          help="Controls configured material or component item requirements."
+        />
+        <SelectField
+          label="Crafting items"
+          value={String(readPath(config, 'policies.crafting.resources.items') ?? 'manual')}
+          values={CRAFTING_RESOURCE_MODES}
+          onChange={(value) => updateConfig('policies.crafting.resources.items', value)}
+          help="Controls required equipment or magic-item ingredients."
+        />
+        <SelectField
+          label="Crafting downtime"
+          value={String(readPath(config, 'policies.crafting.resources.downtime') ?? 'manual')}
+          values={CRAFTING_RESOURCE_MODES}
+          onChange={(value) => updateConfig('policies.crafting.resources.downtime', value)}
+          help="check and deduct require tracked downtime with the downtime subsystem enabled."
+        />
+        <SelectField
+          label="Crafting spell slots"
+          value={String(readPath(config, 'policies.crafting.resources.spell_slot') ?? 'manual')}
+          values={CRAFTING_RESOURCE_MODES}
+          onChange={(value) => updateConfig('policies.crafting.resources.spell_slot', value)}
+          help="Used by scribing when a scroll should consume a spell slot."
+        />
+        <SelectField
+          label="Crafted item output"
+          value={String(readPath(config, 'policies.inventory.item_handling.mode') ?? 'manual')}
+          values={ITEM_HANDLING_MODES}
+          onChange={(value) => updateConfig('policies.inventory.item_handling.mode', value)}
+          help="manual prints gained items; bags writes them into the configured bag cvars."
+        />
+        <TextField
+          label="Default item bag"
+          value={String(readPath(config, 'policies.inventory.item_handling.default_bag') ?? '')}
+          onChange={(value) =>
+            updateConfig('policies.inventory.item_handling.default_bag', value || undefined)
+          }
+          help="Fallback bag name when a command does not have a more specific bag."
+        />
+        <TextField
+          label="Equipment bag"
+          value={String(readPath(config, 'policies.inventory.item_handling.equipment_bag') ?? '')}
+          onChange={(value) =>
+            updateConfig('policies.inventory.item_handling.equipment_bag', value || undefined)
+          }
+          help="Bag checked for required equipped or ingredient items."
+        />
+        <TextField
+          label="Potions bag"
+          value={String(readPath(config, 'policies.inventory.item_handling.potions_bag') ?? '')}
+          onChange={(value) =>
+            updateConfig('policies.inventory.item_handling.potions_bag', value || undefined)
+          }
+          help="Bag used for brewed potions when output mode is bags."
+        />
+        <TextField
+          label="Scrolls bag"
+          value={String(readPath(config, 'policies.inventory.item_handling.scrolls_bag') ?? '')}
+          onChange={(value) =>
+            updateConfig('policies.inventory.item_handling.scrolls_bag', value || undefined)
+          }
+          help="Bag used for spell scrolls when output mode is bags."
+        />
+        <TextField
+          label="Magic items bag"
+          value={String(readPath(config, 'policies.inventory.item_handling.magic_items_bag') ?? '')}
+          onChange={(value) =>
+            updateConfig('policies.inventory.item_handling.magic_items_bag', value || undefined)
+          }
+          help="Bag used for enchanted items when output mode is bags."
+        />
+        <TextField
+          label="Materials bag"
+          value={String(readPath(config, 'policies.inventory.item_handling.materials_bag') ?? '')}
+          onChange={(value) =>
+            updateConfig('policies.inventory.item_handling.materials_bag', value || undefined)
+          }
+          help="Bag checked for consumed ingredients when material or item policies are enforced."
+        />
+        <JsonField
+          label="Crafting catalogues"
+          value={
+            readPath(config, 'subsystems.crafting.config.catalogues') ?? CRAFTING_CATALOGUE_DEFAULTS
+          }
+          onCommit={(value) => updateConfig('subsystems.crafting.config.catalogues', value)}
+          minRows={7}
+        />
+        <JsonField
+          label="Crafting checks"
+          value={readPath(config, 'subsystems.crafting.config.checks') ?? CRAFTING_CHECK_DEFAULTS}
+          onCommit={(value) => updateConfig('subsystems.crafting.config.checks', value)}
+          minRows={8}
+        />
+        <JsonField
+          label="Crafting tool policy"
+          value={
+            readPath(config, 'subsystems.crafting.config.tool_policy') ??
+            CRAFTING_TOOL_POLICY_DEFAULTS
+          }
+          onCommit={(value) => updateConfig('subsystems.crafting.config.tool_policy', value)}
+          minRows={8}
+        />
+        <JsonField
+          label="Crafting command overrides"
+          value={readPath(config, 'subsystems.crafting.command_config') ?? {}}
+          onCommit={(value) => updateConfig('subsystems.crafting.command_config', value)}
+          minRows={7}
         />
         <FooterBehaviourField
           value={String(readPath(config, 'policies.display.footer_behaviour') ?? 'balanced')}

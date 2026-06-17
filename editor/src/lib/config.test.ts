@@ -193,3 +193,122 @@ policies = {
   assert.equal(codes.includes('downtime.tracked_requires_subsystem'), false);
   assert.equal(codes.includes('crafting.downtime_not_tracked'), false);
 });
+
+test('enabled crafting command requires a usable catalogue source', () => {
+  assert.ok(
+    issueCodes(`
+subsystems = {
+    "crafting": {
+        "enabled": True,
+        "commands": {"scribe": True},
+        "config": {"catalogues": {"spells": []}},
+    },
+}
+`).includes('crafting.catalogue_missing'),
+  );
+});
+
+test('built-in crafting catalogues validate cleanly', () => {
+  const codes = issueCodes(`
+subsystems = {
+    "crafting": {
+        "enabled": True,
+        "commands": {"craft": True, "brew": True, "scribe": True, "enchant": True},
+        "config": {
+            "catalogues": {
+                "items": "engine:catalogues/items",
+                "potions": "engine:catalogues/potions",
+                "spells": "engine:catalogues/spells",
+                "magic_items": "engine:catalogues/magic_items",
+            },
+        },
+    },
+}
+`);
+
+  assert.equal(codes.includes('crafting.catalogue_missing'), false);
+  assert.equal(codes.includes('crafting.catalogue_source'), false);
+});
+
+test('crafting resource policies use manual check or deduct', () => {
+  assert.ok(
+    issueCodes(`
+policies = {
+    "crafting": {"resources": {"gold": "auto"}},
+}
+`).includes('crafting.resource_mode'),
+  );
+});
+
+test('crafting recipe mode validates known modes', () => {
+  assert.ok(
+    issueCodes(`
+subsystems = {
+    "crafting": {
+        "config": {"recipe_mode": "formula"},
+    },
+}
+`).includes('crafting.recipe_mode'),
+  );
+});
+
+test('crafting known spell requirement validates boolean values', () => {
+  const codes = issueCodes(`
+subsystems = {
+    "crafting": {
+        "config": {"require_known_spell": "yes"},
+        "command_config": {"scribe": {"require_known_spell": "no"}},
+    },
+}
+`);
+
+  assert.equal(codes.filter((code) => code === 'crafting.require_known_spell').length, 2);
+});
+
+test('crafting check policies validate mode and dc', () => {
+  const codes = issueCodes(`
+subsystems = {
+    "crafting": {
+        "config": {"checks": {"scribe": {"mode": "contest", "dc": 0}}},
+    },
+}
+`);
+
+  assert.ok(codes.includes('crafting.check_mode'));
+  assert.ok(codes.includes('crafting.check_dc'));
+});
+
+test('crafting tool policies validate mode and tool list', () => {
+  const codes = issueCodes(`
+subsystems = {
+    "crafting": {
+        "config": {"tool_policy": {"scribe": {"mode": "strict", "tools": "Calligrapher's Supplies"}}},
+    },
+}
+`);
+
+  assert.ok(codes.includes('crafting.tool_mode'));
+  assert.ok(codes.includes('crafting.tool_list'));
+});
+
+test('item handling policy validates known output modes', () => {
+  assert.ok(
+    issueCodes(`
+policies = {
+    "inventory": {"item_handling": {"mode": "warehouse"}},
+}
+`).includes('inventory.item_handling_mode'),
+  );
+});
+
+test('crafting command rules override must be a supported edition', () => {
+  assert.ok(
+    issueCodes(`
+subsystems = {
+    "crafting": {
+        "command_config": {"scribe": {"rules_version": "2030"}},
+    },
+}
+`).includes('crafting.rules_version'),
+  );
+});

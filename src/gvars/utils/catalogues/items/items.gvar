@@ -1,6 +1,286 @@
-"""items.gvar — placeholder.
+"""items.gvar - item catalogue facade for crafting and economy commands."""
 
-See docs/internal/projects/westmarch-statement/gvars/items.md
-"""
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(
+    config = env.gvars.config,
+    dicts = env.gvars.dicts,
+    lists = env.gvars.lists,
+)
 
-# TODO: implement items module
+CATALOGUE_GVARS = {
+    "items": "items_list",
+    "potions": "potions_list",
+    "magic_items": "magic_items_list",
+}
+CATALOGUE_ENGINE_SLUGS = {
+    "items": "engine:catalogues/items",
+    "potions": "engine:catalogues/potions",
+    "magic_items": "engine:catalogues/magic_items",
+}
+
+_cache = {}
+
+
+def _read_field(obj, key):
+    if obj == None:
+        return None
+    if dicts.is_dict(obj):
+        if key in obj:
+            return obj[key]
+        return None
+    try:
+        return obj[key]
+    except:
+        pass
+    try:
+        return obj.get(key)
+    except:
+        pass
+    attrs = {
+        "subsystems": lambda o: o.subsystems,
+        "crafting": lambda o: o.crafting,
+        "config": lambda o: o.config,
+        "catalogues": lambda o: o.catalogues,
+        "items": lambda o: o.items,
+        "potions": lambda o: o.potions,
+        "magic_items": lambda o: o.magic_items,
+        "entries": lambda o: o.entries,
+        "gvar_id": lambda o: o.gvar_id,
+        "include_engine": lambda o: o.include_engine,
+        "world_data": lambda o: o.world_data,
+        "extensions": lambda o: o.extensions,
+        "name": lambda o: o.name,
+        "rarity": lambda o: o.rarity,
+        "type": lambda o: o.type,
+        "value": lambda o: o.value,
+        "id": lambda o: o.id,
+        "aliases": lambda o: o.aliases,
+    }
+    if key in attrs:
+        try:
+            return attrs[key](obj)
+        except:
+            pass
+    return None
+
+
+def _cfg(config_override=None):
+    if config_override != None:
+        return config_override
+    return config.get_config()
+
+
+def _query_text(query):
+    if query == None:
+        return ""
+    return str(query).strip()
+
+
+def _entries_from(data):
+    if data == None:
+        return []
+    if lists.is_list(data):
+        return data
+    if dicts.is_dict(data):
+        entries = []
+        for key in data:
+            entries.append(data[key])
+        return entries
+    return []
+
+
+def _load_json_entries(body):
+    if body == None or str(body).strip() == "":
+        return []
+    try:
+        return _entries_from(load_json(body))
+    except:
+        return []
+
+
+def _load_engine(catalogue):
+    key = str(catalogue).strip()
+    if key in _cache:
+        return _cache[key]
+    gvar_name = _read_field(CATALOGUE_GVARS, key)
+    if gvar_name == None:
+        _cache[key] = []
+        return []
+    addr = _read_field(env.gvars, gvar_name)
+    if addr == None:
+        _cache[key] = []
+        return []
+    _cache[key] = _load_json_entries(get_gvar(addr))
+    return _cache[key]
+
+
+def _catalogue_config(cfg, catalogue):
+    subs = _read_field(cfg, "subsystems")
+    crafting = _read_field(subs, "crafting")
+    c_cfg = _read_field(crafting, "config")
+    catalogues = _read_field(c_cfg, "catalogues")
+    source = _read_field(catalogues, catalogue)
+    if source != None:
+        return source
+    wd = _read_field(cfg, "world_data")
+    wd_catalogues = _read_field(wd, "catalogues")
+    source = _read_field(wd_catalogues, catalogue)
+    if source != None:
+        return source
+    ext = _read_field(cfg, "extensions")
+    return _read_field(ext, catalogue)
+
+
+def _entries_from_source(source, catalogue):
+    if source == None:
+        return _load_engine(catalogue)
+    if lists.is_list(source):
+        return source
+    if dicts.is_dict(source):
+        entries = _entries_from(_read_field(source, "entries"))
+        gvar_id = _read_field(source, "gvar_id")
+        if gvar_id != None and str(gvar_id).strip() != "":
+            entries += _entries_from_source(str(gvar_id).strip(), catalogue)
+        if _read_field(source, "include_engine") == True:
+            entries = _load_engine(catalogue) + entries
+        return entries
+    text = str(source).strip()
+    if text == "" or text == _read_field(CATALOGUE_ENGINE_SLUGS, catalogue):
+        return _load_engine(catalogue)
+    if text.startswith("engine:catalogues/"):
+        return _load_engine(catalogue)
+    return _load_json_entries(get_gvar(text))
+
+
+def _item_name(item):
+    name = _read_field(item, "name")
+    if name == None:
+        return ""
+    return str(name).strip()
+
+
+def _unique_entries(entries):
+    output = []
+    seen = set()
+    for item in entries:
+        name = _item_name(item)
+        key = name.lower()
+        if name == "" or key in seen:
+            continue
+        seen.add(key)
+        output.append(item)
+    return output
+
+
+def catalogue_entries(config_override, catalogue):
+    """Return configured item catalogue entries for items, potions, or magic_items."""
+    cfg = _cfg(config_override)
+    key = str(catalogue).strip()
+    source = _catalogue_config(cfg, key)
+    return _unique_entries(_entries_from_source(source, key))
+
+
+def search_matches(config_override, catalogue, query):
+    text = _query_text(query)
+    if text == "":
+        return []
+    return lists.search_list_by_key(catalogue_entries(config_override, catalogue), "name", text)
+
+
+def name_matches(config_override, catalogue, query):
+    matches = []
+    for item in search_matches(config_override, catalogue, query):
+        matches.append(_item_name(item))
+    return matches
+
+
+def format_match_names(matches, limit=5):
+    shown = []
+    count = 0
+    for name in matches:
+        if count >= limit:
+            break
+        shown.append(f"**{str(name)}**")
+        count += 1
+    text = ", ".join(shown)
+    if len(matches) > limit:
+        text += ", ..."
+    return text
+
+
+def match_error(catalogue, query, matches=None):
+    if matches == None:
+        matches = []
+    label = str(catalogue).replace("_", " ")
+    text = _query_text(query)
+    if len(matches) == 0:
+        return f"Found no {label} matches for **{text}**."
+    if len(matches) == 1:
+        return None
+    return f"Be more specific: **{text}** matched {format_match_names(matches)}."
+
+
+def resolve(config_override, catalogue, query):
+    item_matches = search_matches(config_override, catalogue, query)
+    matches = []
+    for match in item_matches:
+        matches.append(_item_name(match))
+    if len(matches) != 1:
+        return None, matches, match_error(catalogue, query, matches)
+    return item_matches[0], matches, None
+
+
+def search(config_override, catalogue, query):
+    item, matches, error = resolve(config_override, catalogue, query)
+    return item
+
+
+def item_name(item):
+    name = _item_name(item)
+    if name == "":
+        return "Unknown Item"
+    return name
+
+
+def item_rarity(item):
+    rarity = _read_field(item, "rarity")
+    if rarity == None or str(rarity).strip() == "":
+        return "mundane"
+    return str(rarity).strip().lower()
+
+
+def item_type(item):
+    item_type = _read_field(item, "type")
+    if item_type == None or str(item_type).strip() == "":
+        return "Item"
+    return str(item_type).strip()
+
+
+def item_value_text(item):
+    value = _read_field(item, "value")
+    if value == None or str(value).strip() == "":
+        return ""
+    return str(value).strip()
+
+
+def item_value_gp(item):
+    value = item_value_text(item).lower().replace(",", "")
+    if value == "":
+        return 0
+    parts = value.split(" ")
+    try:
+        amount = float(parts[0])
+    except:
+        return 0
+    coin = "gp"
+    if len(parts) > 1:
+        coin = parts[1]
+    if coin.startswith("cp"):
+        return amount / 100
+    if coin.startswith("sp"):
+        return amount / 10
+    if coin.startswith("ep"):
+        return amount / 2
+    if coin.startswith("pp"):
+        return amount * 10
+    return amount

@@ -13,6 +13,13 @@ re:-title Westmarch
 ---
 name: default branding produces embed with westmarch title
 
+get_embed = display.get_display("hunt")
+return get_embed(desc="hello")
+---
+re:-title Hunt
+---
+name: command override produces command title
+
 get_embed = display.get_display()
 return get_embed(desc="hello")
 ---

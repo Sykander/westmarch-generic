@@ -135,11 +135,12 @@ using(
     stats = env.gvars.stats,
 )
 
-ok, msg = auth.is_allowed()
+COMMAND = "enc"
+ok, msg = auth.is_allowed(COMMAND)
 if not ok:
     return embeds.get_embed(desc=msg)
 
-get_embed = display.get_display()
+get_embed = display.get_display(COMMAND)
 cfg = config.get_config()
 ch = character()
 

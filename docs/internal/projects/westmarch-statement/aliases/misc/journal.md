@@ -44,7 +44,7 @@ Each target command has its **own** toggle under **`subsystems.misc.commands.*`*
 
 Bare **`!journal`** (help only) requires **`subsystems.misc.commands.journal`** enabled.
 
-**[auth.gvar](../../gvars/auth.md)** — register **`journal`** and hub subcommand resolution in **`COMMAND_MAP`** / **`_resolve_invocation()`**.
+**[auth.gvar](../../gvars/auth.md)** — register **`journal`** and pass the resolved canonical target command into **`is_allowed(command)`**.
 
 ## Sourcemap layout *(planned)*
 

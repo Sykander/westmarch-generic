@@ -49,6 +49,11 @@ const VALID_LIBRARY_TOPIC = ['inferred', 'balanced', 'manual', 'restricted'];
 const VALID_MONSTER_IMAGE_MODES = ['thumbnail', 'thumb', 'image', 'off', 'none'];
 const VALID_DOWNTIME_MODES = ['tracked', 'manual', 'off'];
 const VALID_DOWNTIME_ACQUISITION = ['manual', 'world_clock', 'journey'];
+const VALID_CRAFTING_RECIPE_MODES = ['raw', 'recipes', 'mixed'];
+const VALID_CRAFTING_CHECK_MODES = ['none', 'manual', 'roll', 'off'];
+const VALID_CRAFTING_TOOL_MODES = ['off', 'manual', 'check'];
+const VALID_CRAFTING_RESOURCE_MODES = ['manual', 'check', 'deduct'];
+const VALID_ITEM_HANDLING_MODES = ['manual', 'bags'];
 const VALID_PLAYER_SETUP_CHECK_TYPES = ['cvar', 'uvar', 'svar', 'cc', 'counter', 'custom_counter'];
 const VALID_PLAYER_SETUP_HUD_FIELDS = [
   'coins',
@@ -81,6 +86,19 @@ const VALID_ENGINE_BIOMES = [
   'volcanic',
   'astral',
 ];
+const VALID_CRAFTING_ENGINE_CATALOGUES: Record<string, string> = {
+  items: 'engine:catalogues/items',
+  potions: 'engine:catalogues/potions',
+  spells: 'engine:catalogues/spells',
+  magic_items: 'engine:catalogues/magic_items',
+};
+const CRAFTING_REQUIRED_CATALOGUES: Record<string, string> = {
+  craft: 'items',
+  brew: 'potions',
+  scribe: 'spells',
+  enchant: 'magic_items',
+};
+const CRAFTING_RESOURCE_KEYS = ['gold', 'materials', 'items', 'downtime', 'spell_slot'];
 const GVAR_ID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 
 const DEFAULT_MODEL: ConfigModel = {
@@ -310,6 +328,48 @@ function createDefaultSubsystems(): Record<string, AnyRecord> {
     crafting: {
       enabled: false,
       commands: defaultCommands(DEFAULT_SUBSYSTEM_COMMANDS.crafting),
+      config: {
+        rules_version: null,
+        recipe_mode: 'mixed',
+        require_known_spell: true,
+        catalogues: {
+          items: 'engine:catalogues/items',
+          potions: 'engine:catalogues/potions',
+          spells: 'engine:catalogues/spells',
+          magic_items: 'engine:catalogues/magic_items',
+          recipes: null,
+        },
+        checks: {
+          craft: { mode: 'none', skill: null, ability: null, dc: null, require_success: true },
+          brew: { mode: 'none', skill: 'nature', ability: null, dc: null, require_success: true },
+          enchant: {
+            mode: 'none',
+            skill: 'arcana',
+            ability: null,
+            dc: null,
+            require_success: true,
+          },
+          scribe: { mode: 'none', skill: 'arcana', ability: null, dc: null, require_success: true },
+        },
+        tool_policy: {
+          craft: { mode: 'off', tools: [], require_proficiency: true, require_kit: false },
+          brew: {
+            mode: 'off',
+            tools: ['Herbalism Kit', "Alchemist's Supplies", "Brewer's Supplies"],
+            require_proficiency: true,
+            require_kit: false,
+          },
+          enchant: { mode: 'off', tools: [], require_proficiency: true, require_kit: false },
+          scribe: {
+            mode: 'off',
+            tools: ["Calligrapher's Supplies"],
+            require_proficiency: true,
+            require_kit: false,
+          },
+        },
+        item_handling: null,
+      },
+      command_config: { craft: {}, brew: {}, enchant: {}, scribe: {} },
     },
     economy: {
       enabled: false,
@@ -346,6 +406,12 @@ function mergeSubsystemDefaults(subsystems: Record<string, AnyRecord>): Record<s
       next[key].config = mergeRecordDefaults(
         asRecord(existingBlock.config),
         asRecord(defaultBlock.config),
+      );
+    }
+    if (defaultBlock.command_config || existingBlock.command_config) {
+      next[key].command_config = mergeRecordDefaults(
+        asRecord(existingBlock.command_config),
+        asRecord(defaultBlock.command_config),
       );
     }
   }
@@ -1565,25 +1631,675 @@ function validateDowntime(model: ConfigModel, issues: ConfigIssue[]) {
   }
 }
 
+function validateCraftingRulesVersion(value: unknown, path: string, issues: ConfigIssue[]) {
+  if (value == null || value === '') return;
+  if (typeof value !== 'string' || !VALID_RULES_VERSION.includes(value)) {
+    issues.push(
+      issue(
+        'error',
+        'crafting.rules_version',
+        'Policies',
+        path,
+        'Invalid crafting rules version',
+        'Crafting rules overrides must be 2014 or 2024.',
+      ),
+    );
+  }
+}
+
+function validateCraftingRecipeMode(value: unknown, path: string, issues: ConfigIssue[]) {
+  if (value == null || value === '') return;
+  if (typeof value !== 'string' || !VALID_CRAFTING_RECIPE_MODES.includes(value)) {
+    issues.push(
+      issue(
+        'error',
+        'crafting.recipe_mode',
+        'Policies',
+        path,
+        'Invalid crafting recipe mode',
+        'Recipe mode must be raw, recipes, or mixed.',
+      ),
+    );
+  }
+}
+
+function validateCraftingKnownSpell(value: unknown, path: string, issues: ConfigIssue[]) {
+  if (value == null) return;
+  if (typeof value !== 'boolean') {
+    issues.push(
+      issue(
+        'error',
+        'crafting.require_known_spell',
+        'Policies',
+        path,
+        'Scribe spell-known requirement must be boolean',
+        'Use True to require the spell in the character spellbook, or False to disable this RAW gate.',
+      ),
+    );
+  }
+}
+
+function validateCraftingCheckPolicies(value: unknown, path: string, issues: ConfigIssue[]) {
+  if (value == null) return;
+  if (!isPlainRecord(value)) {
+    issues.push(
+      issue(
+        'error',
+        'crafting.checks_object',
+        'Policies',
+        path,
+        'Crafting checks must be an object',
+        'Use command keys such as craft, brew, enchant, and scribe.',
+      ),
+    );
+    return;
+  }
+
+  for (const [command, rawPolicy] of Object.entries(asRecord(value))) {
+    const commandPath = `${path}.${command}`;
+    if (!DEFAULT_SUBSYSTEM_COMMANDS.crafting.includes(command)) {
+      issues.push(
+        issue(
+          'warning',
+          'crafting.checks_unknown',
+          'Policies',
+          commandPath,
+          'Unknown crafting check command',
+          'Check policy keys should match craft, brew, enchant, or scribe.',
+        ),
+      );
+      continue;
+    }
+    if (typeof rawPolicy === 'boolean' || typeof rawPolicy === 'string') {
+      const mode = typeof rawPolicy === 'string' ? rawPolicy : rawPolicy ? 'roll' : 'none';
+      if (!VALID_CRAFTING_CHECK_MODES.includes(mode)) {
+        issues.push(
+          issue(
+            'error',
+            'crafting.check_mode',
+            'Policies',
+            commandPath,
+            'Invalid crafting check mode',
+            'Check modes must be none, manual, or roll.',
+          ),
+        );
+      }
+      continue;
+    }
+    if (!isPlainRecord(rawPolicy)) {
+      issues.push(
+        issue(
+          'error',
+          'crafting.check_object',
+          'Policies',
+          commandPath,
+          'Crafting check policy must be an object or mode',
+          'Use {"mode": "roll", "skill": "arcana", "dc": 15}.',
+        ),
+      );
+      continue;
+    }
+    const policy = asRecord(rawPolicy);
+    const mode = policy.mode;
+    if (mode != null && (typeof mode !== 'string' || !VALID_CRAFTING_CHECK_MODES.includes(mode))) {
+      issues.push(
+        issue(
+          'error',
+          'crafting.check_mode',
+          'Policies',
+          `${commandPath}.mode`,
+          'Invalid crafting check mode',
+          'Check modes must be none, manual, or roll.',
+        ),
+      );
+    }
+    if (policy.dc != null && (!isNonNegativeInteger(policy.dc) || Number(policy.dc) < 1)) {
+      issues.push(
+        issue(
+          'error',
+          'crafting.check_dc',
+          'Policies',
+          `${commandPath}.dc`,
+          'Crafting check DC must be positive',
+          'Use a positive whole number, or None to roll without a DC.',
+        ),
+      );
+    }
+    if (policy.skill != null && typeof policy.skill !== 'string') {
+      issues.push(
+        issue(
+          'error',
+          'crafting.check_skill',
+          'Policies',
+          `${commandPath}.skill`,
+          'Crafting check skill must be text',
+          'Use an Avrae skill key such as arcana or nature.',
+        ),
+      );
+    }
+    if (policy.require_success != null && typeof policy.require_success !== 'boolean') {
+      issues.push(
+        issue(
+          'error',
+          'crafting.check_require_success',
+          'Policies',
+          `${commandPath}.require_success`,
+          'Crafting check success flag must be boolean',
+          'Use True or False.',
+        ),
+      );
+    }
+  }
+}
+
+function looksLikeCraftingCheckEntry(value: unknown): boolean {
+  if (!isPlainRecord(value)) return false;
+  const policy = asRecord(value);
+  return ['mode', 'skill', 'ability', 'dc', 'require_success'].some((key) => key in policy);
+}
+
+function validateCraftingCheckOverride(
+  value: unknown,
+  path: string,
+  command: string,
+  issues: ConfigIssue[],
+) {
+  if (value == null) return;
+  if (
+    typeof value === 'boolean' ||
+    typeof value === 'string' ||
+    looksLikeCraftingCheckEntry(value)
+  ) {
+    validateCraftingCheckPolicies({ [command]: value }, path, issues);
+    return;
+  }
+  validateCraftingCheckPolicies(value, path, issues);
+}
+
+function validateCraftingToolPolicies(value: unknown, path: string, issues: ConfigIssue[]) {
+  if (value == null) return;
+  if (!isPlainRecord(value)) {
+    issues.push(
+      issue(
+        'error',
+        'crafting.tool_policy_object',
+        'Policies',
+        path,
+        'Crafting tool policy must be an object',
+        'Use command keys such as craft, brew, enchant, and scribe.',
+      ),
+    );
+    return;
+  }
+
+  for (const [command, rawPolicy] of Object.entries(asRecord(value))) {
+    const commandPath = `${path}.${command}`;
+    if (!DEFAULT_SUBSYSTEM_COMMANDS.crafting.includes(command)) {
+      issues.push(
+        issue(
+          'warning',
+          'crafting.tool_policy_unknown',
+          'Policies',
+          commandPath,
+          'Unknown crafting tool command',
+          'Tool policy keys should match craft, brew, enchant, or scribe.',
+        ),
+      );
+      continue;
+    }
+    if (typeof rawPolicy === 'boolean' || typeof rawPolicy === 'string') {
+      const mode = typeof rawPolicy === 'string' ? rawPolicy : rawPolicy ? 'check' : 'off';
+      if (!VALID_CRAFTING_TOOL_MODES.includes(mode)) {
+        issues.push(
+          issue(
+            'error',
+            'crafting.tool_mode',
+            'Policies',
+            commandPath,
+            'Invalid crafting tool mode',
+            'Tool modes must be off, manual, or check.',
+          ),
+        );
+      }
+      continue;
+    }
+    if (!isPlainRecord(rawPolicy)) {
+      issues.push(
+        issue(
+          'error',
+          'crafting.tool_policy_entry',
+          'Policies',
+          commandPath,
+          'Crafting tool policy must be an object or mode',
+          'Use {"mode": "check", "tools": ["Calligrapher\'s Supplies"]}.',
+        ),
+      );
+      continue;
+    }
+    const policy = asRecord(rawPolicy);
+    const mode = policy.mode;
+    if (mode != null && (typeof mode !== 'string' || !VALID_CRAFTING_TOOL_MODES.includes(mode))) {
+      issues.push(
+        issue(
+          'error',
+          'crafting.tool_mode',
+          'Policies',
+          `${commandPath}.mode`,
+          'Invalid crafting tool mode',
+          'Tool modes must be off, manual, or check.',
+        ),
+      );
+    }
+    if (policy.tools != null) {
+      if (!Array.isArray(policy.tools)) {
+        issues.push(
+          issue(
+            'error',
+            'crafting.tool_list',
+            'Policies',
+            `${commandPath}.tools`,
+            'Crafting tools must be a list',
+            'Use a list of tool names.',
+          ),
+        );
+      } else if (policy.tools.some((item) => typeof item !== 'string' || item.trim() === '')) {
+        issues.push(
+          issue(
+            'error',
+            'crafting.tool_name',
+            'Policies',
+            `${commandPath}.tools`,
+            'Crafting tool names must be text',
+            'Remove blank tool names.',
+          ),
+        );
+      }
+    }
+    for (const boolKey of ['require_proficiency', 'require_kit']) {
+      if (policy[boolKey] != null && typeof policy[boolKey] !== 'boolean') {
+        issues.push(
+          issue(
+            'error',
+            'crafting.tool_bool',
+            'Policies',
+            `${commandPath}.${boolKey}`,
+            'Crafting tool flags must be boolean',
+            'Use True or False.',
+          ),
+        );
+      }
+    }
+    if (
+      policy.kit_bag != null &&
+      (typeof policy.kit_bag !== 'string' || policy.kit_bag.trim() === '')
+    ) {
+      issues.push(
+        issue(
+          'error',
+          'crafting.tool_bag',
+          'Policies',
+          `${commandPath}.kit_bag`,
+          'Tool kit bag must be text',
+          'Use a non-empty bag name.',
+        ),
+      );
+    }
+  }
+}
+
+function catalogueSourceStatus(
+  value: unknown,
+  catalogueKey: string | null,
+): { hasSource: boolean; valid: boolean; detail: string } {
+  if (value == null) {
+    return { hasSource: false, valid: true, detail: '' };
+  }
+
+  if (Array.isArray(value)) {
+    return { hasSource: value.length > 0, valid: true, detail: '' };
+  }
+
+  if (typeof value === 'string') {
+    const text = value.trim();
+    if (!text) return { hasSource: false, valid: true, detail: '' };
+    if (text.startsWith('engine:')) {
+      const expected = catalogueKey ? VALID_CRAFTING_ENGINE_CATALOGUES[catalogueKey] : undefined;
+      return {
+        hasSource: true,
+        valid: Boolean(expected && text === expected),
+        detail: expected
+          ? `Use ${expected} for this catalogue, or provide a custom gvar UUID.`
+          : 'Recipes do not have a built-in engine catalogue source.',
+      };
+    }
+    return {
+      hasSource: true,
+      valid: GVAR_ID_RE.test(text),
+      detail: 'Custom catalogue sources must be Avrae workshop UUIDs.',
+    };
+  }
+
+  if (!isPlainRecord(value)) {
+    return {
+      hasSource: true,
+      valid: false,
+      detail:
+        'Catalogue sources must be a UUID string, engine slug, inline list, or source object.',
+    };
+  }
+
+  const record = asRecord(value);
+  let hasSource = false;
+  let valid = true;
+  let detail = '';
+
+  if (record.include_engine === true) {
+    hasSource = true;
+    if (!catalogueKey || !VALID_CRAFTING_ENGINE_CATALOGUES[catalogueKey]) {
+      valid = false;
+      detail =
+        'include_engine is only supported for item, potion, spell, and magic item catalogues.';
+    }
+  }
+
+  if (record.entries != null) {
+    if (!Array.isArray(record.entries)) {
+      valid = false;
+      detail = 'Catalogue source entries must be a list.';
+    } else if (record.entries.length > 0) {
+      hasSource = true;
+    }
+  }
+
+  if (record.gvar_id != null) {
+    const nested = catalogueSourceStatus(record.gvar_id, catalogueKey);
+    hasSource = hasSource || nested.hasSource;
+    if (!nested.valid) {
+      valid = false;
+      detail = nested.detail;
+    }
+  }
+
+  return { hasSource, valid, detail };
+}
+
+function validateCatalogueSource(
+  value: unknown,
+  path: string,
+  catalogueKey: string | null,
+  required: boolean,
+  issues: ConfigIssue[],
+) {
+  const provided = value != null && !(typeof value === 'string' && value.trim() === '');
+  const status = catalogueSourceStatus(value, catalogueKey);
+  if (required && !status.hasSource) {
+    issues.push(
+      issue(
+        'error',
+        'crafting.catalogue_missing',
+        'Policies',
+        path,
+        'Crafting catalogue is required',
+        'Enabled crafting commands need their matching catalogue source.',
+        'Use an engine source, custom gvar UUID, or inline entries.',
+      ),
+    );
+    return;
+  }
+  if (provided && (!status.hasSource || !status.valid)) {
+    issues.push(
+      issue(
+        'error',
+        'crafting.catalogue_source',
+        'Policies',
+        path,
+        'Invalid crafting catalogue source',
+        status.detail || 'The catalogue source does not point at any entries.',
+        'Use an engine source, custom gvar UUID, or inline entries.',
+      ),
+    );
+  }
+}
+
+function looksLikeCraftingToolEntry(value: unknown): boolean {
+  if (!isPlainRecord(value)) return false;
+  const policy = asRecord(value);
+  return [
+    'mode',
+    'tools',
+    'tool',
+    'tool_options',
+    'require_proficiency',
+    'require_kit',
+    'kit_bag',
+  ].some((key) => key in policy);
+}
+
+function validateCraftingToolOverride(
+  value: unknown,
+  path: string,
+  command: string,
+  issues: ConfigIssue[],
+) {
+  if (value == null) return;
+  if (
+    typeof value === 'boolean' ||
+    typeof value === 'string' ||
+    looksLikeCraftingToolEntry(value)
+  ) {
+    validateCraftingToolPolicies({ [command]: value }, path, issues);
+    return;
+  }
+  validateCraftingToolPolicies(value, path, issues);
+}
+
+function validateCraftingResourceModes(value: unknown, path: string, issues: ConfigIssue[]) {
+  if (value == null) return;
+  if (!isPlainRecord(value)) {
+    issues.push(
+      issue(
+        'error',
+        'crafting.resources_object',
+        'Policies',
+        path,
+        'Crafting resource policy must be an object',
+        'Use keys such as gold, materials, items, downtime, and spell_slot.',
+      ),
+    );
+    return;
+  }
+
+  const resources = asRecord(value);
+  for (const key of CRAFTING_RESOURCE_KEYS) {
+    const mode = resources[key];
+    if (mode == null) continue;
+    if (typeof mode !== 'string' || !VALID_CRAFTING_RESOURCE_MODES.includes(mode)) {
+      issues.push(
+        issue(
+          'error',
+          'crafting.resource_mode',
+          'Policies',
+          `${path}.${key}`,
+          'Invalid crafting resource mode',
+          'Resource modes must be manual, check, or deduct.',
+        ),
+      );
+    }
+  }
+}
+
+function validateItemHandling(value: unknown, path: string, issues: ConfigIssue[]) {
+  if (value == null) return;
+
+  if (typeof value === 'string') {
+    if (!VALID_ITEM_HANDLING_MODES.includes(value.trim().toLowerCase())) {
+      issues.push(
+        issue(
+          'error',
+          'inventory.item_handling_mode',
+          'Policies',
+          path,
+          'Invalid item handling mode',
+          'Item handling mode must be manual or bags.',
+        ),
+      );
+    }
+    return;
+  }
+
+  if (!isPlainRecord(value)) {
+    issues.push(
+      issue(
+        'error',
+        'inventory.item_handling_object',
+        'Policies',
+        path,
+        'Item handling policy must be an object or mode string',
+        'Use {"mode": "manual"} or {"mode": "bags", "scrolls_bag": "Scrolls"}.',
+      ),
+    );
+    return;
+  }
+
+  const policy = asRecord(value);
+  const mode = policy.mode;
+  if (mode != null && (typeof mode !== 'string' || !VALID_ITEM_HANDLING_MODES.includes(mode))) {
+    issues.push(
+      issue(
+        'error',
+        'inventory.item_handling_mode',
+        'Policies',
+        `${path}.mode`,
+        'Invalid item handling mode',
+        'Item handling mode must be manual or bags.',
+      ),
+    );
+  }
+
+  for (const bagKey of [
+    'default_bag',
+    'equipment_bag',
+    'crafted_bag',
+    'potions_bag',
+    'scrolls_bag',
+    'magic_items_bag',
+    'materials_bag',
+  ]) {
+    const bagName = policy[bagKey];
+    if (bagName != null && (typeof bagName !== 'string' || bagName.trim() === '')) {
+      issues.push(
+        issue(
+          'error',
+          'inventory.item_handling_bag',
+          'Policies',
+          `${path}.${bagKey}`,
+          'Bag name must be text',
+          'Bag policy names should be non-empty strings.',
+        ),
+      );
+    }
+  }
+}
+
 function validateCrafting(model: ConfigModel, issues: ConfigIssue[]) {
   const crafting = asRecord(model.subsystems.crafting);
   const commands = asRecord(crafting.commands);
-  const enabledCommands = Object.entries(commands).filter(([, value]) => value === true);
+  const enabledCommands = Object.entries(commands)
+    .filter(
+      ([command, value]) => value === true && DEFAULT_SUBSYSTEM_COMMANDS.crafting.includes(command),
+    )
+    .map(([command]) => command);
   const craftingActive = crafting.enabled === true && enabledCommands.length > 0;
   const downtimeTracked =
     asRecord(asRecord(model.policies).downtime).mode === 'tracked' &&
     asRecord(model.subsystems.downtime).enabled === true;
   const craftingPolicy = asRecord(asRecord(model.policies).crafting);
+  const craftingConfig = asRecord(crafting.config);
+  const catalogues = asRecord(craftingConfig.catalogues);
 
-  if (craftingActive && craftingPolicy.require_downtime_before_roll === true && !downtimeTracked) {
+  validateCraftingRulesVersion(
+    craftingConfig.rules_version,
+    'subsystems.crafting.config.rules_version',
+    issues,
+  );
+  validateCraftingRecipeMode(
+    craftingConfig.recipe_mode,
+    'subsystems.crafting.config.recipe_mode',
+    issues,
+  );
+  validateCraftingKnownSpell(
+    craftingConfig.require_known_spell,
+    'subsystems.crafting.config.require_known_spell',
+    issues,
+  );
+  validateCraftingCheckPolicies(craftingConfig.checks, 'subsystems.crafting.config.checks', issues);
+  validateCraftingCheckPolicies(
+    craftingConfig.check_policy,
+    'subsystems.crafting.config.check_policy',
+    issues,
+  );
+  validateCraftingToolPolicies(
+    craftingConfig.tool_policy,
+    'subsystems.crafting.config.tool_policy',
+    issues,
+  );
+
+  for (const [command, catalogueKey] of Object.entries(CRAFTING_REQUIRED_CATALOGUES)) {
+    const required = craftingActive && commands[command] === true;
+    const source = catalogues[catalogueKey];
+    validateCatalogueSource(
+      source,
+      `subsystems.crafting.config.catalogues.${catalogueKey}`,
+      catalogueKey,
+      required,
+      issues,
+    );
+  }
+  validateCatalogueSource(
+    catalogues.recipes,
+    'subsystems.crafting.config.catalogues.recipes',
+    null,
+    false,
+    issues,
+  );
+
+  validateCraftingResourceModes(craftingPolicy.resources, 'policies.crafting.resources', issues);
+  validateItemHandling(craftingPolicy.item_handling, 'policies.crafting.item_handling', issues);
+  validateItemHandling(
+    craftingConfig.item_handling,
+    'subsystems.crafting.config.item_handling',
+    issues,
+  );
+  validateItemHandling(
+    asRecord(asRecord(model.policies).inventory).item_handling,
+    'policies.inventory.item_handling',
+    issues,
+  );
+
+  const globalResources = asRecord(craftingPolicy.resources);
+  const legacyDowntimeCheck = craftingPolicy.require_downtime_before_roll === true;
+  const activeNeedsDowntime = enabledCommands.some((command) => {
+    const commandResources = asRecord(
+      asRecord(asRecord(crafting.command_config)[command]).resources,
+    );
+    const mode =
+      commandResources.downtime ??
+      globalResources.downtime ??
+      (legacyDowntimeCheck ? 'check' : 'manual');
+    return mode === 'check' || mode === 'deduct';
+  });
+
+  if (craftingActive && activeNeedsDowntime && !downtimeTracked) {
     issues.push(
       issue(
         'warning',
         'crafting.downtime_not_tracked',
         'Policies',
-        'policies.crafting.require_downtime_before_roll',
+        globalResources.downtime != null
+          ? 'policies.crafting.resources.downtime'
+          : 'policies.crafting.require_downtime_before_roll',
         'Crafting downtime is not tracked',
-        'Crafting can require downtime before rolls only when downtime mode is tracked and the downtime subsystem is enabled.',
+        'Crafting can check or deduct downtime only when downtime mode is tracked and the downtime subsystem is enabled.',
       ),
     );
   }
@@ -1603,7 +2319,57 @@ function validateCrafting(model: ConfigModel, issues: ConfigIssue[]) {
       );
       continue;
     }
-    const workdaysCost = asRecord(value).workdays_cost;
+    const commandPolicy = asRecord(value);
+    validateCraftingRulesVersion(
+      commandPolicy.rules_version,
+      `subsystems.crafting.command_config.${command}.rules_version`,
+      issues,
+    );
+    validateCraftingRecipeMode(
+      commandPolicy.recipe_mode,
+      `subsystems.crafting.command_config.${command}.recipe_mode`,
+      issues,
+    );
+    validateCraftingKnownSpell(
+      commandPolicy.require_known_spell,
+      `subsystems.crafting.command_config.${command}.require_known_spell`,
+      issues,
+    );
+    validateCraftingCheckOverride(
+      commandPolicy.checks,
+      `subsystems.crafting.command_config.${command}.checks`,
+      command,
+      issues,
+    );
+    validateCraftingCheckOverride(
+      commandPolicy.check,
+      `subsystems.crafting.command_config.${command}.check`,
+      command,
+      issues,
+    );
+    validateCraftingToolOverride(
+      commandPolicy.tool_policy,
+      `subsystems.crafting.command_config.${command}.tool_policy`,
+      command,
+      issues,
+    );
+    validateCraftingResourceModes(
+      commandPolicy.resources,
+      `subsystems.crafting.command_config.${command}.resources`,
+      issues,
+    );
+    validateItemHandling(
+      commandPolicy.item_handling,
+      `subsystems.crafting.command_config.${command}.item_handling`,
+      issues,
+    );
+    validateItemHandling(
+      commandPolicy.output,
+      `subsystems.crafting.command_config.${command}.output`,
+      issues,
+    );
+
+    const workdaysCost = commandPolicy.workdays_cost;
     if (workdaysCost != null && !isNonNegativeInteger(workdaysCost)) {
       issues.push(
         issue(
@@ -1711,6 +2477,26 @@ export function createBlankConfig(): ConfigModel {
         require_downtime_before_roll: true,
         auto_deduct_materials: false,
         auto_deduct_gold: false,
+        resources: {
+          gold: 'manual',
+          materials: 'manual',
+          items: 'manual',
+          downtime: 'check',
+          spell_slot: 'manual',
+        },
+        item_handling: null,
+      },
+      inventory: {
+        item_handling: {
+          mode: 'manual',
+          default_bag: 'Equipment',
+          equipment_bag: 'Equipment',
+          crafted_bag: 'Equipment',
+          potions_bag: 'Potions',
+          scrolls_bag: 'Scrolls',
+          magic_items_bag: 'Equipment',
+          materials_bag: 'Materials',
+        },
       },
       display: {
         footer_behaviour: 'balanced',

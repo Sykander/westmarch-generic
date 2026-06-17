@@ -24,7 +24,7 @@ Planned sourcemap: `src/aliases/westmarch/`.
 
 ## Access control
 
-Via **`auth.is_allowed()`** — **`setup`** and **`show`** require **`Dragonspeaker`** or **`Server Aliaser`**. Bare **`!westmarch`** is intentionally open so players can see setup status for their selected character. No **`subsystems.admin`** toggle.
+Via explicit **`auth.is_allowed("setup")`** / **`auth.is_allowed("show")`** gates — **`setup`** and **`show`** require **`Dragonspeaker`** or **`Server Aliaser`**. Bare **`!westmarch`** is intentionally open so players can see setup status for their selected character. No **`subsystems.admin`** toggle.
 
 ## Implementation order
 

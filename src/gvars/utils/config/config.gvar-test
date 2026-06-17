@@ -150,6 +150,90 @@ vars:
     aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1: |
       # owner body intentionally empty
 
+return config.cfg.subsystems.crafting.config.catalogues.spells
+---
+"engine:catalogues/spells"
+---
+name: empty owner defaults crafting spell catalogue
+vars:
+  svars:
+    westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"
+  gvars:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1: |
+      # owner body intentionally empty
+
+return config.cfg.subsystems.crafting.config.recipe_mode
+---
+"mixed"
+---
+name: empty owner defaults crafting recipe mode to mixed
+vars:
+  svars:
+    westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"
+  gvars:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1: |
+      # owner body intentionally empty
+
+return config.cfg.subsystems.crafting.config.require_known_spell
+---
+True
+---
+name: empty owner defaults scribing to require known spell
+vars:
+  svars:
+    westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"
+  gvars:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1: |
+      # owner body intentionally empty
+
+return config.cfg.subsystems.crafting.config.checks.scribe.mode
+---
+"none"
+---
+name: empty owner defaults scribe checks off
+vars:
+  svars:
+    westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"
+  gvars:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1: |
+      # owner body intentionally empty
+
+return config.cfg.subsystems.crafting.config.tool_policy.scribe.mode
+---
+"off"
+---
+name: empty owner defaults scribe tool policy off
+vars:
+  svars:
+    westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"
+  gvars:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1: |
+      # owner body intentionally empty
+
+return config.cfg.policies.crafting.resources.downtime
+---
+"check"
+---
+name: empty owner defaults crafting downtime resource mode
+vars:
+  svars:
+    westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"
+  gvars:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1: |
+      # owner body intentionally empty
+
+return config.cfg.policies.inventory.item_handling.scrolls_bag
+---
+"Scrolls"
+---
+name: empty owner defaults inventory scroll bag
+vars:
+  svars:
+    westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"
+  gvars:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1: |
+      # owner body intentionally empty
+
 return config.cfg.policies.display.command_thumbnail
 ---
 "default"
@@ -187,6 +271,22 @@ vars:
   gvars:
     bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2: |
       rules_version = "2024"
+
+return config.cfg.subsystems.crafting.command_config.scribe.rules_version
+---
+"2014"
+---
+name: owner crafting command config overrides defaults
+vars:
+  svars:
+    westmarch_config: "dddddddd-dddd-dddd-dddd-ddddddddddd4"
+  gvars:
+    dddddddd-dddd-dddd-dddd-ddddddddddd4: |
+      subsystems = {
+          "crafting": {
+              "command_config": {"scribe": {"rules_version": "2014"}},
+          },
+      }
 
 return config.get_policies().travel.consume_rations
 ---

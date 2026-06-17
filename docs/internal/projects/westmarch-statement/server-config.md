@@ -128,7 +128,23 @@ subsystems = {
     "exploration": {"enabled": False, "commands": {"enc": False}, "config": {}},  # … full tree in starter.gvar
     "travel": {"enabled": False, "commands": {}},
     "downtime": {"enabled": False},
-    "crafting": {"enabled": False, "commands": {}},
+    "crafting": {
+        "enabled": False,
+        "commands": {},
+        "config": {
+            "recipe_mode": "mixed",
+            "require_known_spell": True,
+            "catalogues": {
+                "items": "engine:catalogues/items",
+                "potions": "engine:catalogues/potions",
+                "spells": "engine:catalogues/spells",
+                "magic_items": "engine:catalogues/magic_items",
+                "recipes": None,
+            },
+            "checks": {"scribe": {"mode": "none", "skill": "arcana", "dc": None}},
+            "tool_policy": {"scribe": {"mode": "off", "tools": ["Calligrapher's Supplies"]}},
+        },
+    },
     "economy": {"enabled": False, "commands": {}},
     "content": {"enabled": False, "commands": {}},
     "misc": {"enabled": False, "commands": {}},
@@ -139,9 +155,13 @@ policies = {
     "time": {"mode": "manual"},
     "travel": {"apply_path_costs": False, "consume_rations": False, "rations_item": "Rations"},
     "downtime": {"mode": "off"},
+    "crafting": {
+        "resources": {"gold": "manual", "materials": "manual", "items": "manual", "downtime": "check", "spell_slot": "manual"},
+    },
+    "inventory": {"item_handling": {"mode": "manual", "scrolls_bag": "Scrolls", "potions_bag": "Potions"}},
     "exploration": {"enforce_cooldowns": True, "avoid_repeat_encounters": "off"},
     "quest": {"self_assign": False},
-    # crafting, economy, combat, content, inventory — see starter template
+    # economy, combat, content — see starter template
 }
 ```
 
@@ -332,13 +352,13 @@ Three layers — do not conflate:
 | **time** | `mode` | **`world_clock`** needs **`world_data.calendars`** |
 | **travel** | `apply_path_costs`, `consume_rations`, `rations_item` | Journey cost + rations item name |
 | **downtime** | `mode`, `max_workdays`, `acquisition` | **`tracked`** → enable **`subsystems.downtime`**; the editor reports mismatches |
-| **crafting** | `require_downtime_before_roll`, `auto_deduct_*` | Workdays from **`command_config`** + recipe |
+| **crafting** | `resources`, `item_handling`; legacy `require_downtime_before_roll`, `auto_deduct_*` | Workdays from `recipe_mode`; resource modes are `manual`, `check`, or `deduct` |
 | **economy** | `enforce_cooldowns`, `enforce_wallet_caps`, `starting_gold` | Job cooldown; optional wallet caps + one-time gp grant |
 | **exploration** | `enforce_cooldowns`, `avoid_repeat_encounters` | Cooldown durations in **`command_config`**; repeat window, hunt/loot art, and DC visibility in **`exploration.config`** |
 | **combat** | `roll_monster_hp`, scaling keys *(defer)* | HP rolls vs narrative-only; CR scaling reserved |
 | **quest** | `self_assign`, `max_active` | Auto journal from quest encounters |
 | **content** | `enforce_library_cooldowns`, `enforce_read_cooldowns` | Library default **120s**; read optional |
-| **inventory** | `track_encumbrance`, `enforce_*`, limits | Enforcement implementation deferred |
+| **inventory** | `item_handling`, `track_encumbrance`, `enforce_*`, limits | Crafting can output to manual text or Bags cvars |
 | **display**, **languages** | footer, tips, credits; `allowed` | Existing |
 
 **Generic defaults:** downtime **off**, exploration/library cooldowns **120s**, job **28800s**, no repeat filter, roll monster HP **on**, quest self-assign **off**, require character **on**. The reference westmarch server used manual downtime; owners can opt into **`manual`** or **`tracked`** when enabling the downtime subsystem.
@@ -366,7 +386,10 @@ The **Westmarch config editor** is the source of truth for config validation. It
 | Legacy flat **`locations`** / **`encounter_pools`** without **`world_data`** | Warning |
 | Policy / subsystem mismatch (e.g. world_clock mode without **`world_data.calendars`**) | Warning |
 | **`policies.downtime.mode: tracked`** but **`subsystems.downtime.enabled`** false | Error |
-| **`policies.crafting.require_downtime_before_roll`** with downtime not tracked | Warning |
+| Crafting downtime resource mode **`check`** / **`deduct`** with downtime not tracked | Warning |
+| Enabled crafting command with missing or malformed required catalogue source | Error |
+| Invalid crafting `recipe_mode`, `require_known_spell`, check mode/DC, or tool policy mode/list | Error |
+| Invalid crafting resource or item-output policy mode | Error |
 | **`policies.quest.self_assign`** true but **`misc.commands.quest`** off | Error |
 | **`policies.inventory.enforce_*`** true | Warning |
 | **`policies.combat.scale_encounters_to_level`** true before engine supports scaling | Warning |

@@ -3,9 +3,6 @@
 re:not configured
 ---
 name: blocks without server config
-vars:
-  uvars:
-    _wm_command: loot
 
 !loot
 ---
@@ -13,8 +10,6 @@ title: Loot
 ---
 name: passes auth when exploration loot enabled
 vars:
-  uvars:
-    _wm_command: loot
   svars:
     westmarch_config: "eeee1111-1111-1111-1111-111111111111"
   gvars:
@@ -32,8 +27,6 @@ re:disabled on this server
 ---
 name: rejects disabled loot command
 vars:
-  uvars:
-    _wm_command: loot
   svars:
     westmarch_config: "eeee2222-2222-2222-2222-222222222222"
   gvars:
@@ -51,8 +44,6 @@ title: Loot
 ---
 name: help stub when loot enabled
 vars:
-  uvars:
-    _wm_command: loot
   svars:
     westmarch_config: "eeee1111-1111-1111-1111-111111111111"
   gvars:
@@ -70,8 +61,6 @@ re:clear|creature|item|session
 ---
 name: "help documents three-phase loot session"
 vars:
-  uvars:
-    _wm_command: loot
   svars:
     westmarch_config: "eeee7777-7777-7777-7777-777777777777"
   gvars:
@@ -89,8 +78,6 @@ re:Started loot table session|nothing to loot
 ---
 name: "start loot session for creature"
 vars:
-  uvars:
-    _wm_command: loot
   svars:
     westmarch_config: "eeee7777-7777-7777-7777-777777777777"
   gvars:
@@ -108,8 +95,6 @@ re:Be more specific|Custom Beast|Custom Drake
 ---
 name: loot reports ambiguous creature matches
 vars:
-  uvars:
-    _wm_command: loot
   svars:
     westmarch_config: "eeee7778-7778-7778-7778-777777777778"
   gvars:
@@ -133,8 +118,6 @@ re:cleared|no active|session
 ---
 name: "clear ends loot session"
 vars:
-  uvars:
-    _wm_command: loot
   svars:
     westmarch_config: "eeee7777-7777-7777-7777-777777777777"
   gvars:
@@ -152,8 +135,6 @@ re:Wolf
 ---
 name: "bare loot shows active session status"
 vars:
-  uvars:
-    _wm_command: loot
   svars:
     westmarch_config: "eeee7777-7777-7777-7777-777777777777"
   cvars:
@@ -173,8 +154,6 @@ re:Be more specific|Wolf Trophy|Wolf Ration
 ---
 name: loot asks for specificity when active loot query matches multiple items
 vars:
-  uvars:
-    _wm_command: loot
   svars:
     westmarch_config: "eeee7777-7777-7777-7777-777777777777"
   cvars:
@@ -194,8 +173,6 @@ re:Recovered \*\*Wolf Ration\*\*[\s\S]*Loot cleared
 ---
 name: loot item attempt can recover and clear final lootable
 vars:
-  uvars:
-    _wm_command: loot
   svars:
     westmarch_config: "eeee7777-7777-7777-7777-777777777777"
   cvars:
@@ -215,8 +192,6 @@ re:-image https://example.test/image-beast.png
 ---
 name: loot start can show monster art as embed image
 vars:
-  uvars:
-    _wm_command: loot
   svars:
     westmarch_config: "eeee8888-8888-8888-8888-888888888888"
   gvars:
@@ -247,8 +222,6 @@ re:Quiet Beast|Nature check
 ---
 name: loot can hide public check dcs
 vars:
-  uvars:
-    _wm_command: loot
   svars:
     westmarch_config: "eeee8989-8989-8989-8989-898989898989"
   cvars:

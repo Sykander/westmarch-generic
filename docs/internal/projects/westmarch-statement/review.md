@@ -367,7 +367,7 @@ flowchart LR
 
 ### Phase 0 — realistic minimum
 
-1. **`config.get_config()`** + **`auth.is_allowed()`** + behaviour semantics (unset / invalid / disabled)
+1. **`config.get_config()`** + explicit **`auth.is_allowed(command)`** + behaviour semantics (unset / invalid / disabled)
 2. **Partial `core/`** — at least **embeds**, **rolls**, **strings** (needed by encounter slice)
 3. **`pc.gvar`** — minimal mutators if encounter outcomes apply sheet changes in slice
 4. Encounter pipeline: **templates + lists + encounters** *or* defer outcomes to keep slice thin

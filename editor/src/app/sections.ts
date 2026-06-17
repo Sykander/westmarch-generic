@@ -25,7 +25,7 @@ export const SECTION_DESCRIPTIONS: Record<Section, string> = {
   setup: 'Load from Avrae, paste source, or start a new config.',
   display: 'Set world branding, rules edition, embed colour, footer, and description.',
   subsystems: 'Choose command families, command toggles, and subsystem display overrides.',
-  policies: 'Tune encounter, repeat, footer, and distribution behavior.',
+  policies: 'Tune encounter, crafting, downtime, item output, footer, and distribution behavior.',
   world: 'Configure locations, paths, and world-level travel data.',
   biomes: 'Wire biome presets or custom biome gvars into the world registry.',
   encounters: 'Build biome JSON rows from pool tags and encounter templates.',

@@ -3,9 +3,6 @@
 re:not configured
 ---
 name: blocks without server config
-vars:
-  uvars:
-    _wm_command: travel
 
 !travel
 ---
@@ -13,8 +10,6 @@ re:disabled on this server
 ---
 name: rejects disabled travel command
 vars:
-  uvars:
-    _wm_command: travel
   svars:
     westmarch_config: "aaaa2000-2000-2000-2000-200000000000"
   gvars:
@@ -29,8 +24,6 @@ re:Usage[\s\S]*travel next[\s\S]*horse
 ---
 name: shows help when enabled
 vars:
-  uvars:
-    _wm_command: travel
   svars:
     westmarch_config: "aaaa2001-2001-2001-2001-200000000001"
   gvars:
@@ -50,8 +43,6 @@ re:River Town[\s\S]*busy quay
 ---
 name: bare travel shows current location
 vars:
-  uvars:
-    _wm_command: travel
   svars:
     westmarch_config: "aaaa2002-2002-2002-2002-200000000002"
   gvars:
@@ -76,8 +67,6 @@ re:River Town[\s\S]*Oakwood Forest[\s\S]*!enc forest[\s\S]*track this journey
 ---
 name: route preview shows journey and tracking hint
 vars:
-  uvars:
-    _wm_command: travel
   svars:
     westmarch_config: "aaaa2002-2002-2002-2002-200000000002"
   gvars:
@@ -102,8 +91,6 @@ re:Be more specific[\s\S]*Oakwood Forest[\s\S]*Oakwood East Trail
 ---
 name: ambiguous destination asks for specificity
 vars:
-  uvars:
-    _wm_command: travel
   svars:
     westmarch_config: "aaaa2003-2003-2003-2003-200000000003"
   gvars:
@@ -127,8 +114,6 @@ re:journey is now being tracked
 ---
 name: route can be tracked
 vars:
-  uvars:
-    _wm_command: travel
   svars:
     westmarch_config: "aaaa2002-2002-2002-2002-200000000002"
   gvars:
@@ -153,8 +138,6 @@ re:Confirm with `!travel reset yes`
 ---
 name: reset requires confirmation
 vars:
-  uvars:
-    _wm_command: travel
   svars:
     westmarch_config: "aaaa2002-2002-2002-2002-200000000002"
   gvars:
@@ -174,8 +157,6 @@ re:Confirm with `!travel set "Oakwood Forest" yes`
 ---
 name: set requires confirmation
 vars:
-  uvars:
-    _wm_command: travel
   svars:
     westmarch_config: "aaaa2002-2002-2002-2002-200000000002"
   gvars:
@@ -198,8 +179,6 @@ re:Location set to[\s\S]*Oakwood Forest
 ---
 name: set changes location when confirmed
 vars:
-  uvars:
-    _wm_command: travel
   svars:
     westmarch_config: "aaaa2002-2002-2002-2002-200000000002"
   gvars:
@@ -222,8 +201,6 @@ re:Arrived in[\s\S]*Oakwood Forest[\s\S]*Completed
 ---
 name: next advances one-step journey to arrival
 vars:
-  uvars:
-    _wm_command: travel
   cvars:
     wg_location: "river_town"
     wg_journey: '{"title":"River Town -> Oakwood Forest","from":"river_town","to":"oakwood","paths":[{"from":"river_town","to":"oakwood","steps":[{"type":"encounter","biome":"forest"}]}],"path_index":0,"step_index":0,"horse":false,"boat":false}'

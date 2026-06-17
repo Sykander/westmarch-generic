@@ -1,131 +1,134 @@
-# Crafting — MVP implementation docs
+# Crafting
 
-Implementation plans for **crafting** commands in westmarch-generic. These docs sit under [westmarch-statement](../../README.md); scope and toggles are defined in [mvp-commands.md](../../mvp-commands.md) (Tier E).
+**Subsystem:** `subsystems.crafting` · **Commands:** `craft`, `brew`, `scribe`, `enchant`
 
-## Implementation order
+Slice 5 ports the crafting cluster with shared RAW-oriented behavior instead of the old westmarch skill-roll/DC aliases. All four commands use `crafting.gvar` for command toggles, catalogue resolution, optional recipe lookup, optional checks/tools, rules-edition branching, resource policy, and output handling.
 
-| # | Command | Doc | Phase | Notes |
-|---|---------|-----|-------|-------|
-| 1 | **craft** | [craft.md](craft.md) | 1 (Tier E) | westmarch port; item catalogue + price-band DCs; reference port |
-| 2 | **brew** | [brew.md](brew.md) | 1 (Tier E) | Potion catalogue + rarity DCs |
-| 3 | **scribe** | [scribe.md](scribe.md) | 1 (Tier E) | Spells catalogue + scroll cost table |
-| 4 | **enchant** | [enchant.md](enchant.md) | 1 (Tier E) | Magic item catalogue + rarity DCs |
+## Commands
 
-**Prerequisite:** [downtime/downtime.md](../downtime/downtime.md) (Tier D) — crafting help text assumes players track workdays via `!downtime`; westmarch does **not** auto-deduct downtime in the alias (honour system). **[misc/recipe.md](../misc/recipe.md)** (Tier H) indexes the same catalogues read-only.
+| Command | Catalogue | Output kind | Notes |
+| --- | --- | --- | --- |
+| `!craft <item>` | `items` | item | Mundane item cost uses RAW baseline unless recipe mode provides a recipe. |
+| `!brew <potion>` | `potions` | potion | Potion/magic-item rarity baseline unless recipe mode provides a recipe. |
+| `!scribe <spell> [-l level]` | `spells` | scroll | 2014 and 2024 scroll names differ; 2024 stores spell bonus and DC. |
+| `!enchant <magic item>` | `magic_items` | magic item | Recipe `required` base items are consumed by default when item resources deduct. |
 
-## Shared crafting pipeline
+## Lookup Behavior
 
-Four commands share a roll → pass/fail → optional `modify_bag` pattern; **scribe** swaps **items** for **spells**.
+Catalogues and recipes resolve user-entered names through `lists.search_list` / `lists.search_list_by_key`.
 
-```mermaid
-flowchart LR
-  alias[Crafting alias] --> loader[get_config]
-  loader --> toggle[require crafting.commands.*]
-  toggle --> prof[proficiency gate]
-  prof --> lookup[catalogue search]
-  lookup --> roll[rolls.get_roll]
-  roll --> bag[pc.modify_bag on success]
-  bag --> embed[embed response]
-```
+- 0 matches: the command says no match was found.
+- 1 match: the command proceeds.
+- Many matches: the command asks the player to be more specific and shows a short match list.
 
-| Layer | craft / brew / enchant | scribe |
-|-------|------------------------|--------|
-| Alias | `src/aliases/crafting/{cmd}.alias` | same |
-| Item catalogue | **[items.gvar](../../gvars/items.md)** — search by type | — |
-| Spell catalogue | — | **[spells.gvar](../../gvars/spells.md)** |
-| DC / cost tables | **`crafting.gvar`** or config | scroll costs in config |
-| Tool prof cvars | **[pc.gvar](../../gvars/pc.md)** constants (or dedicated keys doc) | same |
-| **`core/`** | `rolls`, `embeds`, `strings` via `env.gvars.*` | [core.md](../../gvars/core.md) |
+Recipes are not required for RAW crafting. `subsystems.crafting.config.recipe_mode` controls how they are used:
 
-### westmarch honour system
+| Mode | Behaviour |
+| --- | --- |
+| `raw` | Ignore recipes and always use RAW baseline costs. |
+| `recipes` | Require a unique matching recipe before crafting can proceed. |
+| `mixed` | Use a unique matching recipe when present; otherwise use RAW. This is the default. |
 
-All four aliases tell the player to **remove ingredients and downtime before rolling**. The engine does not verify inventory or downtime balance in reference westmarch — only proficiency gates and the skill check run in-code.
+When a recipe applies, its `workdays`, `gold`, `consumed`, `required`, `spells`, and optional `tools` fields drive the command.
 
-**Generic MVP:** preserve this behaviour initially; optional config flag `CRAFTING.enforce_costs` for future strict mode ([US-3.4](../../user-stories.md) house rules).
+`scribe` also enforces RAW spell eligibility by default: the resolved spell name must appear in the character's Avrae spellbook. Set `subsystems.crafting.config.require_known_spell` to `False`, or override `subsystems.crafting.command_config.scribe.require_known_spell`, when the server tracks that eligibility elsewhere.
 
-Reference asset lists: [assets/items.tsv](../../../../../../assets/items.tsv), [assets/recipes.tsv](../../../../../../assets/recipes.tsv).
+## Rules Edition
 
-### Generic differences (all crafting commands)
-
-1. **Catalogues in config** — `items_list`, `potions_list`, `magic_items_list`, `spells_list` move to config gvar (or extension gvars).
-2. **Price / rarity / scroll tables in config** — westmarch hard-codes `price_to_costs`, `rarities_to_dc`, `scroll_costs` in aliases.
-3. **Subsystem toggle** — `subsystems.crafting.enabled` + per-command flags.
-4. **rules_edition** — DC tables, spell lists, and item catalogues may branch 2014 vs 2024 ([mvp-commands.md](../../mvp-commands.md)).
-5. **Help from config** — price table and scroll cost strings built from config ([US-6.3](../../user-stories.md)).
-6. **Salvage** — documented in help only in westmarch; no in-alias salvage flow — defer explicit salvage subcommand.
-
-## Config surface (crafting)
+The helper uses `config.get_rules_edition()` for the server default, then allows crafting-specific overrides:
 
 ```py
 subsystems = {
     "crafting": {
-        "enabled": True,
-        "commands": {
-            "craft": True,
-            "brew": True,
-            "enchant": True,
-            "scribe": True,
+        "config": {"rules_version": None},
+        "command_config": {
+            "scribe": {"rules_version": "2014"},
         },
     },
 }
+```
 
-# Item catalogues (may be extension gvar pointers)
-ITEMS_LIST = [ ... ]           # type "Item"
-POTIONS_LIST = [ ... ]         # type "Potion"
-MAGIC_ITEMS_LIST = [ ... ]     # type "Magic Item"
-SPELLS_LIST = [ ... ]          # scribe only
+Scroll names are edition-specific:
 
-# Craft — gp value band → dc, workdays, materials (from craft.alias)
-CRAFT_PRICE_BANDS = {
-    "1": { "dc": "1d6+3", "workdays": 1, "materials": 1 },
-    "15": { "dc": "1d8+4", "workdays": 3, "materials": 3 },
-    # ...
-}
+```text
+2014: Scroll of Fireball (5th Lv.)
+2024: Scroll of Fireball (Lv. 5 | SB +3 | DC 11)
+```
 
-# Brew / enchant — rarity → dc dice
-CRAFT_RARITY_DC = {
-    "common": "1d6+4",
-    "uncommon": "1d10+5",
-    "rare": "2d12kh1+10",
-    "very rare": "2d20kh1+15",
-    "legendary": "3d20kh1+20",
-}
+For 2024 scrolls, `SB` and `DC` are the data needed when the scroll is used. The command uses the character's Avrae spellbook values when available, accepts `-sb` and `-dc` as final explicit values, and derives from `-ability`, `-score`, and `-pb` only when spellbook stats are unavailable.
 
-# Scribe — spell level → downtime, gold, shard, dc
-SCRIBE_SCROLL_COSTS = {
-    "0": { "downtime": 1, "gold": 15, "shard": "any", "dc": 10 },
-    "1": { "downtime": 1, "gold": 25, "shard": 1, "dc": 11 },
-    # ...
-}
+## Optional Checks And Tools
 
-# Optional per-command tool/skill lists (else engine defaults match westmarch)
-CRAFTING_PROFICIENCIES = {
-    "craft": { "tools": ["Smith's Tools", ...], "skills": [] },
-    "brew": { "tools": ["Herbalism Kit", ...], "skills": ["Nature"] },
-    "enchant": { "tools": ["Jeweler's Tools"], "skills": ["Arcana"] },
-    "scribe": { "tools": ["Calligrapher's Supplies", ...], "skills": ["Arcana"] },
+RAW crafting does not require these commands to roll by default. Servers that want westmarch-style checks can opt in:
+
+```py
+"checks": {
+    "scribe": {"mode": "roll", "skill": "arcana", "dc": 15, "require_success": True},
 }
 ```
 
-## Dependencies
+Check modes are `none`, `manual`, or `roll`. Tool policy modes are `off`, `manual`, or `check`:
 
-| Command | Requires |
-|---------|----------|
-| **craft** | Config loader, items catalogue, `CRAFT_PRICE_BANDS` |
-| **brew** | Items/potions catalogue, `CRAFT_RARITY_DC` |
-| **scribe** | Spells catalogue, `SCRIBE_SCROLL_COSTS` |
-| **enchant** | Magic items catalogue, `CRAFT_RARITY_DC` |
-| All | **downtime** command/docs for player workflow (Tier D) |
+```py
+"tool_policy": {
+    "scribe": {
+        "mode": "check",
+        "tools": ["Calligrapher's Supplies"],
+        "require_proficiency": True,
+        "require_kit": False,
+    },
+}
+```
 
-## Testing approach
+Tool proficiency checks use `tools.gvar` (`pTools` / `eTools`). Kit checks look in the configured bag.
 
-- `.alias-test` per command; fixture catalogues in `.varfile.json` config gvar.
-- Minimal catalogue: 1–2 entries per type with known rarity/gp/value.
-- Tool proficiency: set `pTools` / `eTools` cvars in varfile or use character with proficiencies.
-- Tests assert help, no match, ambiguous match, and smoke roll embed (footer/title).
+## Resource Policy
 
-## Related documents
+Resource modes are `manual`, `check`, or `deduct`.
 
-- [mvp-commands.md](../../mvp-commands.md) — Tier E, **recipe** (Tier H)
-- [economy/README.md](../economy/README.md) — buy/sell share item names with catalogues
-- Reference: [westmarch crafting aliases](https://github.com/Sykander/westmarch/tree/main/src/aliases/crafting)
+```py
+policies = {
+    "crafting": {
+        "resources": {
+            "gold": "manual",
+            "materials": "manual",
+            "items": "manual",
+            "downtime": "check",
+            "spell_slot": "manual",
+        },
+    },
+}
+```
+
+Per-command overrides live under `subsystems.crafting.command_config.<command>.resources`. This lets a server track downtime for scribing but leave enchanting manual, or deduct gold for brewing while leaving spell slots manual.
+
+## Item Output
+
+Global output handling lives under `policies.inventory.item_handling`:
+
+```py
+"inventory": {
+    "item_handling": {
+        "mode": "manual",  # or "bags"
+        "default_bag": "Equipment",
+        "equipment_bag": "Equipment",
+        "crafted_bag": "Equipment",
+        "potions_bag": "Potions",
+        "scrolls_bag": "Scrolls",
+        "magic_items_bag": "Equipment",
+        "materials_bag": "Materials",
+    },
+}
+```
+
+`manual` prints `You gained one ...`. `bags` writes to the Bags cvar through `pc.modify_bag`. Per-command output overrides can be a simple mode string or an object with `mode` and bag names.
+
+## Tests
+
+Coverage lives in:
+
+- `src/gvars/utils/crafting/crafting.gvar-test`
+- `src/gvars/utils/catalogues/items/items.gvar-test`
+- `src/gvars/utils/catalogues/spells/spells.gvar-test`
+- `src/gvars/utils/misc/recipe.gvar-test`
+- `src/aliases/crafting/*.alias-test`

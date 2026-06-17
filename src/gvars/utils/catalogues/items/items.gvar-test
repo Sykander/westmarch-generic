@@ -1,0 +1,65 @@
+hit = items.search(None, "items", "Pony")
+return hit != None and items.item_name(hit) == "Pony"
+---
+True
+---
+name: item catalogue resolves engine item
+
+hit = items.search(None, "potions", "Potion of Healing")
+return hit != None and items.item_rarity(hit) == "common"
+---
+True
+---
+name: potion catalogue resolves engine potion
+
+hit = items.search(None, "magic_items", "Cloak of Protection")
+return hit != None and items.item_rarity(hit) == "uncommon"
+---
+True
+---
+name: magic item catalogue resolves engine magic item
+
+cfg_fixture = {
+    "subsystems": {
+        "crafting": {
+            "config": {
+                "catalogues": {
+                    "items": {
+                        "entries": [
+                            {"name": "Custom Needle", "rarity": "mundane", "type": "Item", "value": "1 gp"},
+                        ],
+                    },
+                },
+            },
+        },
+    },
+}
+hit = items.search(cfg_fixture, "items", "Needle")
+return hit != None and items.item_name(hit) == "Custom Needle"
+---
+True
+---
+name: item catalogue uses configured inline entries
+
+cfg_fixture = {
+    "subsystems": {
+        "crafting": {
+            "config": {
+                "catalogues": {
+                    "items": {
+                        "entries": [
+                            {"name": "Custom Needle", "rarity": "mundane", "type": "Item", "value": "1 gp"},
+                            {"name": "Custom Needle Case", "rarity": "mundane", "type": "Item", "value": "2 gp"},
+                        ],
+                    },
+                },
+            },
+        },
+    },
+}
+matches = items.name_matches(cfg_fixture, "items", "Custom")
+return len(matches) == 2 and "Be more specific" in items.match_error("items", "Custom", matches)
+---
+True
+---
+name: item catalogue reports ambiguous search_list matches

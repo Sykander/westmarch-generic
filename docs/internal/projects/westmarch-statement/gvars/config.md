@@ -57,13 +57,13 @@ Shallow + nested merge for MVP:
 | `config_version` | `None` |
 | `rules_version` | `None` |
 | `display` | `{}` — base layer only; subsystem **`display`** / **`command_display`** optional per [data-shapes § Embed display inheritance](../data-shapes.md#embed-display-inheritance) |
-| `subsystems` | player-facing subsystems only (exploration, travel, … — **not** admin); nested **`config`**, optional **`display`** / **`command_display`** per subsystem |
-| `policies` | conservative defaults — manual time, downtime off, no auto path costs, **`languages.allowed`** `[]`, **`display.footer_behaviour`** `"balanced"`, **`player_setup`** on with no checks ([data-shapes.md](../data-shapes.md#server-policies)) |
+| `subsystems` | player-facing subsystems only (exploration, travel, … — **not** admin); nested **`config`**, including generic crafting catalogue sources; optional **`display`** / **`command_display`** per subsystem |
+| `policies` | conservative defaults — manual time, downtime off, no auto path costs, crafting resource modes, item output mode, **`languages.allowed`** `[]`, **`display.footer_behaviour`** `"balanced"`, **`player_setup`** on with no checks ([data-shapes.md](../data-shapes.md#server-policies)) |
 | `channel_policy` | `{ "admin_any_channel": True, "mode": "any", … }` *(see [auth.md](auth.md))* |
 
 Top-level field shapes: [data-shapes.md § Top-level config fields](../data-shapes.md#top-level-config-fields).
 
-World data (`areas`, catalogues, …) stays absent until the owner adds it — defaults cover **schema**, not content tables.
+World data (`areas`, custom catalogues, …) stays absent until the owner adds it. The engine defaults provide generic crafting catalogue sources, but server-specific content still belongs in the owner config.
 
 ### Why a function, not `config.subsystems` on this gvar?
 
@@ -106,12 +106,13 @@ def get_config():
 
 ## Usage
 
-**Gate first** — [auth.is_allowed()](auth.md) (config missing → message there).
+**Gate first** — [auth.is_allowed(command)](auth.md) (config missing → message there).
 
 ```py
 using(config = env.gvars.config, auth = env.gvars.auth, display = env.gvars.display)
 
-ok, msg = auth.is_allowed()
+COMMAND = "enc"
+ok, msg = auth.is_allowed(COMMAND)
 if not ok:
     return embed(title="…", desc=msg)
 

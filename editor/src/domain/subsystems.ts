@@ -34,7 +34,7 @@ const SUBSYSTEM_DETAILS: Record<
     label: 'Downtime',
     implemented: true,
     detail:
-      'Downtime command toggles and policy checks are available. Crafting consumption remains planned for the crafting slice.',
+      'Downtime command toggles and policy checks are available, including crafting resource integration.',
     dependencies: [
       {
         label: 'Bard SFX',
@@ -46,8 +46,21 @@ const SUBSYSTEM_DETAILS: Record<
   },
   crafting: {
     label: 'Crafting',
-    implemented: false,
-    detail: 'Crafting, brewing, enchanting, and scribing controls are planned but locked for now.',
+    implemented: true,
+    detail:
+      'Crafting, brewing, enchanting, and scribing controls are available with catalogue, resource, and item-output policies.',
+    dependencies: [
+      {
+        label: 'Downtime',
+        level: 'recommended',
+        detail: 'Tracked downtime lets crafting commands check or deduct workdays.',
+      },
+      {
+        label: 'Bags workshop',
+        level: 'recommended',
+        detail: 'Bag output and ingredient checks use the configured character bags.',
+      },
+    ],
   },
   economy: {
     label: 'Economy',

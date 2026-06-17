@@ -8,6 +8,7 @@ using(
     config = env.gvars.config,
     auth = env.gvars.auth,
     embeds = env.gvars.embeds,
+    lists = env.gvars.lists,
 )
 
 DEFAULT_COLOUR = "5865F2"
@@ -60,19 +61,12 @@ SUBSYSTEM_TITLES = {
 }
 
 _cached_get_embed = None
-_display_cache = {"value": None}
+_display_cache = {}
 
 
 def _is_dict(value) -> bool:
     try:
         return value == dict(value)
-    except:
-        return False
-
-
-def _is_list(value) -> bool:
-    try:
-        return value == list(value)
     except:
         return False
 
@@ -97,8 +91,8 @@ def _normalize_colour(raw):
     return s
 
 
-def _resolve_from_ctx():
-    return auth.resolve_invocation()
+def _resolve_from_ctx(command_override=None):
+    return auth.resolve_invocation(command_override)
 
 
 def _read_subsystem_display(cfg, subsystem):
@@ -371,7 +365,7 @@ def _footer_string(merged, subsystem, command):
             footer = merged.footer
         except:
             footer = None
-    if _is_list(footer):
+    if lists.is_list(footer):
         pool = []
         for item in footer:
             if item != None and str(item).strip() != "":
@@ -402,8 +396,6 @@ def _footer_help(command):
     except:
         prefix = "!"
     cmd = command
-    if cmd == None or str(cmd).strip() == "":
-        cmd = auth.command_name()
     if cmd == None or str(cmd).strip() == "":
         cmd = "command"
     return f"Use {prefix}{cmd} help for options."
@@ -478,15 +470,19 @@ def _branding_kwargs(subsystem, command):
     return out
 
 
-def get_display():
-    cached = _display_cache["value"]
-    if cached != None:
-        return cached
-    subsystem, command, _requires_admin = _resolve_from_ctx()
+def get_display(command_override=None):
+    key = ""
+    if command_override != None:
+        key = str(command_override).strip().lower()
+    try:
+        return _display_cache[key]
+    except:
+        pass
+    subsystem, command, _requires_admin = _resolve_from_ctx(command_override)
     if subsystem == None:
         subsystem = "admin"
         command = None
     branding = _branding_kwargs(subsystem, command)
     built = embeds.configure_get_embed(**branding)
-    _display_cache["value"] = built
+    _display_cache[key] = built
     return built

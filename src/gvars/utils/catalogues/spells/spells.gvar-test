@@ -1,0 +1,51 @@
+hit = spells.search(None, "Fireball")
+return hit != None and spells.spell_name(hit) == "Fireball" and spells.spell_level(hit) == 3
+---
+True
+---
+name: spell catalogue resolves engine spell
+
+cfg_fixture = {
+    "subsystems": {
+        "crafting": {
+            "config": {
+                "catalogues": {
+                    "spells": {
+                        "entries": [
+                            {"name": "Custom Spark", "level": 1, "school": "Evocation"},
+                        ],
+                    },
+                },
+            },
+        },
+    },
+}
+hit = spells.search(cfg_fixture, "spark")
+return hit != None and spells.spell_name(hit) == "Custom Spark"
+---
+True
+---
+name: spell catalogue uses configured inline entries
+
+cfg_fixture = {
+    "subsystems": {
+        "crafting": {
+            "config": {
+                "catalogues": {
+                    "spells": {
+                        "entries": [
+                            {"name": "Custom Spark", "level": 1, "school": "Evocation"},
+                            {"name": "Custom Spark Shield", "level": 2, "school": "Abjuration"},
+                        ],
+                    },
+                },
+            },
+        },
+    },
+}
+matches = spells.name_matches(cfg_fixture, "spark")
+return len(matches) == 2 and "Be more specific" in spells.match_error("spark", matches)
+---
+True
+---
+name: spell catalogue reports ambiguous search_list matches

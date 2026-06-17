@@ -1,65 +1,47 @@
-return auth.is_allowed()[0]
+return auth.is_allowed(None)[0]
 ---
 False
 ---
-name: unknown ctx alias is denied
+name: missing command key is denied
 
-return auth.is_allowed()[1]
+return auth.is_allowed(None)[1]
 ---
 "Unknown command."
 ---
-name: unknown ctx alias message
+name: missing command key message
 
-return auth.is_allowed()[0]
+return auth.is_allowed("westmarch")[0]
 ---
 True
 ---
-name: parent westmarch allowed
-vars:
-  uvars:
-    _wm_command: westmarch
+name: explicit parent westmarch allowed
 
-return auth.is_allowed()[1]
+return auth.is_allowed("westmarch")[1]
 ---
 "Command allowed."
 ---
-name: parent westmarch success message
-vars:
-  uvars:
-    _wm_command: westmarch
+name: explicit parent westmarch success message
 
 return auth.resolve_invocation("setup")[2]
 ---
 True
 ---
 name: explicit setup override requires admin
-vars:
-  uvars:
-    _wm_command: westmarch
 
 return auth.resolve_invocation("show")[2]
 ---
 True
 ---
 name: explicit show override requires admin
-vars:
-  uvars:
-    _wm_command: westmarch
 
-return auth.is_allowed()[0]
+return auth.is_allowed("setup")[0]
 ---
 True
 ---
-name: admin setup allowed for dragonspeaker
-vars:
-  uvars:
-    _wm_command: setup
+name: explicit admin setup allowed for dragonspeaker
 
-return auth.is_allowed()[0]
+return auth.is_allowed("show")[0]
 ---
 True
 ---
-name: admin show allowed for dragonspeaker
-vars:
-  uvars:
-    _wm_command: show
+name: explicit admin show allowed for dragonspeaker

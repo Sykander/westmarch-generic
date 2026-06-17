@@ -2,7 +2,6 @@
 
 using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(
-    auth = env.gvars.auth,
     dicts = env.gvars.dicts,
     strings = env.gvars.strings,
 )
@@ -123,8 +122,6 @@ def read_kind_counts(ch, command_key):
 def add_log(ch, extras=None, args_text=None, command_key=None):
     """Record one successful command invocation."""
     cmd = command_key
-    if cmd == None:
-        cmd = auth.command_name()
     if cmd == None:
         cmd = "enc"
     stats_data = _load_stats(ch)

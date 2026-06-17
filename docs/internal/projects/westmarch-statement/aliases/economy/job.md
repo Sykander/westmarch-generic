@@ -69,7 +69,7 @@ flowchart TD
 
 ### Config loader integration
 
-1. `auth.is_allowed()` — combined gate from `ctx.alias`
+1. `auth.is_allowed("job")` — combined gate for the canonical command key
 2. Read `cfg.JOB` (or defaults matching westmarch if section missing)
 3. Filter skill resolution against `allowed_skills` when set
 

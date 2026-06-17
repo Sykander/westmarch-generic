@@ -51,7 +51,9 @@ ok, msg = pc.modify_wallet(ch, "shards", 2)
 | **`modify_gold(ch, gp)`** | Add/remove Avrae **gp** via coinpurse. Fails if debit would go negative. |
 | **`modify_wallet(ch, currency_id, delta)`** | Add/remove a config **wallet** currency. Validates **`currency_id`** against **`get_config().currencies`**. When **`policies.economy.enforce_wallet_caps`**, rejects grants above **`currencies[id].max_balance`**. |
 | **`modify_bag(ch, item, count, bag="Equipment")`** | Add/remove item stacks. Wraps **`core/bags`** **`modify_bag`**; same failure semantics when removal exceeds stock. |
+| **`modify_bag_items(ch, requirements, sign=-1, bag="Equipment")`** | Apply a list of `{item, qty}` bag mutations; used by crafting resource deduction. |
 | **`modify_downtime(ch, workdays)`** | Add (positive) or spend (negative) workdays when downtime mode is **`manual`** or **`tracked`**. Fails if mode is **`off`**, spend would go negative, or grant would exceed **`policies.downtime.max_workdays`**. |
+| **`spend_spell_slot(ch, level)`** | Best-effort Avrae spell slot spend for crafting policies that set `spell_slot: "deduct"`. |
 | **`modify_hp(ch, delta)`** | Optional wrapper around **`ch.modify_hp`** for consistent messaging in encounter outcomes. |
 
 ### Examples
@@ -83,6 +85,8 @@ ok, msg = pc.modify_downtime(ch, -3)
 | **`get_wallet_balances(ch, config=None)`** | `{ currency_id: balance, … }` for all configured currencies |
 | **`get_downtime(ch)`** | Available workdays (int); may init epoch cvars on first read |
 | **`get_bag_count(ch, item, bag="Equipment")`** | Stack count (via **`core/bags`** / sheet) |
+| **`has_bag_items(ch, requirements, bag="Equipment")`** | `(success, message)` availability check for a list of `{item, qty}` requirements |
+| **`get_spell_slots(ch, level)`** | Available spell slots when Avrae exposes that spellbook data; otherwise `None` |
 | **`format_wallet_embed(ch, config)`** | Embed-ready string for **`!wallet`** — display only |
 
 Command usage and exploration cooldowns — **[stats.gvar](stats.md)** stores **`wg_stats`**; **`pc`** reads **`last_used_at`** for cooldown gates:
@@ -139,7 +143,7 @@ if not ok:
 
 **`!wallet`** — read-only; uses **`get_wallet_balances`** + **`format_wallet_embed`**.  
 **`!downtime`** — **`get_downtime`** / **`modify_downtime`**.  
-Crafting success paths — **`modify_bag`** (when **`policies.crafting.auto_deduct_*`** ships).
+Crafting success/resource paths — **`modify_bag`**, **`modify_bag_items`**, **`modify_gold`**, **`modify_downtime`**, and best-effort **`spend_spell_slot`** according to `policies.crafting.resources`.
 
 ## Not in this module
 

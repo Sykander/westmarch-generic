@@ -251,12 +251,14 @@ recipe = {
     "name": "Potion of Healing",
     "kind": "brew",
     "workdays": 2,
+    "gold": 25,
     "consumed": [
-        { "name": "Arnica", "qty": 2 },
-        { "name": "Crystal vial", "qty": 1 },
+        { "item": "Arnica", "qty": 2 },
+        { "item": "Crystal vial", "qty": 1 },
     ],
     "required": [],
     "spells": None,
+    "tools": ["Herbalism Kit"],
     "tags": ["potion", "healing"],
     "description": "Reduce the herbs in a clean vessel over a gentle heat, then seal the vial and agitate the infusion until it glows faintly red. The draught is finished when the colour holds at room temperature.",
 }
@@ -267,13 +269,15 @@ recipe = {
 | `id` | yes | Multiple variants per output **`name`** |
 | `name` | yes | Join to **`items`** / potion / magic item catalogues |
 | `kind` | yes | Drives which crafting command applies |
-| `workdays` | yes | |
+| `workdays` | yes | Used by crafting resource policy |
+| `gold` | no | gp cost; command fallback supplies baseline when omitted |
 | `consumed` | no | Empty when nothing is consumed (rare) |
-| `required` | no | Base items for enchant, etc. — empty when none |
-| `spells` | no | Empty when no spell must be cast |
+| `required` | no | Base items for enchant, etc. — `enchant` consumes these by default only when item resources are `deduct` |
+| `spells` | no | Empty when no spell must be cast; spell-slot automation is separately controlled by policy |
+| `tools` | no | Tool options for `tool_policy`; can be a list or single tool name |
 | `description` | yes | In-world process text — what the recipe *says*; do not repeat quantities or workdays (those live in other columns) |
 
-**`!recipe`** searches **`recipes`** + item metadata. **Recipe encounter** outcomes (`type: recipe`) store **`description`** in the notes cvar ([encounters.md](gvars/encounters.md)).
+Crafting commands use recipes according to **`subsystems.crafting.config.recipe_mode`**: `raw` ignores recipes, `recipes` requires a unique recipe, and `mixed` searches recipes first then falls back to item/spell catalogues. **`!recipe`** searches **`recipes`** + item metadata. **Recipe encounter** outcomes (`type: recipe`) store **`description`** in the notes cvar ([encounters.md](gvars/encounters.md)).
 
 ---
 
@@ -995,6 +999,7 @@ extensions = {
     "potions": "<workshop-uuid>",
     "magic_items": "<workshop-uuid>",
     "spells": "<workshop-uuid>",
+    "recipes": "<workshop-uuid>",
     "books": "<workshop-uuid>",
 }
 ```
@@ -1006,11 +1011,12 @@ extensions = {
 | **`potions`** | items (potion shard) | Custom potion catalogue |
 | **`magic_items`** | items (magic shard) | Custom magic item catalogue |
 | **`spells`** | [spells.gvar](gvars/spells.md) | Custom spell list for scribe |
+| **`recipes`** | [recipe.gvar](gvars/recipe.md) | Custom recipe catalogue |
 | **`books`** | [library.gvar](gvars/library.md) | Custom book catalogue |
 
 Values are **36-character workshop gvar UUID strings** only. Unknown keys → **warning**; bad UUID → **error** in the web config editor.
 
-Each catalogue **`*.gvar`** checks **`config.get_config().extensions.<key>`** on first load; if set, **`get_gvar(uuid)`** and cache; else engine preset shards ([content-pipeline.md](content-pipeline.md)).
+Each catalogue **`*.gvar`** checks command-specific catalogue config first, then **`config.get_config().extensions.<key>`** on first load; if set, **`get_gvar(uuid)`** and cache; else engine preset shards ([content-pipeline.md](content-pipeline.md)).
 
 ### `display` *(base layer)*
 
@@ -1285,7 +1291,61 @@ Optional labels and copy — not enforcement flags ([policies.downtime](#downtim
 }
 ```
 
-### `crafting.config` / `economy.config`
+### `crafting.config`
+
+Crafting subsystem wiring: rules override, recipe strategy, catalogue sources, optional checks/tools, and subsystem-wide output override.
+
+```py
+"crafting": {
+    "config": {
+        "rules_version": None,  # None → config.get_rules_edition()
+        "recipe_mode": "mixed",
+        "require_known_spell": True,
+        "catalogues": {
+            "items": "engine:catalogues/items",
+            "potions": "engine:catalogues/potions",
+            "spells": "engine:catalogues/spells",
+            "magic_items": "engine:catalogues/magic_items",
+            "recipes": None,
+        },
+        "checks": {
+            "craft": {"mode": "none", "skill": None, "dc": None},
+            "brew": {"mode": "none", "skill": "nature", "dc": None},
+            "enchant": {"mode": "none", "skill": "arcana", "dc": None},
+            "scribe": {"mode": "none", "skill": "arcana", "dc": None},
+        },
+        "tool_policy": {
+            "scribe": {"mode": "off", "tools": ["Calligrapher's Supplies"]},
+        },
+        "item_handling": None,
+    },
+}
+```
+
+`recipe_mode` controls whether recipe data participates in crafting:
+
+| Mode | Behaviour |
+|------|-----------|
+| `raw` | Ignore recipes entirely and use RAW baseline cost/workday tables. |
+| `recipes` | Require a unique matching recipe; no recipe means the command stops. |
+| `mixed` | Use a unique matching recipe when present, otherwise fall back to RAW. This is the default. |
+
+`require_known_spell` controls the RAW scribing gate. When `True` (default), `scribe` requires the resolved spell name to appear in the character's Avrae spellbook before a scroll can be made. Set it to `False` only when the server tracks scroll eligibility outside Avrae. `subsystems.crafting.command_config.scribe.require_known_spell` can override it for the command.
+
+Catalogue values may be an engine slug, a 36-character gvar UUID, an inline list, or an object like `{"gvar_id": "...", "include_engine": True}`. Required command catalogues:
+
+| Command | Required catalogue |
+| --- | --- |
+| `craft` | `items` |
+| `brew` | `potions` |
+| `scribe` | `spells` |
+| `enchant` | `magic_items` |
+
+`checks.<command>.mode` can be `none`, `manual`, or `roll`. RAW defaults to `none`; `manual` prints a reminder, and `roll` uses `rolls.get_roll` with the configured `skill`, optional `ability`, optional `dc`, and `require_success` flag.
+
+`tool_policy.<command>.mode` can be `off`, `manual`, or `check`. `check` can enforce `require_proficiency` through `tools.gvar` (`pTools` / `eTools`) and `require_kit` through the configured bag.
+
+### `economy.config`
 
 Subsystem-level defaults only when no per-command override exists. Prefer **`command_config`** for command-specific costs.
 
@@ -1410,10 +1470,10 @@ Per-command **durations and costs** live under **`subsystems.<subsystem>.command
     "enabled": True,
     "commands": { "craft": True, "brew": True },
     "command_config": {
-        "craft":   { "cooldown_seconds": 0, "workdays_cost": 0 },
-        "brew":    { "cooldown_seconds": 0, "workdays_cost": 0 },
-        "scribe":  { "cooldown_seconds": 0, "workdays_cost": 0 },
-        "enchant": { "cooldown_seconds": 0, "workdays_cost": 0 },
+        "craft":   { "cooldown_seconds": 0 },
+        "brew":    { "cooldown_seconds": 0 },
+        "scribe":  { "cooldown_seconds": 0, "rules_version": "2014" },
+        "enchant": { "cooldown_seconds": 0, "resources": { "downtime": "manual" } },
     },
 },
 "content": {
@@ -1434,7 +1494,12 @@ Per-command **durations and costs** live under **`subsystems.<subsystem>.command
 | Field | Type | Default | Meaning |
 |-------|------|---------|---------|
 | **`cooldown_seconds`** | int | engine default per command | Seconds before the same command can run again; **`0`** = off |
-| **`workdays_cost`** | int | `0` | Workdays deducted on success when downtime is **tracked**; recipe **`workdays`** may add on top when crafting |
+| **`workdays_cost`** | int | `0` | Legacy/simple workday cost for commands that use it; crafting commands now prefer recipe/baseline `workdays` + resource policy |
+| **`rules_version`** | `"2014"` \| `"2024"` | `None` | Crafting command override; default uses `config.get_rules_edition()` via crafting helper |
+| **`resources`** | dict | `{}` | Per-command resource modes overriding `policies.crafting.resources` |
+| **`item_handling`** | str \| dict | `None` | Per-command output override: `"manual"`, `"bags"`, or object with `mode`/bag names |
+| **`consume_required_items`** | bool | command default | For crafting recipes, whether `required` items are consumed when item resources are `deduct` |
+| **`require_known_spell`** | bool | inherited | Scribe-only override for the RAW spellbook gate |
 
 Engine default **`cooldown_seconds`** when omitted from **`command_config`**:
 
@@ -1488,7 +1553,7 @@ House rules and **what the engine enforces** vs what stays narrative/manual. Sto
 | **`time`** | ✓ | `mode` | `world_clock` → **`world_data.calendars`** |
 | **`travel`** | ✓ | `apply_path_costs`, `consume_rations`, `rations_item` | rations item when consume on *(warn)* |
 | **`downtime`** | ✓ | `mode`, `max_workdays`, `acquisition` | **`tracked`** → **`subsystems.downtime.enabled`** |
-| **`crafting`** | ✓ | `require_downtime_before_roll`, `auto_deduct_*` | enforced roll → downtime **tracked** + subsystem on |
+| **`crafting`** | ✓ | `resources`, `item_handling`, legacy `require_downtime_before_roll`, `auto_deduct_*` | resource mode validity; downtime checks need downtime tracking |
 | **`economy`** | ✓ | `enforce_cooldowns`, `enforce_wallet_caps`, `starting_gold` | **`job`** cooldown; caps → **`currencies.*.max_balance`** |
 | **`exploration`** | ✓ | `enforce_cooldowns`, `avoid_repeat_encounters` | repeat on → stats + encounter id in **`add_log`** |
 | **`combat`** | ✓ | `scale_encounters_to_level` *(defer)*, `roll_monster_hp`, `scale_mode`, `max_cr_delta`, `min_cr` *(defer)* | scaling on → warn |
@@ -1519,6 +1584,14 @@ policies = {
         "require_downtime_before_roll": True,
         "auto_deduct_materials": False,
         "auto_deduct_gold": False,
+        "resources": {
+            "gold": "manual",
+            "materials": "manual",
+            "items": "manual",
+            "downtime": "check",
+            "spell_slot": "manual",
+        },
+        "item_handling": None,
     },
     "economy": {
         "enforce_cooldowns": True,
@@ -1526,6 +1599,16 @@ policies = {
         "starting_gold": None,
     },
     "inventory": {
+        "item_handling": {
+            "mode": "manual",
+            "default_bag": "Equipment",
+            "equipment_bag": "Equipment",
+            "crafted_bag": "Equipment",
+            "potions_bag": "Potions",
+            "scrolls_bag": "Scrolls",
+            "magic_items_bag": "Equipment",
+            "materials_bag": "Materials",
+        },
         "track_encumbrance": False,
         "enforce_encumbrance": False,
         "attunement_limit": None,
@@ -1708,7 +1791,7 @@ The web config editor reports errors when:
 
 **Warnings** when:
 
-- **`crafting.require_downtime_before_roll`** is **`True`** but **`downtime.mode`** is not **`tracked`**
+- Any enabled crafting command has downtime resource mode **`check`** or **`deduct`** but **`downtime.mode`** is not **`tracked`**
 - Any enabled crafting command has **`workdays_cost > 0`** in **`command_config`** but downtime is not **tracked**
 - **`acquisition`** is **`world_clock`** but **`policies.time.mode`** is not **`world_clock`**
 
@@ -1716,15 +1799,46 @@ The web config editor reports errors when:
 
 | Key | Type | Default | Meaning |
 |-----|------|---------|---------|
-| `require_downtime_before_roll` | bool | `True` | When **`True`** and downtime **tracked**, block or warn if insufficient workdays before the skill check |
-| `auto_deduct_materials` | bool | `False` | Auto-remove recipe ingredients from bags on success |
-| `auto_deduct_gold` | bool | `False` | Auto-debit gp (and optional wallet costs) on craft/scribe success |
+| `resources.gold` | `"manual"` \| `"check"` \| `"deduct"` | `"manual"` | gp handling |
+| `resources.materials` | `"manual"` \| `"check"` \| `"deduct"` | `"manual"` | recipe `consumed` item handling, usually from the materials bag |
+| `resources.items` | `"manual"` \| `"check"` \| `"deduct"` | `"manual"` | recipe `required` item handling, usually base equipment |
+| `resources.downtime` | `"manual"` \| `"check"` \| `"deduct"` | `"check"` | recipe/baseline workday handling |
+| `resources.spell_slot` | `"manual"` \| `"check"` \| `"deduct"` | `"manual"` | scribe spell-slot handling |
+| `item_handling` | str \| dict \| `None` | `None` | Subsystem-wide output override; per-command overrides win |
+| `require_downtime_before_roll` | bool | `True` | Legacy compatibility; maps to downtime `check` when no explicit resources entry exists |
+| `auto_deduct_materials` | bool | `False` | Legacy compatibility; maps materials/items to `deduct` when no explicit resources entry exists |
+| `auto_deduct_gold` | bool | `False` | Legacy compatibility; maps gold to `deduct` when no explicit resources entry exists |
 
-Workdays spent per command: **`subsystems.crafting.command_config.<cmd>.workdays_cost`** plus recipe **`workdays`** when enforced. **`cooldown_seconds`** on crafting commands is usually **`0`** (westmarch honour system); owners may add cooldowns for spam prevention.
+Resource modes:
 
-westmarch reference: manual gp/downtime/material removal with messaging only unless policies + **`command_config`** enable automation.
+| Mode | Behaviour |
+|------|-----------|
+| `manual` | Do not check or mutate; print what the player gained/costs. |
+| `check` | Verify the character appears to have the resource; do not remove it. |
+| `deduct` | Verify first, then spend/remove the resource before recording output. |
 
-**Check:** **`require_downtime_before_roll`** + any crafting command enabled → **`downtime.mode == "tracked"`** and **`subsystems.downtime.enabled`**.
+Workdays come from `recipe_mode`: `raw` uses only RAW baselines, `recipes` requires recipe rows, and `mixed` uses a unique recipe when present and otherwise falls back to RAW. **`cooldown_seconds`** on crafting commands is usually **`0`**; owners may add cooldowns for spam prevention.
+
+westmarch reference: manual gp/downtime/material removal with messaging only. westmarch-generic keeps manual as the default but supports `check`/`deduct` policies.
+
+**Check:** Any enabled crafting command whose resolved downtime resource mode is **`check`** or **`deduct`** should have **`downtime.mode == "tracked"`** and **`subsystems.downtime.enabled`**.
+
+### `inventory.item_handling`
+
+Controls what commands do with newly gained items.
+
+| Key | Type | Default | Meaning |
+|-----|------|---------|---------|
+| `mode` | `"manual"` \| `"bags"` | `"manual"` | `manual` prints gained text; `bags` writes to the Bags cvar |
+| `default_bag` | str | `"Equipment"` | Generic bag fallback |
+| `equipment_bag` | str | `"Equipment"` | Existing/equipped base item bag |
+| `crafted_bag` | str | `"Equipment"` | Mundane crafted item output |
+| `potions_bag` | str | `"Potions"` | Brew output |
+| `scrolls_bag` | str | `"Scrolls"` | Scribe output |
+| `magic_items_bag` | str | `"Equipment"` | Enchant output |
+| `materials_bag` | str | `"Materials"` | Recipe consumed-material source |
+
+Crafting-specific `item_handling` overrides can appear at `policies.crafting.item_handling`, `subsystems.crafting.config.item_handling`, or `subsystems.crafting.command_config.<cmd>.item_handling`.
 
 ### `economy`
 

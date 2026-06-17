@@ -90,6 +90,65 @@ subsystems = {
             "enchant": False,
             "scribe": False,
         },
+        "config": {
+            # Optional — override only crafting rules; None uses config.get_rules_edition().
+            "rules_version": None,
+            # "raw" ignores recipes, "recipes" requires a matching recipe, "mixed" uses a
+            # recipe when one uniquely matches and otherwise falls back to RAW baselines.
+            "recipe_mode": "mixed",
+            # RAW scribing requires the spell to be one the character can cast. Set False if
+            # your server tracks scroll eligibility outside Avrae.
+            "require_known_spell": True,
+            # Required when enabling commands. Engine catalogues are generic defaults; replace
+            # with your own gvar UUIDs or {"gvar_id": "...", "include_engine": True}.
+            "catalogues": {
+                "items": "engine:catalogues/items",
+                "potions": "engine:catalogues/potions",
+                "spells": "engine:catalogues/spells",
+                "magic_items": "engine:catalogues/magic_items",
+                # Optional list/gvar of recipe rows: id, name, kind, workdays, gold, consumed,
+                # required, spells, tags, description.
+                "recipes": None,
+            },
+            # RAW does not require a roll to complete these crafts. Servers that want rolls can
+            # set a command mode to "manual" or "roll" and provide skill/dc values.
+            "checks": {
+                "craft": {"mode": "none", "skill": None, "ability": None, "dc": None, "require_success": True},
+                "brew": {"mode": "none", "skill": "nature", "ability": None, "dc": None, "require_success": True},
+                "enchant": {"mode": "none", "skill": "arcana", "ability": None, "dc": None, "require_success": True},
+                "scribe": {"mode": "none", "skill": "arcana", "ability": None, "dc": None, "require_success": True},
+            },
+            # Optional tool enforcement. "off" ignores tools, "manual" prints a reminder,
+            # "check" reads pTools/eTools and optionally bag contents.
+            "tool_policy": {
+                "craft": {"mode": "off", "tools": [], "require_proficiency": True, "require_kit": False},
+                "brew": {
+                    "mode": "off",
+                    "tools": ["Herbalism Kit", "Alchemist's Supplies", "Brewer's Supplies"],
+                    "require_proficiency": True,
+                    "require_kit": False,
+                },
+                "enchant": {"mode": "off", "tools": [], "require_proficiency": True, "require_kit": False},
+                "scribe": {
+                    "mode": "off",
+                    "tools": ["Calligrapher's Supplies"],
+                    "require_proficiency": True,
+                    "require_kit": False,
+                },
+            },
+            # Optional command output override, e.g. {"scribe": "manual"} or
+            # {"mode": "bags", "scrolls_bag": "Scrolls"}.
+            "item_handling": None,
+        },
+        # Optional — per-command rules/resources/output overrides.
+        # "command_config": {
+        #     "scribe": {
+        #         "rules_version": "2014",
+        #         "resources": {"downtime": "deduct", "gold": "deduct", "spell_slot": "manual"},
+        #         "item_handling": "manual",
+        #     },
+        #     "enchant": {"resources": {"downtime": "manual", "items": "deduct"}},
+        # },
     },
     "economy": {
         "enabled": False,
@@ -181,6 +240,17 @@ policies = {
         "require_downtime_before_roll": True,
         "auto_deduct_materials": False,
         "auto_deduct_gold": False,
+        # Resource modes: "manual" (tell the player), "check" (block if missing),
+        # or "deduct" (check, then remove/spend).
+        "resources": {
+            "gold": "manual",
+            "materials": "manual",
+            "items": "manual",
+            "downtime": "check",
+            "spell_slot": "manual",
+        },
+        # Optional subsystem-wide output override. Global inventory default is manual.
+        # "item_handling": {"mode": "bags"},
     },
     "economy": {
         "enforce_cooldowns": True,
@@ -188,6 +258,18 @@ policies = {
         "starting_gold": None,
     },
     "inventory": {
+        # Item output policy. "manual" prints "You gained one ..."; "bags" writes to the
+        # Bags cvar. Crafting command_config can override this per command.
+        "item_handling": {
+            "mode": "manual",
+            "default_bag": "Equipment",
+            "equipment_bag": "Equipment",
+            "crafted_bag": "Equipment",
+            "potions_bag": "Potions",
+            "scrolls_bag": "Scrolls",
+            "magic_items_bag": "Equipment",
+            "materials_bag": "Materials",
+        },
         "track_encumbrance": False,
         "enforce_encumbrance": False,
         "attunement_limit": None,

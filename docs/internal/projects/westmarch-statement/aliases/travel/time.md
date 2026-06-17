@@ -78,7 +78,7 @@ See [README.md](README.md). Required when **`policies.time.mode == "world_clock"
 
 ### Config loader integration
 
-1. `auth.is_allowed()`
+1. `auth.is_allowed("time")`
 2. `clock.format_instant(cfg, clock.now(cfg))`
 
 ## Prerequisites

@@ -1,0 +1,38 @@
+!enchant help
+---
+re:Create a magic item
+---
+name: enchant help displays usage
+vars:
+  svars:
+    westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa43"
+  gvars:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa43: |
+      subsystems = {
+          "crafting": {
+              "enabled": True,
+              "commands": {"enchant": True},
+          },
+      }
+
+!enchant "Cloak of Protection"
+---
+"re:Crafted \\*\\*Cloak of Protection\\*\\*"
+---
+name: enchant creates magic item manually
+vars:
+  svars:
+    westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa93"
+  gvars:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa93: |
+      subsystems = {
+          "crafting": {
+              "enabled": True,
+              "commands": {"enchant": True},
+              "config": {"catalogues": {"magic_items": "engine:catalogues/magic_items"}},
+          },
+      }
+      policies = {
+          "crafting": {"resources": {"downtime": "manual", "gold": "manual", "items": "manual"}},
+          "inventory": {"item_handling": {"mode": "manual"}},
+      }

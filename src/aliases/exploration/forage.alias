@@ -6,12 +6,13 @@ using(
     exploration = env.gvars.exploration,
 )
 
-ok, msg = auth.is_allowed()
-get_embed = display.get_display()
+COMMAND = "forage"
+ok, msg = auth.is_allowed(COMMAND)
+get_embed = display.get_display(COMMAND)
 
 if not ok:
     return get_embed(desc=msg)
 
 argslist = &ARGS&
-return exploration.run_activity("forage", argslist, get_embed)
+return exploration.run_activity(COMMAND, argslist, get_embed)
 </drac2>

@@ -129,3 +129,12 @@ return not ok and "off" in msg
 True
 ---
 name: modify_downtime rejects off mode
+
+return pc.get_bag_count(character(), "Arnica", "Materials") == 2
+---
+True
+---
+name: get_bag_count reads configured bag cvar
+character:
+  cvars:
+    bags: '[["Materials", {"Arnica": 2}]]'

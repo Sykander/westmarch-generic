@@ -10,9 +10,9 @@ Shared **engine workshop** modules under `src/gvars/`. Aliases `using()` these v
 |------|-----|-------|------|
 | **core/** *(commands, embeds, rolls, …)* | [core.md](core.md) | 0–1 | Vendored drac2-tools helpers — one workshop, no external `env` UUIDs |
 | **config** | [config.md](config.md) | 0 | `get_config()` — lazy cache + defaults merge |
-| **display** | [display.md](display.md) | 0 | `get_display()` → configured **`embeds.get_embed`** for ctx |
+| **display** | [display.md](display.md) | 0 | `get_display(command)` → configured **`embeds.get_embed`** for a command key |
 | **world_data** | [world_data.md](world_data.md) | — | Config shape doc (owner gvar, not engine module) |
-| **auth** | [auth.md](auth.md) | 0 | `is_allowed()` — roles, `subsystems`, channel policy |
+| **auth** | [auth.md](auth.md) | 0 | `is_allowed(command)` — roles, `subsystems`, channel policy |
 | **pc** | [pc.md](pc.md) | 0–1 | Player character state — gp, wallet, bags, downtime; cooldown reads from stats |
 | **stats** | [stats.md](stats.md) | 0–1 | **`add_log()`** — per-command usage, cooldown timestamps, exploration aggregates |
 | **encounter_templates** | [encounter_templates.md](encounter_templates.md) | 0–1 | Build [encounter](../data-shapes.md#encounter-input) dicts |
@@ -34,7 +34,7 @@ Shared **engine workshop** modules under `src/gvars/`. Aliases `using()` these v
 | **quests** | [quests.md](quests.md) | 1 | Quest log cvars — **`!quest`** |
 | **recipe** | [recipe.md](recipe.md) | 1 | Recipe search / format — **`!recipe`** |
 | **diary** | [diary.md](diary.md) | post-MVP | Personal RP journal cvars — **`!diary`** |
-| **crafting** | *(doc TBD)* | 1 | Shared craft DC / proficiency helpers |
+| **crafting** | [crafting.md](crafting.md) | 1 | Shared crafting catalogue, rules-edition, resource, and output helper |
 | **configs/** *(example server configs)* | [configs.md](configs.md) | 1+ | Prefab setting modules — FR, generic, Spelljammer; tests + onboarding |
 
 Shared shapes: [data-shapes.md](../data-shapes.md).

@@ -3,9 +3,6 @@
 re:not configured
 ---
 name: blocks without server config
-vars:
-  uvars:
-    _wm_command: forage
 
 !forage
 ---
@@ -13,8 +10,6 @@ title: Forage
 ---
 name: passes auth when exploration forage enabled
 vars:
-  uvars:
-    _wm_command: forage
   svars:
     westmarch_config: "eeee1111-1111-1111-1111-111111111111"
   gvars:
@@ -32,8 +27,6 @@ re:disabled on this server
 ---
 name: rejects disabled forage command
 vars:
-  uvars:
-    _wm_command: forage
   svars:
     westmarch_config: "eeee2222-2222-2222-2222-222222222222"
   gvars:
@@ -51,8 +44,6 @@ title: Forage
 ---
 name: help stub when forage enabled
 vars:
-  uvars:
-    _wm_command: forage
   svars:
     westmarch_config: "eeee1111-1111-1111-1111-111111111111"
   gvars:
@@ -70,8 +61,6 @@ re:Wild mushrooms
 ---
 name: "manual biome rolls forage encounter from pool"
 vars:
-  uvars:
-    _wm_command: forage
   svars:
     westmarch_config: "eeee3333-3333-3333-3333-333333333333"
   gvars:
@@ -100,8 +89,6 @@ re:biome
 ---
 name: "argument mode requires biome code"
 vars:
-  uvars:
-    _wm_command: forage
   svars:
     westmarch_config: "eeee3333-3333-3333-3333-333333333333"
   gvars:
@@ -127,8 +114,6 @@ re:registered|unknown|invalid
 ---
 name: "unknown biome code rejected"
 vars:
-  uvars:
-    _wm_command: forage
   svars:
     westmarch_config: "eeee3333-3333-3333-3333-333333333333"
   gvars:
@@ -154,8 +139,6 @@ re:forest|Biome|Usage
 ---
 name: "help lists registered biome codes"
 vars:
-  uvars:
-    _wm_command: forage
   svars:
     westmarch_config: "eeee3333-3333-3333-3333-333333333333"
   gvars:
@@ -181,8 +164,6 @@ re:cooldown|wait|seconds
 ---
 name: "cooldown blocks repeat use"
 vars:
-  uvars:
-    _wm_command: forage
   cvars:
     wg_stats: '{"forage": {"last_used_at": 9999999999}}'
   svars:
@@ -215,8 +196,6 @@ re:Wild mushrooms
 ---
 name: "location mode infers biome from character location"
 vars:
-  uvars:
-    _wm_command: forage
   svars:
     westmarch_config: "eeee3334-3334-3334-3334-333333333334"
   gvars:
@@ -259,8 +238,6 @@ re:Wild mushrooms[\s\S]*Arrived in[\s\S]*Oakwood Forest[\s\S]*Completed
 ---
 name: activity-specific journey step completes after successful forage
 vars:
-  uvars:
-    _wm_command: forage
   cvars:
     wg_location: "river_town"
     wg_journey: '{"title":"River Town -> Oakwood Forest","from":"river_town","to":"oakwood","paths":[{"from":"river_town","to":"oakwood","steps":[{"type":"encounter","activity":"forage","biome":"forest"}]}],"path_index":0,"step_index":0,"horse":false,"boat":false}'

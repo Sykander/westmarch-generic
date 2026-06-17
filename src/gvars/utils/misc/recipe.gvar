@@ -1,6 +1,260 @@
-"""recipe.gvar — placeholder.
+"""recipe.gvar - optional server recipe catalogue lookup."""
 
-See docs/internal/projects/westmarch-statement/gvars/recipe.md
-"""
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(
+    config = env.gvars.config,
+    dicts = env.gvars.dicts,
+    lists = env.gvars.lists,
+)
 
-# TODO: implement recipe module
+
+def _read_field(obj, key):
+    if obj == None:
+        return None
+    if dicts.is_dict(obj):
+        if key in obj:
+            return obj[key]
+        return None
+    try:
+        return obj[key]
+    except:
+        pass
+    try:
+        return obj.get(key)
+    except:
+        pass
+    attrs = {
+        "subsystems": lambda o: o.subsystems,
+        "crafting": lambda o: o.crafting,
+        "config": lambda o: o.config,
+        "catalogues": lambda o: o.catalogues,
+        "recipes": lambda o: o.recipes,
+        "entries": lambda o: o.entries,
+        "gvar_id": lambda o: o.gvar_id,
+        "world_data": lambda o: o.world_data,
+        "extensions": lambda o: o.extensions,
+        "id": lambda o: o.id,
+        "name": lambda o: o.name,
+        "kind": lambda o: o.kind,
+        "workdays": lambda o: o.workdays,
+        "gold": lambda o: o.gold,
+        "consumed": lambda o: o.consumed,
+        "required": lambda o: o.required,
+        "spells": lambda o: o.spells,
+        "tools": lambda o: o.tools,
+        "tags": lambda o: o.tags,
+        "description": lambda o: o.description,
+    }
+    if key in attrs:
+        try:
+            return attrs[key](obj)
+        except:
+            pass
+    return None
+
+
+def _cfg(config_override=None):
+    if config_override != None:
+        return config_override
+    return config.get_config()
+
+
+def _query_text(query):
+    if query == None:
+        return ""
+    return str(query).strip()
+
+
+def _entries_from(data):
+    if data == None:
+        return []
+    if lists.is_list(data):
+        return data
+    if dicts.is_dict(data):
+        entries = []
+        for key in data:
+            entries.append(data[key])
+        return entries
+    return []
+
+
+def _load_json_entries(body):
+    if body == None or str(body).strip() == "":
+        return []
+    try:
+        return _entries_from(load_json(body))
+    except:
+        return []
+
+
+def _recipe_config(cfg):
+    subs = _read_field(cfg, "subsystems")
+    crafting = _read_field(subs, "crafting")
+    c_cfg = _read_field(crafting, "config")
+    catalogues = _read_field(c_cfg, "catalogues")
+    source = _read_field(catalogues, "recipes")
+    if source != None:
+        return source
+    wd = _read_field(cfg, "world_data")
+    source = _read_field(wd, "recipes")
+    if source != None:
+        return source
+    wd_catalogues = _read_field(wd, "catalogues")
+    source = _read_field(wd_catalogues, "recipes")
+    if source != None:
+        return source
+    ext = _read_field(cfg, "extensions")
+    return _read_field(ext, "recipes")
+
+
+def _entries_from_source(source):
+    if source == None:
+        return []
+    if lists.is_list(source):
+        return source
+    if dicts.is_dict(source):
+        entries = _entries_from(_read_field(source, "entries"))
+        gvar_id = _read_field(source, "gvar_id")
+        if gvar_id != None and str(gvar_id).strip() != "":
+            entries += _entries_from_source(str(gvar_id).strip())
+        return entries
+    text = str(source).strip()
+    if text == "" or text.startswith("engine:"):
+        return []
+    return _load_json_entries(get_gvar(text))
+
+
+def _recipe_name(entry):
+    name = _read_field(entry, "name")
+    if name == None:
+        return ""
+    return str(name).strip()
+
+
+def _recipe_kind(entry):
+    kind = _read_field(entry, "kind")
+    if kind == None:
+        return ""
+    return str(kind).strip().lower()
+
+
+def catalogue_entries(config_override=None, kind=None):
+    entries = []
+    wanted = None
+    if kind != None:
+        wanted = str(kind).strip().lower()
+    for entry in _entries_from_source(_recipe_config(_cfg(config_override))):
+        if wanted != None and wanted != "" and _recipe_kind(entry) != wanted:
+            continue
+        entries.append(entry)
+    return entries
+
+
+def search_matches(config_override, query, kind=None):
+    text = _query_text(query)
+    if text == "":
+        return []
+    return lists.search_list_by_key(catalogue_entries(config_override, kind), "name", text)
+
+
+def name_matches(config_override, query, kind=None):
+    matches = []
+    for entry in search_matches(config_override, query, kind):
+        matches.append(_recipe_name(entry))
+    return matches
+
+
+def format_match_names(matches, limit=5):
+    shown = []
+    count = 0
+    for name in matches:
+        if count >= limit:
+            break
+        shown.append(f"**{str(name)}**")
+        count += 1
+    text = ", ".join(shown)
+    if len(matches) > limit:
+        text += ", ..."
+    return text
+
+
+def match_error(query, matches=None):
+    if matches == None:
+        matches = []
+    text = _query_text(query)
+    if len(matches) == 0:
+        return f"Found no recipe matches for **{text}**."
+    if len(matches) == 1:
+        return None
+    return f"Be more specific: **{text}** matched {format_match_names(matches)}."
+
+
+def resolve(config_override, query, kind=None):
+    recipe_matches = search_matches(config_override, query, kind)
+    matches = []
+    for match in recipe_matches:
+        matches.append(_recipe_name(match))
+    if len(matches) != 1:
+        return None, matches, match_error(query, matches)
+    return recipe_matches[0], matches, None
+
+
+def recipe_name(entry):
+    name = _recipe_name(entry)
+    if name == "":
+        return "Unknown Recipe"
+    return name
+
+
+def recipe_kind(entry):
+    return _recipe_kind(entry)
+
+
+def recipe_workdays(entry):
+    raw = _read_field(entry, "workdays")
+    if raw == None:
+        return None
+    try:
+        return int(raw)
+    except:
+        return None
+
+
+def recipe_gold(entry):
+    raw = _read_field(entry, "gold")
+    if raw == None:
+        return None
+    try:
+        return float(raw)
+    except:
+        return None
+
+
+def recipe_consumed(entry):
+    raw = _read_field(entry, "consumed")
+    if lists.is_list(raw):
+        return raw
+    return []
+
+
+def recipe_required(entry):
+    raw = _read_field(entry, "required")
+    if lists.is_list(raw):
+        return raw
+    return []
+
+
+def recipe_spells(entry):
+    raw = _read_field(entry, "spells")
+    if lists.is_list(raw):
+        return raw
+    return []
+
+
+def recipe_tools(entry):
+    raw = _read_field(entry, "tools")
+    if lists.is_list(raw):
+        return raw
+    if raw != None and str(raw).strip() != "":
+        return [str(raw).strip()]
+    return []

@@ -52,50 +52,17 @@ COMMAND_MAP = {
 }
 
 
-def _is_dict(value) -> bool:
-    try:
-        return value == dict(value)
-    except:
-        return False
-
-
-def _alias_name(command_override=None):
-    if command_override != None:
-        text = str(command_override).strip().lower()
-        if text != "" and text in COMMAND_MAP:
-            return text
-    candidates = []
-    try:
-        candidates.append(ctx.command.name)
-    except:
-        pass
-    try:
-        candidates.append(ctx.alias)
-    except:
-        pass
-    try:
-        candidates.append(get_uvar("_wm_command"))
-    except:
-        pass
-    for raw in candidates:
-        if raw == None:
-            continue
-        text = str(raw).strip().lower()
-        if text != "" and text in COMMAND_MAP:
-            return text
+def _command_key(command_override):
+    if command_override == None:
+        return ""
+    text = str(command_override).strip().lower()
+    if text != "" and text in COMMAND_MAP:
+        return text
     return ""
 
 
-def command_name():
-    """Resolved MVP command key for this invocation (for display footer help)."""
-    name = _alias_name()
-    if name == "":
-        return None
-    return name
-
-
-def _resolve_invocation(command_override=None):
-    alias = _alias_name(command_override)
+def _resolve_invocation(command_override):
+    alias = _command_key(command_override)
     if alias == "":
         return None, None, False
     if alias in COMMAND_MAP:
@@ -103,8 +70,8 @@ def _resolve_invocation(command_override=None):
     return None, None, False
 
 
-def resolve_invocation(command_override=None):
-    """Public ctx → (subsystem, command, requires_admin) for display.gvar and tests."""
+def resolve_invocation(command_override):
+    """Public command key → (subsystem, command, requires_admin) for display.gvar and tests."""
     return _resolve_invocation(command_override)
 
 
@@ -426,7 +393,7 @@ def _check_channel(subsystem, requires_admin):
     return True, MSG_ALLOWED
 
 
-def is_allowed(command_override=None):
+def is_allowed(command_override):
     subsystem, command, requires_admin = _resolve_invocation(command_override)
     if subsystem == None:
         return False, MSG_UNKNOWN

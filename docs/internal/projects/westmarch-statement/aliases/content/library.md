@@ -86,7 +86,7 @@ flowchart TD
 
 ### Config loader integration
 
-1. `auth.is_allowed()`
+1. `auth.is_allowed("library")`
 2. **`library.resolve_search_topics(cfg, ch, args, argslist)`** — honour **`content.config`**
 3. Pass book corpus: **`search_by_topics(..., books=cfg.books)`** (API TBD during port)
 4. **`rules_edition`** — languages helper may branch on 2014 vs 2024 ([mvp-commands.md](../../mvp-commands.md))
