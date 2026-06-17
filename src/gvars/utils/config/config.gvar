@@ -111,6 +111,20 @@ DEFAULTS = {
                 "sell": False,
                 "wallet": False,
             },
+            "command_config": {
+                "job": {
+                    "cooldown_seconds": 28800,
+                    "workdays_cost": 0,
+                    "payout_bands": [
+                        {"max": 0, "roll": "0"},
+                        {"max": 5, "roll": "1d4-1"},
+                        {"max": 10, "roll": "1d4+1"},
+                        {"max": 15, "roll": "1d6+1"},
+                        {"max": 20, "roll": "1d8+2"},
+                        {"roll": "1d8+3"},
+                    ],
+                },
+            },
         },
         "content": {
             "enabled": False,
@@ -121,6 +135,11 @@ DEFAULTS = {
             "config": {
                 "library_topic_source": "manual",
                 "allowed_topics": [],
+                "books": None,
+            },
+            "command_config": {
+                "library": {"cooldown_seconds": 120},
+                "read": {"cooldown_seconds": 28800},
             },
         },
         "misc": {
@@ -238,6 +257,7 @@ OWNER_TOP_LEVEL_KEYS = [
     "extensions",
     "currencies",
     "shops",
+    "books",
 ]
 
 
@@ -358,6 +378,11 @@ def _read_mod_field(mod, key):
     try:
         if key == "shops":
             return mod.shops
+    except:
+        pass
+    try:
+        if key == "books":
+            return mod.books
     except:
         pass
     return None

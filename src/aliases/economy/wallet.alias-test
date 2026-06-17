@@ -1,0 +1,37 @@
+!wallet
+---
+re:shards[\s\S]*Arcane Shards
+---
+name: wallet lists configured balances
+vars:
+  cvars:
+    wg_wallet_shards: "2"
+  svars:
+    westmarch_config: "eeee1000-1000-1000-1000-100000000001"
+  gvars:
+    eeee1000-1000-1000-1000-100000000001: |
+      subsystems = {
+          "economy": {"enabled": True, "commands": {"wallet": True}},
+      }
+      currencies = {
+          "shards": {"name": "Arcane Shard", "plural": "Arcane Shards", "symbol": "◇"},
+      }
+
+!wallet shard
+---
+re:Balance:[\s\S]*Arcane Shards
+---
+name: wallet resolves a single currency
+vars:
+  cvars:
+    wg_wallet_shards: "2"
+  svars:
+    westmarch_config: "eeee1000-1000-1000-1000-100000000001"
+  gvars:
+    eeee1000-1000-1000-1000-100000000001: |
+      subsystems = {
+          "economy": {"enabled": True, "commands": {"wallet": True}},
+      }
+      currencies = {
+          "shards": {"name": "Arcane Shard", "plural": "Arcane Shards", "symbol": "◇"},
+      }

@@ -27,6 +27,8 @@ Engine gvars read **`world_data`** — they do not duplicate it:
 | [clock.gvar](clock.md) | **`calendars`**, location **`calendar_id`** |
 | [biomes.gvar](biomes.md) | **`biomes`** registry → lazy-load gvar bodies |
 | [encounter_lists.gvar](encounter_lists.md) | biome JSON rows via **`biomes.gvar`** |
+| [items.gvar](items.md) | **`items`** / **`catalogues.items`** owner item overlays |
+| [library.gvar](library.md) | **`books`**, **`book_gvar_ids`**, **`book_gvars`** |
 
 ## Travel / location requirement
 

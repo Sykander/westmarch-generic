@@ -1,6 +1,1011 @@
-"""library.gvar — placeholder.
+"""library.gvar - config-backed book search, recall, and comprehension."""
 
-See docs/internal/projects/westmarch-statement/gvars/library.md
-"""
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(
+    config = env.gvars.config,
+    dicts = env.gvars.dicts,
+    journeys = env.gvars.journeys,
+    languages = env.gvars.languages,
+    lists = env.gvars.lists,
+    rolls = env.gvars.rolls,
+)
 
-# TODO: implement library module
+CVAR_BOOK_COMPREHENSION = "wg_book_comprehension"
+_DAY_SEC = 86400
+_STALE_BASE_DAYS = 100
+_STALE_KEEN_EXTRA_DAYS = 30
+_MAX_CV_CHARS = 10000
+_POOL_TARGET = 20
+_QUICK_BODY_LEN = 120
+_MAX_TOPIC_WORDS = 8
+_MAX_TOPIC_EXPANDED = 14
+_READ_SKILLS_FALLBACK = ["history", "investigation", "nature", "religion", "arcana", "insight", "medicine"]
+_RARITY_RANK = {"common": 0, "uncommon": 1, "rare": 2, "very rare": 3, "legendary": 4, "ancient": 4}
+_TOPIC_READ_SKILL = {
+    "adventure": "investigation",
+    "alchemy": "arcana",
+    "arcane": "arcana",
+    "beasts": "nature",
+    "cave": "nature",
+    "city": "history",
+    "commentary": "insight",
+    "commerce": "investigation",
+    "cooking": "nature",
+    "craft": "investigation",
+    "crime": "investigation",
+    "dragon": "history",
+    "dungeon": "investigation",
+    "dwarf": "history",
+    "elves": "history",
+    "engineering": "investigation",
+    "fairy": "arcana",
+    "fey": "arcana",
+    "fish": "nature",
+    "forage": "nature",
+    "forest": "nature",
+    "geography": "nature",
+    "healing": "medicine",
+    "history": "history",
+    "intrigue": "investigation",
+    "law": "history",
+    "magic": "arcana",
+    "math": "arcana",
+    "mining": "nature",
+    "mountain": "nature",
+    "mystery": "investigation",
+    "nature": "nature",
+    "north": "history",
+    "philosophy": "insight",
+    "plane": "arcana",
+    "politics": "history",
+    "practical": "investigation",
+    "religion": "religion",
+    "river": "nature",
+    "road": "nature",
+    "sea": "nature",
+    "social": "insight",
+    "tales": "history",
+    "travel": "nature",
+    "undead": "religion",
+    "underdark": "nature",
+    "war": "history",
+    "water": "nature",
+    "wilderness": "nature",
+}
+_TAG_ALIASES = {
+    "arcanum": "arcane",
+    "brew": "alchemy",
+    "cavern": "cave",
+    "chronicle": "history",
+    "clues": "investigation",
+    "coast": "sea",
+    "draconic": "dragon",
+    "drake": "dragon",
+    "dwarven": "dwarf",
+    "elven": "elves",
+    "fishing": "fish",
+    "geographic": "geography",
+    "herbs": "forage",
+    "lore": "history",
+    "magic": "arcane",
+    "medicine": "healing",
+    "ore": "mining",
+    "path": "road",
+    "planar": "plane",
+    "potion": "alchemy",
+    "route": "road",
+    "spell": "arcane",
+    "woods": "forest",
+    "wyrm": "dragon",
+}
+
+
+def _read_field(obj, key):
+    if obj == None:
+        return None
+    if dicts.is_dict(obj):
+        if key in obj:
+            return obj[key]
+        return None
+    try:
+        return obj[key]
+    except:
+        pass
+    try:
+        return obj.get(key)
+    except:
+        pass
+    attrs = {
+        "subsystems": lambda o: o.subsystems,
+        "content": lambda o: o.content,
+        "config": lambda o: o.config,
+        "library_topic_source": lambda o: o.library_topic_source,
+        "allowed_topics": lambda o: o.allowed_topics,
+        "books": lambda o: o.books,
+        "book_gvar_ids": lambda o: o.book_gvar_ids,
+        "book_gvars": lambda o: o.book_gvars,
+        "entries": lambda o: o.entries,
+        "gvar_id": lambda o: o.gvar_id,
+        "gvar_ids": lambda o: o.gvar_ids,
+        "gvars": lambda o: o.gvars,
+        "world_data": lambda o: o.world_data,
+        "extensions": lambda o: o.extensions,
+        "locations": lambda o: o.locations,
+        "library_topics": lambda o: o.library_topics,
+        "biome": lambda o: o.biome,
+        "commands": lambda o: o.commands,
+        "activities": lambda o: o.activities,
+        "name": lambda o: o.name,
+        "description": lambda o: o.description,
+        "author": lambda o: o.author,
+        "written": lambda o: o.written,
+        "rarity": lambda o: o.rarity,
+        "language": lambda o: o.language,
+        "tags": lambda o: o.tags,
+        "read_bonus": lambda o: o.read_bonus,
+        "image": lambda o: o.image,
+        "content_link": lambda o: o.content_link,
+    }
+    if key in attrs:
+        try:
+            return attrs[key](obj)
+        except:
+            pass
+    return None
+
+
+def _cfg(config_override=None):
+    if config_override != None:
+        return config_override
+    return config.get_config()
+
+
+def _norm(value):
+    if value == None:
+        return ""
+    return str(value).lower().strip()
+
+
+def _entries_from(data):
+    if data == None:
+        return []
+    if lists.is_list(data):
+        return data
+    if dicts.is_dict(data):
+        entries = []
+        for key in data:
+            entries.append(data[key])
+        return entries
+    return []
+
+
+def _load_json_entries(body):
+    if body == None or str(body).strip() == "":
+        return []
+    try:
+        return _entries_from(load_json(body))
+    except:
+        return []
+
+
+def _entries_from_source(source):
+    if source == None:
+        return []
+    if lists.is_list(source):
+        return source
+    if dicts.is_dict(source):
+        entries = _entries_from(_read_field(source, "entries"))
+        gvar_id = _read_field(source, "gvar_id")
+        if gvar_id != None and str(gvar_id).strip() != "":
+            entries += _entries_from_source(str(gvar_id).strip())
+        for key in ["gvar_ids", "gvars", "book_gvar_ids", "book_gvars"]:
+            gvar_ids = _read_field(source, key)
+            if lists.is_list(gvar_ids):
+                for next_id in gvar_ids:
+                    if next_id != None and str(next_id).strip() != "":
+                        entries += _entries_from_source(str(next_id).strip())
+        return entries
+    text = str(source).strip()
+    if text == "" or text.startswith("engine:"):
+        return []
+    return _load_json_entries(get_gvar(text))
+
+
+def _book_sources(cfg):
+    sources = []
+    subs = _read_field(cfg, "subsystems")
+    content = _read_field(subs, "content")
+    c_cfg = _read_field(content, "config")
+    source = _read_field(c_cfg, "books")
+    if source != None:
+        sources.append(source)
+    for key in ["book_gvar_ids", "book_gvars"]:
+        source = _read_field(c_cfg, key)
+        if source != None:
+            sources.append({"gvar_ids": source})
+    top_books = _read_field(cfg, "books")
+    if top_books != None:
+        sources.append(top_books)
+    wd = _read_field(cfg, "world_data")
+    source = _read_field(wd, "books")
+    if source != None:
+        sources.append(source)
+    for key in ["book_gvar_ids", "book_gvars"]:
+        source = _read_field(wd, key)
+        if source != None:
+            sources.append({"gvar_ids": source})
+    ext = _read_field(cfg, "extensions")
+    source = _read_field(ext, "books")
+    if source != None:
+        sources.append(source)
+    return sources
+
+
+def catalogue_entries(config_override=None):
+    cfg = _cfg(config_override)
+    entries = []
+    for source in _book_sources(cfg):
+        entries += _entries_from_source(source)
+    out = []
+    seen = {}
+    for book in entries:
+        name = _read_field(book, "name")
+        author = _read_field(book, "author")
+        if name == None or str(name).strip() == "":
+            continue
+        key = str(name).strip().lower() + "|" + str(author).strip().lower()
+        if key in seen:
+            continue
+        seen[key] = True
+        out.append(book)
+    return out
+
+
+def _book_lang_token(book):
+    lang = _read_field(book, "language")
+    if lang == None or str(lang).strip() == "":
+        return "Common"
+    return str(lang).strip()
+
+
+def _book_language_display(book):
+    lang = _read_field(book, "language")
+    if lang == None or str(lang).strip() == "":
+        return "-"
+    return str(lang).strip()
+
+
+def _book_store_key(book):
+    return str(_read_field(book, "name") or "") + "|" + str(_read_field(book, "author") or "")
+
+
+def _book_tags(book):
+    tags = _read_field(book, "tags")
+    if lists.is_list(tags):
+        return tags
+    if tags == None:
+        return []
+    return [str(tags)]
+
+
+def _rarity_rank(book):
+    rarity = _norm(_read_field(book, "rarity") or "common")
+    if rarity in _RARITY_RANK:
+        return int(_RARITY_RANK[rarity])
+    return 0
+
+
+def _max_rarity_rank_from_inv(total):
+    t = 0 if total == None else int(total)
+    if t >= 20:
+        return 4
+    if t >= 16:
+        return 3
+    if t >= 12:
+        return 2
+    if t >= 8:
+        return 1
+    return 0
+
+
+def _history_mod(ch):
+    if ch == None:
+        return 0
+    try:
+        for nm, sk in ch.skills:
+            if str(nm).lower() == "history":
+                v = sk.value
+                if v == None:
+                    return 0
+                return int(v)
+    except:
+        pass
+    return 0
+
+
+def _keen_mind(ch):
+    if ch == None:
+        return False
+    try:
+        return "keen mind" in ch.get_cvar("feats", "").lower()
+    except:
+        return False
+
+
+def _grace_days(ch):
+    days = max(1, _history_mod(ch))
+    if _keen_mind(ch):
+        days += 30
+    return days
+
+
+def _stale_cutoff_sec(ch, now):
+    days = int(_STALE_BASE_DAYS)
+    if _keen_mind(ch):
+        days += int(_STALE_KEEN_EXTRA_DAYS)
+    return int(now) - days * int(_DAY_SEC)
+
+
+def _args_has_comprehend(argslist):
+    if argslist == None:
+        return False
+    for token in argslist:
+        text = str(token).lower().strip()
+        if text in ["comprehend", "comprehendlanguages"]:
+            return True
+    return False
+
+
+def _string_mix_int(value):
+    h = 0
+    alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ .,_'|-"
+    for c in str(value):
+        h = (h * 31 + alphabet.find(c)) % 1000003
+        if h < 0:
+            h = -h
+    return int(h)
+
+
+def _read_cvar(ch, key, fallback=None):
+    try:
+        val = ch.get_cvar(key, None)
+        if val != None:
+            return val
+    except:
+        pass
+    try:
+        cvars = ch.cvars
+        if key in cvars:
+            return cvars[key]
+    except:
+        pass
+    try:
+        if exists(key):
+            return get(key)
+    except:
+        pass
+    return fallback
+
+
+def _load_store(ch):
+    raw = _read_cvar(ch, CVAR_BOOK_COMPREHENSION, "{}")
+    try:
+        parsed = load_json(raw)
+    except:
+        parsed = {}
+    if parsed == None or not dicts.is_dict(parsed):
+        return {}
+    by_key = _read_field(parsed, "by_key")
+    if by_key != None and len(parsed) == 1:
+        return by_key
+    return parsed
+
+
+def _save_store(ch, store_map):
+    try:
+        ch.set_cvar(CVAR_BOOK_COMPREHENSION, dump_json(store_map))
+        return True
+    except:
+        pass
+    try:
+        set_cvar(CVAR_BOOK_COMPREHENSION, dump_json(store_map))
+        return True
+    except:
+        return False
+
+
+def _json_len(store_map):
+    try:
+        return len(str(dump_json(store_map)))
+    except:
+        return 0
+
+
+def _prune_store(ch, store_map, now):
+    cut = _stale_cutoff_sec(ch, now)
+    keys = []
+    for key in store_map:
+        keys.append(key)
+    for key in keys:
+        row = store_map.get(key)
+        if row == None:
+            continue
+        ts = int(row.get("last_read_at", 0))
+        if ts > 0 and ts < cut:
+            store_map.pop(key, None)
+    while _json_len(store_map) > int(_MAX_CV_CHARS) and len(store_map) > 0:
+        oldest_key = None
+        oldest_time = None
+        for key in store_map:
+            ts = int(store_map[key].get("last_read_at", 0))
+            if oldest_time == None or ts < oldest_time:
+                oldest_time = ts
+                oldest_key = key
+        if oldest_key == None:
+            break
+        store_map.pop(oldest_key, None)
+
+
+def _canonical_topic_tag(tag_norm):
+    if tag_norm == None:
+        return tag_norm
+    cur = _norm(tag_norm)
+    i = 0
+    while i < 4:
+        key = cur.replace(" ", "").replace("-", "")
+        if key == "" or key not in _TAG_ALIASES:
+            break
+        nxt = _TAG_ALIASES[key]
+        if nxt == cur:
+            break
+        cur = _norm(nxt)
+        i += 1
+    return cur
+
+
+def _read_skill_for_tag(tag_norm):
+    if tag_norm == None or len(tag_norm) == 0:
+        return None
+    canon = _canonical_topic_tag(tag_norm)
+    if canon in _TOPIC_READ_SKILL:
+        return _TOPIC_READ_SKILL[canon]
+    if tag_norm in _TOPIC_READ_SKILL:
+        return _TOPIC_READ_SKILL[tag_norm]
+    for skill in _READ_SKILLS_FALLBACK:
+        if tag_norm == skill or canon == skill:
+            return skill
+    return None
+
+
+def _three_skills(book):
+    out = []
+    for raw in _book_tags(book):
+        if len(out) >= 3:
+            break
+        skill = _read_skill_for_tag(_norm(raw))
+        if skill != None and skill not in out:
+            out.append(skill)
+    for skill in _READ_SKILLS_FALLBACK:
+        if len(out) >= 3:
+            break
+        if skill not in out:
+            out.append(skill)
+    while len(out) < 3:
+        out.append("history")
+    return out[0:3]
+
+
+def _skill_index(book, ch, attempts_n):
+    seed = str(_read_field(book, "name") or "") + "|" + str(ch.name) + "|" + str(_read_field(book, "author") or "") + "|" + str(int(attempts_n))
+    return int(_string_mix_int(seed)) % 3
+
+
+def _read_dc(book):
+    bonus = _read_field(book, "read_bonus")
+    try:
+        bonus = int(bonus)
+    except:
+        bonus = 0
+    return int(10 + _rarity_rank(book) * 3 + min(8, len(_book_tags(book))) + bonus)
+
+
+def _skill_component_score(roll, dc):
+    nat = roll.natural_roll
+    if nat == 20:
+        return 100
+    if nat == 1:
+        return 0
+    if roll.passed == True:
+        return 100
+    total = roll.total
+    if total == None:
+        total = 0
+    gap = int(dc) - int(total)
+    if gap <= 0:
+        return 100
+    if gap <= 4:
+        return 80
+    if gap <= 9:
+        return 50
+    if gap <= 14:
+        return 25
+    if gap <= 19:
+        return 10
+    return 0
+
+
+def _censor_token(word, score, seed_s, wi):
+    if word == None or str(word) == "":
+        return word
+    text = str(word)
+    if len(text) <= 1 or int(score) >= 92:
+        return text
+    hide_pct = 100 - int(max(0, min(100, score)))
+    th = int(max(0, min(99, hide_pct)))
+    h = (_string_mix_int(seed_s + "|" + str(wi))) % 100
+    if h < th:
+        return "□" * len(text)
+    h2 = (_string_mix_int(seed_s + "|h|" + str(wi))) % 100
+    if h2 < th:
+        mid = len(text) // 2
+        return "□" * mid + text[mid:]
+    h3 = (_string_mix_int(seed_s + "|t|" + str(wi))) % 100
+    if h3 < th:
+        mid = len(text) // 2
+        return text[0:mid] + "□" * (len(text) - mid)
+    return text
+
+
+def _censor_line(text, score, seed_s):
+    if text == None:
+        return ""
+    source = str(text)
+    if source.strip() == "":
+        return source
+    out_lines = []
+    wi = 0
+    for line in source.split("\n"):
+        parts = []
+        for word in line.split(" "):
+            if len(word) == 0:
+                continue
+            parts.append(_censor_token(word, score, seed_s, wi))
+            wi += 1
+        out_lines.append(" ".join(parts))
+    return "\n".join(out_lines)
+
+
+def _metadata_line(book, censored_meta, score):
+    if score > 50:
+        author = _read_field(book, "author") or "Unknown"
+        written = _read_field(book, "written") or "-"
+        rarity = _read_field(book, "rarity") or "-"
+        return f"**{author}** · *{written}* · {_book_language_display(book)} · {rarity}"
+    return censored_meta
+
+
+def _book_topic_tags(book):
+    seen = {}
+    out = []
+    for raw in _book_tags(book):
+        tag = _norm(raw)
+        if tag == "":
+            continue
+        canon = _canonical_topic_tag(tag)
+        for token in [tag, canon]:
+            if token != None and token != "" and token not in seen:
+                seen[token] = True
+                out.append(token)
+    return out
+
+
+def _topic_match(book, topics_norm):
+    if len(topics_norm) == 0:
+        return False
+    book_tags = _book_topic_tags(book)
+    for query in topics_norm:
+        for tag in book_tags:
+            if query == tag:
+                return True
+    return False
+
+
+def _lang_score_for_book(ch, book, comprehend):
+    if comprehend:
+        return 100
+    return int(languages.language_comprehension_score(_book_lang_token(book), ch, "script"))
+
+
+def _normalize_topics(topic_phrases):
+    if topic_phrases == None:
+        return []
+    seen = {}
+    out = []
+    for phrase in topic_phrases:
+        if phrase == None:
+            continue
+        parts = []
+        for word in str(phrase).split()[0:int(_MAX_TOPIC_WORDS)]:
+            token = _norm(word)
+            if token != "":
+                parts.append(token)
+        expanded = []
+        for i in range(len(parts)):
+            if len(expanded) >= int(_MAX_TOPIC_EXPANDED):
+                break
+            expanded.append(parts[i])
+            if i + 1 < len(parts) and len(expanded) < int(_MAX_TOPIC_EXPANDED):
+                expanded.append(parts[i] + parts[i + 1])
+        for token in expanded:
+            canon = _canonical_topic_tag(token)
+            for value in [token, canon]:
+                if value == None or value == "":
+                    continue
+                if value not in seen:
+                    seen[value] = True
+                    out.append(value)
+    return out
+
+
+def _build_topic_pool(books, topics_norm, ch, inv_total):
+    max_rank = _max_rarity_rank_from_inv(inv_total)
+    candidates = []
+    for book in books:
+        if _rarity_rank(book) <= max_rank:
+            candidates.append(book)
+    if len(candidates) == 0:
+        candidates = books[:]
+    relevant = []
+    unrelated = []
+    for book in candidates:
+        if _topic_match(book, topics_norm):
+            relevant.append(book)
+        else:
+            unrelated.append(book)
+    if len(relevant) == 0:
+        relevant = candidates[:]
+    pool = []
+    take_relevant = int(_POOL_TARGET)
+    if inv_total != None and int(inv_total) < 10:
+        take_relevant = int(_POOL_TARGET / 2)
+    if len(relevant) > 0:
+        count = min(take_relevant, len(relevant))
+        if count > 0:
+            pool.extend(lists.get_random_from_list(relevant, count))
+    need = int(_POOL_TARGET) - len(pool)
+    if need > 0 and len(unrelated) > 0:
+        count2 = min(need, len(unrelated))
+        if count2 > 0:
+            pool.extend(lists.get_random_from_list(unrelated, count2))
+    if len(pool) == 0 and len(candidates) > 0:
+        pool.append(lists.get_random_from_list(candidates, 1)[0])
+    return pool
+
+
+def _topic_source(cfg):
+    content = _read_field(_read_field(cfg, "subsystems"), "content")
+    c_cfg = _read_field(content, "config")
+    mode = _read_field(c_cfg, "library_topic_source")
+    if mode == None or str(mode).strip() == "":
+        return "manual"
+    text = str(mode).strip().lower()
+    if text in ["manual", "restricted", "inferred", "balanced"]:
+        return text
+    return "manual"
+
+
+def _allowed_topics(cfg):
+    content = _read_field(_read_field(cfg, "subsystems"), "content")
+    c_cfg = _read_field(content, "config")
+    raw = _read_field(c_cfg, "allowed_topics")
+    if lists.is_list(raw):
+        return raw
+    return []
+
+
+def _looks_like_topic(token):
+    if token == None:
+        return False
+    text = str(token).strip()
+    if text == "":
+        return False
+    low = text.lower()
+    if low in ["comprehend", "comprehendlanguages", "adv", "dis", "eadv", "ea", "guidance"]:
+        return False
+    if text.startswith("-"):
+        return False
+    return True
+
+
+def _user_topic_blob(argslist):
+    if argslist == None or len(argslist) == 0:
+        return None
+    if not _looks_like_topic(argslist[0]):
+        return None
+    return str(argslist[0]).strip()
+
+
+def infer_topics(config_override, ch):
+    cfg = _cfg(config_override)
+    topics = []
+    try:
+        loc_id, loc = journeys.get_location(ch, cfg)
+    except:
+        loc = None
+    loc_topics = _read_field(loc, "library_topics")
+    if lists.is_list(loc_topics):
+        for topic in loc_topics:
+            topics.append(str(topic))
+    biome = _read_field(loc, "biome")
+    if biome != None and str(biome).strip() != "":
+        topics.append(str(biome))
+    commands = _read_field(loc, "commands")
+    if commands == None:
+        commands = _read_field(loc, "activities")
+    if dicts.is_dict(commands):
+        for key in commands:
+            value = commands[key]
+            if lists.is_list(value):
+                for item in value:
+                    topics.append(str(item))
+    return _normalize_topics(topics)
+
+
+def _restricted_error(cfg, user_blob):
+    allowed = _allowed_topics(cfg)
+    if len(allowed) == 0:
+        return "This library is restricted, but no allowed topics are configured."
+    allowed_norm = []
+    for item in allowed:
+        allowed_norm += _normalize_topics([item])
+        allowed_norm.append(_norm(item))
+    for token in _normalize_topics([user_blob]):
+        ok = False
+        for allowed_token in allowed_norm:
+            if token == allowed_token or allowed_token.startswith(token) or token.startswith(allowed_token):
+                ok = True
+                break
+        if not ok:
+            return "Allowed topics: " + ", ".join([f"**{str(item)}**" for item in allowed[0:10]]) + "."
+    return None
+
+
+def resolve_search_topics(config_override, ch, args, argslist):
+    cfg = _cfg(config_override)
+    mode = _topic_source(cfg)
+    user_blob = _user_topic_blob(argslist)
+    user_topics = _normalize_topics([user_blob]) if user_blob != None else []
+    inferred = infer_topics(cfg, ch)
+    if mode == "manual":
+        if len(user_topics) == 0:
+            return [], "Provide a library topic as the first argument."
+        return user_topics, None
+    if mode == "restricted":
+        if len(user_topics) == 0:
+            return [], "Provide an allowed library topic as the first argument."
+        err_msg = _restricted_error(cfg, user_blob)
+        if err_msg != None:
+            return [], err_msg
+        return user_topics, None
+    if mode == "inferred":
+        if user_blob != None:
+            return [], "This library infers topics from your current situation; leave the topic argument blank."
+        if len(inferred) == 0:
+            return [], "Not enough activity to suggest library topics yet."
+        return inferred, None
+    topics = inferred[:]
+    for topic in user_topics:
+        if topic not in topics:
+            topics.append(topic)
+    if len(topics) == 0:
+        return [], "Not enough activity to suggest library topics yet. Add a topic to search manually."
+    return topics, None
+
+
+def read_book(book, character, args, mode, argslist=None):
+    ch = character
+    if ch == None:
+        ch = character()
+    if ch == None:
+        err("No character for read_book.")
+    if argslist == None:
+        argslist = []
+    comprehend = _args_has_comprehend(argslist)
+    lang_score = _lang_score_for_book(ch, book, comprehend)
+    impossible = (lang_score <= 0) and (not comprehend)
+    key = _book_store_key(book)
+    store = _load_store(ch)
+    row = store.get(key)
+    if row == None:
+        row = {"read_attempts": 0, "last_read_at": 0, "last_comprehension_score": 0}
+    prev_attempts = int(row.get("read_attempts", 0))
+    prev_last = int(row.get("last_read_at", 0))
+    prev_score = int(row.get("last_comprehension_score", 0))
+    now = int(floor(time()))
+    days_since = 0.0
+    if prev_last > 0:
+        days_since = float(now - prev_last) / float(_DAY_SEC)
+    days_decayed = 0
+    if prev_last > 0:
+        days_decayed = int(max(0, int(floor(days_since)) - int(_grace_days(ch))))
+    memory = 0
+    if days_decayed < 100:
+        memory = int(round(float(prev_score) * (0.9 ** float(days_decayed))))
+    lang_bonus = int(max(0, (int(lang_score) - 50) // 5))
+    skill_comp = 0
+    roll_obj = None
+    skill_used = None
+    if impossible:
+        memory = 0
+        lang_bonus = 0
+    else:
+        skills = _three_skills(book)
+        idx = _skill_index(book, ch, prev_attempts)
+        skill_used = skills[idx]
+        dc = _read_dc(book)
+        roll_obj = rolls.get_roll(character=ch, roll_name=skill_used, args=args, roll_type="check", dc=int(dc))
+        skill_comp = int(_skill_component_score(roll_obj, dc))
+    if str(mode).lower() == "quick_read":
+        skill_comp = int(skill_comp // 2)
+    blended = int(memory) + int(lang_bonus) + int(skill_comp)
+    final = int(max(0, min(100, blended)))
+    new_attempts = prev_attempts + 1
+    row["read_attempts"] = int(new_attempts)
+    row["last_read_at"] = int(now)
+    if impossible:
+        row["last_comprehension_score"] = int(prev_score)
+    else:
+        row["last_comprehension_score"] = int(final)
+    store[key] = row
+    _prune_store(ch, store, now)
+    _save_store(ch, store)
+
+    seed_body = str(_read_field(book, "name") or "") + "|" + str(ch.name) + "|body"
+    raw_desc = str(_read_field(book, "description") or "")
+    body_for_censor = raw_desc
+    if str(mode).lower() == "quick_read":
+        cap = int(_QUICK_BODY_LEN) + 64
+        if len(body_for_censor) > cap:
+            body_for_censor = body_for_censor[0:cap]
+    if impossible:
+        title_disp = _censor_line(str(_read_field(book, "name") or "Untitled"), 0, seed_body + "|title")
+        meta_c = _censor_line(str(_read_field(book, "author") or "") + " · " + _book_language_display(book), 0, seed_body + "|meta")
+        body_disp = _censor_line(body_for_censor, 0, seed_body)
+        msg = "You cannot decipher this script; the volume might as well be blank to you."
+    else:
+        title_disp = str(_read_field(book, "name") or "Untitled")
+        if final <= 50:
+            title_disp = _censor_line(title_disp, final, seed_body + "|title")
+        meta_c = _censor_line(str(_read_field(book, "author") or "") + " · " + _book_language_display(book), final, seed_body + "|meta")
+        body_disp = _censor_line(body_for_censor, final, seed_body)
+        msg = "You work through the passage."
+        if lang_score <= 50:
+            msg += " The language still feels partly foreign."
+        if roll_obj != None and roll_obj.passed != True:
+            msg += " The arguments and allusions strain you."
+    if str(mode).lower() == "quick_read" and (not impossible) and len(body_disp) > int(_QUICK_BODY_LEN):
+        body_disp = body_disp[0:int(_QUICK_BODY_LEN)] + "..."
+    cb = {
+        "name": title_disp,
+        "metadata_line": _metadata_line(book, meta_c, final),
+        "description": body_disp,
+        "image": _read_field(book, "image"),
+    }
+    return {
+        "comprehended_book": cb,
+        "memory_comprehension_score": int(memory),
+        "language_comprehension_score": int(lang_score),
+        "language_bonus": int(lang_bonus),
+        "book_skill_comprehension_score": int(skill_comp),
+        "book_skill_roll_result": roll_obj,
+        "book_skill_used": skill_used,
+        "last_read_at": int(prev_last),
+        "last_comprehension_score": int(prev_score),
+        "comprehension_score": int(0 if impossible else final),
+        "read_attempts": int(new_attempts),
+        "read_message": msg,
+        "book": book,
+        "impossible": impossible == True,
+        "comprehend_languages": comprehend == True,
+    }
+
+
+def search_by_topics(config_override, topics, character, args, argslist=None):
+    cfg = _cfg(config_override)
+    ch = character
+    if ch == None:
+        ch = character()
+    books = catalogue_entries(cfg)
+    if len(books) == 0:
+        return {"book": None, "roll_result": None, "normalized_topics": _normalize_topics(topics)}
+    normalized = _normalize_topics(topics)
+    inv = rolls.get_roll(character=ch, roll_name="investigation", args=args, roll_type="check")
+    total = inv.total
+    if total == None:
+        total = 0
+    pool = _build_topic_pool(books, normalized, ch, int(total))
+    pick = pool[0]
+    if len(pool) > 1:
+        pick = lists.get_random_from_list(pool, 1)[0]
+    return {"book": pick, "roll_result": inv, "normalized_topics": normalized}
+
+
+def search_by_name(config_override, name, author=None):
+    nq = _norm(name)
+    aq = _norm(author)
+    exact = []
+    partial = []
+    for book in catalogue_entries(config_override):
+        if aq != "":
+            au = _norm(_read_field(book, "author") or "")
+            if au.find(aq) < 0:
+                continue
+        title = _norm(_read_field(book, "name") or "")
+        if nq == "":
+            partial.append(book)
+            continue
+        if title == nq:
+            exact.append(book)
+        elif title.find(nq) >= 0:
+            partial.append(book)
+    if len(exact) > 0:
+        return exact
+    return partial
+
+
+def book_name(book):
+    name = _read_field(book, "name")
+    if name == None or str(name).strip() == "":
+        return "Untitled"
+    return str(name).strip()
+
+
+def book_author(book):
+    author = _read_field(book, "author")
+    if author == None or str(author).strip() == "":
+        return "Unknown"
+    return str(author).strip()
+
+
+def book_image(book):
+    image = _read_field(book, "image")
+    if image == None or str(image).strip() == "":
+        return None
+    return str(image).strip()
+
+
+def read_display(read_result):
+    cb = read_result.get("comprehended_book") or {}
+    title = str(cb.get("name", ""))
+    meta = str(cb.get("metadata_line", ""))
+    body = str(cb.get("description", ""))
+    book = read_result.get("book") or {}
+    link = _read_field(book, "content_link")
+    try:
+        score = int(read_result.get("comprehension_score", 0))
+    except:
+        score = 0
+    if link != None and str(link).strip() != "" and score >= 100:
+        body += "\n\n[Read the full text online](" + str(link).strip() + ")"
+    msg = str(read_result.get("read_message", ""))
+    prev_read = int(read_result.get("last_read_at", 0))
+    attempts_raw = read_result.get("read_attempts", 0)
+    if attempts_raw == None:
+        attempts = 0
+    else:
+        attempts = int(attempts_raw)
+    if prev_read <= 0:
+        prev_text = "--"
+    else:
+        prev_text = "<t:" + str(prev_read) + ">"
+    lines = []
+    lines.append(title)
+    lines.append(meta)
+    lines.append("")
+    lines.append("---")
+    lines.append(body)
+    lines.append("---")
+    lines.append("")
+    lines.append(msg)
+    lines.append("-# **Last read at**: " + prev_text + " · **Attempts**: " + str(attempts))
+    return "\n".join(lines)

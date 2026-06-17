@@ -4,9 +4,49 @@ using(
     auth = env.gvars.auth,
     display = env.gvars.display,
     config = env.gvars.config,
+    lists = env.gvars.lists,
+    pc = env.gvars.pc,
 )
 
 COMMAND = "wallet"
+
+
+def _currency_matches(cfg, query):
+    text = str(query).strip()
+    labels = []
+    label_to_ids = {}
+    for currency_id in pc.list_currency_ids(cfg):
+        for label in [currency_id, pc.currency_name(cfg, currency_id, False), pc.currency_name(cfg, currency_id, True)]:
+            if label == None or str(label).strip() == "":
+                continue
+            key = str(label).strip()
+            labels.append(key)
+            if key not in label_to_ids:
+                label_to_ids[key] = []
+            label_to_ids[key].append(currency_id)
+    matched = lists.search_list(labels, text)
+    found = []
+    seen = {}
+    for label in matched:
+        for currency_id in label_to_ids[label]:
+            key = str(currency_id).lower()
+            if key in seen:
+                continue
+            seen[key] = True
+            found.append(currency_id)
+    return found
+
+
+def _format_matches(matches, cfg):
+    shown = []
+    for currency_id in matches[0:5]:
+        shown.append(f"**{currency_id}** ({pc.currency_name(cfg, currency_id, False)})")
+    text = ", ".join(shown)
+    if len(matches) > 5:
+        text += ", ..."
+    return text
+
+
 ok, msg = auth.is_allowed(COMMAND)
 get_embed = display.get_display(COMMAND)
 cmd_name = COMMAND
@@ -17,16 +57,36 @@ if not ok:
 args = argparse(&ARGS&)
 argslist = &ARGS&
 
-if len(argslist) > 0 and argslist[0] in ["help", "?"]:
-    return get_embed(desc = f"{cmd_name} help is not implemented")
-
 try:
     ch = character()
 except:
     return get_embed(desc = f"{cmd_name} requires a character")
 
+cfg = config.get_config()
 
-return get_embed(
-    desc=f"{cmd_name} is not implemented",
-)
+help_text = f"""Show server-defined wallet currencies.
+
+**Usage**
+`{ctx.prefix}{cmd_name}`
+`{ctx.prefix}{cmd_name} <currency>`"""
+
+if len(argslist) > 0 and argslist[0] in ["help", "?"]:
+    return get_embed(desc=help_text)
+
+ids = pc.list_currency_ids(cfg)
+if len(ids) == 0:
+    return get_embed(desc="No owner-defined wallet currencies are configured. Avrae gp remains on your sheet coinpurse.")
+
+if len(argslist) == 0:
+    lines = pc.wallet_lines(ch, cfg)
+    return get_embed(desc="\n".join(lines))
+
+matches = _currency_matches(cfg, " ".join(argslist))
+if len(matches) == 0:
+    return get_embed(desc=f"Found no currency matches for **{' '.join(argslist)}**.")
+if len(matches) > 1:
+    return get_embed(desc=f"Be more specific: **{' '.join(argslist)}** matched {_format_matches(matches, cfg)}.")
+
+detail = pc.wallet_detail(ch, cfg, matches[0])
+return get_embed(desc=f"**{matches[0]}**\n{detail}")
 </drac2>

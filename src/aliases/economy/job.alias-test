@@ -1,0 +1,36 @@
+!job athletics -b 100
+---
+re:earns[\s\S]*gp
+---
+name: job pays out for a valid skill
+vars:
+  svars:
+    westmarch_config: "eeee1000-1000-1000-1000-100000000005"
+  gvars:
+    eeee1000-1000-1000-1000-100000000005: |
+      subsystems = {
+          "economy": {"enabled": True, "commands": {"job": True}},
+      }
+      policies = {"economy": {"enforce_cooldowns": False}}
+character:
+  skills:
+    athletics:
+      value: 8
+      prof: 1
+      bonus: 0
+      adv: null
+
+!job qqq
+---
+re:was not recognised
+---
+name: job reports unknown skill
+vars:
+  svars:
+    westmarch_config: "eeee1000-1000-1000-1000-100000000005"
+  gvars:
+    eeee1000-1000-1000-1000-100000000005: |
+      subsystems = {
+          "economy": {"enabled": True, "commands": {"job": True}},
+      }
+      policies = {"economy": {"enforce_cooldowns": False}}

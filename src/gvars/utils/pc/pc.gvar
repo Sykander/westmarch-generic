@@ -14,9 +14,12 @@ EXPLORATION_ACTIVITY_COMMANDS = ["enc", "forage", "mine", "fish", "lumber"]
 ZERO_COOLDOWN_COMMANDS = ["hunt", "loot"]
 DEFAULT_EXPLORATION_COOLDOWN = 120
 DEFAULT_JOB_COOLDOWN = 28800
+DEFAULT_LIBRARY_COOLDOWN = 120
+DEFAULT_READ_COOLDOWN = 28800
 CVAR_DOWNTIME = "wg_downtime"
 CVAR_DOWNTIME_START = "wg_downtime_start"
 CVAR_DOWNTIME_USED = "wg_downtime_used"
+CVAR_WALLET_PREFIX = "wg_wallet_"
 
 COIN_VALUES = {
     "cp": 0.01,
@@ -43,12 +46,18 @@ def _read_field(obj, key):
     attrs = {
         "policies": lambda o: o.policies,
         "exploration": lambda o: o.exploration,
+        "economy": lambda o: o.economy,
+        "content": lambda o: o.content,
         "downtime": lambda o: o.downtime,
         "enforce_cooldowns": lambda o: o.enforce_cooldowns,
+        "enforce_library_cooldowns": lambda o: o.enforce_library_cooldowns,
+        "enforce_read_cooldowns": lambda o: o.enforce_read_cooldowns,
+        "enforce_wallet_caps": lambda o: o.enforce_wallet_caps,
         "mode": lambda o: o.mode,
         "max_workdays": lambda o: o.max_workdays,
         "acquisition": lambda o: o.acquisition,
         "subsystems": lambda o: o.subsystems,
+        "currencies": lambda o: o.currencies,
         "command_config": lambda o: o.command_config,
         "enc": lambda o: o.enc,
         "forage": lambda o: o.forage,
@@ -58,6 +67,11 @@ def _read_field(obj, key):
         "hunt": lambda o: o.hunt,
         "loot": lambda o: o.loot,
         "cooldown_seconds": lambda o: o.cooldown_seconds,
+        "name": lambda o: o.name,
+        "plural": lambda o: o.plural,
+        "symbol": lambda o: o.symbol,
+        "description": lambda o: o.description,
+        "max_balance": lambda o: o.max_balance,
         "item": lambda o: o.item,
         "qty": lambda o: o.qty,
         "count": lambda o: o.count,
@@ -148,6 +162,15 @@ def _int_value(value, fallback=0):
             return fallback
 
 
+def _float_value(value, fallback=0):
+    if value == None or str(value).strip() == "":
+        return fallback
+    try:
+        return float(value)
+    except:
+        return fallback
+
+
 def _character_name(ch):
     try:
         return ch.name
@@ -180,6 +203,16 @@ def _coins_total_gp(ch):
 
 
 def _gp_text(value):
+    try:
+        num = float(value)
+    except:
+        return str(value)
+    if num == int(num):
+        return str(int(num))
+    return str(num)
+
+
+def _number_text(value):
     try:
         num = float(value)
     except:
@@ -359,6 +392,146 @@ def modify_gold(ch, gp_delta):
         return False, f"Found **{_gp_text(delta)} gp** (coinpurse not updated)."
 
 
+def _currencies(config_override=None):
+    cfg = _cfg(config_override)
+    raw = _read_field(cfg, "currencies")
+    if raw != None and dicts.is_dict(raw):
+        return raw
+    return {}
+
+
+def list_currency_ids(config_override=None):
+    ids = []
+    for key in _currencies(config_override):
+        ids.append(str(key))
+    ids.sort()
+    return ids
+
+
+def get_currency(config_override, currency_id):
+    if currency_id == None:
+        return None
+    key = str(currency_id).strip()
+    if key == "":
+        return None
+    currencies = _currencies(config_override)
+    cur = _read_field(currencies, key)
+    if cur != None:
+        return cur
+    lower = key.lower()
+    for existing in currencies:
+        if str(existing).strip().lower() == lower:
+            return currencies[existing]
+    return None
+
+
+def currency_name(config_override, currency_id, plural=False):
+    cur = get_currency(config_override, currency_id)
+    if cur == None:
+        return str(currency_id)
+    key = "plural" if plural else "name"
+    label = _read_field(cur, key)
+    if label == None or str(label).strip() == "":
+        if plural:
+            fallback = _read_field(cur, "name")
+            if fallback != None and str(fallback).strip() != "":
+                return str(fallback).strip() + "s"
+        return str(currency_id)
+    return str(label).strip()
+
+
+def currency_symbol(config_override, currency_id):
+    cur = get_currency(config_override, currency_id)
+    symbol = _read_field(cur, "symbol")
+    if symbol == None:
+        return ""
+    return str(symbol).strip()
+
+
+def wallet_cvar_key(currency_id):
+    return CVAR_WALLET_PREFIX + str(currency_id).strip()
+
+
+def get_wallet_balance(ch, currency_id):
+    raw = _read_cvar(ch, wallet_cvar_key(currency_id), 0)
+    return _float_value(raw, 0)
+
+
+def _economy_policy(cfg):
+    policies = _read_field(cfg, "policies")
+    return _read_field(policies, "economy")
+
+
+def _wallet_cap(cfg, currency_id):
+    if _read_field(_economy_policy(cfg), "enforce_wallet_caps") != True:
+        return None
+    cur = get_currency(cfg, currency_id)
+    raw = _read_field(cur, "max_balance")
+    if raw == None or str(raw).strip() == "":
+        return None
+    try:
+        return float(raw)
+    except:
+        return None
+
+
+def modify_wallet(ch, currency_id, delta, config_override=None):
+    cfg = _cfg(config_override)
+    cur = get_currency(cfg, currency_id)
+    if cur == None:
+        return False, f"Unknown currency **{currency_id}**."
+    try:
+        amount = float(delta)
+    except:
+        return False, "Currency amount is invalid."
+    current = get_wallet_balance(ch, currency_id)
+    next_value = current + amount
+    if next_value < 0:
+        return False, f"Not enough {currency_name(cfg, currency_id, True)} - {_character_name(ch)} has **{_number_text(current)}**."
+    cap = _wallet_cap(cfg, currency_id)
+    if cap != None and next_value > cap:
+        return False, f"{currency_name(cfg, currency_id, True)} are capped at **{_number_text(cap)}**."
+    if not _set_cvar(ch, wallet_cvar_key(currency_id), _number_text(next_value)):
+        return False, f"Could not update {currency_name(cfg, currency_id, True)}."
+    label = currency_name(cfg, currency_id, abs(amount) != 1)
+    symbol = currency_symbol(cfg, currency_id)
+    prefix = f"{symbol} " if symbol != "" else ""
+    if amount < 0:
+        return True, f"Spent **{prefix}{_number_text(abs(amount))} {label}**."
+    return True, f"Gained **{prefix}{_number_text(amount)} {label}**."
+
+
+def wallet_lines(ch, config_override=None):
+    cfg = _cfg(config_override)
+    lines = []
+    for currency_id in list_currency_ids(cfg):
+        bal = get_wallet_balance(ch, currency_id)
+        label = currency_name(cfg, currency_id, bal != 1)
+        symbol = currency_symbol(cfg, currency_id)
+        prefix = f"{symbol} " if symbol != "" else ""
+        lines.append(f"**{currency_id}**: {prefix}{_number_text(bal)} {label}")
+    return lines
+
+
+def wallet_detail(ch, config_override, currency_id):
+    cfg = _cfg(config_override)
+    cur = get_currency(cfg, currency_id)
+    if cur == None:
+        return None
+    bal = get_wallet_balance(ch, currency_id)
+    label = currency_name(cfg, currency_id, bal != 1)
+    symbol = currency_symbol(cfg, currency_id)
+    prefix = f"{symbol} " if symbol != "" else ""
+    lines = [f"**Balance:** {prefix}{_number_text(bal)} {label}"]
+    desc = _read_field(cur, "description")
+    if desc != None and str(desc).strip() != "":
+        lines.append(str(desc).strip())
+    cap = _wallet_cap(cfg, currency_id)
+    if cap != None:
+        lines.append(f"**Cap:** {_number_text(cap)}")
+    return "\n".join(lines)
+
+
 def get_spell_slots(ch, level):
     try:
         return int(ch.spellbook.get_slots(int(level)))
@@ -421,13 +594,55 @@ def _exploration_enforce(cfg):
     return val == True
 
 
+def _command_subsystem(command_key):
+    if command_key in EXPLORATION_COMMANDS:
+        return "exploration"
+    if command_key in ["job", "buy", "sell", "wallet"]:
+        return "economy"
+    if command_key in ["library", "read"]:
+        return "content"
+    if command_key in ["quest", "recipe"]:
+        return "misc"
+    return None
+
+
 def _command_config(cfg, command_key):
     sub = _read_field(cfg, "subsystems")
-    exp = _read_field(sub, "exploration")
-    cmd_cfg = _read_field(exp, "command_config")
+    subsystem = _command_subsystem(command_key)
+    block = _read_field(sub, subsystem)
+    cmd_cfg = _read_field(block, "command_config")
     if cmd_cfg == None or not dicts.is_dict(cmd_cfg):
         return None
     return _read_field(cmd_cfg, command_key)
+
+
+def _cooldowns_enforced(cfg, command_key):
+    policies = _read_field(cfg, "policies")
+    if command_key in EXPLORATION_COMMANDS:
+        exp_pol = _read_field(policies, "exploration")
+        val = _read_field(exp_pol, "enforce_cooldowns")
+        if val == None:
+            return True
+        return val == True
+    if command_key == "job":
+        eco_pol = _read_field(policies, "economy")
+        val = _read_field(eco_pol, "enforce_cooldowns")
+        if val == None:
+            return True
+        return val == True
+    if command_key == "library":
+        content_pol = _read_field(policies, "content")
+        val = _read_field(content_pol, "enforce_library_cooldowns")
+        if val == None:
+            return True
+        return val == True
+    if command_key == "read":
+        content_pol = _read_field(policies, "content")
+        val = _read_field(content_pol, "enforce_read_cooldowns")
+        if val == None:
+            return False
+        return val == True
+    return True
 
 
 def cooldown_seconds(command_key, config_override=None):
@@ -446,13 +661,17 @@ def cooldown_seconds(command_key, config_override=None):
         return DEFAULT_EXPLORATION_COOLDOWN
     if command_key == "job":
         return DEFAULT_JOB_COOLDOWN
+    if command_key == "library":
+        return DEFAULT_LIBRARY_COOLDOWN
+    if command_key == "read":
+        return DEFAULT_READ_COOLDOWN
     return 0
 
 
 def check_cooldown(ch, command_key, config_override=None):
     """Return (allowed, seconds_remaining)."""
     cfg = _cfg(config_override)
-    if command_key in EXPLORATION_COMMANDS and not _exploration_enforce(cfg):
+    if not _cooldowns_enforced(cfg, command_key):
         return True, 0
     seconds = cooldown_seconds(command_key, cfg)
     if seconds <= 0:

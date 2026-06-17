@@ -1,0 +1,47 @@
+!recipe "Potion of Healing"
+---
+re:Potion of Healing[\s\S]*Workdays
+---
+name: recipe shows configured recipe detail
+vars:
+  svars:
+    westmarch_config: "ffff1000-1000-1000-1000-100000000002"
+  gvars:
+    ffff1000-1000-1000-1000-100000000002: |
+      subsystems = {
+          "misc": {"enabled": True, "commands": {"recipe": True}},
+          "crafting": {
+              "enabled": True,
+              "config": {
+                  "catalogues": {
+                      "recipes": [
+                          {"name": "Potion of Healing", "kind": "brew", "workdays": 2, "gold": 25, "consumed": [{"item": "Arnica", "qty": 2}]},
+                      ],
+                  },
+              },
+          },
+      }
+
+!recipe ingredient Arnica
+---
+re:Recipes using \*\*Arnica\*\*[\s\S]*Potion of Healing
+---
+name: recipe searches by ingredient
+vars:
+  svars:
+    westmarch_config: "ffff1000-1000-1000-1000-100000000002"
+  gvars:
+    ffff1000-1000-1000-1000-100000000002: |
+      subsystems = {
+          "misc": {"enabled": True, "commands": {"recipe": True}},
+          "crafting": {
+              "enabled": True,
+              "config": {
+                  "catalogues": {
+                      "recipes": [
+                          {"name": "Potion of Healing", "kind": "brew", "workdays": 2, "gold": 25, "consumed": [{"item": "Arnica", "qty": 2}]},
+                      ],
+                  },
+              },
+          },
+      }

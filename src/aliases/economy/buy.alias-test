@@ -1,0 +1,44 @@
+!buy rope
+---
+re:Bought \*\*1x Rope, Hemp \(50 ft\)\*\*
+---
+name: buy purchases a configured stock item
+vars:
+  svars:
+    westmarch_config: "eeee1000-1000-1000-1000-100000000002"
+  gvars:
+    eeee1000-1000-1000-1000-100000000002: |
+      subsystems = {
+          "economy": {"enabled": True, "commands": {"buy": True}},
+      }
+      shops = {
+          "general": {
+              "id": "general",
+              "name": "General Store",
+              "stock": [{"item": "Rope, Hemp (50 ft)", "price": {"gold": 0}}],
+          },
+      }
+character:
+  cvars:
+    bags: '[["Equipment", {}]]'
+
+!buy not-a-real-item
+---
+re:Found no stock matches
+---
+name: buy reports missing stock
+vars:
+  svars:
+    westmarch_config: "eeee1000-1000-1000-1000-100000000002"
+  gvars:
+    eeee1000-1000-1000-1000-100000000002: |
+      subsystems = {
+          "economy": {"enabled": True, "commands": {"buy": True}},
+      }
+      shops = {
+          "general": {
+              "id": "general",
+              "name": "General Store",
+              "stock": [{"item": "Rope, Hemp (50 ft)", "price": {"gold": 0}}],
+          },
+      }

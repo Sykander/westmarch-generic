@@ -1,0 +1,23 @@
+journal = {"quests": {}}
+return quests.format_list(journal, {}, "active") == "No **active** quests."
+---
+True
+---
+name: quests formats empty active list
+
+ok, msg = quests.append_entry(character(), {}, "Find the Scout", "Spoke to the innkeeper.")
+journal = quests.load_journal(character())
+matches = quests.find_quests(journal, "scout")
+return ok and len(matches) == 1 and "Find the Scout" in quests.format_quest(matches[0])
+---
+True
+---
+name: quests append creates and finds quest
+
+ok, msg = quests.append_entry(character(), {}, "Find the Scout", "Spoke to the innkeeper.")
+ok2, msg2 = quests.set_status(character(), "scout", "completed")
+return ok and ok2 and "completed" in msg2
+---
+True
+---
+name: quests can mark quest completed

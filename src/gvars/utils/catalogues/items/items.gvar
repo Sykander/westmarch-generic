@@ -46,6 +46,8 @@ def _read_field(obj, key):
         "magic_items": lambda o: o.magic_items,
         "entries": lambda o: o.entries,
         "gvar_id": lambda o: o.gvar_id,
+        "gvar_ids": lambda o: o.gvar_ids,
+        "gvars": lambda o: o.gvars,
         "include_engine": lambda o: o.include_engine,
         "world_data": lambda o: o.world_data,
         "extensions": lambda o: o.extensions,
@@ -123,6 +125,9 @@ def _catalogue_config(cfg, catalogue):
     if source != None:
         return source
     wd = _read_field(cfg, "world_data")
+    source = _read_field(wd, catalogue)
+    if source != None:
+        return source
     wd_catalogues = _read_field(wd, "catalogues")
     source = _read_field(wd_catalogues, catalogue)
     if source != None:
@@ -141,6 +146,12 @@ def _entries_from_source(source, catalogue):
         gvar_id = _read_field(source, "gvar_id")
         if gvar_id != None and str(gvar_id).strip() != "":
             entries += _entries_from_source(str(gvar_id).strip(), catalogue)
+        for key in ["gvar_ids", "gvars"]:
+            gvar_ids = _read_field(source, key)
+            if lists.is_list(gvar_ids):
+                for next_id in gvar_ids:
+                    if next_id != None and str(next_id).strip() != "":
+                        entries += _entries_from_source(str(next_id).strip(), catalogue)
         if _read_field(source, "include_engine") == True:
             entries = _load_engine(catalogue) + entries
         return entries
@@ -185,6 +196,24 @@ def search_matches(config_override, catalogue, query):
     if text == "":
         return []
     return lists.search_list_by_key(catalogue_entries(config_override, catalogue), "name", text)
+
+
+def exact_matches(config_override, catalogue, query):
+    text = _query_text(query)
+    if text == "":
+        return []
+    exact = []
+    lower = []
+    query_lower = text.lower()
+    for item in catalogue_entries(config_override, catalogue):
+        name = _item_name(item)
+        if name == text:
+            exact.append(item)
+        elif name.lower() == query_lower:
+            lower.append(item)
+    if len(exact) > 0:
+        return exact
+    return lower
 
 
 def name_matches(config_override, catalogue, query):

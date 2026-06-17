@@ -67,7 +67,7 @@ shops = {
 | **`accepts_sells`** | Gate for **`!sell`** |
 | **`buyback`** | Default sell fraction when **`sell_price`** omitted on row |
 
-Item names join [items.md](items.md) display names when catalogue exists; plain strings OK for MVP fixtures.
+Stock item names must exactly match a configured item catalogue display name. The engine checks the bundled item/potion/magic item catalogues plus owner entries from `world_data.items`, `world_data.catalogues.items`, or `extensions.items`.
 
 ## Related
 

@@ -1,0 +1,43 @@
+!quest
+---
+re:No \*\*active\*\* quests
+---
+name: quest lists empty active journal
+vars:
+  svars:
+    westmarch_config: "ffff1000-1000-1000-1000-100000000001"
+  gvars:
+    ffff1000-1000-1000-1000-100000000001: |
+      subsystems = {
+          "misc": {"enabled": True, "commands": {"quest": True}},
+      }
+
+!quest add "Find the Scout" "Spoke to the innkeeper."
+---
+re:Added a note to \*\*Find the Scout\*\*
+---
+name: quest add creates note
+vars:
+  svars:
+    westmarch_config: "ffff1000-1000-1000-1000-100000000001"
+  gvars:
+    ffff1000-1000-1000-1000-100000000001: |
+      subsystems = {
+          "misc": {"enabled": True, "commands": {"quest": True}},
+      }
+
+!quest scout
+---
+re:Find the Scout[\s\S]*Spoke to the innkeeper
+---
+name: quest view finds stored note
+vars:
+  cvars:
+    wg_quests: '{"quests":{"find-the-scout":{"id":"find-the-scout","title":"Find the Scout","status":"active","entries":[{"at":1700000000,"text":"Spoke to the innkeeper."}]}}}'
+  svars:
+    westmarch_config: "ffff1000-1000-1000-1000-100000000001"
+  gvars:
+    ffff1000-1000-1000-1000-100000000001: |
+      subsystems = {
+          "misc": {"enabled": True, "commands": {"quest": True}},
+      }

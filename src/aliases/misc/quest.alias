@@ -4,6 +4,7 @@ using(
     auth = env.gvars.auth,
     display = env.gvars.display,
     config = env.gvars.config,
+    quests = env.gvars.quests,
 )
 
 COMMAND = "quest"
@@ -17,16 +18,60 @@ if not ok:
 args = argparse(&ARGS&)
 argslist = &ARGS&
 
-if len(argslist) > 0 and argslist[0] in ["help", "?"]:
-    return get_embed(desc = f"{cmd_name} help is not implemented")
-
 try:
     ch = character()
 except:
     return get_embed(desc = f"{cmd_name} requires a character")
 
+cfg = config.get_config()
+journal = quests.load_journal(ch)
 
-return get_embed(
-    desc=f"{cmd_name} is not implemented",
-)
+help_text = f"""Track character quest notes.
+
+**Usage**
+`{ctx.prefix}{cmd_name}` / `{ctx.prefix}{cmd_name} completed`
+`{ctx.prefix}{cmd_name} <quest>`
+`{ctx.prefix}{cmd_name} add <quest> <note>`
+`{ctx.prefix}{cmd_name} done <quest>`
+`{ctx.prefix}{cmd_name} active <quest>`"""
+
+if len(argslist) > 0 and argslist[0] in ["help", "?"]:
+    return get_embed(desc=help_text)
+
+if len(argslist) == 0:
+    return get_embed(desc=quests.format_list(journal, cfg, "active"))
+
+sub = str(argslist[0]).strip().lower()
+if sub in ["active", "completed", "done", "all"] and len(argslist) == 1:
+    status = "completed" if sub == "done" else sub
+    return get_embed(desc=quests.format_list(journal, cfg, status))
+
+if sub == "add":
+    if len(argslist) < 3:
+        return get_embed(desc=f"Use `{ctx.prefix}{cmd_name} add <quest> <note>`.")
+    title = str(argslist[1]).strip()
+    note = " ".join([str(token) for token in argslist[2:]]).strip()
+    ok_add, msg_add = quests.append_entry(ch, cfg, title, note)
+    return get_embed(desc=msg_add)
+
+if sub in ["done", "complete", "completed"]:
+    if len(argslist) < 2:
+        return get_embed(desc="Choose a quest to complete.")
+    query = " ".join([str(token) for token in argslist[1:]]).strip()
+    ok_done, msg_done = quests.set_status(ch, query, "completed")
+    return get_embed(desc=msg_done)
+
+if sub in ["reopen", "activate", "active"]:
+    if len(argslist) < 2:
+        return get_embed(desc="Choose a quest to mark active.")
+    query = " ".join([str(token) for token in argslist[1:]]).strip()
+    ok_active, msg_active = quests.set_status(ch, query, "active")
+    return get_embed(desc=msg_active)
+
+query = " ".join([str(token) for token in argslist]).strip()
+matches = quests.find_quests(journal, query)
+error = quests.match_error(query, matches)
+if error != None:
+    return get_embed(desc=error)
+return get_embed(desc=quests.format_quest(matches[0]))
 </drac2>

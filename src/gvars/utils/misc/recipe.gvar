@@ -44,6 +44,8 @@ def _read_field(obj, key):
         "tools": lambda o: o.tools,
         "tags": lambda o: o.tags,
         "description": lambda o: o.description,
+        "at": lambda o: o.at,
+        "text": lambda o: o.text,
     }
     if key in attrs:
         try:
@@ -258,3 +260,82 @@ def recipe_tools(entry):
     if raw != None and str(raw).strip() != "":
         return [str(raw).strip()]
     return []
+
+
+def _format_item_list(entries):
+    if not lists.is_list(entries) or len(entries) == 0:
+        return "-"
+    parts = []
+    for entry in entries:
+        item = _read_field(entry, "item")
+        qty = _read_field(entry, "qty")
+        if qty == None:
+            qty = _read_field(entry, "count")
+        if item == None:
+            continue
+        if qty == None:
+            qty = 1
+        parts.append(f"{qty}x {item}")
+    if len(parts) == 0:
+        return "-"
+    return ", ".join(parts)
+
+
+def _format_spell_list(entries):
+    if not lists.is_list(entries) or len(entries) == 0:
+        return "-"
+    return ", ".join([str(entry) for entry in entries])
+
+
+def format_recipe(entry):
+    if entry == None:
+        return "No recipe selected."
+    lines = [f"**{recipe_name(entry)}**"]
+    kind = recipe_kind(entry)
+    if kind != "":
+        lines.append(f"**Kind:** {kind}")
+    workdays = recipe_workdays(entry)
+    if workdays != None:
+        lines.append(f"**Workdays:** {workdays}")
+    gold = recipe_gold(entry)
+    if gold != None:
+        if gold == int(gold):
+            gold_text = str(int(gold))
+        else:
+            gold_text = str(gold)
+        lines.append(f"**Gold:** {gold_text} gp")
+    tools = recipe_tools(entry)
+    if len(tools) > 0:
+        lines.append("**Tools:** " + ", ".join(tools))
+    lines.append("**Consumed:** " + _format_item_list(recipe_consumed(entry)))
+    lines.append("**Required:** " + _format_item_list(recipe_required(entry)))
+    spells = recipe_spells(entry)
+    if len(spells) > 0:
+        lines.append("**Spells:** " + _format_spell_list(spells))
+    desc = _read_field(entry, "description")
+    if desc != None and str(desc).strip() != "":
+        lines.append("")
+        lines.append(str(desc).strip())
+    return "\n".join(lines)
+
+
+def _entry_items(entry):
+    names = []
+    for group in [recipe_consumed(entry), recipe_required(entry)]:
+        for req in group:
+            item = _read_field(req, "item")
+            if item != None and str(item).strip() != "":
+                names.append(str(item).strip())
+    return names
+
+
+def search_by_ingredient(config_override, query, kind=None):
+    text = _query_text(query)
+    if text == "":
+        return []
+    matches = []
+    for entry in catalogue_entries(config_override, kind):
+        hits = lists.search_list(_entry_items(entry), text)
+        if len(hits) > 0:
+            matches.append(entry)
+    return matches

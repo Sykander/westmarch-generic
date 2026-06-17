@@ -4,9 +4,66 @@ using(
     auth = env.gvars.auth,
     display = env.gvars.display,
     config = env.gvars.config,
+    shops = env.gvars.shops,
 )
 
 COMMAND = "sell"
+
+
+def _clean_tokens(argslist):
+    out = []
+    for token in argslist:
+        text = str(token).strip()
+        if text != "":
+            out.append(text)
+    return out
+
+
+def _split_qty(tokens):
+    if len(tokens) == 0:
+        return tokens, 1
+    try:
+        qty = int(tokens[-1])
+        if qty > 0 and len(tokens) > 1:
+            return tokens[0:-1], qty
+    except:
+        pass
+    return tokens, 1
+
+
+def _join(tokens):
+    return " ".join([str(token) for token in tokens]).strip()
+
+
+def _shop_names(cfg, ch):
+    loc_id = shops.character_location_id(ch, cfg)
+    names = []
+    for shop in shops.list_shops(cfg, loc_id, True):
+        names.append(shops.shop_name(shop))
+    if len(names) == 0:
+        return "No shops are buying here."
+    return "Buying shops: " + ", ".join(names) + "."
+
+
+def _resolve_sale(cfg, ch, argslist):
+    tokens = _clean_tokens(argslist)
+    tokens, qty = _split_qty(tokens)
+    if len(tokens) == 0:
+        return None, "", qty, "Choose an item to sell."
+    loc_id = shops.character_location_id(ch, cfg)
+    if len(tokens) > 1:
+        shop, matches, shop_err = shops.find_shop(cfg, tokens[0], loc_id, False)
+        if shop != None:
+            return shop, _join(tokens[1:]), qty, None
+        if len(matches) > 1:
+            return None, "", qty, shop_err
+    item_query = _join(tokens)
+    shop, stock, err_msg = shops.find_shop_for_item(cfg, item_query, loc_id, True)
+    if err_msg != None:
+        return None, item_query, qty, err_msg
+    return shop, item_query, qty, None
+
+
 ok, msg = auth.is_allowed(COMMAND)
 get_embed = display.get_display(COMMAND)
 cmd_name = COMMAND
@@ -17,16 +74,28 @@ if not ok:
 args = argparse(&ARGS&)
 argslist = &ARGS&
 
-if len(argslist) > 0 and argslist[0] in ["help", "?"]:
-    return get_embed(desc = f"{cmd_name} help is not implemented")
-
 try:
     ch = character()
 except:
     return get_embed(desc = f"{cmd_name} requires a character")
 
+cfg = config.get_config()
 
-return get_embed(
-    desc=f"{cmd_name} is not implemented",
-)
+help_text = f"""Sell an item to a configured shop.
+
+**Usage**
+`{ctx.prefix}{cmd_name} <item> [qty]`
+`{ctx.prefix}{cmd_name} <shop> <item> [qty]`
+
+{_shop_names(cfg, ch)}"""
+
+if len(argslist) == 0 or argslist[0] in ["help", "?"]:
+    return get_embed(desc=help_text)
+
+shop, item_query, qty, err_msg = _resolve_sale(cfg, ch, argslist)
+if err_msg != None:
+    return get_embed(desc=err_msg)
+
+ok_sell, msg_sell = shops.sell(ch, cfg, shop, item_query, qty)
+return get_embed(desc=msg_sell)
 </drac2>

@@ -4,6 +4,9 @@ using(
     auth = env.gvars.auth,
     display = env.gvars.display,
     config = env.gvars.config,
+    library = env.gvars.library,
+    pc = env.gvars.pc,
+    stats = env.gvars.stats,
 )
 
 COMMAND = "read"
@@ -17,16 +20,52 @@ if not ok:
 args = argparse(&ARGS&)
 argslist = &ARGS&
 
-if len(argslist) > 0 and argslist[0] in ["help", "?"]:
-    return get_embed(desc = f"{cmd_name} help is not implemented")
-
 try:
     ch = character()
 except:
     return get_embed(desc = f"{cmd_name} requires a character")
 
+help_text = f"""Read a configured volume in depth.
 
-return get_embed(
-    desc=f"{cmd_name} is not implemented",
-)
+**Usage**
+`{ctx.prefix}{cmd_name} <title> [-author author] [comprehend] [bonuses]`"""
+
+if len(argslist) == 0 or argslist[0] in ["help", "?"]:
+    return get_embed(desc=help_text)
+
+cfg = config.get_config()
+name_query = str(argslist[0]).strip()
+author_query = args.last("author", "")
+try:
+    author_query = author_query.strip()
+except:
+    author_query = str(author_query).strip()
+
+matches = library.search_by_name(cfg, name_query, author_query)
+if len(matches) == 0:
+    suffix = f" by **{author_query}**" if author_query != "" else ""
+    return get_embed(desc=f"No book matches **{name_query}**{suffix}.")
+if len(matches) > 1:
+    lines = []
+    for book in matches[0:10]:
+        lines.append(f"- **{library.book_name(book)}** - {library.book_author(book)}")
+    extra = len(matches) - 10
+    if extra > 0:
+        lines.append(f"...and {extra} more.")
+    return get_embed(desc="Several works match. Narrow with `-author`.\n\n" + "\n".join(lines))
+
+allowed, remaining = pc.check_cooldown(ch, COMMAND, cfg)
+if not allowed:
+    ready = int(floor(time())) + int(remaining)
+    return get_embed(desc=f"You can read again <t:{ready}><t:{ready}:R>.")
+
+book = matches[0]
+read_result = library.read_book(book, ch, args, "deep_read", argslist)
+fields = []
+book_roll = read_result["book_skill_roll_result"]
+if book_roll != None:
+    fields.append(f"Reading|{book_roll.full} **{book_roll.name}**")
+
+stats.add_log(ch, command_key=COMMAND)
+return get_embed(desc=library.read_display(read_result), fields=fields, image=library.book_image(book))
 </drac2>

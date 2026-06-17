@@ -1,6 +1,549 @@
-"""shops.gvar — placeholder.
+"""shops.gvar - config-backed buy/sell transaction helpers."""
 
-See docs/internal/projects/westmarch-statement/gvars/shops.md
-"""
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(
+    config = env.gvars.config,
+    dicts = env.gvars.dicts,
+    items = env.gvars["items"],
+    journeys = env.gvars.journeys,
+    lists = env.gvars.lists,
+    pc = env.gvars.pc,
+)
 
-# TODO: implement shops module
+ITEM_CATALOGUES = ["items", "potions", "magic_items"]
+
+
+def _read_field(obj, key):
+    if obj == None:
+        return None
+    if dicts.is_dict(obj):
+        if key in obj:
+            return obj[key]
+        return None
+    try:
+        return obj[key]
+    except:
+        pass
+    try:
+        return obj.get(key)
+    except:
+        pass
+    attrs = {
+        "world_data": lambda o: o.world_data,
+        "shops": lambda o: o.shops,
+        "currencies": lambda o: o.currencies,
+        "id": lambda o: o.id,
+        "name": lambda o: o.name,
+        "location_id": lambda o: o.location_id,
+        "accepts_sells": lambda o: o.accepts_sells,
+        "buyback": lambda o: o.buyback,
+        "stock": lambda o: o.stock,
+        "item": lambda o: o.item,
+        "catalogue": lambda o: o.catalogue,
+        "price": lambda o: o.price,
+        "sell_price": lambda o: o.sell_price,
+        "qty": lambda o: o.qty,
+        "count": lambda o: o.count,
+        "gold": lambda o: o.gold,
+        "bag": lambda o: o.bag,
+        "policies": lambda o: o.policies,
+        "inventory": lambda o: o.inventory,
+        "item_handling": lambda o: o.item_handling,
+        "default_bag": lambda o: o.default_bag,
+    }
+    if key in attrs:
+        try:
+            return attrs[key](obj)
+        except:
+            pass
+    return None
+
+
+def _cfg(config_override=None):
+    if config_override != None:
+        return config_override
+    return config.get_config()
+
+
+def _shops_source(cfg):
+    shops = _read_field(cfg, "shops")
+    if shops != None:
+        return shops
+    wd = _read_field(cfg, "world_data")
+    return _read_field(wd, "shops")
+
+
+def _shop_id(shop, fallback=None):
+    explicit = _read_field(shop, "id")
+    if explicit != None and str(explicit).strip() != "":
+        return str(explicit).strip()
+    if fallback != None:
+        return str(fallback)
+    return None
+
+
+def _shops_map(cfg):
+    raw = _shops_source(cfg)
+    if raw == None:
+        return {}
+    if dicts.is_dict(raw):
+        return raw
+    if lists.is_list(raw):
+        out = {}
+        index = 0
+        for shop in raw:
+            shop_id = _shop_id(shop, None)
+            if shop_id == None:
+                shop_id = "shop_" + str(index + 1)
+            out[shop_id] = shop
+            index += 1
+        return out
+    return {}
+
+
+def _normalize(value):
+    if value == None:
+        return ""
+    return str(value).strip().lower()
+
+
+def shop_name(shop):
+    name = _read_field(shop, "name")
+    if name != None and str(name).strip() != "":
+        return str(name).strip()
+    shop_id = _shop_id(shop, None)
+    if shop_id != None:
+        return shop_id
+    return "Unnamed Shop"
+
+
+def _copy_shop(shop, shop_id):
+    out = {}
+    if dicts.is_dict(shop):
+        for key in shop:
+            out[key] = shop[key]
+    else:
+        for key in ["id", "name", "location_id", "accepts_sells", "buyback", "stock"]:
+            val = _read_field(shop, key)
+            if val != None:
+                out[key] = val
+    if _read_field(out, "id") == None and shop_id != None:
+        out["id"] = str(shop_id)
+    return out
+
+
+def _location_matches(shop, character_location_id=None):
+    shop_loc = _read_field(shop, "location_id")
+    if shop_loc == None or str(shop_loc).strip() == "":
+        return True
+    if character_location_id == None or str(character_location_id).strip() == "":
+        return True
+    return _normalize(shop_loc) == _normalize(character_location_id)
+
+
+def _accepts_sells(shop):
+    return _read_field(shop, "accepts_sells") == True
+
+
+def list_shops(config_override=None, character_location_id=None, require_sells=False):
+    cfg = _cfg(config_override)
+    found = []
+    for shop_id in _shops_map(cfg):
+        shop = _copy_shop(_shops_map(cfg)[shop_id], shop_id)
+        if require_sells and not _accepts_sells(shop):
+            continue
+        if not _location_matches(shop, character_location_id):
+            continue
+        found.append(shop)
+    return found
+
+
+def format_shop_matches(matches, limit=5):
+    shown = []
+    count = 0
+    for shop in matches:
+        if count >= limit:
+            break
+        shown.append(f"**{shop_name(shop)}**")
+        count += 1
+    text = ", ".join(shown)
+    if len(matches) > limit:
+        text += ", ..."
+    return text
+
+
+def find_shop(config_override, query=None, character_location_id=None, require_sells=False):
+    cfg = _cfg(config_override)
+    available = list_shops(cfg, character_location_id, require_sells)
+    text = "" if query == None else str(query).strip()
+    if text == "":
+        if len(available) == 1:
+            return available[0], available, None
+        if len(available) == 0:
+            return None, [], "No shops are configured here."
+        return None, available, "Choose a shop: " + format_shop_matches(available) + "."
+
+    labels = []
+    label_to_shops = {}
+    for shop in available:
+        for label in [_shop_id(shop, None), shop_name(shop)]:
+            if label == None or str(label).strip() == "":
+                continue
+            key = str(label)
+            labels.append(key)
+            if key not in label_to_shops:
+                label_to_shops[key] = []
+            label_to_shops[key].append(shop)
+
+    matched_labels = lists.search_list(labels, text)
+    found = []
+    seen = {}
+    for label in matched_labels:
+        for shop in label_to_shops[label]:
+            sid = _normalize(_shop_id(shop, shop_name(shop)))
+            if sid in seen:
+                continue
+            seen[sid] = True
+            found.append(shop)
+
+    if len(found) == 0:
+        return None, [], f"Found no shop matches for **{text}**."
+    if len(found) > 1:
+        return None, found, f"Be more specific: **{text}** matched {format_shop_matches(found)}."
+    return found[0], found, None
+
+
+def _stock_entries(shop):
+    stock = _read_field(shop, "stock")
+    if lists.is_list(stock):
+        return stock
+    return []
+
+
+def _stock_item_name(stock_entry):
+    item = _read_field(stock_entry, "item")
+    if item == None:
+        return ""
+    return str(item).strip()
+
+
+def _stock_qty(stock_entry):
+    qty = _read_field(stock_entry, "qty")
+    if qty == None:
+        qty = _read_field(stock_entry, "count")
+    if qty == None or str(qty).strip() == "":
+        return None
+    try:
+        return int(qty)
+    except:
+        return None
+
+
+def _catalogues_for_stock(stock_entry):
+    raw = _read_field(stock_entry, "catalogue")
+    if raw != None and str(raw).strip() != "":
+        key = str(raw).strip()
+        if key in ITEM_CATALOGUES:
+            return [key]
+    return ITEM_CATALOGUES
+
+
+def _resolve_catalogue_item(config_override, stock_entry):
+    query = _stock_item_name(stock_entry)
+    if query == "":
+        return None, [], "Stock entry is missing an item name."
+    all_matches = []
+    for catalogue in _catalogues_for_stock(stock_entry):
+        for match in items.exact_matches(config_override, catalogue, query):
+            all_matches.append(match)
+        if len(all_matches) > 0:
+            break
+    names = []
+    seen = {}
+    unique = []
+    for match in all_matches:
+        name = items.item_name(match)
+        key = name.lower()
+        if key in seen:
+            continue
+        seen[key] = True
+        unique.append(match)
+        names.append(name)
+    if len(unique) == 0:
+        return None, [], f"**{query}** is not an exact match in the configured item catalogues."
+    if len(unique) > 1:
+        return None, names, f"**{query}** is ambiguous in the item catalogues: {items.format_match_names(names)}."
+    return unique[0], names, None
+
+
+def find_stock_item(shop, item_query, config_override=None):
+    cfg = _cfg(config_override)
+    text = "" if item_query == None else str(item_query).strip()
+    if text == "":
+        return None, [], "Choose an item."
+    labels = []
+    label_to_stock = {}
+    for row in _stock_entries(shop):
+        label = _stock_item_name(row)
+        if label == "":
+            continue
+        labels.append(label)
+        if label not in label_to_stock:
+            label_to_stock[label] = []
+        label_to_stock[label].append(row)
+    matched = lists.search_list(labels, text)
+    rows = []
+    seen = {}
+    for label in matched:
+        for row in label_to_stock[label]:
+            key = _stock_item_name(row).lower()
+            if key in seen:
+                continue
+            seen[key] = True
+            rows.append(row)
+    if len(rows) == 0:
+        return None, [], f"Found no stock matches for **{text}** at **{shop_name(shop)}**."
+    if len(rows) > 1:
+        names = []
+        for row in rows:
+            names.append(_stock_item_name(row))
+        return None, names, f"Be more specific: **{text}** matched {items.format_match_names(names)}."
+    catalogue_item, _matches, err_msg = _resolve_catalogue_item(cfg, rows[0])
+    if err_msg != None:
+        return None, [], err_msg
+    return rows[0], [catalogue_item], None
+
+
+def _parse_value_to_price(value):
+    if value == None or str(value).strip() == "":
+        return {}
+    if dicts.is_dict(value):
+        out = {}
+        for key in value:
+            try:
+                out[str(key)] = float(value[key])
+            except:
+                pass
+        return out
+    try:
+        return {"gold": float(value)}
+    except:
+        pass
+    gp = items.item_value_gp({"name": "price", "value": str(value)})
+    if gp > 0:
+        return {"gold": gp}
+    return {}
+
+
+def _scale_price(price, qty):
+    out = {}
+    for key in price:
+        try:
+            out[key] = float(price[key]) * int(qty)
+        except:
+            pass
+    return out
+
+
+def _base_buy_price(config_override, stock_entry):
+    raw = _read_field(stock_entry, "price")
+    parsed = _parse_value_to_price(raw)
+    if len(parsed) > 0:
+        return parsed
+    catalogue_item, _matches, err_msg = _resolve_catalogue_item(config_override, stock_entry)
+    if err_msg != None:
+        return {}
+    value = items.item_value_gp(catalogue_item)
+    if value <= 0:
+        return {}
+    return {"gold": value}
+
+
+def price_for_buy(shop, stock_entry, qty=1, config_override=None):
+    return _scale_price(_base_buy_price(config_override, stock_entry), qty)
+
+
+def price_for_sell(shop, stock_entry, qty=1, config_override=None):
+    raw = _read_field(stock_entry, "sell_price")
+    if raw != None:
+        return _scale_price(_parse_value_to_price(raw), qty)
+    buy_price = _base_buy_price(config_override, stock_entry)
+    rate = _read_field(stock_entry, "buyback")
+    if rate == None:
+        rate = _read_field(shop, "buyback")
+    if rate == None or str(rate).strip() == "":
+        rate = 0.5
+    try:
+        multiplier = float(rate)
+    except:
+        multiplier = 0.5
+    out = {}
+    for key in buy_price:
+        out[key] = float(buy_price[key]) * multiplier * int(qty)
+    return out
+
+
+def _number_text(value):
+    try:
+        num = float(value)
+    except:
+        return str(value)
+    if num == int(num):
+        return str(int(num))
+    return str(num)
+
+
+def format_price(config_override, price):
+    cfg = _cfg(config_override)
+    parts = []
+    gold = _read_field(price, "gold")
+    if gold != None and float(gold) != 0:
+        parts.append(f"{_number_text(gold)} gp")
+    for key in price:
+        if str(key) == "gold":
+            continue
+        amount = price[key]
+        if float(amount) == 0:
+            continue
+        symbol = pc.currency_symbol(cfg, key)
+        prefix = f"{symbol} " if symbol != "" else ""
+        parts.append(f"{prefix}{_number_text(amount)} {pc.currency_name(cfg, key, float(amount) != 1)}")
+    if len(parts) == 0:
+        return "free"
+    return ", ".join(parts)
+
+
+def _inventory_bag(config_override, stock_entry=None):
+    bag = _read_field(stock_entry, "bag")
+    if bag != None and str(bag).strip() != "":
+        return str(bag).strip()
+    cfg = _cfg(config_override)
+    inv = _read_field(_read_field(cfg, "policies"), "inventory")
+    handling = _read_field(inv, "item_handling")
+    default_bag = _read_field(handling, "default_bag")
+    if default_bag != None and str(default_bag).strip() != "":
+        return str(default_bag).strip()
+    return "Equipment"
+
+
+def _validate_price(config_override, ch, price, debit=True):
+    cfg = _cfg(config_override)
+    for key in price:
+        amount = float(price[key])
+        if key == "gold":
+            current = pc.get_gold(ch)
+            if debit and current != None and float(current) < amount:
+                return False, f"Not enough gold - {ch.name} has **{_number_text(current)} gp**."
+            continue
+        if pc.get_currency(cfg, key) == None:
+            return False, f"Unknown currency **{key}** in shop price."
+        if debit and pc.get_wallet_balance(ch, key) < amount:
+            return False, f"Not enough {pc.currency_name(cfg, key, True)}."
+    return True, ""
+
+
+def _apply_price(config_override, ch, price, sign):
+    cfg = _cfg(config_override)
+    lines = []
+    for key in price:
+        amount = float(price[key]) * sign
+        if key == "gold":
+            ok, msg = pc.modify_gold(ch, amount)
+        else:
+            ok, msg = pc.modify_wallet(ch, key, amount, cfg)
+        if not ok:
+            return False, msg
+        lines.append(msg)
+    return True, "\n".join(lines)
+
+
+def buy(ch, config_override, shop, item_query, qty=1):
+    cfg = _cfg(config_override)
+    try:
+        amount = int(qty)
+    except:
+        amount = 1
+    if amount < 1:
+        return False, "Quantity must be at least 1."
+    stock_entry, _matches, err_msg = find_stock_item(shop, item_query, cfg)
+    if err_msg != None:
+        return False, err_msg
+    available = _stock_qty(stock_entry)
+    if available != None and amount > available:
+        return False, f"Only **{available}** {_stock_item_name(stock_entry)} are listed in stock."
+    price = price_for_buy(shop, stock_entry, amount, cfg)
+    if len(price) == 0:
+        return False, f"**{_stock_item_name(stock_entry)}** has no configured price or catalogue value."
+    ok, msg = _validate_price(cfg, ch, price, True)
+    if not ok:
+        return False, msg
+    ok, spend_msg = _apply_price(cfg, ch, price, -1)
+    if not ok:
+        return False, spend_msg
+    bag = _inventory_bag(cfg, stock_entry)
+    ok, bag_msg = pc.modify_bag(ch, _stock_item_name(stock_entry), amount, bag)
+    if not ok:
+        return False, bag_msg
+    return True, f"Bought **{amount}x {_stock_item_name(stock_entry)}** from **{shop_name(shop)}** for **{format_price(cfg, price)}**.\n-# {spend_msg}\n-# {bag_msg}"
+
+
+def sell(ch, config_override, shop, item_query, qty=1):
+    cfg = _cfg(config_override)
+    if not _accepts_sells(shop):
+        return False, f"**{shop_name(shop)}** is not buying items right now."
+    try:
+        amount = int(qty)
+    except:
+        amount = 1
+    if amount < 1:
+        return False, "Quantity must be at least 1."
+    stock_entry, _matches, err_msg = find_stock_item(shop, item_query, cfg)
+    if err_msg != None:
+        return False, err_msg
+    bag = _inventory_bag(cfg, stock_entry)
+    have = pc.get_bag_count(ch, _stock_item_name(stock_entry), bag)
+    if have < amount:
+        return False, f"{ch.name} has **{have}/{amount}** {_stock_item_name(stock_entry)} in **{bag}**."
+    price = price_for_sell(shop, stock_entry, amount, cfg)
+    if len(price) == 0:
+        return False, f"**{_stock_item_name(stock_entry)}** has no sell price."
+    ok, msg = _validate_price(cfg, ch, price, False)
+    if not ok:
+        return False, msg
+    ok, bag_msg = pc.modify_bag(ch, _stock_item_name(stock_entry), -1 * amount, bag)
+    if not ok:
+        return False, bag_msg
+    ok, gain_msg = _apply_price(cfg, ch, price, 1)
+    if not ok:
+        return False, gain_msg
+    return True, f"Sold **{amount}x {_stock_item_name(stock_entry)}** to **{shop_name(shop)}** for **{format_price(cfg, price)}**.\n-# {bag_msg}\n-# {gain_msg}"
+
+
+def character_location_id(ch, config_override=None):
+    try:
+        return journeys.get_location_id(ch, _cfg(config_override))
+    except:
+        return None
+
+
+def find_shop_for_item(config_override, item_query, character_location_id=None, require_sells=False):
+    cfg = _cfg(config_override)
+    shops = list_shops(cfg, character_location_id, require_sells)
+    found = []
+    last_error = None
+    for shop in shops:
+        stock_entry, _matches, err_msg = find_stock_item(shop, item_query, cfg)
+        if err_msg == None and stock_entry != None:
+            found.append([shop, stock_entry])
+        elif len(shops) == 1:
+            last_error = err_msg
+    if len(found) == 1:
+        return found[0][0], found[0][1], None
+    if len(found) == 0:
+        if last_error != None:
+            return None, None, last_error
+        return None, None, f"Found no shop stock matches for **{item_query}**."
+    names = []
+    for pair in found:
+        names.append(shop_name(pair[0]))
+    return None, None, f"Be more specific: **{item_query}** is stocked by {items.format_match_names(names)}."

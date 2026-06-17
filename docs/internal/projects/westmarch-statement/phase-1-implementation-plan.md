@@ -81,6 +81,8 @@ Review notes:
 
 ## Slice 5 — Crafting cluster
 
+**Status:** implemented.
+
 Port `craft`, `brew`, `scribe`, `enchant`:
 
 - shared crafting helper gvar
@@ -94,6 +96,8 @@ Review notes:
 - Rules edition becomes more visible here; use `config.get_rules_edition()` rather than direct config reads.
 
 ## Slice 6 — Economy
+
+**Status:** implemented; finite shop stock ledgers and player-to-player wallet transfers remain deferred.
 
 Port `job`, then add generic `wallet`, `buy`, and `sell`:
 
@@ -110,6 +114,8 @@ Review notes:
 
 ## Slice 7 — Content
 
+**Status:** implemented; richer non-location inference signals remain deferred.
+
 Port `library` and `read`:
 
 - book catalogue lookup
@@ -124,6 +130,8 @@ Review notes:
 
 ## Slice 8 — Misc utilities
 
+**Status:** implemented; diary/journal hub remains post-MVP.
+
 Build `quest` and `recipe`:
 
 - quest log cvar model and config labels/categories
@@ -136,6 +144,8 @@ Review notes:
 
 ## Slice 9 — First-server release pass
 
+**Status:** skipped for this implementation pass.
+
 Prepare Phase 1 for a staging or real server:
 
 - run full `make test`
@@ -143,6 +153,20 @@ Prepare Phase 1 for a staging or real server:
 - smoke test via subscribed bot with copied config gvar
 - update public setup docs and release notes
 - capture migration gaps against `../westmarch`
+
+This slice is intentionally not part of the remaining implementation work. Release/publish/smoke-test steps should run as a separate operational pass when a real target server is ready.
+
+## Slice 10 — Guided editor completion
+
+**Status:** planned; not implemented in this pass.
+
+Bring the web editor from validation/raw JSON support to a fully guided configuration workflow:
+
+- guided economy editors for currencies, shops, stock, and job payout bands
+- guided content editors for book sources, book gvar ids, and topic policy
+- guided misc editors for quest policy/category labels and recipe source checks
+- import/export UX for large world-owned catalogue gvars
+- editor tests for every guided model transform
 
 ## Plan review
 

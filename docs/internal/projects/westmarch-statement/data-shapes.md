@@ -365,6 +365,8 @@ Suggested embed footer line:
 | Storage | Notes |
 |---------|--------|
 | Top-level **`books`** on config gvar | Small curated lists |
+| **`world_data.books`** | World-owned small curated lists |
+| **`world_data.book_gvar_ids`** | Multiple owner gvars containing JSON book arrays |
 | **`extensions.books`** / shard gvars | Large corpora — [content-pipeline.md](content-pipeline.md) |
 
 ---
@@ -461,6 +463,16 @@ world_data = {
     "monsters": [
         { "name": "Moonlit Wolf", "cr": 1, "type_str": "Beast", "size": "M" },
     ],
+    "items": {
+        "include_engine": True,
+        "entries": [
+            { "name": "Mooncap", "rarity": "mundane", "type": "Item", "value": "5 gp" },
+        ],
+    },
+    "books": [
+        { "name": "Oakwood Almanac", "author": "Mira", "written": "1492 DR", "rarity": "common", "language": "Common", "type": "original", "description": "A local guide.", "tags": ["forest"] },
+    ],
+    "book_gvar_ids": ["<uuid>", "<uuid>"],
 }
 ```
 
@@ -473,8 +485,11 @@ world_data = {
 | **`calendars`** | when world clock on | [Calendar](#calendar) definitions |
 | **`biomes`** | when exploration on | Registry only — [Biome registry](#biome-registry); encounter bodies in separate gvars |
 | **`monsters`** | no | Owner monster overlay rows for **`hunt`** / **`loot`**; large bestiaries use **`extensions.monsters`** |
+| **`items`** | no | Owner item overlay/source for crafting and shops; can be inline, `{entries, gvar_id, gvar_ids, include_engine}`, or loaded through **`extensions.items`** |
+| **`books`** | when content library/read on | Small owner book catalogue; large catalogues should use **`book_gvar_ids`** or **`extensions.books`** |
+| **`book_gvar_ids`** | no | List of gvar UUIDs containing JSON book arrays |
 
-Other catalogues (**`items`**, **`shops`**, **`library`**, …) stay **outside** **`world_data`** for now — same config gvar layer 2, documented per vertical.
+Shops remain top-level **`shops`** because they are a service registry shared by economy commands. Item and book catalogues may live under **`world_data`** so each world can add local goods and libraries without editing engine constants.
 
 ### Transport
 
@@ -1357,12 +1372,14 @@ Controls how **`!library`** builds **search topics** before matching the book ca
 |-----|------|---------|---------|
 | `library_topic_source` | `"inferred"` \| `"balanced"` \| `"manual"` \| `"restricted"` | `"manual"` | How search topics are chosen for **`!library`** |
 | `allowed_topics` | `[ str, … ]` | `[]` | Required when **`library_topic_source`** is **`restricted`** — whitelist of topic tokens players may search |
+| `books` | list \| dict \| `None` | `None` | Optional content-local book source; **`world_data.books`** / **`world_data.book_gvar_ids`** preferred for world catalogues |
 
 Access:
 
 ```py
 cfg.subsystems.content.config.library_topic_source
 cfg.subsystems.content.config.allowed_topics
+cfg.subsystems.content.config.books
 ```
 
 #### `library_topic_source`

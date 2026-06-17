@@ -158,9 +158,20 @@ subsystems = {
             "sell": False,
             "wallet": False,
         },
-        # "command_config": {
-        #     "job": {"cooldown_seconds": 28800, "workdays_cost": 0},
-        # },
+        "command_config": {
+            "job": {
+                "cooldown_seconds": 28800,
+                "workdays_cost": 0,
+                "payout_bands": [
+                    {"max": 0, "roll": "0"},
+                    {"max": 5, "roll": "1d4-1"},
+                    {"max": 10, "roll": "1d4+1"},
+                    {"max": 15, "roll": "1d6+1"},
+                    {"max": 20, "roll": "1d8+2"},
+                    {"roll": "1d8+3"},
+                ],
+            },
+        },
     },
     "content": {
         "enabled": False,
@@ -171,6 +182,9 @@ subsystems = {
         "config": {
             "library_topic_source": "manual",
             "allowed_topics": [],
+            # Optional small inline list, or use world_data.books / world_data.book_gvar_ids
+            # for world-owned book catalogues.
+            "books": None,
         },
         # "command_config": {
         #     "library": {"cooldown_seconds": 120},
@@ -220,6 +234,30 @@ subsystems = {
 #     },
 #     "calendars": { "primary": { "epoch_unix": …, "tick_rate": 86400.0, … } },
 #     "biomes": { "forest": {"gvar_id": "engine:configs/biomes/forest", "name": "Forest"} },
+#     # Optional owner catalogues. Use inline rows for tiny worlds or gvar ids for real data.
+#     "items": {"include_engine": True, "entries": [{"name": "Mooncap", "rarity": "mundane", "type": "Item", "value": "5 gp"}]},
+#     "books": [{"name": "Oakwood Almanac", "author": "Mira", "written": "1492 DR", "rarity": "common", "language": "Common", "type": "original", "description": "A short local guide.", "tags": ["forest"]}],
+#     "book_gvar_ids": [],
+# }
+
+# Owner-defined wallet currencies. Avrae gp remains on the sheet coinpurse.
+# currencies = {
+#     "shards": {"name": "Arcane Shard", "plural": "Arcane Shards", "symbol": "◇"},
+# }
+
+# Shops for !buy and !sell. Stock item names must exactly match the configured item
+# catalogue (engine catalogue plus any world_data.items entries).
+# shops = {
+#     "general": {
+#         "id": "general",
+#         "name": "General Store",
+#         "accepts_sells": True,
+#         "buyback": 0.5,
+#         "stock": [
+#             {"item": "Rope, Hemp (50 ft)", "price": {"gold": 1}},
+#             {"item": "Mooncap", "price": {"gold": 5, "shards": 1}},
+#         ],
+#     },
 # }
 
 # House rules — see docs/internal/projects/westmarch-statement/data-shapes.md § Server policies

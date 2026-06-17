@@ -4,6 +4,7 @@ using(
     auth = env.gvars.auth,
     display = env.gvars.display,
     config = env.gvars.config,
+    recipe = env.gvars.recipe,
 )
 
 COMMAND = "recipe"
@@ -17,16 +18,44 @@ if not ok:
 args = argparse(&ARGS&)
 argslist = &ARGS&
 
-if len(argslist) > 0 and argslist[0] in ["help", "?"]:
-    return get_embed(desc = f"{cmd_name} help is not implemented")
-
 try:
     ch = character()
 except:
     return get_embed(desc = f"{cmd_name} requires a character")
 
+help_text = f"""Browse configured crafting recipes.
 
-return get_embed(
-    desc=f"{cmd_name} is not implemented",
-)
+**Usage**
+`{ctx.prefix}{cmd_name} <recipe>`
+`{ctx.prefix}{cmd_name} ingredient <item>`"""
+
+if len(argslist) == 0 or argslist[0] in ["help", "?"]:
+    return get_embed(desc=help_text)
+
+cfg = config.get_config()
+
+if str(argslist[0]).strip().lower() in ["ingredient", "item", "uses"]:
+    if len(argslist) < 2:
+        return get_embed(desc="Choose an ingredient to search for.")
+    query = " ".join([str(token) for token in argslist[1:]])
+    matches = recipe.search_by_ingredient(cfg, query)
+    if len(matches) == 0:
+        return get_embed(desc=f"Found no recipes using **{query}**.")
+    if len(matches) > 10:
+        shown = matches[0:10]
+    else:
+        shown = matches
+    lines = []
+    for entry in shown:
+        lines.append(f"- **{recipe.recipe_name(entry)}**")
+    if len(matches) > len(shown):
+        lines.append(f"...and {len(matches) - len(shown)} more.")
+    return get_embed(desc="Recipes using **" + query + "**:\n" + "\n".join(lines))
+
+query = " ".join([str(token) for token in argslist])
+entry, matches, error = recipe.resolve(cfg, query)
+if error != None:
+    return get_embed(desc=error)
+
+return get_embed(desc=recipe.format_recipe(entry))
 </drac2>

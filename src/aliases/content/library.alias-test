@@ -6,9 +6,9 @@ name: blocks without server config
 
 !library
 ---
-re:not implemented
+re:Provide a library topic
 ---
-name: passes auth when content library enabled
+name: enabled library asks for manual topic by default
 vars:
   svars:
     westmarch_config: "dddddddd-dddd-dddd-dddd-dddddddddddd"
@@ -37,3 +37,56 @@ vars:
               "commands": {"library": False, "read": False},
           },
       }
+
+!library forest comprehend -b 100
+---
+re:Topics:[\s\S]*Oakwood Almanac[\s\S]*Next step
+---
+name: library searches configured world_data books
+vars:
+  svars:
+    westmarch_config: "cccc1000-1000-1000-1000-100000000001"
+  gvars:
+    cccc1000-1000-1000-1000-100000000001: |
+      subsystems = {
+          "content": {
+              "enabled": True,
+              "commands": {"library": True, "read": True},
+              "config": {"library_topic_source": "manual", "allowed_topics": []},
+          },
+      }
+      policies = {"content": {"enforce_library_cooldowns": False, "enforce_read_cooldowns": False}}
+      world_data = {
+          "books": [
+              {
+                  "name": "Oakwood Almanac",
+                  "author": "Mira",
+                  "written": "1492 DR",
+                  "rarity": "common",
+                  "language": "Common",
+                  "type": "original",
+                  "description": "A practical guide to oak groves and forest roads.",
+                  "tags": ["forest", "history"],
+              },
+          ],
+      }
+character:
+  cvars:
+    languages: '["common"]'
+    wg_book_comprehension: "{}"
+  skills:
+    investigation:
+      value: 12
+      prof: 1
+      bonus: 0
+      adv: null
+    history:
+      value: 12
+      prof: 1
+      bonus: 0
+      adv: null
+    nature:
+      value: 12
+      prof: 1
+      bonus: 0
+      adv: null

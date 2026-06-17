@@ -1,0 +1,49 @@
+!sell rope
+---
+re:Sold \*\*1x Rope, Hemp \(50 ft\)\*\*
+---
+name: sell sells a held configured stock item
+vars:
+  svars:
+    westmarch_config: "eeee1000-1000-1000-1000-100000000003"
+  gvars:
+    eeee1000-1000-1000-1000-100000000003: |
+      subsystems = {
+          "economy": {"enabled": True, "commands": {"sell": True}},
+      }
+      shops = {
+          "general": {
+              "id": "general",
+              "name": "General Store",
+              "accepts_sells": True,
+              "stock": [{"item": "Rope, Hemp (50 ft)", "price": {"gold": 0}}],
+          },
+      }
+character:
+  cvars:
+    bags: '[["Equipment", {"Rope, Hemp (50 ft)": 1}]]'
+
+!sell general rope
+---
+re:not buying items
+---
+name: sell rejects shops that do not accept sells
+vars:
+  svars:
+    westmarch_config: "eeee1000-1000-1000-1000-100000000004"
+  gvars:
+    eeee1000-1000-1000-1000-100000000004: |
+      subsystems = {
+          "economy": {"enabled": True, "commands": {"sell": True}},
+      }
+      shops = {
+          "general": {
+              "id": "general",
+              "name": "General Store",
+              "accepts_sells": False,
+              "stock": [{"item": "Rope, Hemp (50 ft)", "price": {"gold": 0}}],
+          },
+      }
+character:
+  cvars:
+    bags: '[["Equipment", {"Rope, Hemp (50 ft)": 1}]]'

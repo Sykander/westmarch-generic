@@ -138,3 +138,34 @@ name: get_bag_count reads configured bag cvar
 character:
   cvars:
     bags: '[["Materials", {"Arnica": 2}]]'
+
+cfg_fixture = {
+    "currencies": {
+        "shards": {"name": "Arcane Shard", "plural": "Arcane Shards", "symbol": "◇"},
+    },
+    "policies": {"economy": {"enforce_wallet_caps": False}},
+}
+ok, msg = pc.modify_wallet(character(), "shards", 3, cfg_fixture)
+return ok and pc.get_wallet_balance(character(), "shards") == 5 and "Arcane Shards" in msg
+---
+True
+---
+name: modify_wallet updates configured currency balance
+vars:
+  cvars:
+    wg_wallet_shards: "2"
+
+cfg_fixture = {
+    "currencies": {
+        "shards": {"name": "Arcane Shard", "plural": "Arcane Shards"},
+    },
+}
+ok, msg = pc.modify_wallet(character(), "shards", -3, cfg_fixture)
+return not ok and pc.get_wallet_balance(character(), "shards") == 1 and "Not enough" in msg
+---
+True
+---
+name: modify_wallet rejects overspend
+vars:
+  cvars:
+    wg_wallet_shards: "1"

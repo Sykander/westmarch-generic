@@ -1,0 +1,63 @@
+cfg_fixture = {
+    "shops": {
+        "general": {
+            "id": "general",
+            "name": "General Store",
+            "accepts_sells": True,
+            "buyback": 0.5,
+            "stock": [
+                {"item": "Rope, Hemp (50 ft)", "price": {"gold": 1}},
+            ],
+        },
+    },
+}
+shop, matches, error = shops.find_shop(cfg_fixture, "general")
+stock, item_matches, item_error = shops.find_stock_item(shop, "rope", cfg_fixture)
+return shop != None and error == None and stock != None and item_error == None
+---
+True
+---
+name: shops resolves shop and validates stock item against catalogue
+
+cfg_fixture = {
+    "currencies": {"shards": {"name": "Arcane Shard", "plural": "Arcane Shards", "symbol": "◇"}},
+    "shops": {
+        "general": {
+            "id": "general",
+            "name": "General Store",
+            "stock": [
+                {"item": "Rope, Hemp (50 ft)", "price": {"gold": 2, "shards": 1}},
+            ],
+        },
+    },
+}
+shop, matches, error = shops.find_shop(cfg_fixture, "general")
+stock, item_matches, item_error = shops.find_stock_item(shop, "hemp", cfg_fixture)
+price = shops.price_for_buy(shop, stock, 3, cfg_fixture)
+return price["gold"] == 6 and price["shards"] == 3 and "Arcane Shards" in shops.format_price(cfg_fixture, price)
+---
+True
+---
+name: shops scales gp and wallet prices
+
+cfg_fixture = {
+    "shops": {
+        "general": {
+            "id": "general",
+            "name": "General Store",
+            "location_id": "oakwood",
+            "stock": [{"item": "Rope, Hemp (50 ft)", "price": {"gold": 1}}],
+        },
+        "docks": {
+            "id": "docks",
+            "name": "Dock Market",
+            "location_id": "harbor",
+            "stock": [{"item": "Rope, Hemp (50 ft)", "price": {"gold": 1}}],
+        },
+    },
+}
+return len(shops.list_shops(cfg_fixture, "oakwood")) == 1 and shops.shop_name(shops.list_shops(cfg_fixture, "oakwood")[0]) == "General Store"
+---
+True
+---
+name: shops filters by character location when available

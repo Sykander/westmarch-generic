@@ -6,7 +6,13 @@ Book **search**, **comprehension**, and **read display** for **`!library`** and 
 
 Topic resolution for **`!library`** follows **`subsystems.content.config`** — [data-shapes.md § content.config](../data-shapes.md#contentconfig).
 
-Book dict shape: [data-shapes.md § Book](../data-shapes.md#book).
+Book dict shape: [data-shapes.md § Book](../data-shapes.md#book). Sources are read in this order:
+
+1. `subsystems.content.config.books`
+2. top-level `books`
+3. `world_data.books`
+4. `world_data.book_gvar_ids` / `world_data.book_gvars`
+5. `extensions.books`
 
 ## API
 

@@ -1,0 +1,67 @@
+cfg_fixture = {
+    "books": [
+        {
+            "name": "Oakwood Almanac",
+            "author": "Mira",
+            "written": "1492 DR",
+            "rarity": "common",
+            "language": "Common",
+            "type": "original",
+            "description": "A practical guide to oak groves and forest roads.",
+            "tags": ["forest", "history"],
+            "content_link": "https://example.com/oakwood",
+        },
+    ],
+}
+hits = library.search_by_name(cfg_fixture, "oakwood", "")
+return len(hits) == 1 and library.book_name(hits[0]) == "Oakwood Almanac"
+---
+True
+---
+name: library searches inline configured books by title
+
+cfg_fixture = {
+    "subsystems": {"content": {"config": {"library_topic_source": "restricted", "allowed_topics": ["forest"]}}},
+}
+topics, error = library.resolve_search_topics(cfg_fixture, character(), argparse(""), ["desert"])
+return len(topics) == 0 and "Allowed topics" in error
+---
+True
+---
+name: library rejects restricted topics outside allow list
+
+read_result = {
+    "comprehended_book": {
+        "name": "Oakwood Almanac",
+        "metadata_line": "**Mira** · *1492 DR* · Common · common",
+        "description": "A practical guide.",
+    },
+    "read_message": "You work through the passage.",
+    "last_read_at": 0,
+    "read_attempts": 1,
+    "comprehension_score": 100,
+    "book": {"content_link": "https://example.com/oakwood"},
+}
+return "Read the full text online" in library.read_display(read_result)
+---
+True
+---
+name: read_display gates content link at full comprehension
+
+read_result = {
+    "comprehended_book": {
+        "name": "Oakwood Almanac",
+        "metadata_line": "**Mira** · *1492 DR* · Common · common",
+        "description": "A practical guide.",
+    },
+    "read_message": "You work through the passage.",
+    "last_read_at": 0,
+    "read_attempts": 1,
+    "comprehension_score": 99,
+    "book": {"content_link": "https://example.com/oakwood"},
+}
+return "Read the full text online" not in library.read_display(read_result)
+---
+True
+---
+name: read_display hides content link below full comprehension

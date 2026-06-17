@@ -1,0 +1,75 @@
+!read "Oakwood Almanac" comprehend -b 100
+---
+re:Oakwood Almanac[\s\S]*Mira[\s\S]*practical guide[\s\S]*Read the full text online
+---
+name: read deep reads configured book and shows full link at 100
+vars:
+  svars:
+    westmarch_config: "cccc1000-1000-1000-1000-100000000002"
+  gvars:
+    cccc1000-1000-1000-1000-100000000002: |
+      subsystems = {
+          "content": {
+              "enabled": True,
+              "commands": {"library": True, "read": True},
+          },
+      }
+      policies = {"content": {"enforce_library_cooldowns": False, "enforce_read_cooldowns": False}}
+      world_data = {
+          "books": [
+              {
+                  "name": "Oakwood Almanac",
+                  "author": "Mira",
+                  "written": "1492 DR",
+                  "rarity": "common",
+                  "language": "Common",
+                  "type": "original",
+                  "description": "A practical guide to oak groves and forest roads.",
+                  "tags": ["forest", "history"],
+                  "content_link": "https://example.com/oakwood",
+              },
+          ],
+      }
+character:
+  cvars:
+    languages: '["common"]'
+    wg_book_comprehension: "{}"
+  skills:
+    investigation:
+      value: 12
+      prof: 1
+      bonus: 0
+      adv: null
+    history:
+      value: 12
+      prof: 1
+      bonus: 0
+      adv: null
+    nature:
+      value: 12
+      prof: 1
+      bonus: 0
+      adv: null
+
+!read Oak
+---
+re:Several works match
+---
+name: read asks for author when title is ambiguous
+vars:
+  svars:
+    westmarch_config: "cccc1000-1000-1000-1000-100000000003"
+  gvars:
+    cccc1000-1000-1000-1000-100000000003: |
+      subsystems = {
+          "content": {
+              "enabled": True,
+              "commands": {"read": True},
+          },
+      }
+      world_data = {
+          "books": [
+              {"name": "Oak Guide", "author": "Mira", "written": "1492 DR", "rarity": "common", "language": "Common", "type": "original", "description": "A.", "tags": ["forest"]},
+              {"name": "Oak Guide Notes", "author": "Tamsin", "written": "1493 DR", "rarity": "common", "language": "Common", "type": "original", "description": "B.", "tags": ["forest"]},
+          ],
+      }

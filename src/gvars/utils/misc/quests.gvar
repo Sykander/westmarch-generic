@@ -1,6 +1,377 @@
-"""quests.gvar — placeholder.
+"""quests.gvar - per-character quest journal helpers."""
 
-See docs/internal/projects/westmarch-statement/gvars/quests.md
-"""
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(
+    config = env.gvars.config,
+    dicts = env.gvars.dicts,
+    lists = env.gvars.lists,
+    strings = env.gvars.strings,
+)
 
-# TODO: implement quests module
+CVAR_QUESTS = "wg_quests"
+MAX_ENTRY_TEXT = 800
+
+
+def _read_field(obj, key):
+    if obj == None:
+        return None
+    if dicts.is_dict(obj):
+        if key in obj:
+            return obj[key]
+        return None
+    try:
+        return obj[key]
+    except:
+        pass
+    try:
+        return obj.get(key)
+    except:
+        pass
+    attrs = {
+        "policies": lambda o: o.policies,
+        "quest": lambda o: o.quest,
+        "max_active": lambda o: o.max_active,
+        "self_assign": lambda o: o.self_assign,
+        "id": lambda o: o.id,
+        "title": lambda o: o.title,
+        "category": lambda o: o.category,
+        "status": lambda o: o.status,
+        "entries": lambda o: o.entries,
+        "at": lambda o: o.at,
+        "text": lambda o: o.text,
+    }
+    if key in attrs:
+        try:
+            return attrs[key](obj)
+        except:
+            pass
+    return None
+
+
+def _cfg(config_override=None):
+    if config_override != None:
+        return config_override
+    return config.get_config()
+
+
+def _read_cvar(ch, key, fallback=None):
+    try:
+        val = ch.get_cvar(key, None)
+        if val != None:
+            return val
+    except:
+        pass
+    try:
+        cvars = ch.cvars
+        if key in cvars:
+            return cvars[key]
+    except:
+        pass
+    try:
+        if exists(key):
+            return get(key)
+    except:
+        pass
+    return fallback
+
+
+def _set_cvar(ch, key, value):
+    try:
+        ch.set_cvar(key, str(value))
+        return True
+    except:
+        pass
+    try:
+        set_cvar(key, str(value))
+        return True
+    except:
+        return False
+
+
+def _quest_map(journal):
+    quests = _read_field(journal, "quests")
+    if quests != None and dicts.is_dict(quests):
+        return quests
+    return {}
+
+
+def load_journal(ch):
+    raw = _read_cvar(ch, CVAR_QUESTS, "{}")
+    if raw == None or str(raw).strip() == "":
+        return {"quests": {}}
+    if dicts.is_dict(raw):
+        journal = raw
+    else:
+        try:
+            journal = load_json(raw)
+        except:
+            journal = {}
+    if journal == None or not dicts.is_dict(journal):
+        journal = {}
+    if _read_field(journal, "quests") == None or not dicts.is_dict(_read_field(journal, "quests")):
+        journal["quests"] = {}
+    return journal
+
+
+def save_journal(ch, journal):
+    if journal == None or not dicts.is_dict(journal):
+        journal = {"quests": {}}
+    return _set_cvar(ch, CVAR_QUESTS, dump_json(journal))
+
+
+def _slugify(text):
+    source = str(text).strip().lower()
+    out = ""
+    prev_dash = False
+    allowed = "abcdefghijklmnopqrstuvwxyz0123456789"
+    for char in source:
+        if char in allowed:
+            out += char
+            prev_dash = False
+        else:
+            if not prev_dash and out != "":
+                out += "-"
+                prev_dash = True
+    while out.endswith("-"):
+        out = out[0:len(out) - 1]
+    if out == "":
+        return "quest"
+    return out
+
+
+def _unique_id(journal, title):
+    base = _slugify(title)
+    quests = _quest_map(journal)
+    if base not in quests:
+        return base
+    index = 2
+    while True:
+        candidate = base + "-" + str(index)
+        if candidate not in quests:
+            return candidate
+        index += 1
+
+
+def _quest_title(quest, fallback=None):
+    title = _read_field(quest, "title")
+    if title != None and str(title).strip() != "":
+        return str(title).strip()
+    quest_id = _read_field(quest, "id")
+    if quest_id != None and str(quest_id).strip() != "":
+        return str(quest_id).strip()
+    if fallback != None:
+        return str(fallback)
+    return "Untitled Quest"
+
+
+def _quest_status(quest):
+    status = _read_field(quest, "status")
+    if status == None or str(status).strip() == "":
+        return "active"
+    text = str(status).strip().lower()
+    if text in ["active", "completed", "done"]:
+        if text == "done":
+            return "completed"
+        return text
+    return "active"
+
+
+def _active_count(journal):
+    count = 0
+    for quest_id in _quest_map(journal):
+        if _quest_status(_quest_map(journal)[quest_id]) == "active":
+            count += 1
+    return count
+
+
+def _max_active(config_override=None):
+    cfg = _cfg(config_override)
+    policy = _read_field(_read_field(cfg, "policies"), "quest")
+    raw = _read_field(policy, "max_active")
+    if raw == None or str(raw).strip() == "":
+        return None
+    try:
+        value = int(raw)
+        if value > 0:
+            return value
+    except:
+        pass
+    return None
+
+
+def list_quests(journal, config_override=None, status="active"):
+    wanted = str(status).strip().lower()
+    if wanted == "done":
+        wanted = "completed"
+    out = []
+    for quest_id in _quest_map(journal):
+        quest = _quest_map(journal)[quest_id]
+        if wanted in ["all", "*"] or _quest_status(quest) == wanted:
+            out.append(quest)
+    return out
+
+
+def _labels_for_quest(quest, quest_id):
+    labels = [str(quest_id), _quest_title(quest, quest_id)]
+    return labels
+
+
+def find_quests(journal, query):
+    text = str(query).strip()
+    if text == "":
+        return []
+    labels = []
+    label_to_ids = {}
+    quests = _quest_map(journal)
+    for quest_id in quests:
+        for label in _labels_for_quest(quests[quest_id], quest_id):
+            if label == None or str(label).strip() == "":
+                continue
+            label_text = str(label)
+            labels.append(label_text)
+            if label_text not in label_to_ids:
+                label_to_ids[label_text] = []
+            label_to_ids[label_text].append(quest_id)
+    matched = lists.search_list(labels, text)
+    found = []
+    seen = {}
+    for label in matched:
+        for quest_id in label_to_ids[label]:
+            if quest_id in seen:
+                continue
+            seen[quest_id] = True
+            found.append(quests[quest_id])
+    return found
+
+
+def format_match_names(matches, limit=5):
+    shown = []
+    count = 0
+    for quest in matches:
+        if count >= limit:
+            break
+        shown.append(f"**{_quest_title(quest)}**")
+        count += 1
+    text = ", ".join(shown)
+    if len(matches) > limit:
+        text += ", ..."
+    return text
+
+
+def match_error(query, matches):
+    if len(matches) == 0:
+        return f"Found no quest matches for **{query}**."
+    if len(matches) == 1:
+        return None
+    return f"Be more specific: **{query}** matched {format_match_names(matches)}."
+
+
+def _new_entry(text):
+    body = str(text).strip()
+    if len(body) > MAX_ENTRY_TEXT:
+        body = body[0:MAX_ENTRY_TEXT - 3] + "..."
+    return {"at": int(time()), "text": body}
+
+
+def append_entry(ch, config_override, quest_title_or_id, text, category=None):
+    journal = load_journal(ch)
+    quests = _quest_map(journal)
+    matches = find_quests(journal, quest_title_or_id)
+    if len(matches) > 1:
+        return False, match_error(quest_title_or_id, matches)
+    if len(matches) == 1:
+        quest = matches[0]
+        quest_id = _read_field(quest, "id")
+    else:
+        cap = _max_active(config_override)
+        if cap != None and _active_count(journal) >= cap:
+            return False, f"Active quests are capped at **{cap}**."
+        quest_id = _unique_id(journal, quest_title_or_id)
+        quest = {"id": quest_id, "title": str(quest_title_or_id).strip(), "status": "active", "entries": []}
+        if category != None and str(category).strip() != "":
+            quest["category"] = str(category).strip()
+        quests[quest_id] = quest
+    entries = _read_field(quest, "entries")
+    if entries == None or not lists.is_list(entries):
+        entries = []
+    entries.append(_new_entry(text))
+    quest["entries"] = entries
+    quests[quest_id] = quest
+    journal["quests"] = quests
+    if not save_journal(ch, journal):
+        return False, "Could not save quest journal."
+    return True, f"Added a note to **{_quest_title(quest, quest_id)}**."
+
+
+def set_status(ch, query, status):
+    journal = load_journal(ch)
+    matches = find_quests(journal, query)
+    if len(matches) != 1:
+        return False, match_error(query, matches)
+    quest = matches[0]
+    quest_id = _read_field(quest, "id")
+    next_status = str(status).strip().lower()
+    if next_status == "done":
+        next_status = "completed"
+    if next_status not in ["active", "completed"]:
+        return False, "Quest status must be active or completed."
+    quest["status"] = next_status
+    _quest_map(journal)[quest_id] = quest
+    if not save_journal(ch, journal):
+        return False, "Could not save quest journal."
+    return True, f"Marked **{_quest_title(quest, quest_id)}** as **{next_status}**."
+
+
+def activate_from_encounter(ch, config_override, quest_id, title=None, category=None):
+    journal = load_journal(ch)
+    quests = _quest_map(journal)
+    qid = _slugify(quest_id)
+    quest = _read_field(quests, qid)
+    if quest == None:
+        quest = {
+            "id": qid,
+            "title": str(title or quest_id),
+            "category": str(category or "quest"),
+            "status": "active",
+            "entries": [],
+        }
+    quest["status"] = "active"
+    quests[qid] = quest
+    journal["quests"] = quests
+    return save_journal(ch, journal)
+
+
+def format_list(journal, config_override=None, status="active"):
+    quests = list_quests(journal, config_override, status)
+    if len(quests) == 0:
+        return f"No **{status}** quests."
+    lines = []
+    for quest in quests[0:12]:
+        entries = _read_field(quest, "entries")
+        count = len(entries) if lists.is_list(entries) else 0
+        lines.append(f"- **{_quest_title(quest)}** ({count} notes)")
+    if len(quests) > 12:
+        lines.append(f"...and {len(quests) - 12} more.")
+    return "\n".join(lines)
+
+
+def format_quest(quest):
+    if quest == None:
+        return "No quest selected."
+    lines = [f"**{_quest_title(quest)}**", f"**Status:** {_quest_status(quest)}"]
+    category = _read_field(quest, "category")
+    if category != None and str(category).strip() != "":
+        lines.append(f"**Category:** {category}")
+    entries = _read_field(quest, "entries")
+    if entries == None or not lists.is_list(entries) or len(entries) == 0:
+        lines.append("")
+        lines.append("No notes yet.")
+        return "\n".join(lines)
+    lines.append("")
+    for entry in entries[-8:]:
+        at = _read_field(entry, "at")
+        stamp = ""
+        if at != None:
+            stamp = f"<t:{int(at)}:d> "
+        lines.append(f"- {stamp}{_read_field(entry, 'text')}")
+    return "\n".join(lines)

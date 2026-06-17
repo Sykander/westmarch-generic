@@ -81,17 +81,20 @@ Grouped under top-level **`world_data`** on the config gvar. Shapes: [data-shape
 | **`calendars`** | `{ id: calendar, … }` — [clock.gvar](gvars/clock.md) | time (when **`policies.time.mode: world_clock`**) |
 | **`biomes`** | `{ code: { gvar_id, name }, … }` — [biomes.gvar](gvars/biomes.md) | enc, forage, fish, mine, lumber |
 | **`monsters`** | `[ monster, … ]` — [monsters.gvar](gvars/monsters.md) | optional owner overlay for hunt, loot |
+| **`items`** | `{ entries, gvar_id, gvar_ids, include_engine }` or list | craft, buy, sell |
+| **`books`** | `[ book, … ]` or dict | library, read |
+| **`book_gvar_ids`** | `[ gvar_uuid, … ]` | library, read |
 
 **Travel** and **location** require **`locations`** + **`default_location`**. Exploration activities require **`biomes`** registry entries for every biome code used in locations or CLI args. **Hunt** and **loot** use the bundled monster catalogue by default; add **`world_data.monsters`** only for owner-specific creatures or overrides.
 
-Other layer-2 catalogues (not in **`world_data`** yet):
+Other layer-2 catalogues:
 
 | Field | Shape | Commands |
 |-------|-------|----------|
 | `currencies` | `{ id: currency_def, … }` | **wallet**; shop/wallet prices — [data-shapes § Currency](data-shapes.md#currency) |
 | `shops` | `{ id: shop, … }` | **buy**, **sell** — [data-shapes § Shop](data-shapes.md#shop) |
-| `recipes` | `[ recipe, … ]` | brew, enchant, **recipe** |
-| `items`, `library`, … | per vertical | crafting, content, … |
+| `recipes` | `[ recipe, … ]`, `world_data.recipes`, or `extensions.recipes` | brew, enchant, **recipe** |
+| `extensions.*` | gvar UUID pointers for large catalogues | monsters, items, recipes, books, spells |
 
 **Location keys** (`oakwood`, `river_town`, …) are stable **`id`** slugs used in path `from`/`to`, cvar resolution, and (argument mode) distinct from biome codes.
 
