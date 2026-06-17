@@ -181,24 +181,16 @@ def _enabled_commands_summary(cfg):
         if block == None:
             continue
         on = _subsystem_enabled(block)
-        marker = "+"
-        status = "on"
-        if not on:
-            marker = "-"
-            status = "off"
-        lines.append(f"{marker} {key}: {status}")
+        lines.append(f"{key}:")
+        lines.append(f"  enabled: {_bool_text(on)}")
         commands = _read_field(block, "commands")
         if commands == None or not dicts.is_dict(commands):
             continue
+        lines.append("  commands:")
         for cmd in _dict_keys(commands):
             command_on = _read_field(commands, cmd) == True
-            cmd_marker = "+"
-            cmd_status = "on"
-            if not command_on:
-                cmd_marker = "-"
-                cmd_status = "off"
-            lines.append(f"{cmd_marker}   {cmd}: {cmd_status}")
-    return _codeblock("diff", lines)
+            lines.append(f"    {cmd}: {_bool_text(command_on)}")
+    return _codeblock("yaml", lines)
 
 
 def _world_data(cfg):
@@ -389,23 +381,22 @@ def summarize_config(section=None):
     if uuid != None and str(uuid).strip() != "":
         uuid_text = str(uuid).strip()
     wiring_lines = [
-        f"svar = {config.SVAR_NAME}",
-        f"config_gvar = {uuid_text}",
-        "load = OK",
+        f"config_gvar: {uuid_text}",
+        "load: OK",
     ]
     cv = _read_field(cfg, "config_version")
     if cv != None and str(cv).strip() != "":
-        wiring_lines.append(f"config_version = {cv}")
+        wiring_lines.append(f"config_version: {cv}")
     wiring = (
-        _codeblock("ini", wiring_lines)
+        _codeblock("yaml", wiring_lines)
         + f"\n**Editor:** {_editor_link(uuid)}\n"
         + f"**Dashboard:** {_dashboard_link(uuid)}"
     )
-    runtime_lines = [f"rules_edition = {config.get_rules_edition()}"]
+    runtime_lines = [f"rules_edition: {config.get_rules_edition()}"]
     rv = _read_field(cfg, "rules_version")
     if rv != None and str(rv).strip() != "":
-        runtime_lines.append(f"config_override = {rv}")
-    runtime = _codeblock("ini", runtime_lines)
+        runtime_lines.append(f"config_override: {rv}")
+    runtime = _codeblock("yaml", runtime_lines)
     sections = {
         "wiring": wiring,
         "world": _world_summary(cfg),

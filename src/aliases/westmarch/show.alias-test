@@ -23,7 +23,7 @@ vars:
 
 !show
 ---
-"re:```diff[\\s\\S]*- exploration: off[\\s\\S]*-   enc: off[\\s\\S]*-   forage: off"
+"re:```yaml[\\s\\S]*exploration:[\\s\\S]*enabled: false[\\s\\S]*enc: false[\\s\\S]*forage: false"
 ---
 name: show lists subsystem status
 vars:
@@ -63,11 +63,25 @@ vars:
     ffff1111-1111-1111-1111-111111111111: |
       # empty owner body
 
+!show runtime
+---
+re:```yaml[\s\S]*rules_edition: 2014
+---
+name: show section filter runtime uses yaml style
+vars:
+  uvars:
+    _wm_command: show
+  svars:
+    westmarch_config: "ffff1111-1111-1111-1111-111111111111"
+  gvars:
+    ffff1111-1111-1111-1111-111111111111: |
+      # empty owner body
+
 !show
 ---
-"re:\\+ exploration: on[\\s\\S]*\\+   enc: on[\\s\\S]*-   forage: off"
+"re:exploration:[\\s\\S]*enabled: true[\\s\\S]*enc: true[\\s\\S]*forage: false"
 ---
-name: show marks enabled subsystem in diff block
+name: show marks enabled subsystem in yaml block
 vars:
   uvars:
     _wm_command: show
@@ -93,7 +107,7 @@ vars:
 
 !show
 ---
-"re:\\+ exploration: on[\\s\\S]*\\+   enc: on"
+"re:exploration:[\\s\\S]*enabled: true[\\s\\S]*enc: true"
 ---
 name: show does not validate enabled subsystem data
 vars:
