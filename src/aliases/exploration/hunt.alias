@@ -110,7 +110,7 @@ lines = [
     check_line,
 ]
 if passed:
-    lines.append(f"Trail found. {monsters.format_combat_block(monster)}")
+    lines.append(f"Trail found. {monsters.format_combat_block(monster, ctx.prefix)}")
 else:
     lines.append("The trail goes cold.")
 

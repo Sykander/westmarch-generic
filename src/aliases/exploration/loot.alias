@@ -21,7 +21,7 @@ args = argparse(&ARGS&)
 argslist = &ARGS&
 
 if len(argslist) > 0 and argslist[0] in ["help", "?"]:
-    return get_embed(desc = loot.help_text())
+    return get_embed(desc = loot.help_text(ctx.prefix, cmd_name))
 
 try:
     ch = character()
@@ -29,5 +29,5 @@ except:
     return get_embed(desc = f"{cmd_name} requires a character")
 
 cfg = config.get_config()
-return loot.run(argslist, args, get_embed, cfg, ch)
+return loot.run(argslist, args, get_embed, cfg, ch, ctx.prefix, cmd_name)
 </drac2>

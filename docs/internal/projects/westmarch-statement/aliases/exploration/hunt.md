@@ -11,7 +11,7 @@ Survival check to track a creature before combat. westmarch expects **`!enc`** i
 ```
 
 - **Help:** enc prerequisite note, usage, group hunt `-n` chaining. No-arg `!hunt` asks for a creature and points to `!hunt help`.
-- **Creature:** `lists.search_list` over `monsters_names`; no matches, one match, or ask for a more specific name with up to five matches.
+- **Creature:** shared `lists.search_list` semantics over owner rows plus targeted monster shards; no matches, one match, or ask for a more specific name with up to five matches.
 - **Party size:** optional named `-p <party_size>` flag. Positional numbers remain part of the creature query.
 - **DC:** `floor((10 if party_size==1 else 8*party_size) + cr)`.
 - **Roll:** Survival check.

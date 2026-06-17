@@ -6,9 +6,9 @@ Search and load **monster** rows from engine catalogue shards. Source TSV: [asse
 
 ## Shards
 
-26 letter gvars: **`catalogues/monsters/monsters_{a-z}.gvar.json`** — JSON arrays, one per first letter of **`name`**. The generator also writes **`catalogues/monsters/monsters_names.gvar.json`**, a JSON array of monster names used for consistent `lists.search_list` matching before loading a data shard.
+26 letter gvars: **`catalogues/monsters/monsters_{a-z}.gvar.json`** — JSON arrays, one per first letter of **`name`**.
 
-Facade loads **`monsters_names`** first to resolve user input. If there are no matches, commands report no matches. If there are multiple matches, commands ask for a more specific name and show up to five matches. Only a single resolved name loads the matching letter shard via `get_gvar` + per-invocation cache.
+Facade builds candidates from owner entries, the query's first-letter shard, and small hotpath routes for common families such as **dragon**, **goblin**, and **ooze**. It then uses shared **`lists.search_list_by_key`** semantics over those candidates. If there are no matches, commands report no matches. If there are multiple matches, commands ask for a more specific name and show up to five matches. Shards are loaded through `get_gvar` and cached per invocation.
 
 ## API
 
@@ -35,7 +35,7 @@ Monster dict shape *(minimal)*:
 { "name": str, "cr": number | str, "type": str, "size": str, "image_url": str, ... }
 ```
 
-Large **owner** catalogues: config **`extensions.monsters`** UUID → same shard or single extension gvar pattern as [items.md](items.md).
+Owner entries can be added inline under **`world_data.monsters`**. Large **owner** catalogues use config **`extensions.monsters`** UUID → same row shape as the generated shard arrays.
 
 ## Used by
 

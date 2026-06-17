@@ -79,9 +79,10 @@ Grouped under top-level **`world_data`** on the config gvar. Shapes: [data-shape
 | **`paths`** | `[ path, … ]` — [paths.gvar](gvars/paths.md) | travel |
 | **`transport`** | `{ id: transport_mode, … }` | travel — horse, boat, spelljammer, … |
 | **`calendars`** | `{ id: calendar, … }` — [clock.gvar](gvars/clock.md) | time (when **`policies.time.mode: world_clock`**) |
-| **`biomes`** | `{ code: { gvar_id, name }, … }` — [biomes.gvar](gvars/biomes.md) | enc, forage, fish, mine, lumber, hunt |
+| **`biomes`** | `{ code: { gvar_id, name }, … }` — [biomes.gvar](gvars/biomes.md) | enc, forage, fish, mine, lumber |
+| **`monsters`** | `[ monster, … ]` — [monsters.gvar](gvars/monsters.md) | optional owner overlay for hunt, loot |
 
-**Travel** and **location** require **`locations`** + **`default_location`**. Exploration requires **`biomes`** registry entries for every biome code used in locations or CLI args.
+**Travel** and **location** require **`locations`** + **`default_location`**. Exploration activities require **`biomes`** registry entries for every biome code used in locations or CLI args. **Hunt** and **loot** use the bundled monster catalogue by default; add **`world_data.monsters`** only for owner-specific creatures or overrides.
 
 Other layer-2 catalogues (not in **`world_data`** yet):
 

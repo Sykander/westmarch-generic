@@ -424,6 +424,7 @@ westmarch reference: `process_encounters.gvar` lines 14–192 → one port file 
 | **`travel`**, **`location`** | **`locations`**, **`default_location`**, **`paths`** (for routing) |
 | Exploration activities with **`enc_biome_source: location`** or **`auto`** (inferred) | **`locations`** + **`biomes`** registry + **`journeys.gvar`** |
 | Exploration activity commands | **`biomes`** registry with resolvable **`gvar_id`** per referenced code |
+| **`hunt`**, **`loot`** custom creatures | Optional **`monsters`** owner rows; bundled monster catalogue is available by default |
 | **`time`** with **`policies.time.mode: world_clock`** | **`calendars`** (at least one) |
 
 Access after load:
@@ -435,6 +436,7 @@ cfg.world_data.paths
 cfg.world_data.transport
 cfg.world_data.calendars
 cfg.world_data.biomes.forest.gvar_id
+cfg.world_data.monsters
 ```
 
 **Legacy flat keys** — older docs/examples used top-level **`locations`**, **`paths`**, **`encounter_pools`**, **`world_clock`**. The web config editor **warns** when those appear without **`world_data`**; loaders accept flat keys during migration only.
@@ -452,6 +454,9 @@ world_data = {
         "forest": { "gvar_id": "<uuid>", "name": "Forest" },
         "cave": { "gvar_id": "<uuid>", "name": "Cave" },
     },
+    "monsters": [
+        { "name": "Moonlit Wolf", "cr": 1, "type_str": "Beast", "size": "M" },
+    ],
 }
 ```
 
@@ -463,8 +468,9 @@ world_data = {
 | **`transport`** | no | [Transport](#transport) modes — horse, boat, ship, … |
 | **`calendars`** | when world clock on | [Calendar](#calendar) definitions |
 | **`biomes`** | when exploration on | Registry only — [Biome registry](#biome-registry); encounter bodies in separate gvars |
+| **`monsters`** | no | Owner monster overlay rows for **`hunt`** / **`loot`**; large bestiaries use **`extensions.monsters`** |
 
-Catalogues (**`items`**, **`shops`**, **`library`**, …) stay **outside** **`world_data`** for now — same config gvar layer 2, documented per vertical.
+Other catalogues (**`items`**, **`shops`**, **`library`**, …) stay **outside** **`world_data`** for now — same config gvar layer 2, documented per vertical.
 
 ### Transport
 

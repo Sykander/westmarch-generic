@@ -39,8 +39,8 @@ def clear_session(ch):
 def attempt_loot(ch, config, lootable_id, args):
     """Roll skill check; on success apply via pc; return (success, message, updated_session)."""
 
-def format_session(session, config):
-    """Help player see remaining lootables."""
+def format_session(session, config, prefix="!", command="loot"):
+    """Help player see remaining lootables with the active alias prefix."""
 ```
 
 Display config lives under **`subsystems.exploration.config`**:
@@ -55,6 +55,8 @@ Default opportunities mirror the westmarch alias:
 - Edible non-person creatures can roll **Rations** using **Survival**.
 
 Type-based checks are **Nature** for beast/plant, **Religion** for celestial/fiend/undead, **Arcana** for aberration/elemental/construct, and **Survival** otherwise.
+
+Player-facing command references in help and session text accept the alias-provided prefix and command name, so non-`!` servers display the correct command examples.
 
 Optional later: config **`LOOT_RULES`** overrides CR→gp bands and type→skill mapping.
 

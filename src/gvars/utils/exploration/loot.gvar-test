@@ -27,6 +27,13 @@ True
 ---
 name: format_session handles empty active session
 
+session = {"creature": "Wolf", "items": []}
+return "`?loot clear`" in loot.format_session(session, {}, "?", "loot") and "`?loot <creature>`" in loot.help_text("?", "loot")
+---
+True
+---
+name: loot help and empty sessions use the provided command prefix
+
 session = {
     "creature": "Wolf",
     "items": [

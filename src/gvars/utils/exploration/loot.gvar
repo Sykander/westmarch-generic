@@ -385,14 +385,14 @@ def _apply_reward(ch, lootable):
     return f"Recorded **{name}**."
 
 
-def format_session(session, config=None):
+def format_session(session, config=None, prefix="!", command="loot"):
     creature = _read_field(session, "creature")
     if creature == None or str(creature).strip() == "":
         creature = "Unknown creature"
     lines = [f"Active loot session: **{creature}**"]
     items = _items(session)
     if len(items) == 0:
-        lines.append("No lootables remain. Use `!loot clear` to close the session.")
+        lines.append(f"No lootables remain. Use `{prefix}{command} clear` to close the session.")
         return "\n".join(lines)
     lines.append("Loot table:")
     show_dc = exploration.show_check_dcs(config, "loot")
@@ -419,20 +419,22 @@ def format_session(session, config=None):
     return "\n".join(lines)
 
 
-def help_text():
+def help_text(prefix="!", command="loot"):
+    cmd = f"{prefix}{command}"
     return "\n".join([
         "**Usage**",
-        "`!loot <creature>` - start a creature loot table session.",
-        "`!loot <item>` - roll for an item in the active session.",
-        "`!loot clear` - clear the active session.",
-        "`!loot` - show the active session.",
+        f"`{cmd} <creature>` - start a creature loot table session.",
+        f"`{cmd} <item>` - roll for an item in the active session.",
+        f"`{cmd} clear` - clear the active session.",
+        f"`{cmd}` - show the active session.",
     ])
 
 
-def attempt_loot(ch, config, lootable_id, args):
+def attempt_loot(ch, config, lootable_id, args, prefix="!", command="loot"):
+    cmd = f"{prefix}{command}"
     session = get_session(ch)
     if session == None:
-        return False, "No active loot session. Start one with `!loot <creature>`.", None
+        return False, f"No active loot session. Start one with `{cmd} <creature>`.", None
     lootable = _find_lootable(session, lootable_id)
     if lootable == None:
         matches = _lootable_matches(session, lootable_id)
@@ -440,8 +442,8 @@ def attempt_loot(ch, config, lootable_id, args):
             shown = []
             for match in matches[:5]:
                 shown.append(f"**{match}**")
-            return False, f"Be more specific: **{lootable_id}** matched {', '.join(shown)}.\n\n{format_session(session, config)}", session
-        return False, f"Unknown lootable **{lootable_id}**.\n\n{format_session(session, config)}", session
+            return False, f"Be more specific: **{lootable_id}** matched {', '.join(shown)}.\n\n{format_session(session, config, prefix, command)}", session
+        return False, f"Unknown lootable **{lootable_id}**.\n\n{format_session(session, config, prefix, command)}", session
     skill = _read_field(lootable, "skill")
     if skill == None:
         skill = "Investigation"
@@ -488,16 +490,17 @@ def attempt_loot(ch, config, lootable_id, args):
     return False, f"{check_text}: {full}\n\nCould not recover **{name}**.", session
 
 
-def run(argslist, args, get_embed, config, ch):
+def run(argslist, args, get_embed, config, ch, prefix="!", command="loot"):
+    cmd = f"{prefix}{command}"
     if len(argslist) == 0:
         session = get_session(ch)
         if session == None:
-            return get_embed(desc="No active loot session. Use `!loot <creature>` to start one.")
-        return get_embed(desc=format_session(session, config))
+            return get_embed(desc=f"No active loot session. Use `{cmd} <creature>` to start one.")
+        return get_embed(desc=format_session(session, config, prefix, command))
 
     first = str(argslist[0]).strip().lower()
     if first in ["help", "?"]:
-        return get_embed(desc=help_text())
+        return get_embed(desc=help_text(prefix, command))
     if first in ["clear", "reset", "end"]:
         if clear_session(ch):
             return get_embed(desc="Loot session cleared.")
@@ -506,7 +509,7 @@ def run(argslist, args, get_embed, config, ch):
     text = " ".join([str(a) for a in argslist]).strip()
     session = get_session(ch)
     if session != None:
-        ok, msg, updated = attempt_loot(ch, config, text, args)
+        ok, msg, updated = attempt_loot(ch, config, text, args, prefix, command)
         return get_embed(desc=msg)
 
     monster, matches, resolve_err = monsters.resolve(config, text)
@@ -524,7 +527,7 @@ def run(argslist, args, get_embed, config, ch):
         )
     return exploration.embed_with_image(
         get_embed,
-        f"Started loot table session.\n\n{format_session(session, config)}",
+        f"Started loot table session.\n\n{format_session(session, config, prefix, command)}",
         config,
         "loot",
         monsters.monster_image(monster),

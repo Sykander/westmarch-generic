@@ -51,7 +51,7 @@ Large lists are **never** one monolithic gvar. Split rules:
 
 | Source TSV | Shard files *(planned)* | Split key | Facade module |
 |------------|-------------------------|-----------|---------------|
-| [monsters.tsv](../../../../assets/monsters.tsv) | `catalogues/monsters/monsters_{a-z}.gvar.json` + `monsters_names.gvar.json` | First letter of **`name`**; names list for lookup | [monsters.gvar](gvars/monsters.md) |
+| [monsters.tsv](../../../../assets/monsters.tsv) | `catalogues/monsters/monsters_{a-z}.gvar.json` | First letter of **`name`**; facade also has hotpath routes for common families | [monsters.gvar](gvars/monsters.md) |
 | [items.tsv](../../../../assets/items.tsv) | `items_list.gvar.json`, `potions_list.gvar.json`, `magic_items_list.gvar.json` | **`type`** column | [items.gvar](gvars/items.md) |
 | [spells.tsv](../../../../assets/spells.tsv) | `spells/spells_list.gvar.json` *(split by level later if size requires)* | — | [spells.gvar](gvars/spells.md) |
 | [books-forgotten-realms.tsv](../../../../assets/books-forgotten-realms.tsv) | `configs/books/forgotten_realms_{a-z}.gvar.json` or single file until count grows | First letter of **`name`** | [library.gvar](gvars/library.md) |
@@ -66,14 +66,14 @@ Book rows include optional **`content_link`** (full text URL) — see [data-shap
 
 | | westmarch | westmarch-generic *(target)* |
 |---|-----------|-------------------------------|
-| Monster lookup | Load **one letter** shard via `get_gvar` | Same |
+| Monster lookup | Load **one letter** shard via `get_gvar` | Owner rows + query letter shard + targeted hotpath shards |
 | Item lookup | **Eager** load all three lists at import | **Lazy** — load **`items_list` / `potions_list` / `magic_items_list`** only when search scope needs that type (or after type filter) |
 | Book lookup | Single large `books.gvar` | Split by corpus + letter; load one shard per search prefix |
 | Data in shard file | Raw **JSON** body (`JSON.stringify(rows)`) | Same for generated shards — `load_json(get_gvar(uuid))` in facade |
 
 Facades keep a **per-invocation cache** `{ shard_id: parsed_rows }` — second lookup in the same alias reuses memory without re-fetching the gvar.
 
-User-entered names should be resolved with **`lists.search_list`** over a small names/index gvar where available, then load the exact data shard only after the result is unique. Commands should report no matches, exactly one match, or ask for a more specific input and show up to five matches.
+User-entered names should resolve through shared **`lists.search_list`** semantics wherever practical. For large catalogues, use a small names/index gvar or a targeted candidate set before loading broader data. Commands should report no matches, exactly one match, or ask for a more specific input and show up to five matches.
 
 ---
 
@@ -119,7 +119,7 @@ Location: **`utils/`** at repo root — see [utils/README.md](../../../utils/REA
 
 | Script | Input | Output |
 |--------|-------|--------|
-| **`generate-monsters.js`** | `assets/monsters.tsv` | `src/gvars/utils/catalogues/monsters/monsters_{a-z}.gvar.json`, `monsters_names.gvar.json` |
+| **`generate-monsters.js`** | `assets/monsters.tsv` | `src/gvars/utils/catalogues/monsters/monsters_{a-z}.gvar.json` |
 | **`generate-items.js`** | `assets/items.tsv` | `items_list.gvar.json`, `potions_list.gvar.json`, `magic_items_list.gvar.json` |
 | **`generate-spells.js`** | `assets/spells.tsv` | `spells/spells_list.gvar.json` |
 | **`generate-books.js`** | `books-forgotten-realms.tsv`, `books-real.tsv` | `configs/books/{corpus}_all.gvar.json` when empty; else `{corpus}_{a-z}.gvar.json` |

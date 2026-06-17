@@ -68,7 +68,7 @@ src/gvars/
     clock.gvar
     weather.gvar
   catalogues/
-    monsters/              # generate-monsters.js → monsters_{a-z}.gvar.json + monsters_names.gvar.json
+    monsters/              # generate-monsters.js → monsters_{a-z}.gvar.json
     items/                 # generate-items.js → *_list.gvar.json
     spells/
   exploration/

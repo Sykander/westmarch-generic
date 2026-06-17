@@ -49,7 +49,7 @@ Review notes:
 
 ## Slice 3 — Hunt and loot
 
-**Status:** in implementation; core hunt/loot loop is present, with focused regression coverage expanding around flags and extraction.
+**Status:** implemented; configurable loot-rule overrides remain deferred.
 
 Port the combat/loot loop:
 
