@@ -23,15 +23,17 @@ DEFAULT_HUD_FIELDS = ["coins", "wallet", "location", "time", "weather"]
 
 
 def _read_field(obj, key):
-    if obj == None:
+    if _is_missing(obj):
+        return None
+    if _is_dict(obj):
+        if key in obj:
+            val = obj[key]
+            if not _is_missing(val):
+                return val
         return None
     try:
-        return obj[key]
-    except:
-        pass
-    try:
         val = obj[key]
-        if val != None:
+        if not _is_missing(val):
             return val
     except:
         pass
@@ -82,36 +84,70 @@ def _read_field(obj, key):
     }
     if key in attrs:
         try:
-            return attrs[key](obj)
+            val = attrs[key](obj)
+            if not _is_missing(val):
+                return val
         except:
             pass
     return None
 
 
-def _is_nonempty(value):
+def _is_missing(value):
     if value == None:
+        return True
+    try:
+        text = f"{value}".strip()
+        if text == "<missing>" or text == "None":
+            return True
+    except:
+        pass
+    return False
+
+
+def _is_dict(value):
+    if _is_missing(value):
+        return False
+    try:
+        result = f"{dicts.is_dict(value)}"
+        return result == "True" or result == "true"
+    except:
+        return False
+
+
+def _is_list(value):
+    if _is_missing(value):
+        return False
+    try:
+        result = f"{lists.is_list(value)}"
+        return result == "True" or result == "true"
+    except:
+        return False
+
+
+def _is_nonempty(value):
+    if _is_missing(value):
         return False
     if value == True:
         return True
     if value == False:
         return False
-    if lists.is_list(value):
+    if _is_list(value):
         return len(value) > 0
-    if dicts.is_dict(value):
+    if _is_dict(value):
         return len([k for k in value]) > 0
     return str(value).strip() != ""
 
 
 def _same_text(left, right):
-    if left == None or right == None:
+    if _is_missing(left) or _is_missing(right):
         return False
     return str(left).strip().lower() == str(right).strip().lower()
 
 
 def _as_check_list(raw):
-    if raw == None:
+    if _is_missing(raw):
         return []
-    if lists.is_list(raw):
+    if _is_list(raw):
         return raw
     return []
 
@@ -176,23 +212,26 @@ def _check_applies(cfg, check):
 def _read_cvar(ch, key):
     raw = None
     try:
-        cvars = ch.cvars
-        raw = cvars[key]
+        if exists(key):
+            raw = get(key)
     except:
         pass
-    if raw != None:
+    if not _is_missing(raw):
+        return raw
+    try:
+        cvars = ch.cvars
+        if key in cvars:
+            raw = cvars[key]
+    except:
+        pass
+    if not _is_missing(raw):
         return raw
     try:
         raw = ch.get_cvar(key)
     except:
         pass
-    if raw != None:
+    if not _is_missing(raw):
         return raw
-    try:
-        if exists(key):
-            return get(key)
-    except:
-        pass
     return None
 
 
@@ -236,7 +275,7 @@ def _value_passes(value, check):
         passed = _same_text(value, expected)
     else:
         allowed = _read_field(check, "one_of")
-        if lists.is_list(allowed):
+        if _is_list(allowed):
             passed = False
             for item in allowed:
                 if _same_text(value, item):
@@ -275,7 +314,7 @@ def _evaluate_checks(cfg, ch):
     passed = []
     missing = []
     for check in configured:
-        if not dicts.is_dict(check):
+        if not _is_dict(check):
             continue
         if not _check_applies(cfg, check):
             continue
@@ -292,7 +331,7 @@ def _evaluate_checks(cfg, ch):
 
 def _enabled_command_lines(cfg):
     subs = _read_field(cfg, "subsystems")
-    if subs == None or not dicts.is_dict(subs):
+    if not _is_dict(subs):
         return []
     lines = []
     for subsystem in ["exploration", "travel", "downtime", "crafting", "economy", "content", "misc"]:
@@ -301,7 +340,7 @@ def _enabled_command_lines(cfg):
             continue
         commands = _read_field(block, "commands")
         enabled = []
-        if commands != None and dicts.is_dict(commands):
+        if _is_dict(commands):
             for cmd in commands:
                 if _read_field(commands, cmd) == True:
                     enabled.append(f"`!{cmd}`")
@@ -323,24 +362,24 @@ def _hud_enabled(cfg):
     hud = _hud_policy(cfg)
     if hud == False:
         return False
-    if dicts.is_dict(hud) and _read_field(hud, "enabled") == False:
+    if _is_dict(hud) and _read_field(hud, "enabled") == False:
         return False
     return True
 
 
 def _hud_fields(cfg):
     hud = _hud_policy(cfg)
-    if lists.is_list(hud):
+    if _is_list(hud):
         return hud
-    if dicts.is_dict(hud):
+    if _is_dict(hud):
         fields = _read_field(hud, "fields")
-        if lists.is_list(fields):
+        if _is_list(fields):
             return fields
     return DEFAULT_HUD_FIELDS
 
 
 def _field_label(field, fallback):
-    if dicts.is_dict(field):
+    if _is_dict(field):
         label = _read_field(field, "label")
         if _is_nonempty(label):
             return str(label).strip()
@@ -355,7 +394,7 @@ def _line(label, value):
 
 
 def _amount_text(raw):
-    if raw == None or str(raw).strip() == "":
+    if _is_missing(raw) or str(raw).strip() == "":
         return "0"
     text = str(raw).strip()
     try:
@@ -368,15 +407,15 @@ def _amount_text(raw):
 
 
 def _display_value(value):
-    if value == None:
+    if _is_missing(value):
         return None
-    if dicts.is_dict(value):
+    if _is_dict(value):
         for key in ["current", "value", "description", "name", "label"]:
             nested = _read_field(value, key)
             if _is_nonempty(nested):
                 return str(nested).strip()
         return None
-    if lists.is_list(value):
+    if _is_list(value):
         if len(value) == 0:
             return None
         return ", ".join([str(item).strip() for item in value if _is_nonempty(item)])
@@ -444,7 +483,7 @@ def _currency_label(entry, currency_id, amount_text):
 
 def _wallet_text(cfg, ch):
     currencies = _read_field(cfg, "currencies")
-    if currencies == None or not dicts.is_dict(currencies):
+    if not _is_dict(currencies):
         return None
     parts = []
     for currency_id in currencies:
@@ -593,7 +632,7 @@ def _hud_lines(cfg, ch):
     lines = []
     for field in _hud_fields(cfg):
         line = None
-        if dicts.is_dict(field):
+        if _is_dict(field):
             if _check_applies(cfg, field):
                 line = _custom_hud_line(cfg, ch, field)
         else:

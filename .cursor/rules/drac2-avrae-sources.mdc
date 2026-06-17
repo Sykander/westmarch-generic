@@ -51,6 +51,8 @@ The **[avrae-ls](https://github.com/1drturtle/avrae-ls)** language server and **
 
 **When `.alias-test` / `.avraels.json` / `.varfile.json` behavior surprises you:** (1) Read the cached **`alias-tests.md`** and **`configuration.md`**. (2) Compare with **`github_blob`** URLs in **`reference-cache.json`**. If upstream changed, run **`refresh-avrae-ls-docs.sh`** (updates **`last_fetch`**), bump **`tracked_avrae_ls_version`** when you validate a new release, commit. (3) If the cache matches upstream but local **`avrae-ls --version`** differs from **`tracked_avrae_ls_version`**, align or note the drift.
 
+Current test-runner profile behavior: **`--run-tests`** uses **`.avraels.json`** top-level **`defaultProfile`**. There is no supported per-test **`profile:`** metadata or CLI **`--profile`** in the installed runner; test metadata is limited to **`name`**, **`vars`**, and **`character`**.
+
 **`.varfile.json`** in this repo is **generated** (see **`drac2-tools-maintainer.mdc`**); how Avrae LS consumes **`varFiles`** is described in **`upstream/docs/configuration.md`**.
 
 ## `.alias-test` files

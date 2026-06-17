@@ -189,6 +189,35 @@ def _is_dict(value) -> bool:
         return False
 
 
+def _edition_from_value(value):
+    try:
+        text = str(value).strip()
+    except:
+        return None
+    if text == "2024" or text == "2014":
+        return text
+    return None
+
+
+def _edition_from_settings(settings):
+    if settings == None:
+        return None
+    for key in ["dnd_version", "rules_version", "rules_edition"]:
+        try:
+            edition = _edition_from_value(settings[key])
+            if edition != None:
+                return edition
+        except:
+            pass
+        try:
+            edition = _edition_from_value(settings.get(key))
+            if edition != None:
+                return edition
+        except:
+            pass
+    return None
+
+
 def _deep_merge_defaults(owner, defaults):
     if defaults == None:
         return owner
@@ -321,13 +350,15 @@ def _load_config_gvar(uuid):
 
 
 def _avrae_rules_edition():
-    # Phase 0 — Avrae guild rules exposure TBD; return None to fall through to "2014".
     try:
         g = ctx.guild
         if g != None:
-            rv = g.dnd_version
-            if rv == "2024" or rv == "2014":
-                return rv
+            try:
+                edition = _edition_from_settings(g.servsettings())
+                if edition != None:
+                    return edition
+            except:
+                pass
     except:
         pass
     return None
@@ -339,13 +370,12 @@ def get_config():
 
 def get_rules_edition():
     if cfg != None:
-        rv = None
         try:
-            rv = cfg.rules_version
+            edition = _edition_from_value(cfg.rules_version)
+            if edition != None:
+                return edition
         except:
-            rv = None
-        if rv == "2024" or rv == "2014":
-            return rv
+            pass
     avrae = _avrae_rules_edition()
     if avrae == "2024" or avrae == "2014":
         return avrae

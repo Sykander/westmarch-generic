@@ -48,7 +48,16 @@ const VALID_REPEAT = ['off', 'same_biome', 'global'];
 const VALID_LIBRARY_TOPIC = ['inferred', 'balanced', 'manual', 'restricted'];
 const VALID_MONSTER_IMAGE_MODES = ['thumbnail', 'thumb', 'image', 'off', 'none'];
 const VALID_PLAYER_SETUP_CHECK_TYPES = ['cvar', 'uvar', 'svar', 'cc', 'counter', 'custom_counter'];
-const VALID_PLAYER_SETUP_HUD_FIELDS = ['coins', 'coin', 'coinpurse', 'gp', 'wallet', 'location', 'time', 'weather'];
+const VALID_PLAYER_SETUP_HUD_FIELDS = [
+  'coins',
+  'coin',
+  'coinpurse',
+  'gp',
+  'wallet',
+  'location',
+  'time',
+  'weather',
+];
 const VALID_ENGINE_BIOMES = [
   'beach',
   'forest',

@@ -8,7 +8,7 @@ using(
     lists = env.gvars.lists,
 )
 
-ok, msg = auth.is_allowed()
+ok, msg = auth.is_allowed("show")
 get_embed = display.get_display()
 
 if not ok:
@@ -40,15 +40,17 @@ SUBSYSTEM_KEYS = [
 
 
 def _read_field(obj, key):
-    if obj == None:
+    if _is_missing(obj):
+        return None
+    if _is_dict(obj):
+        if key in obj:
+            val = obj[key]
+            if not _is_missing(val):
+                return val
         return None
     try:
-        return obj[key]
-    except:
-        pass
-    try:
         val = obj[key]
-        if val != None:
+        if not _is_missing(val):
             return val
     except:
         pass
@@ -93,14 +95,57 @@ def _read_field(obj, key):
     }
     if key in attrs:
         try:
-            return attrs[key](obj)
+            val = attrs[key](obj)
+            if not _is_missing(val):
+                return val
         except:
             pass
     return None
 
 
-def _nonempty_str(value):
+def _is_missing(value):
     if value == None:
+        return True
+    try:
+        text = f"{value}".strip()
+        if text == "<missing>" or text == "None":
+            return True
+    except:
+        pass
+    return False
+
+
+def _is_dict(value):
+    if _is_missing(value):
+        return False
+    try:
+        result = f"{dicts.is_dict(value)}"
+        return result == "True" or result == "true"
+    except:
+        return False
+
+
+def _is_list(value):
+    if _is_missing(value):
+        return False
+    try:
+        result = f"{lists.is_list(value)}"
+        return result == "True" or result == "true"
+    except:
+        return False
+
+
+def _text_or_default(value, fallback):
+    if _is_missing(value):
+        return fallback
+    text = str(value).strip()
+    if text == "":
+        return fallback
+    return text
+
+
+def _nonempty_str(value):
+    if _is_missing(value):
         return False
     return str(value).strip() != ""
 
@@ -118,7 +163,7 @@ def _bool_text(value):
 
 
 def _dict_keys(obj):
-    if obj == None or not dicts.is_dict(obj):
+    if not _is_dict(obj):
         return []
     out = []
     for k in obj:
@@ -136,7 +181,7 @@ def _path_count(wd):
     paths = _read_field(wd, "paths")
     if paths == None:
         return 0
-    if lists.is_list(paths):
+    if _is_list(paths):
         return len(paths)
     return _count_dict(paths)
 
@@ -184,7 +229,7 @@ def _enabled_commands_summary(cfg):
         lines.append(f"{key}:")
         lines.append(f"  enabled: {_bool_text(on)}")
         commands = _read_field(block, "commands")
-        if commands == None or not dicts.is_dict(commands):
+        if not _is_dict(commands):
             continue
         lines.append("  commands:")
         for cmd in _dict_keys(commands):
@@ -221,7 +266,7 @@ def _biomes_summary(cfg):
     for code in _dict_keys(registry):
         entry = _read_field(registry, code)
         gid = "none"
-        if entry != None and dicts.is_dict(entry):
+        if _is_dict(entry):
             raw = _read_field(entry, "gvar_id")
             if raw != None:
                 gid = str(raw).strip()
@@ -255,9 +300,7 @@ def _display_summary(cfg):
     fb = _read_field(disp_pol, "footer_behaviour")
     if fb == None:
         fb = "balanced"
-    command_thumb = _read_field(disp_pol, "command_thumbnail")
-    if command_thumb == None:
-        command_thumb = "default"
+    command_thumb = _text_or_default(_read_field(disp_pol, "command_thumbnail"), "default")
     lines.append(f"command_thumbnail: {command_thumb}")
     lines.append(f"footer_policy: {fb}")
     return _codeblock("yaml", lines)
@@ -315,20 +358,20 @@ def _player_setup_summary(cfg):
         require_character = True
     checks = _read_field(player_setup, "checks")
     count = 0
-    if lists.is_list(checks):
+    if _is_list(checks):
         count = len(checks)
     hud = _read_field(player_setup, "hud")
     hud_enabled = True
     fields = []
     if hud == False:
         hud_enabled = False
-    elif dicts.is_dict(hud):
+    elif _is_dict(hud):
         if _read_field(hud, "enabled") == False:
             hud_enabled = False
         raw_fields = _read_field(hud, "fields")
-        if lists.is_list(raw_fields):
+        if _is_list(raw_fields):
             for field in raw_fields:
-                if dicts.is_dict(field):
+                if _is_dict(field):
                     key = _read_field(field, "key")
                     kind = _read_field(field, "type")
                     if key != None:

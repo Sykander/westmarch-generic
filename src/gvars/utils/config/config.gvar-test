@@ -42,6 +42,18 @@ return config.get_rules_edition()
 ---
 name: rules edition defaults to 2014
 
+return config.get_rules_edition()
+---
+"2024"
+---
+name: rules edition reads configured rules_version
+vars:
+  svars:
+    westmarch_config: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2"
+  gvars:
+    bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2: |
+      rules_version = "2024"
+
 return config.cfg.subsystems.exploration.enabled
 ---
 False
@@ -151,18 +163,6 @@ vars:
       subsystems = {
           "exploration": {"enabled": True},
       }
-
-return config.get_rules_edition()
----
-"2024"
----
-name: rules_version 2024 on owner config
-vars:
-  svars:
-    westmarch_config: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2"
-  gvars:
-    bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2: |
-      rules_version = "2024"
 
 return config.cfg.rules_version
 ---

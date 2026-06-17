@@ -65,7 +65,7 @@ vars:
 
 !show runtime
 ---
-re:```yaml[\s\S]*rules_edition: 2014
+"re:```yaml[\\s\\S]*rules_edition: 2014"
 ---
 name: show section filter runtime uses yaml style
 vars:
@@ -140,7 +140,7 @@ vars:
 
 !show player_setup
 ---
-re:```yaml[\s\S]*checks: 1[\s\S]*hud.fields
+"re:```yaml[\\s\\S]*checks: 1[\\s\\S]*hud.fields"
 ---
 name: show section filter player setup summarizes configured checks
 vars:
@@ -160,7 +160,7 @@ vars:
 
 !show display
 ---
-re:```yaml[\s\S]*command_thumbnail: character
+"re:```yaml[\\s\\S]*command_thumbnail: character"
 ---
 name: show section filter display summarizes command thumbnail policy
 vars:

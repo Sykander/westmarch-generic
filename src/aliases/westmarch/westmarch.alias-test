@@ -46,7 +46,7 @@ vars:
 
 !westmarch
 ---
-re:Character HUD[\s\S]*Wallet:\*\* Arcane Shards: 3
+"re:Character HUD[\\s\\S]*Wallet:\\*\\* Arcane Shards: 3"
 ---
 name: configured parent shows wallet HUD when economy wallet is enabled
 vars:

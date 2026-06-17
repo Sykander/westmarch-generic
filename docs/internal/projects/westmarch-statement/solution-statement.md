@@ -303,7 +303,7 @@ Three viable approaches; **recommended: phased extraction (M2)**.
 
 ## Implementation plan
 
-### Phase 0 — Foundation *(current → contract proven)*
+### Phase 0 — Foundation *(source-complete → verification gate)*
 
 **Goal:** P0 stories satisfied on a **vertical slice**, not full westmarch.
 
@@ -318,7 +318,17 @@ Three viable approaches; **recommended: phased extraction (M2)**.
 | Tests | Loader + vertical alias-tests with mocked svar/config | US-4.3 |
 | Public setup doc | Adoption steps | US-1.1, US-1.2 |
 
-**Exit criteria:** Server with svar set runs slice; unset svar safe; editor validation reports issues on a template config; CI green; alias-tests cover loader, admin gate, and ported vertical.
+**Phase 0 source status (June 2026):** implemented in repo. The slice is **`!enc`** backed by config/auth/display, biome resolution, encounter lists/templates/processing, starter config docs, admin hub, and editor validation.
+
+| Exit criterion | Status | Evidence |
+|----------------|--------|----------|
+| Server with svar set runs slice | Done in source | `src/aliases/exploration/enc.alias-test` configured cases |
+| Unset svar is safe | Done in source | loader/auth + alias-tests for `enc` and admin hub |
+| Editor validation reports template issues | Done in source | `editor/src/lib/config.ts`, `editor/src/lib/config.test.ts` |
+| Alias-tests cover loader, admin gate, and vertical | Done in source | `src/gvars/utils/config/config.gvar-test`, `src/gvars/utils/auth/auth.gvar-test`, `src/aliases/westmarch/*.alias-test`, `src/aliases/exploration/enc.alias-test` |
+| CI green | Verification gate | Run `make test` in an environment with `node`/`npm` and `avrae-ls` available |
+
+**Remaining before calling P0 released:** CI must pass in the normal tooling environment, then publish/update the Development workshop. Full workshop subscription as the primary adoption path remains Phase 1 / operational work.
 
 ---
 

@@ -87,13 +87,13 @@ flowchart TD
 
 ### Phase 0
 
-- [ ] Defaults + editor validation (distribution sum, **`enc_biome_source`** cross-subsystem rules)
-- [ ] **`enc.alias-test`** — **`random`** mode with fixture biome rows tagged **`enc.*`**
-- [ ] Minimal pools: at least one gather encounter (combat optional until Tier C)
+- [x] Defaults + editor validation (distribution sum, **`enc_biome_source`** cross-subsystem rules)
+- [x] **`enc.alias-test`** — **`random`** mode with fixture biome rows tagged **`enc.*`**
+- [x] Minimal pools: at least one gather encounter (combat optional until Tier C)
 
 ### Phase 1
 
-- [ ] **`balanced`** mode via stats kind counters
+- [x] **`balanced`** mode via stats kind counters
 - [ ] Quest-tagged encounters when **`misc.quest`** ships
 
 ## Related

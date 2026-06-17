@@ -28,6 +28,24 @@ vars:
   uvars:
     _wm_command: westmarch
 
+return auth.resolve_invocation("setup")[2]
+---
+True
+---
+name: explicit setup override requires admin
+vars:
+  uvars:
+    _wm_command: westmarch
+
+return auth.resolve_invocation("show")[2]
+---
+True
+---
+name: explicit show override requires admin
+vars:
+  uvars:
+    _wm_command: westmarch
+
 return auth.is_allowed()[0]
 ---
 True

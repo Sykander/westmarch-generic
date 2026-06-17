@@ -4,9 +4,49 @@
     "token": "$AVRAE_TOKEN"
   },
   "varFiles": [".varfile.json"],
+  "defaultProfile": "server2014",
   "profiles": {
     "default": {
       "ctx": {
+        "guild": {
+          "servsettings": {
+            "rules_version": "2014"
+          }
+        },
+        "author": {
+          "roles": [
+            { "id": 4567, "name": "DM" },
+            { "id": 4568, "name": "Player" },
+            { "id": 4569, "name": "Dragonspeaker" }
+          ]
+        }
+      }
+    },
+    "server2014": {
+      "description": "Test server with Avrae server rules set to 2014.",
+      "ctx": {
+        "guild": {
+          "servsettings": {
+            "rules_version": "2014"
+          }
+        },
+        "author": {
+          "roles": [
+            { "id": 4567, "name": "DM" },
+            { "id": 4568, "name": "Player" },
+            { "id": 4569, "name": "Dragonspeaker" }
+          ]
+        }
+      }
+    },
+    "server2024": {
+      "description": "Test server with Avrae server rules set to 2024.",
+      "ctx": {
+        "guild": {
+          "servsettings": {
+            "rules_version": "2024"
+          }
+        },
         "author": {
           "roles": [
             { "id": 4567, "name": "DM" },

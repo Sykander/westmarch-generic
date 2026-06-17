@@ -80,6 +80,14 @@ vars:
 - **`.avraels.json`** + **`.varfile.json`** — mock context and local gvar bodies for tests.
 - **Workshop gvars** — `avrae-ls` resolves remote gvars via **`AVRAE_TOKEN`** or local **`varFiles`** entries; see **`.cursor/avrae-ls-reference/upstream/docs/configuration.md`**.
 
+### avrae-ls profiles and test metadata
+
+- Profiles live only in **`.avraels.json`** under **`profiles`**. A profile may override **`ctx`**, **`combat`**, **`character`**, **`vars`**, and **`description`**.
+- Pick the profile used by **`avrae-ls --run-tests`** with top-level **`defaultProfile`** in **`.avraels.json`**. The current test CLI does **not** expose **`--profile`**, and the runner builds its baseline with the configured default profile.
+- Per-test metadata currently supports only **`name`**, **`vars`**, and **`character`**. Do **not** add **`profile:`**, **`ctx:`**, or **`profiles:`** to a single **`.alias-test`** / **`.gvar-test`** case and expect the runner to switch context; those keys are ignored by the installed parser.
+- For suite-wide server contexts such as 2014 vs 2024 rules, define named profiles (for example **`server2014`**, **`server2024`**) and set **`defaultProfile`** before running that suite. For one-off alternate behavior inside a case, use supported metadata **`vars`** / fixture gvars (for example config **`rules_version = "2024"`**) rather than a per-test profile.
+- Expected values are parsed as YAML. Quote regex strings containing **`: `** (for example a regex that matches **`rules_edition: 2014`**) or YAML will parse them as a mapping and the embed diff will report **`<missing>`**.
+
 ## Local reference material (this repo)
 
 | Path | Purpose |

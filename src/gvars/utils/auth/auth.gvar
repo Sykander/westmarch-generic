@@ -59,7 +59,11 @@ def _is_dict(value) -> bool:
         return False
 
 
-def _alias_name():
+def _alias_name(command_override=None):
+    if command_override != None:
+        text = str(command_override).strip().lower()
+        if text != "" and text in COMMAND_MAP:
+            return text
     candidates = []
     try:
         candidates.append(ctx.command.name)
@@ -90,8 +94,8 @@ def command_name():
     return name
 
 
-def _resolve_invocation():
-    alias = _alias_name()
+def _resolve_invocation(command_override=None):
+    alias = _alias_name(command_override)
     if alias == "":
         return None, None, False
     if alias in COMMAND_MAP:
@@ -99,9 +103,9 @@ def _resolve_invocation():
     return None, None, False
 
 
-def resolve_invocation():
+def resolve_invocation(command_override=None):
     """Public ctx → (subsystem, command, requires_admin) for display.gvar and tests."""
-    return _resolve_invocation()
+    return _resolve_invocation(command_override)
 
 
 def _author_roles():
@@ -422,8 +426,8 @@ def _check_channel(subsystem, requires_admin):
     return True, MSG_ALLOWED
 
 
-def is_allowed():
-    subsystem, command, requires_admin = _resolve_invocation()
+def is_allowed(command_override=None):
+    subsystem, command, requires_admin = _resolve_invocation(command_override)
     if subsystem == None:
         return False, MSG_UNKNOWN
 

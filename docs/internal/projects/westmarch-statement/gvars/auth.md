@@ -149,6 +149,14 @@ if not ok:
 get_embed = display.get_display()   # configured get_embed — see display.md
 ```
 
+Nested Avrae subaliases whose runtime ctx still resolves to the parent command pass an explicit command key:
+
+```py
+ok, msg = auth.is_allowed("setup")
+```
+
+Use this for **`westmarch setup`** and **`westmarch show`** so the admin role gate is enforced even when Avrae reports the parent alias name.
+
 **`COMMAND_MAP`** is shared with [display.gvar](display.md) for **`get_display()`** ctx resolution.
 
 No other auth calls needed.
