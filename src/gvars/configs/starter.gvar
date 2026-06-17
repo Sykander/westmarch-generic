@@ -173,7 +173,7 @@ policies = {
         "rations_item": "Rations",
     },
     "downtime": {
-        "mode": "manual",
+        "mode": "off",
         "max_workdays": None,
         "acquisition": "manual",
     },

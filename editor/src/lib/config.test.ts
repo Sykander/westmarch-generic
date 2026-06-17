@@ -130,3 +130,66 @@ world_data = {
 `).includes('world.path.endpoint_unknown'),
   );
 });
+
+test('tracked downtime requires downtime subsystem', () => {
+  assert.ok(
+    issueCodes(`
+subsystems = {
+    "downtime": {"enabled": False},
+}
+
+policies = {
+    "downtime": {"mode": "tracked", "max_workdays": None, "acquisition": "manual"},
+}
+`).includes('downtime.tracked_requires_subsystem'),
+  );
+});
+
+test('downtime cap must be positive when set', () => {
+  assert.ok(
+    issueCodes(`
+policies = {
+    "downtime": {"mode": "manual", "max_workdays": 0, "acquisition": "manual"},
+}
+`).includes('downtime.max_workdays'),
+  );
+});
+
+test('crafting warns when downtime is required but not tracked', () => {
+  assert.ok(
+    issueCodes(`
+subsystems = {
+    "downtime": {"enabled": True},
+    "crafting": {
+        "enabled": True,
+        "commands": {"craft": True},
+    },
+}
+
+policies = {
+    "downtime": {"mode": "manual", "max_workdays": None, "acquisition": "manual"},
+    "crafting": {"require_downtime_before_roll": True},
+}
+`).includes('crafting.downtime_not_tracked'),
+  );
+});
+
+test('tracked downtime with enabled subsystem satisfies crafting dependency', () => {
+  const codes = issueCodes(`
+subsystems = {
+    "downtime": {"enabled": True},
+    "crafting": {
+        "enabled": True,
+        "commands": {"craft": True},
+    },
+}
+
+policies = {
+    "downtime": {"mode": "tracked", "max_workdays": None, "acquisition": "manual"},
+    "crafting": {"require_downtime_before_roll": True},
+}
+`);
+
+  assert.equal(codes.includes('downtime.tracked_requires_subsystem'), false);
+  assert.equal(codes.includes('crafting.downtime_not_tracked'), false);
+});

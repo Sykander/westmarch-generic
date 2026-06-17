@@ -138,7 +138,7 @@ policies = {
     "auth": {"require_character": True},
     "time": {"mode": "manual"},
     "travel": {"apply_path_costs": False, "consume_rations": False, "rations_item": "Rations"},
-    "downtime": {"mode": "manual"},
+    "downtime": {"mode": "off"},
     "exploration": {"enforce_cooldowns": True, "avoid_repeat_encounters": "off"},
     "quest": {"self_assign": False},
     # crafting, economy, combat, content, inventory — see starter template
@@ -341,7 +341,7 @@ Three layers — do not conflate:
 | **inventory** | `track_encumbrance`, `enforce_*`, limits | Enforcement implementation deferred |
 | **display**, **languages** | footer, tips, credits; `allowed` | Existing |
 
-**Westmarch reference defaults:** manual downtime, exploration/library cooldowns **120s**, job **28800s**, no repeat filter, roll monster HP **on**, quest self-assign **off**, require character **on**.
+**Generic defaults:** downtime **off**, exploration/library cooldowns **120s**, job **28800s**, no repeat filter, roll monster HP **on**, quest self-assign **off**, require character **on**. The reference westmarch server used manual downtime; owners can opt into **`manual`** or **`tracked`** when enabling the downtime subsystem.
 
 ---
 

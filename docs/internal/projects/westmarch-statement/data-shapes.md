@@ -1511,7 +1511,7 @@ policies = {
         "rations_item": "Rations",
     },
     "downtime": {
-        "mode": "manual",
+        "mode": "off",
         "max_workdays": None,
         "acquisition": "manual",
     },
@@ -1683,19 +1683,19 @@ When both cost flags are **`False`**, routes are planning/display only — westm
 
 | Key | Type | Default | Meaning |
 |-----|------|---------|---------|
-| `mode` | `"tracked"` \| `"manual"` \| `"off"` | `"manual"` | Workday tracking |
+| `mode` | `"tracked"` \| `"manual"` \| `"off"` | `"off"` | Workday tracking |
 | `max_workdays` | int \| `None` | `None` | Cap on accumulated workdays per character; **`None`** = unlimited |
 | `acquisition` | `"manual"` \| `"world_clock"` \| `"journey"` | `"manual"` | How workdays are **granted** *(MVP: manual only; others reserved)* |
 
 | `mode` | Behaviour |
 |--------|-------------|
-| **`tracked`** | **`!downtime`** + **`pc`** cvars active; commands with **`workdays_cost`** or recipes with **`workdays`** may debit when policies allow. **Requires **`subsystems.downtime.enabled`**.** |
-| **`manual`** | Help text only — players adjust sheet / honour system; crafting does not block on cvar balance. |
+| **`tracked`** | **`!downtime`** + **`pc`** cvars active; commands with **`workdays_cost`** or recipes with **`workdays`** may debit when policies allow. Requires **`subsystems.downtime.enabled`**. |
+| **`manual`** | **`!downtime`** can still show and adjust the player ledger, but other commands treat it as honour-system bookkeeping and do not block on cvar balance. |
 | **`off`** | No downtime messaging or cvar use even if **`subsystems.downtime.enabled`**. |
 
 | `acquisition` | Behaviour *(MVP)* |
 |---------------|-------------------|
-| **`manual`** | Only **`!downtime <amount>`** (or GM) changes balance — westmarch default. |
+| **`manual`** | Only **`!downtime <amount>`** (or GM) changes balance. |
 | **`world_clock`** | *(Deferred)* Grant workdays when in-world time advances by **`workday_hours`**. |
 | **`journey`** | *(Deferred)* Grant workdays on journey step completion per path config. |
 

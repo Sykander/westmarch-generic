@@ -58,7 +58,7 @@ Shallow + nested merge for MVP:
 | `rules_version` | `None` |
 | `display` | `{}` — base layer only; subsystem **`display`** / **`command_display`** optional per [data-shapes § Embed display inheritance](../data-shapes.md#embed-display-inheritance) |
 | `subsystems` | player-facing subsystems only (exploration, travel, … — **not** admin); nested **`config`**, optional **`display`** / **`command_display`** per subsystem |
-| `policies` | conservative defaults — manual time/downtime, no auto path costs, **`languages.allowed`** `[]`, **`display.footer_behaviour`** `"balanced"`, **`player_setup`** on with no checks ([data-shapes.md](../data-shapes.md#server-policies)) |
+| `policies` | conservative defaults — manual time, downtime off, no auto path costs, **`languages.allowed`** `[]`, **`display.footer_behaviour`** `"balanced"`, **`player_setup`** on with no checks ([data-shapes.md](../data-shapes.md#server-policies)) |
 | `channel_policy` | `{ "admin_any_channel": True, "mode": "any", … }` *(see [auth.md](auth.md))* |
 
 Top-level field shapes: [data-shapes.md § Top-level config fields](../data-shapes.md#top-level-config-fields).

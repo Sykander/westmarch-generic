@@ -4,6 +4,7 @@ using(
     auth = env.gvars.auth,
     display = env.gvars.display,
     config = env.gvars.config,
+    pc = env.gvars.pc,
 )
 
 ok, msg = auth.is_allowed()
@@ -19,17 +20,197 @@ if not ok:
 args = argparse(&ARGS&)
 argslist = &ARGS&
 
+cfg = config.get_config()
+
+
+def _field(obj, key):
+    if obj == None:
+        return None
+    try:
+        if key in obj:
+            return obj[key]
+    except:
+        pass
+    try:
+        return obj.get(key)
+    except:
+        pass
+    attrs = {
+        "policies": lambda o: o.policies,
+        "downtime": lambda o: o.downtime,
+        "subsystems": lambda o: o.subsystems,
+        "config": lambda o: o.config,
+        "labels": lambda o: o.labels,
+        "singular": lambda o: o.singular,
+        "plural": lambda o: o.plural,
+        "workday_hours": lambda o: o.workday_hours,
+        "workweek_days": lambda o: o.workweek_days,
+        "mode": lambda o: o.mode,
+        "max_workdays": lambda o: o.max_workdays,
+        "acquisition": lambda o: o.acquisition,
+    }
+    if key in attrs:
+        try:
+            return attrs[key](obj)
+        except:
+            pass
+    return None
+
+
+def _downtime_config(cfg):
+    subsystems = _field(cfg, "subsystems")
+    downtime = _field(subsystems, "downtime")
+    return _field(downtime, "config")
+
+
+def _downtime_policy(cfg):
+    policies = _field(cfg, "policies")
+    return _field(policies, "downtime")
+
+
+def _mode(cfg):
+    return pc.downtime_mode(cfg)
+
+
+def _label(cfg, count):
+    dt_cfg = _downtime_config(cfg)
+    labels = _field(dt_cfg, "labels")
+    singular = _field(labels, "singular")
+    plural = _field(labels, "plural")
+    if singular == None or str(singular).strip() == "":
+        singular = "workday"
+    if plural == None or str(plural).strip() == "":
+        plural = "workdays"
+    try:
+        return str(singular) if int(count) == 1 else str(plural)
+    except:
+        return str(plural)
+
+
+def _schedule_text(cfg):
+    dt_cfg = _downtime_config(cfg)
+    hours = _field(dt_cfg, "workday_hours")
+    week = _field(dt_cfg, "workweek_days")
+    parts = []
+    if hours != None:
+        parts.append(f"{hours} hours per {_label(cfg, 1)}")
+    if week != None:
+        parts.append(f"{week} {_label(cfg, 2)} per workweek")
+    return "; ".join(parts)
+
+
+def _help_text(cfg):
+    cmd = f"{ctx.prefix}{cmd_name}"
+    schedule = _schedule_text(cfg)
+    lines = [
+        "**Usage**",
+        f"`{cmd}` - show your downtime balance.",
+        f"`{cmd} <amount>` - add or spend workdays. Dice expressions are allowed.",
+        f"`{cmd} spend <amount>` - spend workdays.",
+        f"`{cmd} setup` - create the downtime cvar if needed.",
+        f"`{cmd} reset yes` - reset your downtime balance to 0.",
+        "",
+        f"Mode: **{_mode(cfg)}**.",
+    ]
+    if schedule != "":
+        lines.append(schedule + ".")
+    return "\n".join(lines)
+
+
+def _parse_amount(argslist):
+    if len(argslist) == 0:
+        return None, "Provide an amount, e.g. `1`, `-1`, or `1d4`."
+    verb = str(argslist[0]).strip().lower()
+    sign = 1
+    parts = argslist
+    if verb in ["add", "gain", "grant"]:
+        parts = argslist[1:]
+        sign = 1
+    elif verb in ["spend", "use", "remove"]:
+        parts = argslist[1:]
+        sign = -1
+    text = " ".join([str(a) for a in parts]).strip()
+    if text == "":
+        return None, "Provide an amount, e.g. `1`, `-1`, or `1d4`."
+    try:
+        amount = int(text)
+        if sign == -1:
+            amount = -1 * abs(amount)
+        return amount, None
+    except:
+        pass
+    try:
+        rolled = vroll(text)
+        amount = int(rolled.total)
+        if sign == -1:
+            amount = -1 * abs(amount)
+        return amount, None
+    except:
+        return None, f"Could not read **{text}** as a downtime amount."
+
+
+def _status(ch, cfg, prefix=""):
+    mode = _mode(cfg)
+    if mode == "off":
+        return "Downtime tracking is off on this server."
+    balance = pc.get_downtime(ch, cfg)
+    label = _label(cfg, balance)
+    lines = [f"{prefix}**{balance} {label}** available."]
+    cap = pc.downtime_cap(cfg)
+    if cap != None:
+        lines.append(f"Cap: **{cap} {_label(cfg, cap)}**.")
+    schedule = _schedule_text(cfg)
+    if schedule != "":
+        lines.append(schedule + ".")
+    if mode == "manual":
+        lines.append("Manual mode: this ledger is for player and GM bookkeeping; other commands do not enforce it.")
+    elif mode == "tracked":
+        lines.append("Tracked mode: commands can spend this balance when their subsystem enables downtime enforcement.")
+    return "\n".join(lines)
+
+
 if len(argslist) > 0 and argslist[0] in ["help", "?"]:
-    return get_embed(desc = f"{cmd_name} help is not implemented")
+    return get_embed(desc = _help_text(cfg))
 
 try:
     ch = character()
 except:
     return get_embed(desc = f"{cmd_name} requires a character")
 
+mode = _mode(cfg)
+if mode == "off":
+    return get_embed(desc="Downtime tracking is off on this server.")
 
-return get_embed(
-    desc=f"{cmd_name} is not implemented",
-)
+if len(argslist) == 0:
+    return get_embed(desc=_status(ch, cfg))
+
+subcommand = str(argslist[0]).strip().lower()
+
+if subcommand == "setup":
+    current = pc.get_downtime(ch, cfg)
+    ok_set, msg_set = pc.set_downtime(ch, current, cfg)
+    if not ok_set:
+        return get_embed(desc=msg_set)
+    return get_embed(desc=_status(ch, cfg, "Downtime setup complete.\n\n"))
+
+if subcommand == "reset":
+    confirmed = False
+    for arg in argslist:
+        if str(arg).strip().lower() == "yes":
+            confirmed = True
+    if not confirmed:
+        return get_embed(desc=f"This will reset your downtime balance to 0. Confirm with `{ctx.prefix}{cmd_name} reset yes`.")
+    ok_reset, msg_reset = pc.set_downtime(ch, 0, cfg)
+    if not ok_reset:
+        return get_embed(desc=msg_reset)
+    return get_embed(desc=_status(ch, cfg, "Downtime balance reset.\n\n"))
+
+delta, amount_err = _parse_amount(argslist)
+if amount_err != None:
+    return get_embed(desc=amount_err)
+
+ok_mod, msg_mod = pc.modify_downtime(ch, delta, cfg)
+if not ok_mod:
+    return get_embed(desc=msg_mod)
+return get_embed(desc=f"{msg_mod}\n\n{_status(ch, cfg)}")
 </drac2>
-

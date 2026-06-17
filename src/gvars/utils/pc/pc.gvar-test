@@ -58,3 +58,74 @@ return pc.cooldown_seconds("hunt", {})
 0
 ---
 name: hunt default cooldown is zero when not in command_config
+
+return pc.get_downtime(character(), {}) == 4
+---
+True
+---
+name: get_downtime reads wg_downtime cvar
+vars:
+  cvars:
+    wg_downtime: "4"
+
+return pc.get_downtime(character(), {}) == 7
+---
+True
+---
+name: get_downtime reads legacy downtime start and used cvars
+vars:
+  cvars:
+    wg_downtime_start: "10"
+    wg_downtime_used: "3"
+
+cfg_fixture = {"policies": {"downtime": {"mode": "tracked", "max_workdays": None}}}
+ok, msg = pc.modify_downtime(character(), 3, cfg_fixture)
+return ok and pc.get_downtime(character(), cfg_fixture) == 5 and "2** -> **5" in msg
+---
+True
+---
+name: modify_downtime grants workdays
+vars:
+  cvars:
+    wg_downtime: "2"
+
+cfg_fixture = {"policies": {"downtime": {"mode": "tracked", "max_workdays": None}}}
+ok, msg = pc.modify_downtime(character(), -2, cfg_fixture)
+return ok and pc.get_downtime(character(), cfg_fixture) == 3 and "spent **2**" in msg
+---
+True
+---
+name: modify_downtime spends workdays
+vars:
+  cvars:
+    wg_downtime: "5"
+
+cfg_fixture = {"policies": {"downtime": {"mode": "tracked", "max_workdays": None}}}
+ok, msg = pc.modify_downtime(character(), -2, cfg_fixture)
+return not ok and pc.get_downtime(character(), cfg_fixture) == 1 and "only has **1**" in msg
+---
+True
+---
+name: modify_downtime rejects overspend
+vars:
+  cvars:
+    wg_downtime: "1"
+
+cfg_fixture = {"policies": {"downtime": {"mode": "tracked", "max_workdays": 5}}}
+ok, msg = pc.modify_downtime(character(), 2, cfg_fixture)
+return not ok and pc.get_downtime(character(), cfg_fixture) == 4 and "capped" in msg
+---
+True
+---
+name: modify_downtime respects max_workdays cap
+vars:
+  cvars:
+    wg_downtime: "4"
+
+cfg_fixture = {"policies": {"downtime": {"mode": "off", "max_workdays": None}}}
+ok, msg = pc.modify_downtime(character(), 1, cfg_fixture)
+return not ok and "off" in msg
+---
+True
+---
+name: modify_downtime rejects off mode

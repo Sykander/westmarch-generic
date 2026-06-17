@@ -1,4 +1,4 @@
-"""pc.gvar — player character helpers (cooldown gates for MVP)."""
+"""pc.gvar - player character helpers (cooldown and downtime gates for MVP)."""
 
 using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(
@@ -12,6 +12,9 @@ EXPLORATION_ACTIVITY_COMMANDS = ["enc", "forage", "mine", "fish", "lumber"]
 ZERO_COOLDOWN_COMMANDS = ["hunt", "loot"]
 DEFAULT_EXPLORATION_COOLDOWN = 120
 DEFAULT_JOB_COOLDOWN = 28800
+CVAR_DOWNTIME = "wg_downtime"
+CVAR_DOWNTIME_START = "wg_downtime_start"
+CVAR_DOWNTIME_USED = "wg_downtime_used"
 
 
 def _read_field(obj, key):
@@ -30,7 +33,11 @@ def _read_field(obj, key):
     attrs = {
         "policies": lambda o: o.policies,
         "exploration": lambda o: o.exploration,
+        "downtime": lambda o: o.downtime,
         "enforce_cooldowns": lambda o: o.enforce_cooldowns,
+        "mode": lambda o: o.mode,
+        "max_workdays": lambda o: o.max_workdays,
+        "acquisition": lambda o: o.acquisition,
         "subsystems": lambda o: o.subsystems,
         "command_config": lambda o: o.command_config,
         "enc": lambda o: o.enc,
@@ -54,6 +61,159 @@ def _cfg(config_override=None):
     if config_override != None:
         return config_override
     return config.get_config()
+
+
+def _read_cvar(ch, key, fallback=None):
+    if ch != None:
+        try:
+            val = ch.get_cvar(key, None)
+            if val != None:
+                return val
+        except:
+            pass
+        try:
+            cvars = ch.cvars
+            if key in cvars:
+                return cvars[key]
+        except:
+            pass
+    try:
+        if exists(key):
+            return get(key)
+    except:
+        pass
+    return fallback
+
+
+def _set_cvar(ch, key, value):
+    try:
+        ch.set_cvar(key, str(value))
+        return True
+    except:
+        pass
+    try:
+        set_cvar(key, str(value))
+        return True
+    except:
+        return False
+
+
+def _int_value(value, fallback=0):
+    if value == None or str(value).strip() == "":
+        return fallback
+    try:
+        return int(value)
+    except:
+        try:
+            return int(float(value))
+        except:
+            return fallback
+
+
+def _character_name(ch):
+    try:
+        return ch.name
+    except:
+        return "Character"
+
+
+def _downtime_policy(cfg):
+    policies = _read_field(cfg, "policies")
+    return _read_field(policies, "downtime")
+
+
+def downtime_mode(config_override=None):
+    cfg = _cfg(config_override)
+    policy = _downtime_policy(cfg)
+    mode = _read_field(policy, "mode")
+    if mode == None or str(mode).strip() == "":
+        return "off"
+    text = str(mode).strip().lower()
+    if text in ["tracked", "manual", "off"]:
+        return text
+    return "off"
+
+
+def downtime_cap(config_override=None):
+    cfg = _cfg(config_override)
+    policy = _downtime_policy(cfg)
+    raw = _read_field(policy, "max_workdays")
+    if raw == None or str(raw).strip() == "":
+        return None
+    try:
+        cap = int(raw)
+        if cap > 0:
+            return cap
+    except:
+        pass
+    return None
+
+
+def _legacy_downtime_balance(ch):
+    start = _read_cvar(ch, CVAR_DOWNTIME_START, None)
+    used = _read_cvar(ch, CVAR_DOWNTIME_USED, None)
+    if start == None and used == None:
+        return None
+    balance = _int_value(start, 0) - _int_value(used, 0)
+    if balance < 0:
+        return 0
+    return balance
+
+
+def get_downtime(ch, config_override=None):
+    """Return the character's available downtime workdays."""
+    raw = _read_cvar(ch, CVAR_DOWNTIME, None)
+    if raw != None and str(raw).strip() != "":
+        value = _int_value(raw, 0)
+        if value < 0:
+            return 0
+        return value
+    legacy = _legacy_downtime_balance(ch)
+    if legacy != None:
+        return legacy
+    return 0
+
+
+def set_downtime(ch, workdays, config_override=None):
+    """Set available workdays, respecting mode and optional cap."""
+    cfg = _cfg(config_override)
+    mode = downtime_mode(cfg)
+    if mode == "off":
+        return False, "Downtime tracking is off on this server."
+    value = _int_value(workdays, 0)
+    if value < 0:
+        return False, "Downtime cannot be below 0 workdays."
+    cap = downtime_cap(cfg)
+    if cap != None and value > cap:
+        return False, f"Downtime is capped at **{cap}** workdays."
+    if not _set_cvar(ch, CVAR_DOWNTIME, value):
+        return False, "Could not update downtime cvar."
+    return True, f"{_character_name(ch)} has **{value}** workdays available."
+
+
+def modify_downtime(ch, workdays, config_override=None):
+    """Add or spend workdays, respecting mode, floor, and optional cap."""
+    cfg = _cfg(config_override)
+    mode = downtime_mode(cfg)
+    if mode == "off":
+        return False, "Downtime tracking is off on this server."
+    delta = _int_value(workdays, 0)
+    current = get_downtime(ch, cfg)
+    next_value = current + delta
+    if next_value < 0:
+        return False, f"Could not spend **{-1 * delta}** workdays - {_character_name(ch)} only has **{current}**."
+    cap = downtime_cap(cfg)
+    if delta > 0 and cap != None and next_value > cap:
+        return False, f"Could not add **{delta}** workdays - downtime is capped at **{cap}**."
+    if not _set_cvar(ch, CVAR_DOWNTIME, next_value):
+        return False, "Could not update downtime cvar."
+    if delta > 0:
+        action = f"gained **{delta}** workdays"
+    elif delta < 0:
+        action = f"spent **{-1 * delta}** workdays"
+    else:
+        action = "changed downtime by **0** workdays"
+    return True, f"{_character_name(ch)} {action}. **{current}** -> **{next_value}** workdays available."
 
 
 def _exploration_enforce(cfg):

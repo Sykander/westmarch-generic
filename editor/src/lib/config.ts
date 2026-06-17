@@ -47,6 +47,8 @@ const VALID_COMMAND_THUMBNAIL = ['default', 'character', 'pc', 'current_characte
 const VALID_REPEAT = ['off', 'same_biome', 'global'];
 const VALID_LIBRARY_TOPIC = ['inferred', 'balanced', 'manual', 'restricted'];
 const VALID_MONSTER_IMAGE_MODES = ['thumbnail', 'thumb', 'image', 'off', 'none'];
+const VALID_DOWNTIME_MODES = ['tracked', 'manual', 'off'];
+const VALID_DOWNTIME_ACQUISITION = ['manual', 'world_clock', 'journey'];
 const VALID_PLAYER_SETUP_CHECK_TYPES = ['cvar', 'uvar', 'svar', 'cc', 'counter', 'custom_counter'];
 const VALID_PLAYER_SETUP_HUD_FIELDS = [
   'coins',
@@ -770,6 +772,8 @@ export function validateConfig(model: ConfigModel | null, parseIssues: ConfigIss
   validatePlayerSetup(model, issues);
   validateWorld(model, issues);
   validateTravel(model, issues);
+  validateDowntime(model, issues);
+  validateCrafting(model, issues);
   validateContent(model, issues);
 
   return issues;
@@ -1444,6 +1448,195 @@ function validateTravel(model: ConfigModel, issues: ConfigIssue[]) {
   }
 }
 
+function validateDowntime(model: ConfigModel, issues: ConfigIssue[]) {
+  const downtime = asRecord(model.subsystems.downtime);
+  const policy = asRecord(asRecord(model.policies).downtime);
+  const mode = policy.mode;
+  const acquisition = policy.acquisition;
+
+  if (typeof mode === 'string' && !VALID_DOWNTIME_MODES.includes(mode)) {
+    issues.push(
+      issue(
+        'error',
+        'downtime.mode',
+        'Policies',
+        'policies.downtime.mode',
+        'Invalid downtime mode',
+        '`mode` must be tracked, manual, or off.',
+      ),
+    );
+  }
+
+  if (mode === 'tracked' && downtime.enabled !== true) {
+    issues.push(
+      issue(
+        'error',
+        'downtime.tracked_requires_subsystem',
+        'Policies',
+        'subsystems.downtime.enabled',
+        'Tracked downtime needs the subsystem enabled',
+        '`policies.downtime.mode: tracked` uses the downtime cvar ledger.',
+        'Enable the downtime subsystem, or switch downtime mode to off/manual.',
+      ),
+    );
+  }
+
+  const maxWorkdays = policy.max_workdays;
+  if (maxWorkdays != null && (!isNonNegativeInteger(maxWorkdays) || Number(maxWorkdays) < 1)) {
+    issues.push(
+      issue(
+        'error',
+        'downtime.max_workdays',
+        'Policies',
+        'policies.downtime.max_workdays',
+        'Downtime cap must be positive',
+        '`max_workdays` must be a positive whole number, or None for unlimited.',
+      ),
+    );
+  }
+
+  if (typeof acquisition === 'string' && !VALID_DOWNTIME_ACQUISITION.includes(acquisition)) {
+    issues.push(
+      issue(
+        'error',
+        'downtime.acquisition',
+        'Policies',
+        'policies.downtime.acquisition',
+        'Invalid downtime acquisition mode',
+        '`acquisition` must be manual, world_clock, or journey.',
+      ),
+    );
+  }
+  if (acquisition === 'world_clock' && asRecord(model.policies.time).mode !== 'world_clock') {
+    issues.push(
+      issue(
+        'warning',
+        'downtime.acquisition_world_clock',
+        'Policies',
+        'policies.downtime.acquisition',
+        'World-clock downtime needs world-clock time',
+        'Downtime acquisition from time is deferred unless `policies.time.mode` is world_clock.',
+      ),
+    );
+  }
+  if (acquisition === 'journey' && asRecord(model.subsystems.travel).enabled !== true) {
+    issues.push(
+      issue(
+        'warning',
+        'downtime.acquisition_journey',
+        'Policies',
+        'policies.downtime.acquisition',
+        'Journey downtime needs travel enabled',
+        'Downtime acquisition from journeys needs the travel subsystem.',
+      ),
+    );
+  }
+
+  const config = asRecord(downtime.config);
+  for (const key of ['workday_hours', 'workweek_days']) {
+    const value = config[key];
+    if (value != null && (!isNonNegativeInteger(value) || Number(value) < 1)) {
+      issues.push(
+        issue(
+          'error',
+          `downtime.${key}`,
+          'Policies',
+          `subsystems.downtime.config.${key}`,
+          'Downtime schedule values must be positive',
+          `${key} must be a positive whole number.`,
+        ),
+      );
+    }
+  }
+
+  const commandConfig = asRecord(downtime.command_config);
+  const cooldown = asRecord(commandConfig.downtime).cooldown_seconds;
+  if (cooldown != null && !isNonNegativeInteger(cooldown)) {
+    issues.push(
+      issue(
+        'error',
+        'downtime.cooldown',
+        'Policies',
+        'subsystems.downtime.command_config.downtime.cooldown_seconds',
+        'Downtime cooldown must be non-negative',
+        'Cooldown seconds must be a non-negative integer.',
+      ),
+    );
+  }
+}
+
+function validateCrafting(model: ConfigModel, issues: ConfigIssue[]) {
+  const crafting = asRecord(model.subsystems.crafting);
+  const commands = asRecord(crafting.commands);
+  const enabledCommands = Object.entries(commands).filter(([, value]) => value === true);
+  const craftingActive = crafting.enabled === true && enabledCommands.length > 0;
+  const downtimeTracked =
+    asRecord(asRecord(model.policies).downtime).mode === 'tracked' &&
+    asRecord(model.subsystems.downtime).enabled === true;
+  const craftingPolicy = asRecord(asRecord(model.policies).crafting);
+
+  if (craftingActive && craftingPolicy.require_downtime_before_roll === true && !downtimeTracked) {
+    issues.push(
+      issue(
+        'warning',
+        'crafting.downtime_not_tracked',
+        'Policies',
+        'policies.crafting.require_downtime_before_roll',
+        'Crafting downtime is not tracked',
+        'Crafting can require downtime before rolls only when downtime mode is tracked and the downtime subsystem is enabled.',
+      ),
+    );
+  }
+
+  const commandConfig = asRecord(crafting.command_config);
+  for (const [command, value] of Object.entries(commandConfig)) {
+    if (!DEFAULT_SUBSYSTEM_COMMANDS.crafting.includes(command)) {
+      issues.push(
+        issue(
+          'warning',
+          'crafting.command_config_unknown',
+          'Policies',
+          `subsystems.crafting.command_config.${command}`,
+          'Unknown crafting command config',
+          'This command config key does not match a crafting command.',
+        ),
+      );
+      continue;
+    }
+    const workdaysCost = asRecord(value).workdays_cost;
+    if (workdaysCost != null && !isNonNegativeInteger(workdaysCost)) {
+      issues.push(
+        issue(
+          'error',
+          'crafting.workdays_cost',
+          'Policies',
+          `subsystems.crafting.command_config.${command}.workdays_cost`,
+          'Crafting workday cost must be non-negative',
+          'Use a non-negative whole number.',
+        ),
+      );
+    }
+    if (
+      craftingActive &&
+      commands[command] === true &&
+      typeof workdaysCost === 'number' &&
+      workdaysCost > 0 &&
+      !downtimeTracked
+    ) {
+      issues.push(
+        issue(
+          'warning',
+          'crafting.workdays_without_tracked_downtime',
+          'Policies',
+          `subsystems.crafting.command_config.${command}.workdays_cost`,
+          'Crafting workdays need tracked downtime',
+          'Workday costs can only be enforced when downtime mode is tracked and the downtime subsystem is enabled.',
+        ),
+      );
+    }
+  }
+}
+
 function validateContent(model: ConfigModel, issues: ConfigIssue[]) {
   const content = asRecord(model.subsystems.content);
   const contentConfig = asRecord(content.config);
@@ -1513,6 +1706,12 @@ export function createBlankConfig(): ConfigModel {
     },
     policies: {
       exploration: { enforce_cooldowns: true, avoid_repeat_encounters: 'off' },
+      downtime: { mode: 'off', max_workdays: null, acquisition: 'manual' },
+      crafting: {
+        require_downtime_before_roll: true,
+        auto_deduct_materials: false,
+        auto_deduct_gold: false,
+      },
       display: {
         footer_behaviour: 'balanced',
         command_thumbnail: 'default',

@@ -32,8 +32,9 @@ const SUBSYSTEM_DETAILS: Record<
   },
   downtime: {
     label: 'Downtime',
-    implemented: false,
-    detail: 'Downtime controls are planned for a later pass once the command behavior is stable.',
+    implemented: true,
+    detail:
+      'Downtime command toggles and policy checks are available. Crafting consumption remains planned for the crafting slice.',
     dependencies: [
       {
         label: 'Bard SFX',

@@ -51,7 +51,7 @@ ok, msg = pc.modify_wallet(ch, "shards", 2)
 | **`modify_gold(ch, gp)`** | Add/remove Avrae **gp** via coinpurse. Fails if debit would go negative. |
 | **`modify_wallet(ch, currency_id, delta)`** | Add/remove a config **wallet** currency. Validates **`currency_id`** against **`get_config().currencies`**. When **`policies.economy.enforce_wallet_caps`**, rejects grants above **`currencies[id].max_balance`**. |
 | **`modify_bag(ch, item, count, bag="Equipment")`** | Add/remove item stacks. Wraps **`core/bags`** **`modify_bag`**; same failure semantics when removal exceeds stock. |
-| **`modify_downtime(ch, workdays)`** | Add (positive) or spend (negative) workdays when **`policies.downtime.mode == "tracked"`**. Fails if spend would go negative or exceed **`policies.downtime.max_workdays`** cap on grant. |
+| **`modify_downtime(ch, workdays)`** | Add (positive) or spend (negative) workdays when downtime mode is **`manual`** or **`tracked`**. Fails if mode is **`off`**, spend would go negative, or grant would exceed **`policies.downtime.max_workdays`**. |
 | **`modify_hp(ch, delta)`** | Optional wrapper around **`ch.modify_hp`** for consistent messaging in encounter outcomes. |
 
 ### Examples
@@ -97,8 +97,9 @@ Aliases call **`stats.add_log(ch, …)`** after success to update **`last_used_a
 Cvar keys for non-stats sheet state:
 
 ```py
-CVAR_DOWNTIME_START = "wg_downtime_start"
-CVAR_DOWNTIME_USED = "wg_downtime_used"
+CVAR_DOWNTIME = "wg_downtime"
+CVAR_DOWNTIME_START = "wg_downtime_start"  # legacy compatibility
+CVAR_DOWNTIME_USED = "wg_downtime_used"    # legacy compatibility
 CVAR_WALLET_PREFIX = "wg_wallet_"   # + currency id
 CVAR_TOOL_PROF = "wg_ptools"
 CVAR_TOOL_EXP = "wg_etools"

@@ -114,6 +114,18 @@ vars:
     aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1: |
       # owner body intentionally empty
 
+return config.cfg.policies.downtime.mode
+---
+"off"
+---
+name: empty owner defaults downtime mode to off
+vars:
+  svars:
+    westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"
+  gvars:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1: |
+      # owner body intentionally empty
+
 return config.cfg.policies.player_setup.require_character
 ---
 True

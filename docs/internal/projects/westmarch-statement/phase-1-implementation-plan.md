@@ -66,6 +66,8 @@ Review notes:
 
 ## Slice 4 — Downtime foundation
 
+**Status:** implemented; world-clock/journey downtime acquisition remains deferred.
+
 Port `downtime` as the character workday ledger:
 
 - cvar model and display

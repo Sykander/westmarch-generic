@@ -989,6 +989,16 @@ function PoliciesView({
   config: ConfigModel;
   updateConfig: (path: string, value: unknown) => void;
 }) {
+  function updateOptionalNumber(path: string, value: string) {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      updateConfig(path, null);
+      return;
+    }
+    const numeric = Number(trimmed);
+    updateConfig(path, Number.isFinite(numeric) ? numeric : trimmed);
+  }
+
   return (
     <section className="section-panel">
       <SectionTitle
@@ -1014,6 +1024,26 @@ function PoliciesView({
           values={['off', 'same_biome', 'global']}
           onChange={(value) => updateConfig('policies.exploration.avoid_repeat_encounters', value)}
           help="Controls whether recent encounters are excluded from future rolls."
+        />
+        <SelectField
+          label="Downtime mode"
+          value={String(readPath(config, 'policies.downtime.mode') ?? 'off')}
+          values={['off', 'manual', 'tracked']}
+          onChange={(value) => updateConfig('policies.downtime.mode', value)}
+          help="off is the default; manual keeps a player ledger; tracked lets future systems enforce costs."
+        />
+        <SelectField
+          label="Downtime acquisition"
+          value={String(readPath(config, 'policies.downtime.acquisition') ?? 'manual')}
+          values={['manual', 'world_clock', 'journey']}
+          onChange={(value) => updateConfig('policies.downtime.acquisition', value)}
+          help="manual is implemented now; world_clock and journey are reserved for later automation."
+        />
+        <TextField
+          label="Max workdays"
+          value={String(readPath(config, 'policies.downtime.max_workdays') ?? '')}
+          onChange={(value) => updateOptionalNumber('policies.downtime.max_workdays', value)}
+          help="Optional cap for the downtime ledger. Leave blank for unlimited."
         />
         <FooterBehaviourField
           value={String(readPath(config, 'policies.display.footer_behaviour') ?? 'balanced')}
