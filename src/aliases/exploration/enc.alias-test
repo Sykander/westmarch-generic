@@ -264,6 +264,52 @@ vars:
 
 !enc forest
 ---
+re:Berries in the Wild[\s\S]*Arrived in[\s\S]*Oakwood Forest[\s\S]*Completed
+---
+name: journey encounter step completes after successful enc
+vars:
+  uvars:
+    _wm_command: enc
+  cvars:
+    wg_location: "river_town"
+    wg_journey: '{"title":"River Town -> Oakwood Forest","from":"river_town","to":"oakwood","paths":[{"from":"river_town","to":"oakwood","steps":[{"type":"encounter","biome":"forest"}]}],"path_index":0,"step_index":0,"horse":false,"boat":false}'
+  svars:
+    westmarch_config: "eeee3335-3335-3335-3335-333333333335"
+  gvars:
+    eeee3335-3335-3335-3335-333333333335: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+              "config": {
+                  "enc_biome_source": "argument",
+                  "distribution": {"combat": 0, "quest": 0, "gather": 100},
+              },
+          },
+          "travel": {
+              "enabled": True,
+              "commands": {"travel": True, "location": True},
+          },
+      }
+      policies = {"exploration": {"enforce_cooldowns": False}}
+      world_data = {
+          "default_location": "river_town",
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+          },
+          "locations": {
+              "river_town": {"name": "River Town", "commands": {"enc": ["road"]}},
+              "oakwood": {"name": "Oakwood Forest", "commands": {"enc": ["forest"]}},
+          },
+          "paths": [
+              {"from": "river_town", "to": "oakwood", "steps": [{"type": "encounter", "biome": "forest"}]},
+          ],
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      [[["enc.gather"], "flavour", "Berries in the Wild", "", "gather"]]
+
+!enc forest
+---
 re:Forest ambush|Wolf|combat
 ---
 name: combat kind from mixed distribution pool

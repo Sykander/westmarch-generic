@@ -39,6 +39,10 @@ def _read_field(obj, key):
         "step_index": lambda o: o.step_index,
         "horse": lambda o: o.horse,
         "boat": lambda o: o.boat,
+        "type": lambda o: o.type,
+        "biome": lambda o: o.biome,
+        "code": lambda o: o.code,
+        "activity": lambda o: o.activity,
     }
     if key in attrs:
         try:
@@ -61,6 +65,15 @@ def _normalize_id(value):
     if text == "":
         return None
     return text.lower()
+
+
+def _normalize_token(value):
+    if value == None:
+        return None
+    text = str(value).strip().lower()
+    if text == "":
+        return None
+    return text
 
 
 def _transport_id(horse=False, boat=False):
@@ -457,3 +470,37 @@ def get_next_step(ch=None):
     if int(step_index) >= len(steps):
         return None
     return steps[int(step_index)]
+
+
+def step_matches_activity(step, activity="enc", biome=None):
+    if step == None or not dicts.is_dict(step):
+        return False
+    step_type = _normalize_token(_read_field(step, "type"))
+    step_biome = _normalize_token(_read_field(step, "biome"))
+    if step_biome == None:
+        step_biome = _normalize_token(_read_field(step, "code"))
+    if step_type != "encounter" and step_biome == None:
+        return False
+
+    expected_activity = _normalize_token(_read_field(step, "activity"))
+    if expected_activity == None:
+        expected_activity = "enc"
+    actual_activity = _normalize_token(activity)
+    if actual_activity == None or expected_activity != actual_activity:
+        return False
+
+    actual_biome = _normalize_token(biome)
+    if step_biome != None and actual_biome != None and step_biome != actual_biome:
+        return False
+    return True
+
+
+def complete_activity_step(ch, config_override=None, activity="enc", biome=None):
+    """Advance the active journey only when the next step matches this activity."""
+    step = get_next_step(ch)
+    if not step_matches_activity(step, activity, biome):
+        return False, []
+    progressed, messages = next_step(ch, config_override)
+    if progressed and len(messages) == 0:
+        messages = ["Journey step completed."]
+    return progressed, messages

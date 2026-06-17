@@ -295,7 +295,7 @@ flowchart LR
 6. **`display.get_display()`**, **`auth`**, **`stats.add_log`**, **`pc.check_cooldown`** for **`enc`**  
 7. Editor validation — registry, distribution sum, biome load smoke  
 
-**Stretch (not blockers):** **`balanced`** mode, quest kind, recipe outcomes, journey encounter steps.
+**Stretch (not blockers):** quest kind and recipe outcomes. **Balanced** mode and matching journey encounter steps have since shipped.
 
 ### Exploration doc score: **8/10** completeness · **9/10** clarity for architecture · **8/10** for alias-level consistency — **Approve for Tier A implementation**
 

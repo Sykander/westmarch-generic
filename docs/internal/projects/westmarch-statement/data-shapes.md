@@ -880,6 +880,9 @@ One entry in **`path["steps"]`** — what the player does before advancing (`!tr
 # Run an exploration encounter using a biome pool code
 { "type": "encounter", "biome": "forest" }
 
+# Run a specific exploration activity using a biome pool code
+{ "type": "encounter", "activity": "forage", "biome": "forest" }
+
 # Pay resources at this step
 { "type": "cost", "gold": 5 }
 
@@ -887,7 +890,7 @@ One entry in **`path["steps"]`** — what the player does before advancing (`!tr
 { "type": "proceed", "description": "Follow the forest trail" }
 ```
 
-**Encounter steps** map to `!enc <biome>` (or the matching activity when the journey was started with a flag). **Cost steps** represent a payment/resource requirement; the first travel/location slice displays them, and a later enforcement slice will deduct them when policy allows. **Proceed** steps auto-complete on `!travel next`.
+**Encounter steps** map to `!enc <biome>` by default, or to `!<activity> <biome>` when `activity` is set. **Cost steps** represent a payment/resource requirement; the first travel/location slice displays them, and a later enforcement slice will deduct them when policy allows. **Proceed** steps auto-complete on `!travel next`.
 
 ### Requirements and parallel paths
 

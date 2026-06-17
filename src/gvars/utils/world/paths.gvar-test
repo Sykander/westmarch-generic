@@ -60,3 +60,11 @@ return "River Town" in text and "Oakwood Forest" in text and "!enc forest" in te
 True
 ---
 name: display_path shows linked location names and encounter steps
+
+path = {"from": "river_town", "to": "oakwood", "steps": [{"type": "encounter", "activity": "forage", "biome": "forest"}]}
+text = paths.display_path(path, {}, "detailed", "walk", "!")
+return "!forage forest" in text
+---
+True
+---
+name: display_path respects activity-specific encounter steps

@@ -20,7 +20,6 @@ Deliver the smallest useful travel subsystem:
 Explicit deferrals:
 
 - automated gold/ration/item deductions
-- automatic journey advancement from `!enc`
 - time and weather commands
 - guided editor builders for locations and paths
 
@@ -29,6 +28,7 @@ Review notes:
 - Generic cvars use `wg_*`, not legacy `Westmarch_*`.
 - The preferred config path shape is generic (`steps`, `requirements.transport`, `cost`), but runtime should accept westmarch shorthand (`encs`, `horse`, `boat`, `gold`) during migration.
 - User-entered destinations must use shared 0 / 1 / many lookup behavior.
+- Matching `!enc` results automatically complete the active journey encounter step.
 
 ## Slice 2 — Exploration cluster parity
 
@@ -37,7 +37,7 @@ Complete Tier B around the already-shipped encounter pipeline:
 - verify `enc`, `forage`, `fish`, `mine`, `lumber` against extracted biome fixtures
 - add any missing command-specific display/cooldown docs
 - wire location-mode exploration to the travel slice
-- decide whether journey encounter steps auto-complete in this slice or Slice 3
+- keep journey encounter auto-completion covered while expanding activity parity
 
 Review notes:
 

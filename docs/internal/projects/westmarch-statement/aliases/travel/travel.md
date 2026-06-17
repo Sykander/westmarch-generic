@@ -68,18 +68,19 @@ flowchart TD
 - [x] Template config — 2 locations, 1 path ([data-shapes.md](../../data-shapes.md))
 - [x] **`travel.alias-test`** — help, location display, lookup, route, set/reset/next smoke
 - [x] Unblocks **location** status command
+- [x] Automatic **`!enc`** journey-step completion hook
 
 ### Current slice notes
 
 - Shipped cvars use generic names: **`wg_location`**, **`wg_journey`**, **`wg_locations_data`**.
 - Runtime accepts generic path shape plus westmarch import shorthand (**`encs`**, **`horse`**, **`boat`**, **`gold`**) to ease migration.
 - Automated path costs / rations remain deferred; cost steps are displayed but not deducted.
+- Successful `!enc <biome>` completes the active journey step when the next step is a matching encounter step.
 
 ### MVP deferrals
 
 - Gold-cost path steps with coinpurse debit
 - Ration consumption and item/wallet path costs
-- Automatic **`!enc`** journey-step completion hook
 
 ## Exit criteria
 

@@ -71,7 +71,8 @@ flowchart TD
   H --> I
   I --> J[encounters.process_encounter]
   J --> K[stats.add_log]
-  K --> L[Embed]
+  K --> L[journeys.complete_activity_step]
+  L --> M[Embed]
 ```
 
 ### Config loader integration
@@ -82,6 +83,7 @@ flowchart TD
 4. **`encounter_lists.get_encounter(biome, "enc", ch, cfg)`**
 5. **`encounters.process_encounter(...)`**
 6. **`stats.add_log(ch, extras={...})`**
+7. **`journeys.complete_activity_step(ch, cfg, "enc", biome)`** when the active journey step matches
 
 ## Implementation checklist
 
@@ -94,6 +96,7 @@ flowchart TD
 ### Phase 1
 
 - [x] **`balanced`** mode via stats kind counters
+- [x] Matching journey encounter steps auto-complete after successful `!enc`
 - [ ] Quest-tagged encounters when **`misc.quest`** ships
 
 ## Related

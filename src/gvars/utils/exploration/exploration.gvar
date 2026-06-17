@@ -7,6 +7,7 @@ using(
     config = env.gvars.config,
     encounter_lists = env.gvars.encounter_lists,
     encounters = env.gvars.encounters,
+    journeys = env.gvars.journeys,
     pc = env.gvars.pc,
     stats = env.gvars.stats,
 )
@@ -164,6 +165,8 @@ def run_activity(activity, argslist, get_embed):
     if not ok_log:
         return get_embed(desc=log_msg if log_msg != "" else "Could not record command usage.")
 
+    journey_progressed, journey_messages = journeys.complete_activity_step(ch, cfg, activity, biome)
+
     parts = []
     name = _field(result, "name")
     if name not in [None, ""]:
@@ -177,4 +180,6 @@ def run_activity(activity, argslist, get_embed):
     desc = "\n\n".join(parts)
     if desc == "":
         desc = "Encounter complete."
+    if journey_progressed:
+        desc += "\n\n-# " + "\n-# ".join(journey_messages)
     return get_embed(desc=desc)

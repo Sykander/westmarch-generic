@@ -91,3 +91,45 @@ return progressed and loc_id == "oakwood" and "Arrived" in " ".join(messages)
 True
 ---
 name: next_step arrives and updates location cvar
+
+cfg_fixture = {
+    "world_data": {
+        "locations": {
+            "river_town": {"name": "River Town"},
+            "oakwood": {"name": "Oakwood Forest"},
+        },
+        "paths": [
+            {"from": "river_town", "to": "oakwood", "steps": [{"type": "encounter", "biome": "forest"}, {"type": "encounter", "biome": "road"}]},
+        ],
+    },
+}
+journey = journeys.build_journey(cfg_fixture, "river_town", "oakwood", [{"from": "river_town", "to": "oakwood", "steps": [{"type": "encounter", "biome": "forest"}, {"type": "encounter", "biome": "road"}]}])
+journeys.set_journey(character(), journey)
+advanced, messages = journeys.complete_activity_step(character(), cfg_fixture, "enc", "forest")
+stored = journeys.get_journey(character())
+return advanced and stored["path_index"] == 0 and stored["step_index"] == 1 and "Journey step completed." in " ".join(messages)
+---
+True
+---
+name: complete_activity_step advances matching encounter step
+
+cfg_fixture = {
+    "world_data": {
+        "locations": {
+            "river_town": {"name": "River Town"},
+            "oakwood": {"name": "Oakwood Forest"},
+        },
+        "paths": [
+            {"from": "river_town", "to": "oakwood", "steps": [{"type": "encounter", "biome": "road"}]},
+        ],
+    },
+}
+journey = journeys.build_journey(cfg_fixture, "river_town", "oakwood", [{"from": "river_town", "to": "oakwood", "steps": [{"type": "encounter", "biome": "road"}]}])
+journeys.set_journey(character(), journey)
+advanced, messages = journeys.complete_activity_step(character(), cfg_fixture, "enc", "forest")
+stored = journeys.get_journey(character())
+return not advanced and len(messages) == 0 and stored["path_index"] == 0 and stored["step_index"] == 0
+---
+True
+---
+name: complete_activity_step ignores mismatched biome

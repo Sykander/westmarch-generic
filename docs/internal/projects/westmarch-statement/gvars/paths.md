@@ -48,6 +48,8 @@ Return **`min(...)`** across paths that match the traveller’s transport; use a
 
 Transport selection happens when **choosing which path dict** applies — not by swapping step lists on one path.
 
+Encounter display defaults to `!enc <biome>`. When a step sets `activity`, display uses that command instead, e.g. `{ "type": "encounter", "activity": "forage", "biome": "forest" }` renders `!forage forest`.
+
 ## Display (`display_path`)
 
 | Mode | Example |

@@ -37,6 +37,8 @@ def _read_field(obj, key):
         "label": lambda o: o.label,
         "type": lambda o: o.type,
         "biome": lambda o: o.biome,
+        "code": lambda o: o.code,
+        "activity": lambda o: o.activity,
         "description": lambda o: o.description,
         "encs": lambda o: o.encs,
         "horse": lambda o: o.horse,
@@ -275,7 +277,10 @@ def _step_text(step, path=None, prefix="!", completed=False):
         if step_type == "encounter" or biome != None:
             if biome == None:
                 biome = _read_field(step, "code")
-            text = f"Run `{prefix}enc {biome}`"
+            activity = _read_field(step, "activity")
+            if activity == None or str(activity).strip() == "":
+                activity = "enc"
+            text = f"Run `{prefix}{activity} {biome}`"
         elif step_type == "cost" or _read_field(step, "gold") != None:
             parts = []
             gold = _read_field(step, "gold")

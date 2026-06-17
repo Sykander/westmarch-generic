@@ -37,8 +37,14 @@ def set_journey(ch, journey_dict):
 
 def next_step(ch, config):
     """
-    Advance journey step; run encounter/cost hooks; return (ok, messages).
-    Called from !travel and optionally from !enc when a step expects an activity.
+    Advance journey step manually; return (ok, messages).
+    Called from !travel next.
+    """
+
+def complete_activity_step(ch, config, activity="enc", biome=None):
+    """
+    Advance only when the active journey step matches the completed activity/biome.
+    Called from exploration.run_activity after a successful encounter/log write.
     """
 ```
 
@@ -73,6 +79,8 @@ flowchart LR
   F -->|cost| H[pc.modify_gold / wallet]
   F -->|proceed| E
 ```
+
+The activity hook is conservative: an encounter step with `biome: "forest"` completes after a successful matching `!enc forest`. Activity-specific path steps can opt into another exploration command with `activity`, e.g. `{ "type": "encounter", "activity": "forage", "biome": "forest" }`.
 
 **Policies** ([data-shapes.md](../data-shapes.md#server-policies)): when **`policies.travel.apply_path_costs`** or **`consume_rations`** is on, **`next_step`** deducts via [pc.md](pc.md). Rations use **`policies.travel.rations_item`** (default **`"Rations"`**) with **`pc.modify_bag`**.
 
