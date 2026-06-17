@@ -2,34 +2,53 @@
 using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(
     auth = env.gvars.auth,
-    display = env.gvars.display,
     config = env.gvars.config,
+    display = env.gvars.display,
+    journeys = env.gvars.journeys,
+    locations = env.gvars.locations,
 )
 
 ok, msg = auth.is_allowed()
 get_embed = display.get_display()
 
-cmd_name = auth.command_name()
-if cmd_name == None:
-    cmd_name = "command"
-
 if not ok:
     return get_embed(desc=msg)
 
-args = argparse(&ARGS&)
 argslist = &ARGS&
 
+help_text = f"""Show your current westmarch location.
+
+**Usage**
+`{ctx.prefix}location`
+`{ctx.prefix}location journey`
+"""
+
 if len(argslist) > 0 and argslist[0] in ["help", "?"]:
-    return get_embed(desc = f"{cmd_name} help is not implemented")
+    return get_embed(desc=help_text)
 
 try:
     ch = character()
 except:
-    return get_embed(desc = f"{cmd_name} requires a character")
+    return get_embed(desc="Select a character first.")
 
+cfg = config.get_config()
+loc_id, loc = journeys.get_location(ch, cfg)
 
-return get_embed(
-    desc=f"{cmd_name} is not implemented",
-)
+if loc_id == None:
+    return get_embed(desc="No **default_location** is configured for this server.")
+if loc == None:
+    return get_embed(desc=f"Unknown location **{loc_id}**.")
+
+visits = journeys.get_visit_count(ch, loc_id)
+description = locations.display_location(loc, "full", ch, False, visits)
+
+if len(argslist) > 0 and str(argslist[0]).strip().lower() == "journey":
+    journey_text = journeys.active_journey_text(cfg, ch, ctx.prefix)
+    if journey_text == "":
+        description += "\n\nNo active journey is being tracked."
+    else:
+        description += "\n\n" + journey_text
+
+image = locations.location_image(loc)
+return get_embed(desc=description, image=image)
 </drac2>
-

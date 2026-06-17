@@ -82,18 +82,17 @@ flowchart TD
 
 ### Minimum shippable
 
-- [ ] Port **`journeys.gvar`** location helpers (config-aware defaults)
-- [ ] **`locations.gvar`** — [gvars/locations.md](../../gvars/locations.md)
-- [ ] **`world_state.gvar`** *(optional)* — thin wrapper if needed; prefer `locations.display_location` directly
-- [ ] **`location.alias`** — loader, toggle, help, default embed
-- [ ] Template config **`DEFAULT_LOCATION`** + one area display row
-- [ ] **`location.alias-test`** — help, no cvar (default), cvar set to fixture location
-- [ ] Wire env + sourcemaps under `src/alias../travel/`
+- [x] Port **`journeys.gvar`** location helpers (config-aware defaults)
+- [x] **`locations.gvar`** — [gvars/locations.md](../../gvars/locations.md)
+- [x] **`location.alias`** — loader, toggle, help, default embed
+- [x] Template config **`world_data.default_location`** + area display rows
+- [x] **`location.alias-test`** — help, no cvar (default), cvar set to fixture location
+- [x] Wire env + sourcemaps under `src/aliases/travel/`
 
 ### Out of scope (initial)
 
 - Activity table (enc/fish/… codes) — keep on **travel** full view
-- `!travel set` / GM location override
+- Automated location changes outside **`!travel next`** / **`!travel set`**
 - Map links unless config provides them
 
 ## Exit criteria

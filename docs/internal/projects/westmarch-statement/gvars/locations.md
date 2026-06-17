@@ -17,7 +17,7 @@ def search_locations(config, query):
     """
 
 def get_default_location(config):
-    """Return location dict for config.default_location id, or None."""
+    """Return location dict for world_data.default_location id, or None."""
 
 def display_location(location, mode="full", character=None, include_activities=False):
     """
@@ -47,7 +47,7 @@ text = locations.display_location(loc, mode="full", character=character, include
 
 1. **`get_location(config, location_id)`** — `config.locations.get(location_id)` (after loader merge); inject **`id`** on the returned dict if missing.
 2. **`search_locations(config, query)`** — exact id match first; else filter `location.name` containing `query` (case-insensitive). Port `areas.search_for_area()` behaviour.
-3. **`get_default_location(config)`** — `get_location(config, config.default_location)`.
+3. **`get_default_location(config)`** — `get_location(config, config.world_data.default_location)`.
 
 Aliases pass **player input** through **`search_locations`**; engine internals use **ids** (paths, cvars keyed by id — TBD in journeys port).
 

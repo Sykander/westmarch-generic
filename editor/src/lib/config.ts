@@ -1324,28 +1324,121 @@ function validateExploration(model: ConfigModel, issues: ConfigIssue[]) {
 function validateTravel(model: ConfigModel, issues: ConfigIssue[]) {
   const travel = asRecord(model.subsystems.travel);
   if (travel.enabled !== true) return;
+  const commands = asRecord(travel.commands);
+  const locationCommandOn = commands.location === true;
+  const travelCommandOn = commands.travel === true;
+  const implementedTravelOn = locationCommandOn || travelCommandOn;
+  const locations = asRecord(model.world_data.locations);
+  const defaultLocation = model.world_data.default_location;
 
-  if (!model.world_data.default_location) {
+  if (implementedTravelOn && !defaultLocation) {
     issues.push(
       issue(
-        'warning',
+        'error',
         'world.default_location',
         'World',
         'world_data.default_location',
         'Travel has no default location',
-        'Travel/location commands are easier to use when a default location is configured.',
+        '`!travel` and `!location` need a default location for characters with no location cvar.',
       ),
     );
   }
-  if (Object.keys(asRecord(model.world_data.locations)).length === 0) {
+  if (implementedTravelOn && Object.keys(locations).length === 0) {
     issues.push(
       issue(
-        'warning',
+        'error',
         'world.locations.empty',
         'World',
         'world_data.locations',
         'Travel has no locations',
         'The travel subsystem needs locations to describe where players can go.',
+      ),
+    );
+  }
+  if (
+    typeof defaultLocation === 'string' &&
+    defaultLocation.trim() !== '' &&
+    Object.keys(locations).length > 0 &&
+    !locations[defaultLocation.trim().toLowerCase()]
+  ) {
+    issues.push(
+      issue(
+        'error',
+        'world.default_location_unknown',
+        'World',
+        'world_data.default_location',
+        'Default location is not in locations',
+        '`world_data.default_location` must match a key in `world_data.locations`.',
+      ),
+    );
+  }
+
+  const rawPaths = model.world_data.paths;
+  if (travelCommandOn && rawPaths != null && !Array.isArray(rawPaths)) {
+    issues.push(
+      issue(
+        'error',
+        'world.paths.type',
+        'World',
+        'world_data.paths',
+        'Paths must be a list',
+        '`!travel` route planning expects `world_data.paths` to be a list of path objects.',
+      ),
+    );
+  }
+  if (travelCommandOn && Array.isArray(rawPaths)) {
+    rawPaths.forEach((entry, index) => {
+      const path = asRecord(entry);
+      const from = typeof path.from === 'string' ? path.from.trim().toLowerCase() : '';
+      const to = typeof path.to === 'string' ? path.to.trim().toLowerCase() : '';
+      if (!from || !to) {
+        issues.push(
+          issue(
+            'error',
+            'world.path.endpoint_missing',
+            'World',
+            `world_data.paths.${index}`,
+            'Path needs from and to locations',
+            'Each travel path must define string `from` and `to` location ids.',
+          ),
+        );
+        return;
+      }
+      if (Object.keys(locations).length > 0 && (!locations[from] || !locations[to])) {
+        issues.push(
+          issue(
+            'error',
+            'world.path.endpoint_unknown',
+            'World',
+            `world_data.paths.${index}`,
+            'Path references an unknown location',
+            '`from` and `to` must match keys in `world_data.locations`.',
+          ),
+        );
+      }
+    });
+  }
+  if (commands.time === true) {
+    issues.push(
+      issue(
+        'warning',
+        'travel.time_planned',
+        'Subsystems',
+        'subsystems.travel.commands.time',
+        'Time command is still planned',
+        '`!time` is not part of the current travel/location implementation slice.',
+      ),
+    );
+  }
+  if (commands.weather === true) {
+    issues.push(
+      issue(
+        'warning',
+        'travel.weather_planned',
+        'Subsystems',
+        'subsystems.travel.commands.weather',
+        'Weather command is still planned',
+        '`!weather` is not part of the current travel/location implementation slice.',
       ),
     );
   }

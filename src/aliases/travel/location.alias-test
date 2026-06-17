@@ -1,0 +1,118 @@
+!location
+---
+re:not configured
+---
+name: blocks without server config
+vars:
+  uvars:
+    _wm_command: location
+
+!location
+---
+re:disabled on this server
+---
+name: rejects disabled location command
+vars:
+  uvars:
+    _wm_command: location
+  svars:
+    westmarch_config: "aaaa1000-1000-1000-1000-100000000000"
+  gvars:
+    aaaa1000-1000-1000-1000-100000000000: |
+      subsystems = {
+          "travel": {"enabled": True, "commands": {"location": False}},
+      }
+
+!location help
+---
+re:Usage[\s\S]*location journey
+---
+name: shows help when enabled
+vars:
+  uvars:
+    _wm_command: location
+  svars:
+    westmarch_config: "aaaa1001-1001-1001-1001-100000000001"
+  gvars:
+    aaaa1001-1001-1001-1001-100000000001: |
+      subsystems = {
+          "travel": {"enabled": True, "commands": {"location": True}},
+      }
+      world_data = {
+          "default_location": "river_town",
+          "locations": {"river_town": {"name": "River Town"}},
+      }
+
+!location
+---
+re:River Town[\s\S]*busy quay
+---
+name: shows config default location
+vars:
+  uvars:
+    _wm_command: location
+  svars:
+    westmarch_config: "aaaa1002-1002-1002-1002-100000000002"
+  gvars:
+    aaaa1002-1002-1002-1002-100000000002: |
+      subsystems = {
+          "travel": {"enabled": True, "commands": {"location": True}},
+      }
+      world_data = {
+          "default_location": "river_town",
+          "locations": {
+              "river_town": {"name": "River Town", "description": "A busy quay."},
+              "oakwood": {"name": "Oakwood Forest"},
+          },
+      }
+
+!location
+---
+re:Oakwood Forest
+---
+name: shows character cvar location over default
+vars:
+  uvars:
+    _wm_command: location
+  cvars:
+    wg_location: "oakwood"
+  svars:
+    westmarch_config: "aaaa1002-1002-1002-1002-100000000002"
+  gvars:
+    aaaa1002-1002-1002-1002-100000000002: |
+      subsystems = {
+          "travel": {"enabled": True, "commands": {"location": True}},
+      }
+      world_data = {
+          "default_location": "river_town",
+          "locations": {
+              "river_town": {"name": "River Town"},
+              "oakwood": {"name": "Oakwood Forest"},
+          },
+      }
+
+!location journey
+---
+re:Oakwood Forest[\s\S]*River Town[\s\S]*!enc forest
+---
+name: can include active journey summary
+vars:
+  uvars:
+    _wm_command: location
+  cvars:
+    wg_location: "river_town"
+    wg_journey: '{"title":"River Town -> Oakwood Forest","from":"river_town","to":"oakwood","paths":[{"from":"river_town","to":"oakwood","steps":[{"type":"encounter","biome":"forest"}]}],"path_index":0,"step_index":0,"horse":false,"boat":false}'
+  svars:
+    westmarch_config: "aaaa1002-1002-1002-1002-100000000002"
+  gvars:
+    aaaa1002-1002-1002-1002-100000000002: |
+      subsystems = {
+          "travel": {"enabled": True, "commands": {"location": True}},
+      }
+      world_data = {
+          "default_location": "river_town",
+          "locations": {
+              "river_town": {"name": "River Town"},
+              "oakwood": {"name": "Oakwood Forest"},
+          },
+      }

@@ -309,7 +309,7 @@ policies = {
 }
 ```
 
-Set **`apply_path_costs`** / **`consume_rations`** to **`True`** when the journeys engine should deduct **`path.cost`** on travel. **`currencies`** feeds **`!wallet favour`**; gp on paths still uses Avrae coinpurse.
+Set **`apply_path_costs`** / **`consume_rations`** to **`True`** only after the resource-deduction slice lands. The first travel/location slice displays cost steps but does not debit gp, rations, or wallet currencies. **`currencies`** feeds **`!wallet favour`**; gp on paths will use Avrae coinpurse when cost enforcement ships.
 
 ---
 

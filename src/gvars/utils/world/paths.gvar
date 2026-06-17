@@ -1,6 +1,331 @@
-"""paths.gvar — placeholder.
+"""paths.gvar — config-backed path edges, costs, steps, and display.
 
 See docs/internal/projects/westmarch-statement/gvars/paths.md
 """
 
-# TODO: implement paths module
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(
+    config = env.gvars.config,
+    dicts = env.gvars.dicts,
+    lists = env.gvars.lists,
+    locations = env.gvars.locations,
+)
+
+
+def _read_field(obj, key):
+    if obj == None:
+        return None
+    if dicts.is_dict(obj):
+        if key in obj:
+            return obj[key]
+        return None
+    try:
+        return obj[key]
+    except:
+        pass
+    attrs = {
+        "world_data": lambda o: o.world_data,
+        "paths": lambda o: o.paths,
+        "from": lambda o: o["from"],
+        "to": lambda o: o.to,
+        "requirements": lambda o: o.requirements,
+        "transport": lambda o: o.transport,
+        "steps": lambda o: o.steps,
+        "cost": lambda o: o.cost,
+        "gold": lambda o: o.gold,
+        "rations": lambda o: o.rations,
+        "label": lambda o: o.label,
+        "type": lambda o: o.type,
+        "biome": lambda o: o.biome,
+        "description": lambda o: o.description,
+        "encs": lambda o: o.encs,
+        "horse": lambda o: o.horse,
+        "boat": lambda o: o.boat,
+    }
+    if key in attrs:
+        try:
+            return attrs[key](obj)
+        except:
+            pass
+    return None
+
+
+def _cfg(config_override=None):
+    if config_override != None:
+        return config_override
+    return config.get_config()
+
+
+def _world_data(cfg):
+    return _read_field(cfg, "world_data")
+
+
+def _path_list(cfg):
+    raw = _read_field(_world_data(cfg), "paths")
+    if raw == None:
+        return []
+    if lists.is_list(raw):
+        return raw
+    if dicts.is_dict(raw):
+        out = []
+        for key in raw:
+            out.append(raw[key])
+        return out
+    return []
+
+
+def _normalize_id(value):
+    if value == None:
+        return None
+    text = str(value).strip()
+    if text == "":
+        return None
+    return text.lower()
+
+
+def _transport_id(transport_id="walk", horse=False, boat=False):
+    if boat == True:
+        return "boat"
+    if horse == True:
+        return "horse"
+    if transport_id == None or str(transport_id).strip() == "":
+        return "walk"
+    return str(transport_id).strip().lower()
+
+
+def _copy_path(path):
+    out = {}
+    if path == None:
+        return out
+    if dicts.is_dict(path):
+        for key in path:
+            out[key] = path[key]
+        return out
+    for key in [
+        "from",
+        "to",
+        "requirements",
+        "steps",
+        "cost",
+        "gold",
+        "rations",
+        "label",
+        "encs",
+        "horse",
+        "boat",
+    ]:
+        val = _read_field(path, key)
+        if val != None:
+            out[key] = val
+    return out
+
+
+def _transport_matches(requirement, selected):
+    if requirement == None:
+        return True
+    if lists.is_list(requirement):
+        for item in requirement:
+            if str(item).strip().lower() == selected:
+                return True
+        return False
+    text = str(requirement).strip().lower()
+    if text == "":
+        return True
+    return text == selected
+
+
+def path_matches_transport(path, transport_id="walk"):
+    selected = _transport_id(transport_id)
+    reqs = _read_field(path, "requirements")
+    req_transport = _read_field(reqs, "transport")
+    if req_transport != None:
+        return _transport_matches(req_transport, selected)
+    legacy_transport = _read_field(path, "transport")
+    if legacy_transport != None:
+        return _transport_matches(legacy_transport, selected)
+    return True
+
+
+def get_edges_from(config_override, from_id, transport_id="walk"):
+    """All paths where from == from_id and transport requirements match."""
+    cfg = _cfg(config_override)
+    origin = _normalize_id(from_id)
+    out = []
+    if origin == None:
+        return out
+    for path in _path_list(cfg):
+        path_from = _normalize_id(_read_field(path, "from"))
+        if path_from != origin:
+            continue
+        if not path_matches_transport(path, transport_id):
+            continue
+        out.append(_copy_path(path))
+    return out
+
+
+def get_edge(config_override, from_id, to_id, transport_id="walk"):
+    """Cheapest single directed path from -> to for the active transport."""
+    dest = _normalize_id(to_id)
+    best = None
+    best_cost = None
+    for path in get_edges_from(config_override, from_id, transport_id):
+        path_to = _normalize_id(_read_field(path, "to"))
+        if path_to != dest:
+            continue
+        cost = get_path_cost(path, transport_id)
+        if best == None or cost < best_cost:
+            best = path
+            best_cost = cost
+    return best
+
+
+def _legacy_encounter_steps(encs):
+    out = []
+    if not lists.is_list(encs):
+        return out
+    for biome in encs:
+        out.append({"type": "encounter", "biome": str(biome)})
+    return out
+
+
+def _cost_steps(path):
+    cost = _read_field(path, "cost")
+    if cost != None and dicts.is_dict(cost):
+        step = {"type": "cost"}
+        for key in cost:
+            step[key] = cost[key]
+        return [step]
+    gold = _read_field(path, "gold")
+    if gold != None:
+        return [{"type": "cost", "gold": gold}]
+    return []
+
+
+def get_path_steps(path, transport_id="walk", horse=False, boat=False):
+    """Step list for one edge, accepting generic and westmarch shorthand paths."""
+    selected = _transport_id(transport_id, horse, boat)
+    raw = _read_field(path, "steps")
+    if raw != None and lists.is_list(raw):
+        return raw
+    if selected == "horse":
+        horse_steps = _legacy_encounter_steps(_read_field(path, "horse"))
+        if len(horse_steps) > 0:
+            return horse_steps
+    if selected == "boat":
+        boat_steps = _legacy_encounter_steps(_read_field(path, "boat"))
+        if len(boat_steps) > 0:
+            return boat_steps
+    enc_steps = _legacy_encounter_steps(_read_field(path, "encs"))
+    if len(enc_steps) > 0:
+        return enc_steps
+    cost_steps = _cost_steps(path)
+    if len(cost_steps) > 0:
+        return cost_steps
+    return [{"type": "proceed", "description": f"Proceed to {_read_field(path, 'to')}"}]
+
+
+def _as_number(value, fallback=None):
+    if value == None:
+        return fallback
+    try:
+        return float(value)
+    except:
+        pass
+    try:
+        return int(value)
+    except:
+        return fallback
+
+
+def get_path_cost(path, transport_id="walk", horse=False, boat=False):
+    selected = _transport_id(transport_id, horse, boat)
+    candidates = []
+    raw_steps = _read_field(path, "steps")
+    if raw_steps != None and lists.is_list(raw_steps):
+        candidates.append(len(raw_steps))
+    elif selected == "horse" and lists.is_list(_read_field(path, "horse")):
+        candidates.append(len(_read_field(path, "horse")))
+    elif selected == "boat" and lists.is_list(_read_field(path, "boat")):
+        candidates.append(len(_read_field(path, "boat")))
+    elif lists.is_list(_read_field(path, "encs")):
+        candidates.append(len(_read_field(path, "encs")))
+    cost = _read_field(path, "cost")
+    gold = None
+    if cost != None and dicts.is_dict(cost):
+        gold = _read_field(cost, "gold")
+    if gold == None:
+        gold = _read_field(path, "gold")
+    gold_num = _as_number(gold)
+    if gold_num != None:
+        candidates.append(gold_num / 25)
+    if len(candidates) == 0:
+        return 0
+    best = candidates[0]
+    for item in candidates:
+        if item < best:
+            best = item
+    return best
+
+
+def _step_text(step, path=None, prefix="!", completed=False):
+    text = None
+    if dicts.is_dict(step):
+        step_type = _read_field(step, "type")
+        biome = _read_field(step, "biome")
+        if step_type == "encounter" or biome != None:
+            if biome == None:
+                biome = _read_field(step, "code")
+            text = f"Run `{prefix}enc {biome}`"
+        elif step_type == "cost" or _read_field(step, "gold") != None:
+            parts = []
+            gold = _read_field(step, "gold")
+            if gold != None:
+                parts.append(f"{gold} gp")
+            rations = _read_field(step, "rations")
+            if rations != None:
+                parts.append(f"{rations} ration(s)")
+            if len(parts) == 0:
+                parts.append("the listed cost")
+            text = "Pay " + ", ".join(parts)
+        else:
+            desc = _read_field(step, "description")
+            if desc != None and str(desc).strip() != "":
+                text = str(desc).strip()
+    if text == None:
+        text = str(step)
+    if completed:
+        return f"~~{text}~~"
+    return text
+
+
+def display_step(step, path=None, prefix="!", completed=False):
+    return _step_text(step, path, prefix, completed)
+
+
+def display_path(path, config_override=None, mode="short", transport_id="walk", prefix="!", progress_step=None):
+    cfg = _cfg(config_override)
+    from_id = _read_field(path, "from")
+    to_id = _read_field(path, "to")
+    from_loc = locations.get_location(cfg, from_id)
+    to_loc = locations.get_location(cfg, to_id)
+    from_name = locations.linked_name(from_loc) if from_loc != None else str(from_id)
+    to_name = locations.linked_name(to_loc) if to_loc != None else str(to_id)
+    steps = get_path_steps(path, transport_id)
+    if mode == "short":
+        label = "step" if len(steps) == 1 else "steps"
+        return f"{from_name} -> {to_name} ({len(steps)} {label})"
+    lines = [f"### {from_name} -> {to_name}"]
+    path_label = _read_field(path, "label")
+    if path_label != None and str(path_label).strip() != "":
+        lines.append(f"-# {str(path_label).strip()}")
+    index = 0
+    for step in steps:
+        done = False
+        if progress_step != None:
+            try:
+                done = index < int(progress_step)
+            except:
+                done = False
+        lines.append(f"* {display_step(step, path, prefix, done)}")
+        index += 1
+    return "\n".join(lines)

@@ -887,7 +887,7 @@ One entry in **`path["steps"]`** — what the player does before advancing (`!tr
 { "type": "proceed", "description": "Follow the forest trail" }
 ```
 
-**Encounter steps** map to `!enc <biome>` (or the matching activity when the journey was started with a flag). **Cost steps** deduct when the step completes. **Proceed** steps auto-complete on `!travel next`.
+**Encounter steps** map to `!enc <biome>` (or the matching activity when the journey was started with a flag). **Cost steps** represent a payment/resource requirement; the first travel/location slice displays them, and a later enforcement slice will deduct them when policy allows. **Proceed** steps auto-complete on `!travel next`.
 
 ### Requirements and parallel paths
 
@@ -1349,11 +1349,11 @@ Warnings when:
 
 ### `travel.config`
 
-*(Stub — add keys as Tier C ships.)*
+No subsystem-specific `travel.config` keys are required for the first travel/location slice. Travel reads shared **`world_data.default_location`**, **`world_data.locations`**, and **`world_data.paths`**; enforcement toggles live under **`policies.travel`**.
 
 | Key | Type | Default | Notes |
 |-----|------|---------|-------|
-| — | — | — | e.g. journey display defaults; defer until travel port |
+| — | — | — | Add keys here only when route display or journey behavior needs owner tuning |
 
 ### Other subsystems
 

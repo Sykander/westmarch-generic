@@ -67,3 +67,66 @@ subsystems = {
 `).includes('exploration.location_requires_travel'),
   );
 });
+
+test('travel and location validate with default location and known path endpoints', () => {
+  const codes = issueCodes(`
+subsystems = {
+    "travel": {
+        "enabled": True,
+        "commands": {"travel": True, "location": True, "time": False, "weather": False},
+    },
+}
+
+world_data = {
+    "default_location": "river_town",
+    "locations": {
+        "river_town": {"name": "River Town"},
+        "oakwood": {"name": "Oakwood Forest"},
+    },
+    "paths": [
+        {"from": "river_town", "to": "oakwood", "steps": [{"type": "encounter", "biome": "forest"}]},
+    ],
+}
+`);
+
+  assert.equal(codes.includes('world.default_location'), false);
+  assert.equal(codes.includes('world.locations.empty'), false);
+  assert.equal(codes.includes('world.path.endpoint_unknown'), false);
+});
+
+test('enabled travel/location commands require world location data', () => {
+  const codes = issueCodes(`
+subsystems = {
+    "travel": {
+        "enabled": True,
+        "commands": {"travel": True, "location": True},
+    },
+}
+`);
+
+  assert.ok(codes.includes('world.default_location'));
+  assert.ok(codes.includes('world.locations.empty'));
+});
+
+test('travel paths must reference configured locations', () => {
+  assert.ok(
+    issueCodes(`
+subsystems = {
+    "travel": {
+        "enabled": True,
+        "commands": {"travel": True, "location": True},
+    },
+}
+
+world_data = {
+    "default_location": "river_town",
+    "locations": {
+        "river_town": {"name": "River Town"},
+    },
+    "paths": [
+        {"from": "river_town", "to": "oakwood", "steps": [{"type": "encounter", "biome": "forest"}]},
+    ],
+}
+`).includes('world.path.endpoint_unknown'),
+  );
+});

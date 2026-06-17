@@ -117,6 +117,28 @@ Example — exploration only:
 
 Downtime uses a single toggle: `"downtime": {"enabled": True}`.
 
+Travel/location example:
+
+```py
+subsystems = {
+    "travel": {
+        "enabled": True,
+        "commands": {"travel": True, "location": True, "time": False, "weather": False},
+    },
+}
+
+world_data = {
+    "default_location": "river_town",
+    "locations": {
+        "river_town": {"name": "River Town"},
+        "oakwood": {"name": "Oakwood Forest", "commands": {"enc": ["forest"]}},
+    },
+    "paths": [
+        {"from": "river_town", "to": "oakwood", "steps": [{"type": "encounter", "biome": "forest"}]},
+    ],
+}
+```
+
 Add world data (`locations`, encounter pools, shops, …) as you enable each vertical. Shapes: [data-shapes](internal/projects/westmarch-statement/data-shapes.md).
 
 If you enable a subsystem that expects another workshop, subscribe that companion too. Exploration rewards can add recovered items to character bags, so pair exploration loot/gathering with your server’s preferred **Bags** alias workshop.

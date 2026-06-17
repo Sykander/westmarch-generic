@@ -1,6 +1,329 @@
-"""locations.gvar — placeholder.
+"""locations.gvar — config-backed location lookup and display helpers.
 
 See docs/internal/projects/westmarch-statement/gvars/locations.md
 """
 
-# TODO: implement locations module
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(
+    config = env.gvars.config,
+    dicts = env.gvars.dicts,
+    lists = env.gvars.lists,
+)
+
+ACTIVITY_COMMANDS = ["enc", "forage", "fish", "mine", "lumber", "hunt", "loot"]
+
+
+def _read_field(obj, key):
+    if obj == None:
+        return None
+    if dicts.is_dict(obj):
+        if key in obj:
+            return obj[key]
+        return None
+    try:
+        return obj[key]
+    except:
+        pass
+    attrs = {
+        "world_data": lambda o: o.world_data,
+        "default_location": lambda o: o.default_location,
+        "locations": lambda o: o.locations,
+        "id": lambda o: o.id,
+        "name": lambda o: o.name,
+        "description": lambda o: o.description,
+        "travel_description": lambda o: o.travel_description,
+        "travel_desc": lambda o: o.travel_desc,
+        "image": lambda o: o.image,
+        "link": lambda o: o.link,
+        "commands": lambda o: o.commands,
+        "activities": lambda o: o.activities,
+        "encs": lambda o: o.encs,
+        "biome": lambda o: o.biome,
+    }
+    if key in attrs:
+        try:
+            return attrs[key](obj)
+        except:
+            pass
+    return None
+
+
+def _cfg(config_override=None):
+    if config_override != None:
+        return config_override
+    return config.get_config()
+
+
+def _world_data(cfg):
+    return _read_field(cfg, "world_data")
+
+
+def _locations_map(cfg):
+    locs = _read_field(_world_data(cfg), "locations")
+    if locs != None and dicts.is_dict(locs):
+        return locs
+    return {}
+
+
+def _normalize_id(value):
+    if value == None:
+        return None
+    text = str(value).strip()
+    if text == "":
+        return None
+    return text.lower()
+
+
+def _copy_location(location, location_id):
+    if location == None:
+        return None
+    out = {}
+    if dicts.is_dict(location):
+        for key in location:
+            out[key] = location[key]
+    else:
+        for key in [
+            "id",
+            "name",
+            "description",
+            "travel_description",
+            "travel_desc",
+            "image",
+            "link",
+            "commands",
+            "activities",
+            "encs",
+            "biome",
+        ]:
+            val = _read_field(location, key)
+            if val != None:
+                out[key] = val
+    if _read_field(out, "id") == None and location_id != None:
+        out["id"] = str(location_id)
+    return out
+
+
+def get_location(config_override, location_id):
+    """Return a location dict for id, with id injected when omitted."""
+    key = _normalize_id(location_id)
+    if key == None:
+        return None
+    locs = _locations_map(_cfg(config_override))
+    loc = _read_field(locs, key)
+    if loc != None:
+        return _copy_location(loc, key)
+    for existing_id in locs:
+        if str(existing_id).strip().lower() == key:
+            return _copy_location(locs[existing_id], existing_id)
+    return None
+
+
+def location_id(location):
+    explicit = _read_field(location, "id")
+    key = _normalize_id(explicit)
+    if key != None:
+        return key
+    name = _read_field(location, "name")
+    return _normalize_id(name)
+
+
+def location_name(location, fallback=None):
+    name = _read_field(location, "name")
+    if name != None and str(name).strip() != "":
+        return str(name).strip()
+    loc_id = _read_field(location, "id")
+    if loc_id != None and str(loc_id).strip() != "":
+        return str(loc_id).strip()
+    if fallback != None:
+        return str(fallback)
+    return "Unknown Location"
+
+
+def location_link(location):
+    link = _read_field(location, "link")
+    if link != None and str(link).strip() != "":
+        return str(link).strip()
+    return None
+
+
+def location_image(location):
+    image = _read_field(location, "image")
+    if image != None and str(image).strip() != "":
+        return str(image).strip()
+    return None
+
+
+def linked_name(location):
+    name = location_name(location)
+    link = location_link(location)
+    if link == None:
+        return name
+    return f"[{name}]({link})"
+
+
+def list_location_ids(config_override=None):
+    locs = _locations_map(_cfg(config_override))
+    ids = []
+    for key in locs:
+        ids.append(str(key))
+    ids.sort()
+    return ids
+
+
+def get_default_location(config_override=None):
+    cfg = _cfg(config_override)
+    loc_id = _read_field(_world_data(cfg), "default_location")
+    return get_location(cfg, loc_id)
+
+
+def search_locations(config_override, query):
+    """
+    Match by id/name with shared list search semantics.
+    Returns the standard 0 / 1 / many shape for aliases to handle.
+    """
+    cfg = _cfg(config_override)
+    search = str(query).strip() if query != None else ""
+    if search == "":
+        return []
+    locs = _locations_map(cfg)
+    exact_key = _normalize_id(search)
+    if exact_key != None:
+        direct = get_location(cfg, exact_key)
+        if direct != None:
+            return [direct]
+
+    labels = []
+    label_to_ids = {}
+    for loc_id in locs:
+        loc = get_location(cfg, loc_id)
+        if loc == None:
+            continue
+        id_label = str(loc_id)
+        name_label = location_name(loc)
+        for label in [id_label, name_label]:
+            if label == None or str(label).strip() == "":
+                continue
+            text = str(label)
+            labels.append(text)
+            if text not in label_to_ids:
+                label_to_ids[text] = []
+            label_to_ids[text].append(str(loc_id))
+
+    matched_labels = lists.search_list(labels, search)
+    found = []
+    seen = {}
+    for label in matched_labels:
+        ids = label_to_ids[label]
+        for loc_id in ids:
+            norm = _normalize_id(loc_id)
+            if norm in seen:
+                continue
+            loc = get_location(cfg, loc_id)
+            if loc != None:
+                found.append(loc)
+                seen[norm] = True
+    return found
+
+
+def format_matches(matches, limit=5):
+    shown = []
+    count = 0
+    for loc in matches:
+        if count >= limit:
+            break
+        shown.append(f"**{location_name(loc)}**")
+        count += 1
+    text = ", ".join(shown)
+    if len(matches) > limit:
+        text += ", ..."
+    return text
+
+
+def _read_command_map(location):
+    cmds = _read_field(location, "commands")
+    if cmds != None and dicts.is_dict(cmds):
+        return cmds
+    acts = _read_field(location, "activities")
+    if acts != None and dicts.is_dict(acts):
+        return acts
+    encs = _read_field(location, "encs")
+    if encs != None and dicts.is_dict(encs):
+        return encs
+    return {}
+
+
+def _format_command_value(value):
+    if lists.is_list(value):
+        if len(value) == 0:
+            return "available"
+        return ", ".join([str(item) for item in value])
+    if value == True:
+        return "available"
+    if value == False:
+        return "unavailable"
+    if value == None:
+        return ""
+    return str(value)
+
+
+def activities_text(location):
+    cmds = _read_command_map(location)
+    if not dicts.is_dict(cmds) or len(cmds) == 0:
+        return ""
+    lines = []
+    for command in ACTIVITY_COMMANDS:
+        value = _read_field(cmds, command)
+        if value == None:
+            continue
+        formatted = _format_command_value(value)
+        if formatted == "" or formatted == "unavailable":
+            continue
+        lines.append(f"- **{command}**: {formatted}")
+    if len(lines) == 0:
+        return ""
+    return "**Activities**\n" + "\n".join(lines)
+
+
+def display_location(location, mode="full", character=None, include_activities=False, visits=None):
+    """Markdown body for a location embed."""
+    if location == None:
+        return "Unknown location."
+    name = linked_name(location)
+    title = f"## {name}" if mode != "short" else f"**{location_name(location)}**"
+    lines = [title]
+
+    if mode != "short":
+        who = None
+        if character != None:
+            try:
+                who = character.name
+            except:
+                who = None
+        if who != None and str(who).strip() != "":
+            lines.append(f"{who} is in {location_name(location)}.")
+
+    if visits != None:
+        try:
+            count = int(visits)
+            if count > 0:
+                label = "visit" if count == 1 else "visits"
+                lines.append(f"Visited **{count}** {label}.")
+        except:
+            pass
+
+    desc = _read_field(location, "description")
+    if desc != None and str(desc).strip() != "":
+        lines.append(str(desc).strip())
+
+    travel_desc = _read_field(location, "travel_description")
+    if travel_desc == None:
+        travel_desc = _read_field(location, "travel_desc")
+    if mode != "short" and travel_desc != None and str(travel_desc).strip() != "":
+        lines.append(str(travel_desc).strip())
+
+    if include_activities:
+        acts = activities_text(location)
+        if acts != "":
+            lines.append(acts)
+
+    return "\n\n".join(lines)

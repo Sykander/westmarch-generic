@@ -61,20 +61,25 @@ flowchart TD
 
 ### Minimum shippable
 
-- [ ] Port **`locations.gvar`** — [gvars/locations.md](../../gvars/locations.md)
-- [ ] Port **[paths.gvar](../../gvars/paths.md)** + **[journeys.gvar](../../gvars/journeys.md)** — `find_journey` Dijkstra parity
-- [ ] Port **`journeys.gvar`** — config defaults, get/set location/journey cvars
-- [ ] **`travel.alias`** — loader, toggle, `!travel` status view + `set` + `reset`
-- [ ] Defer full multi-leg journey UI to Phase 1b if needed; prove location cvar + one route
-- [ ] Template config — 2 locations, 1 path ([data-shapes.md](../../data-shapes.md))
-- [ ] **`travel.alias-test`** — help, location display smoke
-- [ ] Unblocks **location** status command
+- [x] Port **`locations.gvar`** — [gvars/locations.md](../../gvars/locations.md)
+- [x] Port **[paths.gvar](../../gvars/paths.md)** + **[journeys.gvar](../../gvars/journeys.md)** — `find_journey` Dijkstra parity for config paths
+- [x] Port **`journeys.gvar`** — config defaults, get/set location/journey cvars
+- [x] **`travel.alias`** — loader, toggle, `!travel` status view + `set` + `reset`
+- [x] Template config — 2 locations, 1 path ([data-shapes.md](../../data-shapes.md))
+- [x] **`travel.alias-test`** — help, location display, lookup, route, set/reset/next smoke
+- [x] Unblocks **location** status command
+
+### Current slice notes
+
+- Shipped cvars use generic names: **`wg_location`**, **`wg_journey`**, **`wg_locations_data`**.
+- Runtime accepts generic path shape plus westmarch import shorthand (**`encs`**, **`horse`**, **`boat`**, **`gold`**) to ease migration.
+- Automated path costs / rations remain deferred; cost steps are displayed but not deducted.
 
 ### MVP deferrals
 
-- Full journey markdown with horse/boat branching parity
 - Gold-cost path steps with coinpurse debit
-- Area activity table in travel embed (link to exploration help)
+- Ration consumption and item/wallet path costs
+- Automatic **`!enc`** journey-step completion hook
 
 ## Exit criteria
 

@@ -8,6 +8,8 @@ Look up [paths](../data-shapes.md#path) from **`world_data.paths`** and resolve 
 
 Each path dict is **one directed edge** with **one** `steps` list. Same `from`/`to` with different transport → **separate path entries** (see [data-shapes § Transport](../data-shapes.md#transport)).
 
+Migration compatibility: runtime also accepts westmarch shorthand fields **`encs`**, **`horse`**, **`boat`**, and **`gold`**. New configs should prefer generic **`steps`**, **`requirements.transport`**, and **`cost`**.
+
 ## API
 
 ```py

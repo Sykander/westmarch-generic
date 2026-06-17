@@ -1,35 +1,44 @@
-"""journeys.gvar — character location cvar helpers."""
+"""journeys.gvar — character location, active journey, and route planning."""
 
 using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(
     config = env.gvars.config,
     dicts = env.gvars.dicts,
+    lists = env.gvars.lists,
+    locations = env.gvars.locations,
+    paths = env.gvars.paths,
 )
 
 CVAR_LOCATION = "wg_location"
+CVAR_JOURNEY = "wg_journey"
+CVAR_LOCATIONS_DATA = "wg_locations_data"
 
 
 def _read_field(obj, key):
     if obj == None:
         return None
+    if dicts.is_dict(obj):
+        if key in obj:
+            return obj[key]
+        return None
     try:
         return obj[key]
     except:
         pass
-    try:
-        val = obj[key]
-        if val != None:
-            return val
-    except:
-        pass
     attrs = {
         "world_data": lambda o: o.world_data,
-        "locations": lambda o: o.locations,
         "default_location": lambda o: o.default_location,
-        "biome": lambda o: o.biome,
-        "commands": lambda o: o.commands,
-        "activities": lambda o: o.activities,
+        "locations": lambda o: o.locations,
+        "id": lambda o: o.id,
         "name": lambda o: o.name,
+        "from": lambda o: o["from"],
+        "to": lambda o: o.to,
+        "paths": lambda o: o.paths,
+        "title": lambda o: o.title,
+        "path_index": lambda o: o.path_index,
+        "step_index": lambda o: o.step_index,
+        "horse": lambda o: o.horse,
+        "boat": lambda o: o.boat,
     }
     if key in attrs:
         try:
@@ -39,45 +48,412 @@ def _read_field(obj, key):
     return None
 
 
-def get_location_id(ch, config_override=None):
-    """Return normalized location id from wg_location cvar, or None."""
-    if ch == None:
+def _cfg(config_override=None):
+    if config_override != None:
+        return config_override
+    return config.get_config()
+
+
+def _normalize_id(value):
+    if value == None:
         return None
-    val = None
-    try:
-        cv = ch.cvars
-        if CVAR_LOCATION in cv:
-            val = cv[CVAR_LOCATION]
-    except:
-        pass
-    if val == None:
-        try:
-            if exists(CVAR_LOCATION):
-                val = get(CVAR_LOCATION)
-        except:
-            pass
-    if val == None:
-        return None
-    text = str(val).strip()
+    text = str(value).strip()
     if text == "":
         return None
     return text.lower()
 
 
+def _transport_id(horse=False, boat=False):
+    if boat == True:
+        return "boat"
+    if horse == True:
+        return "horse"
+    return "walk"
+
+
+def _read_cvar(ch, key, fallback=None):
+    if ch != None:
+        try:
+            val = ch.get_cvar(key, None)
+            if val != None:
+                return val
+        except:
+            pass
+        try:
+            cvars = ch.cvars
+            if key in cvars:
+                return cvars[key]
+        except:
+            pass
+    try:
+        if exists(key):
+            return get(key)
+    except:
+        pass
+    return fallback
+
+
+def _set_cvar(ch, key, value):
+    try:
+        ch.set_cvar(key, value)
+        return True
+    except:
+        pass
+    try:
+        set_cvar(key, value)
+        return True
+    except:
+        return False
+
+
+def _load_json_or(value, fallback):
+    if value == None or str(value).strip() == "":
+        return fallback
+    try:
+        return load_json(value)
+    except:
+        return fallback
+
+
+def _default_location_id(cfg):
+    wd = _read_field(cfg, "world_data")
+    return _normalize_id(_read_field(wd, "default_location"))
+
+
+def get_location_id(ch, config_override=None):
+    """Return normalized location id from wg_location cvar or config default."""
+    cfg = _cfg(config_override)
+    raw = _read_cvar(ch, CVAR_LOCATION, None)
+    loc_id = None
+    if raw != None and str(raw).strip() != "":
+        text = str(raw).strip()
+        if text.startswith("{"):
+            parsed = _load_json_or(text, {})
+            loc_id = _normalize_id(_read_field(parsed, "id"))
+            if loc_id == None:
+                loc_id = _normalize_id(_read_field(parsed, "name"))
+        else:
+            loc_id = _normalize_id(text)
+    if loc_id == None:
+        loc_id = _default_location_id(cfg)
+    return loc_id
+
+
 def get_location(ch, config_override=None):
     """Return (location_id, location_entry) for the character."""
-    cfg = config_override
-    if cfg == None:
-        cfg = config.get_config()
+    cfg = _cfg(config_override)
     loc_id = get_location_id(ch, cfg)
     if loc_id == None:
-        wd = _read_field(cfg, "world_data")
-        loc_id = _read_field(wd, "default_location")
-    if loc_id == None:
         return None, None
-    loc_id = str(loc_id).strip().lower()
-    wd = _read_field(cfg, "world_data")
-    locs = _read_field(wd, "locations")
-    if locs == None or not dicts.is_dict(locs):
-        return loc_id, None
-    return loc_id, _read_field(locs, loc_id)
+    return loc_id, locations.get_location(cfg, loc_id)
+
+
+def set_location_id(ch, location_id):
+    loc_id = _normalize_id(location_id)
+    if loc_id == None:
+        return False
+    return _set_cvar(ch, CVAR_LOCATION, loc_id)
+
+
+def set_location(ch, location_or_id, config_override=None):
+    loc_id = None
+    if dicts.is_dict(location_or_id):
+        loc_id = locations.location_id(location_or_id)
+    else:
+        loc_id = _normalize_id(location_or_id)
+    if loc_id == None:
+        return False
+    return set_location_id(ch, loc_id)
+
+
+def _locations_data(ch):
+    return _load_json_or(_read_cvar(ch, CVAR_LOCATIONS_DATA, "{}"), {})
+
+
+def get_location_data(ch, location_id):
+    loc_id = _normalize_id(location_id)
+    data = _locations_data(ch)
+    if loc_id != None and loc_id in data:
+        return data[loc_id]
+    return {"id": loc_id, "visited": 0}
+
+
+def set_location_data(ch, location_id, location_data):
+    loc_id = _normalize_id(location_id)
+    if loc_id == None:
+        return False
+    data = _locations_data(ch)
+    data[loc_id] = location_data
+    return _set_cvar(ch, CVAR_LOCATIONS_DATA, dump_json(data))
+
+
+def get_visit_count(ch, location_id):
+    data = get_location_data(ch, location_id)
+    visited = _read_field(data, "visited")
+    if visited == None:
+        return 0
+    try:
+        return int(visited)
+    except:
+        return 0
+
+
+def record_location_visit(ch, location_id):
+    loc_id = _normalize_id(location_id)
+    if loc_id == None:
+        return 0
+    data = get_location_data(ch, loc_id)
+    count = get_visit_count(ch, loc_id) + 1
+    data["id"] = loc_id
+    data["visited"] = count
+    set_location_data(ch, loc_id, data)
+    return count
+
+
+def get_journey(ch=None):
+    """Active journey dict, or empty dict."""
+    if ch == None:
+        try:
+            ch = character()
+        except:
+            ch = None
+    journey = _load_json_or(_read_cvar(ch, CVAR_JOURNEY, "{}"), {})
+    if journey == None or not dicts.is_dict(journey):
+        return {}
+    return journey
+
+
+def set_journey(ch, journey):
+    if journey == None:
+        journey = {}
+    return _set_cvar(ch, CVAR_JOURNEY, dump_json(journey))
+
+
+def clear_journey(ch):
+    return set_journey(ch, {})
+
+
+def _get_cheapest_unsearched(costs_table):
+    cheapest_id = None
+    cheapest = None
+    for loc_id in costs_table:
+        entry = costs_table[loc_id]
+        if _read_field(entry, "searched") == True:
+            continue
+        if cheapest == None or _read_field(entry, "cost") < _read_field(cheapest, "cost"):
+            cheapest_id = loc_id
+            cheapest = entry
+    return cheapest_id, cheapest
+
+
+def find_journey(config_override, from_id, to_id, horse=False, boat=False):
+    """Shortest route between location ids using Dijkstra over world_data.paths."""
+    cfg = _cfg(config_override)
+    start = _normalize_id(from_id)
+    dest = _normalize_id(to_id)
+    if start == None or dest == None:
+        return False, []
+    if locations.get_location(cfg, start) == None or locations.get_location(cfg, dest) == None:
+        return False, []
+    if start == dest:
+        return True, []
+
+    transport = _transport_id(horse, boat)
+    costs_table = {start: {"cost": 0, "searched": False, "via": []}}
+    cheapest_dest_cost = None
+
+    while True:
+        open_costs = []
+        for loc_id in costs_table:
+            entry = costs_table[loc_id]
+            if _read_field(entry, "searched") != True:
+                open_costs.append(_read_field(entry, "cost"))
+        if len(open_costs) == 0:
+            break
+        min_open = min(open_costs)
+        if cheapest_dest_cost != None and cheapest_dest_cost <= min_open:
+            break
+
+        next_id, next_entry = _get_cheapest_unsearched(costs_table)
+        if next_id == None:
+            break
+        costs_table[next_id]["searched"] = True
+
+        for path in paths.get_edges_from(cfg, next_id, transport):
+            path_to = _normalize_id(_read_field(path, "to"))
+            if path_to == None:
+                continue
+            new_cost = _read_field(next_entry, "cost") + paths.get_path_cost(path, transport)
+            if path_to in costs_table:
+                existing = costs_table[path_to]
+                if new_cost >= _read_field(existing, "cost"):
+                    continue
+                costs_table[path_to] = {
+                    "cost": new_cost,
+                    "searched": _read_field(existing, "searched") == True,
+                    "via": _read_field(next_entry, "via") + [path],
+                }
+            else:
+                costs_table[path_to] = {
+                    "cost": new_cost,
+                    "searched": False,
+                    "via": _read_field(next_entry, "via") + [path],
+                }
+            if path_to == dest:
+                cheapest_dest_cost = new_cost
+
+    if dest not in costs_table:
+        return False, []
+    return True, _read_field(costs_table[dest], "via")
+
+
+def journey_title(config_override, from_id, to_id):
+    cfg = _cfg(config_override)
+    from_loc = locations.get_location(cfg, from_id)
+    to_loc = locations.get_location(cfg, to_id)
+    from_name = locations.linked_name(from_loc) if from_loc != None else str(from_id)
+    to_name = locations.linked_name(to_loc) if to_loc != None else str(to_id)
+    return f"{from_name} -> {to_name}"
+
+
+def build_journey(config_override, from_id, to_id, legs, horse=False, boat=False):
+    return {
+        "title": journey_title(config_override, from_id, to_id),
+        "from": _normalize_id(from_id),
+        "to": _normalize_id(to_id),
+        "paths": legs,
+        "path_index": 0,
+        "step_index": 0,
+        "horse": horse == True,
+        "boat": boat == True,
+    }
+
+
+def _journey_paths(journey_or_legs):
+    if lists.is_list(journey_or_legs):
+        return journey_or_legs
+    legs = _read_field(journey_or_legs, "paths")
+    if legs != None and lists.is_list(legs):
+        return legs
+    return []
+
+
+def display_journey(config_override, journey_or_legs, mode="detailed", horse=False, boat=False, prefix="!", progress=None):
+    cfg = _cfg(config_override)
+    legs = _journey_paths(journey_or_legs)
+    if len(legs) == 0:
+        return ""
+    if dicts.is_dict(journey_or_legs):
+        horse = _read_field(journey_or_legs, "horse") == True
+        boat = _read_field(journey_or_legs, "boat") == True
+    transport = _transport_id(horse, boat)
+    title = None
+    if dicts.is_dict(journey_or_legs):
+        title = _read_field(journey_or_legs, "title")
+    if title == None or str(title).strip() == "":
+        title = journey_title(cfg, _read_field(legs[0], "from"), _read_field(legs[len(legs) - 1], "to"))
+    lines = [f"## {title}"]
+    path_index = None
+    step_index = None
+    if progress != None and dicts.is_dict(progress):
+        path_index = _read_field(progress, "path_index")
+        step_index = _read_field(progress, "step_index")
+    elif dicts.is_dict(journey_or_legs):
+        path_index = _read_field(journey_or_legs, "path_index")
+        step_index = _read_field(journey_or_legs, "step_index")
+    i = 0
+    for leg in legs:
+        completed_leg = False
+        active_progress = None
+        try:
+            completed_leg = path_index != None and i < int(path_index)
+            if path_index != None and i == int(path_index):
+                active_progress = step_index
+        except:
+            completed_leg = False
+        if completed_leg:
+            active_progress = len(paths.get_path_steps(leg, transport))
+        lines.append(paths.display_path(leg, cfg, mode, transport, prefix, active_progress))
+        i += 1
+    return "\n\n".join(lines)
+
+
+def active_journey_text(config_override, ch, prefix="!"):
+    journey = get_journey(ch)
+    if _read_field(journey, "title") == None:
+        return ""
+    return display_journey(config_override, journey, "detailed", prefix=prefix)
+
+
+def next_step(ch, config_override=None):
+    cfg = _cfg(config_override)
+    journey = get_journey(ch)
+    legs = _journey_paths(journey)
+    if len(legs) == 0:
+        return False, ["Cannot go to next step because there is no active journey selected."]
+
+    horse = _read_field(journey, "horse") == True
+    boat = _read_field(journey, "boat") == True
+    transport = _transport_id(horse, boat)
+    path_index = _read_field(journey, "path_index")
+    step_index = _read_field(journey, "step_index")
+    if path_index == None:
+        path_index = 0
+    if step_index == None:
+        step_index = 0
+    path_index = int(path_index)
+    step_index = int(step_index)
+
+    messages = []
+    if path_index >= len(legs):
+        return False, ["Cannot go to next step because the journey is already complete."]
+
+    path = legs[path_index]
+    step_index += 1
+    steps = paths.get_path_steps(path, transport)
+    if step_index >= len(steps):
+        arrived_id = _normalize_id(_read_field(path, "to"))
+        path_index += 1
+        step_index = 0
+        if arrived_id != None:
+            set_location_id(ch, arrived_id)
+            record_location_visit(ch, arrived_id)
+            loc = locations.get_location(cfg, arrived_id)
+            messages.append(f"Arrived in **{locations.location_name(loc, arrived_id)}**.")
+
+    if path_index >= len(legs):
+        step_index = len(steps)
+        title = _read_field(journey, "title")
+        if title == None:
+            title = "the journey"
+        messages.append(f"Completed **{title}**.")
+
+    journey["path_index"] = path_index
+    journey["step_index"] = step_index
+    set_journey(ch, journey)
+    return True, messages
+
+
+def get_next_step(ch=None):
+    if ch == None:
+        try:
+            ch = character()
+        except:
+            ch = None
+    journey = get_journey(ch)
+    legs = _journey_paths(journey)
+    if len(legs) == 0:
+        return None
+    path_index = _read_field(journey, "path_index")
+    step_index = _read_field(journey, "step_index")
+    if path_index == None:
+        path_index = 0
+    if step_index == None:
+        step_index = 0
+    if int(path_index) >= len(legs):
+        return None
+    transport = _transport_id(_read_field(journey, "horse") == True, _read_field(journey, "boat") == True)
+    steps = paths.get_path_steps(legs[int(path_index)], transport)
+    if int(step_index) >= len(steps):
+        return None
+    return steps[int(step_index)]

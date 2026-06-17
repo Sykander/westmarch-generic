@@ -19,9 +19,9 @@ const SUBSYSTEM_DETAILS: Record<
   },
   travel: {
     label: 'Travel',
-    implemented: false,
+    implemented: true,
     detail:
-      'Travel, location, time, and weather controls are planned but not implemented in the browser editor yet.',
+      'Travel and location commands are available. Time and weather remain planned for a later Phase 1 slice.',
     dependencies: [
       {
         label: 'vSheet',

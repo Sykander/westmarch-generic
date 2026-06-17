@@ -29,3 +29,65 @@ name: get_location_id reads wg_location cvar
 vars:
   cvars:
     wg_location: "Oakwood"
+
+cfg_fixture = {
+    "world_data": {
+        "locations": {
+            "river_town": {"name": "River Town"},
+            "oakwood": {"name": "Oakwood Forest"},
+            "oakwood_east": {"name": "Oakwood East Trail"},
+        },
+        "paths": [
+            {"from": "river_town", "to": "oakwood", "steps": [{"type": "encounter", "biome": "forest"}]},
+            {"from": "oakwood", "to": "oakwood_east", "steps": [{"type": "encounter", "biome": "forest"}]},
+            {"from": "river_town", "to": "oakwood_east", "steps": [{"type": "encounter", "biome": "road"}, {"type": "encounter", "biome": "road"}, {"type": "encounter", "biome": "road"}]},
+        ],
+    },
+}
+found, legs = journeys.find_journey(cfg_fixture, "river_town", "oakwood_east")
+return found and len(legs) == 2 and legs[0]["to"] == "oakwood"
+---
+True
+---
+name: find_journey chooses cheaper multi-leg path
+
+cfg_fixture = {
+    "world_data": {
+        "locations": {
+            "river_town": {"name": "River Town"},
+            "oakwood": {"name": "Oakwood Forest"},
+        },
+        "paths": [
+            {"from": "river_town", "to": "oakwood", "steps": [{"type": "encounter", "biome": "forest"}]},
+        ],
+    },
+}
+found, legs = journeys.find_journey(cfg_fixture, "river_town", "oakwood")
+journey = journeys.build_journey(cfg_fixture, "river_town", "oakwood", legs)
+text = journeys.display_journey(cfg_fixture, journey, "detailed", prefix="!")
+return found and "River Town" in text and "Oakwood Forest" in text and "!enc forest" in text
+---
+True
+---
+name: display_journey includes route names and steps
+
+cfg_fixture = {
+    "world_data": {
+        "locations": {
+            "river_town": {"name": "River Town"},
+            "oakwood": {"name": "Oakwood Forest"},
+        },
+        "paths": [
+            {"from": "river_town", "to": "oakwood", "steps": [{"type": "encounter", "biome": "forest"}]},
+        ],
+    },
+}
+journey = journeys.build_journey(cfg_fixture, "river_town", "oakwood", [{"from": "river_town", "to": "oakwood", "steps": [{"type": "encounter", "biome": "forest"}]}])
+journeys.set_journey(character(), journey)
+progressed, messages = journeys.next_step(character(), cfg_fixture)
+loc_id = journeys.get_location_id(character(), cfg_fixture)
+return progressed and loc_id == "oakwood" and "Arrived" in " ".join(messages)
+---
+True
+---
+name: next_step arrives and updates location cvar

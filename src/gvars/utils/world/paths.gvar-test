@@ -1,0 +1,62 @@
+cfg_fixture = {
+    "world_data": {
+        "locations": {
+            "river_town": {"name": "River Town"},
+            "oakwood": {"name": "Oakwood Forest"},
+        },
+        "paths": [
+            {
+                "from": "river_town",
+                "to": "oakwood",
+                "steps": [{"type": "encounter", "biome": "forest"}],
+                "requirements": {"transport": "walk"},
+            },
+            {
+                "from": "river_town",
+                "to": "oakwood",
+                "steps": [{"type": "proceed", "description": "Ride the old road."}],
+                "requirements": {"transport": "horse"},
+            },
+        ],
+    },
+}
+walk_edges = paths.get_edges_from(cfg_fixture, "river_town", "walk")
+horse_edges = paths.get_edges_from(cfg_fixture, "river_town", "horse")
+return len(walk_edges) == 1 and len(horse_edges) == 1 and paths.get_path_steps(horse_edges[0], "horse")[0]["description"] == "Ride the old road."
+---
+True
+---
+name: get_edges_from filters transport requirements
+
+path = {"from": "river_town", "to": "oakwood", "encs": ["forest", "forest"], "horse": ["road"]}
+walk_steps = paths.get_path_steps(path, "walk")
+horse_steps = paths.get_path_steps(path, "horse")
+return len(walk_steps) == 2 and len(horse_steps) == 1 and horse_steps[0]["biome"] == "road"
+---
+True
+---
+name: get_path_steps supports westmarch encs and horse shorthand
+
+path = {"from": "river_town", "to": "oakwood", "gold": 50}
+steps = paths.get_path_steps(path)
+return steps[0]["type"] == "cost" and steps[0]["gold"] == 50 and paths.get_path_cost(path) == 2
+---
+True
+---
+name: gold shorthand becomes cost step
+
+cfg_fixture = {
+    "world_data": {
+        "locations": {
+            "river_town": {"name": "River Town"},
+            "oakwood": {"name": "Oakwood Forest"},
+        },
+    },
+}
+path = {"from": "river_town", "to": "oakwood", "steps": [{"type": "encounter", "biome": "forest"}]}
+text = paths.display_path(path, cfg_fixture, "detailed", "walk", "!")
+return "River Town" in text and "Oakwood Forest" in text and "!enc forest" in text
+---
+True
+---
+name: display_path shows linked location names and encounter steps

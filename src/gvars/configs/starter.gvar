@@ -127,12 +127,38 @@ subsystems = {
     },
 }
 
-# World data — add when enabling travel, location, exploration, or world clock
+# World data — add when enabling travel, location, exploration, or world clock.
+# Minimal travel/location example:
 # world_data = {
 #     "default_location": "river_town",
-#     "locations": { … },
-#     "paths": [ … ],
-#     "transport": { "walk": {"name": "On foot", "default": True}, "horse": {"name": "Riding horse"} },
+#     "locations": {
+#         "river_town": {
+#             "name": "River Town",
+#             "description": "A safe riverside settlement.",
+#             "commands": {"enc": ["road"]},
+#         },
+#         "oakwood": {
+#             "name": "Oakwood Forest",
+#             "biome": "forest",
+#             "commands": {"enc": ["forest"], "forage": ["forest"], "lumber": ["forest"]},
+#         },
+#     },
+#     "paths": [
+#         {
+#             "from": "river_town",
+#             "to": "oakwood",
+#             "steps": [{"type": "encounter", "biome": "forest"}],
+#         },
+#         {
+#             "from": "oakwood",
+#             "to": "river_town",
+#             "steps": [{"type": "encounter", "biome": "road"}],
+#         },
+#     ],
+#     "transport": {
+#         "walk": {"name": "On foot", "default": True},
+#         "horse": {"name": "Riding horse"},
+#     },
 #     "calendars": { "primary": { "epoch_unix": …, "tick_rate": 86400.0, … } },
 #     "biomes": { "forest": {"gvar_id": "engine:configs/biomes/forest", "name": "Forest"} },
 # }

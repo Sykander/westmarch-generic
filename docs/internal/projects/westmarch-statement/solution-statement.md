@@ -336,6 +336,8 @@ Three viable approaches; **recommended: phased extraction (M2)**.
 
 **Goal:** One real community (or staging server) runs daily on engine + config with the full [MVP command set](mvp-commands.md).
 
+Detailed delivery slices live in [phase-1-implementation-plan.md](phase-1-implementation-plan.md). The first slice is **travel/location**.
+
 | Work | Deliverables | Stories |
 |------|--------------|---------|
 | Port MVP commands | Full set in [mvp-commands.md](mvp-commands.md) — Tiers B–H (23 player commands) + admin (Tier A′) | US-6.1, US-6.3 |

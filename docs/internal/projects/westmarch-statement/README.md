@@ -9,6 +9,7 @@ Previously named `initial-statement`; renamed to reflect that this is the **west
 | [problem-statement.md](problem-statement.md) | **PS** | Why the project exists |
 | [user-stories.md](user-stories.md) | **US** | Journeys and use cases by persona |
 | [solution-statement.md](solution-statement.md) | **SS** | Architecture, options, implementation plan |
+| [phase-1-implementation-plan.md](phase-1-implementation-plan.md) | **P1** | Deliverable slices for Phase 1 implementation |
 | [mvp-commands.md](mvp-commands.md) | **MVP** | Command scope, tiers, config surface |
 | [review.md](review.md) | — | Critical review of the full set |
 | [data-shapes.md](data-shapes.md) | — | Reusable data shapes (encounter, location, path, **policies**, …) |

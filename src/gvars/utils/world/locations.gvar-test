@@ -1,0 +1,67 @@
+cfg_fixture = {
+    "world_data": {
+        "default_location": "river_town",
+        "locations": {
+            "river_town": {"name": "River Town", "description": "A busy quay."},
+            "oakwood": {"name": "Oakwood Forest"},
+            "oakwood_east": {"name": "Oakwood East Trail"},
+        },
+    },
+}
+loc = locations.get_location(cfg_fixture, "river_town")
+return loc["id"] == "river_town" and loc["name"] == "River Town"
+---
+True
+---
+name: get_location injects dict key id
+
+cfg_fixture = {
+    "world_data": {
+        "default_location": "river_town",
+        "locations": {
+            "river_town": {"name": "River Town"},
+            "oakwood": {"name": "Oakwood Forest"},
+            "oakwood_east": {"name": "Oakwood East Trail"},
+        },
+    },
+}
+matches = locations.search_locations(cfg_fixture, "oak")
+return len(matches) == 2
+---
+True
+---
+name: search_locations returns ambiguous partial matches
+
+cfg_fixture = {
+    "world_data": {
+        "locations": {
+            "river_town": {"name": "River Town"},
+            "oakwood": {"name": "Oakwood Forest"},
+        },
+    },
+}
+matches = locations.search_locations(cfg_fixture, "Oakwood Forest")
+return len(matches) == 1 and matches[0]["id"] == "oakwood"
+---
+True
+---
+name: search_locations matches display name
+
+cfg_fixture = {
+    "world_data": {
+        "locations": {
+            "oakwood": {
+                "name": "Oakwood Forest",
+                "description": "Tall trees.",
+                "commands": {"enc": ["forest"], "forage": ["forest"]},
+            },
+        },
+    },
+}
+loc = locations.get_location(cfg_fixture, "oakwood")
+text = locations.display_location(loc, "full", character(), True, 2)
+return "Oakwood Forest" in text and "Tall trees." in text and "forage" in text and "2" in text
+---
+True
+---
+name: display_location includes description activities and visits
