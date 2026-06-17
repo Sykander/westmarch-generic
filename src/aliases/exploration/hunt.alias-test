@@ -68,7 +68,7 @@ vars:
 ---
 re:creature|party|enc
 ---
-name: "planned: help documents hunt usage and enc prerequisite"
+name: "help documents hunt usage and enc prerequisite"
 vars:
   uvars:
     _wm_command: hunt
@@ -87,7 +87,7 @@ vars:
 ---
 re:Survival|DC
 ---
-name: "planned: hunt runs survival check for known creature"
+name: "hunt runs survival check for known creature"
 vars:
   uvars:
     _wm_command: hunt
@@ -106,7 +106,7 @@ vars:
 ---
 re:Found no monster matches
 ---
-name: "planned: hunt rejects unknown creature"
+name: "hunt rejects unknown creature"
 vars:
   uvars:
     _wm_command: hunt
@@ -150,7 +150,26 @@ vars:
 ---
 re:group|party|next hunter
 ---
-name: "planned: group hunt failure offers chained command"
+name: "group hunt failure offers chained command"
+vars:
+  uvars:
+    _wm_command: hunt
+  svars:
+    westmarch_config: "eeee7777-7777-7777-7777-777777777777"
+  gvars:
+    eeee7777-7777-7777-7777-777777777777: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"hunt": True},
+          },
+      }
+
+!hunt Wolf 3 -n 2 -b 5[previous]
+---
+re:Wolf[\s\S]*Group hunt[\s\S]*-n 3
+---
+name: group hunt flags do not affect creature lookup
 vars:
   uvars:
     _wm_command: hunt

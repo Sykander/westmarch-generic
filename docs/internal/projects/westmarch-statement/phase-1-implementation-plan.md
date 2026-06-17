@@ -49,12 +49,15 @@ Review notes:
 
 ## Slice 3 — Hunt and loot
 
+**Status:** in implementation; core hunt/loot loop is present, with focused regression coverage expanding around flags and extraction.
+
 Port the combat/loot loop:
 
 - monster catalogue lookup through config/catalogue gvars
 - `hunt` and `loot` command behavior parity
 - monster art/DC display config already sketched under `subsystems.exploration.config`
 - focused tests for lookup, no-match, ambiguous-match, and disabled config
+- focused tests for group hunt flags and successful loot extraction
 
 Review notes:
 

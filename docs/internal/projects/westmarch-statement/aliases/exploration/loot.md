@@ -62,7 +62,7 @@ flowchart TD
 | Loot table rules by type/size/CR | **Engine** [loot.gvar](../../gvars/loot.md); tunable via config `LOOT_RULES` later |
 | Monster art / DC visibility | **Config** under `subsystems.exploration.config` |
 | Monster catalogue | **Config** |
-| Session cvar key | **Engine** `bags` |
+| Session cvar key | **Engine** `loot.gvar` (`wg_loot_session`) |
 
 ## Prerequisites
 
@@ -74,7 +74,7 @@ flowchart TD
 - [x] **[loot.gvar](../../gvars/loot.md)** — `build_lootables`, session state machine helpers
 - [x] **`loot.alias`** — loader, toggle, session state machine
 - [x] Namespaced loot session cvar
-- [x] **`loot.alias-test`** — help, start session, status, clear
+- [x] **`loot.alias-test`** — help, start session, status, clear, ambiguity, successful item extraction
 - [ ] Optional config overrides for GP ranges by CR
 
 ## Exit criteria

@@ -58,8 +58,8 @@ Large monster lists likely need Option C extension gvars ([solution-statement.md
 ## Implementation checklist
 
 - [x] Port **`monsters.gvar`** — config-backed search
-- [x] **`hunt.alias`** — loader, toggle, group hunt flow
-- [x] **`hunt.alias-test`** — help, unknown creature, hunt smoke
+- [x] **`hunt.alias`** — loader, toggle, group hunt flow, roll-flag-aware creature parsing
+- [x] **`hunt.alias-test`** — help, unknown creature, ambiguous creature, hunt smoke, group handoff flags
 - [ ] **`rules_edition`** — monster assumptions if catalogue differs
 
 ## Related

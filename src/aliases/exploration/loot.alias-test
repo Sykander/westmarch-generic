@@ -68,7 +68,7 @@ vars:
 ---
 re:clear|creature|item|session
 ---
-name: "planned: help documents three-phase loot session"
+name: "help documents three-phase loot session"
 vars:
   uvars:
     _wm_command: loot
@@ -87,7 +87,7 @@ vars:
 ---
 re:Started loot table session|nothing to loot
 ---
-name: "planned: start loot session for creature"
+name: "start loot session for creature"
 vars:
   uvars:
     _wm_command: loot
@@ -131,7 +131,7 @@ vars:
 ---
 re:cleared|no active|session
 ---
-name: "planned: clear ends loot session"
+name: "clear ends loot session"
 vars:
   uvars:
     _wm_command: loot
@@ -150,7 +150,7 @@ vars:
 ---
 re:Wolf
 ---
-name: "planned: bare loot shows active session status"
+name: "bare loot shows active session status"
 vars:
   uvars:
     _wm_command: loot
@@ -179,6 +179,27 @@ vars:
     westmarch_config: "eeee7777-7777-7777-7777-777777777777"
   cvars:
     wg_loot_session: '{"creature": "Wolf", "items": [{"id": "trophy", "name": "Wolf Trophy [CR 0.25]", "skill": "nature", "dc": 10, "kind": "item", "amount": 1}, {"id": "ration", "name": "Wolf Ration", "skill": "survival", "dc": 10, "kind": "item", "amount": 1}]}'
+  gvars:
+    eeee7777-7777-7777-7777-777777777777: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"loot": True},
+          },
+      }
+
+!loot ration
+---
+re:Recovered \*\*Wolf Ration\*\*[\s\S]*Loot cleared
+---
+name: loot item attempt can recover and clear final lootable
+vars:
+  uvars:
+    _wm_command: loot
+  svars:
+    westmarch_config: "eeee7777-7777-7777-7777-777777777777"
+  cvars:
+    wg_loot_session: '{"creature": "Wolf", "items": [{"id": "ration", "name": "Wolf Ration", "skill": "survival", "dc": 0, "kind": "item", "amount": 1, "bag": "Rations"}]}'
   gvars:
     eeee7777-7777-7777-7777-777777777777: |
       subsystems = {
