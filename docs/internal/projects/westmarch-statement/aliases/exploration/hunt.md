@@ -7,15 +7,16 @@ Survival check to track a creature before combat. westmarch expects **`!enc`** i
 ## Player-facing behaviour
 
 ```
-!hunt <creature> [party_size] [-n roll_number] [bonuses]
+!hunt <creature> [-p party_size] [-n roll_number] [bonuses]
 ```
 
-- **Help:** enc prerequisite note, usage, group hunt `-n` chaining.
+- **Help:** enc prerequisite note, usage, group hunt `-n` chaining. No-arg `!hunt` asks for a creature and points to `!hunt help`.
 - **Creature:** `lists.search_list` over `monsters_names`; no matches, one match, or ask for a more specific name with up to five matches.
+- **Party size:** optional named `-p <party_size>` flag. Positional numbers remain part of the creature query.
 - **DC:** `floor((10 if party_size==1 else 8*party_size) + cr)`.
 - **Roll:** Survival check.
 - **Success:** embed with `!i madd` suggestion for combat init; if monster art exists, show it according to `subsystems.exploration.config.monster_images.hunt`.
-- **Group failure:** copy-paste command for next hunter with `-b {total}[previous] -n {n+1}`.
+- **Group failure:** copy-paste command for next hunter with `-p {party_size} -b {total}[previous] -n {n+1}`.
 - **DC visibility:** `subsystems.exploration.config.show_check_dcs.hunt` controls whether public output includes the numeric DC.
 
 ## westmarch reference

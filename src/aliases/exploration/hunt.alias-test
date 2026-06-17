@@ -9,9 +9,9 @@ vars:
 
 !hunt
 ---
-title: Hunt
+re:Provide a \*\*creature\*\*[\s\S]*!hunt help
 ---
-name: passes auth when exploration hunt enabled
+name: asks for creature when hunt enabled without args
 vars:
   uvars:
     _wm_command: hunt
@@ -66,7 +66,7 @@ vars:
 
 !hunt help
 ---
-re:creature|party|enc
+re:creature[\s\S]*-p party_size[\s\S]*enc
 ---
 name: "help documents hunt usage and enc prerequisite"
 vars:
@@ -146,11 +146,11 @@ vars:
           ],
       }
 
-!hunt Wolf 3
+!hunt Wolf -p 3
 ---
-re:group|party|next hunter
+re:Group hunt[\s\S]*party size \*\*3\*\*[\s\S]*-p 3
 ---
-name: "group hunt failure offers chained command"
+name: "group hunt uses named party-size flag"
 vars:
   uvars:
     _wm_command: hunt
@@ -165,11 +165,49 @@ vars:
           },
       }
 
-!hunt Wolf 3 -n 2 -b 5[previous]
+!hunt Wolf -p 3 -n 2 -b 5[previous]
 ---
-re:Wolf[\s\S]*Group hunt[\s\S]*-n 3
+re:Wolf[\s\S]*Group hunt[\s\S]*-p 3[\s\S]*-n 3
 ---
 name: group hunt flags do not affect creature lookup
+vars:
+  uvars:
+    _wm_command: hunt
+  svars:
+    westmarch_config: "eeee7777-7777-7777-7777-777777777777"
+  gvars:
+    eeee7777-7777-7777-7777-777777777777: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"hunt": True},
+          },
+      }
+
+!hunt Wolf 3
+---
+re:Found no monster matches
+---
+name: positional number is no longer treated as party size
+vars:
+  uvars:
+    _wm_command: hunt
+  svars:
+    westmarch_config: "eeee7777-7777-7777-7777-777777777777"
+  gvars:
+    eeee7777-7777-7777-7777-777777777777: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"hunt": True},
+          },
+      }
+
+!hunt Wolf -p 0
+---
+re:Party size must be a positive whole number
+---
+name: rejects invalid named party size
 vars:
   uvars:
     _wm_command: hunt
