@@ -32,7 +32,7 @@ vars:
 
 !setup -p 2
 ---
-re:General Configuration[\s\S]*ask setup questions[\s\S]*https://discord.gg/ZAkJ44489G
+"re:General Configuration[\\s\\S]*\\[Westmarch Generic Discord\\]\\(https://discord.gg/ZAkJ44489G\\)[\\s\\S]*ask setup questions"
 ---
 name: general configuration page links support server
 vars:
