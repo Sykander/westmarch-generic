@@ -308,6 +308,43 @@ def _footer_behaviour(cfg):
     return str(mode).strip().lower()
 
 
+def _command_thumbnail_mode(cfg):
+    policy = _display_policy(cfg)
+    if policy == None:
+        return "default"
+    try:
+        mode = policy.command_thumbnail
+    except:
+        return "default"
+    if mode == None or str(mode).strip() == "":
+        return "default"
+    text = str(mode).strip().lower()
+    if text in ["character", "pc", "current_character", "current_pc"]:
+        return "character"
+    return "default"
+
+
+def _character_image():
+    ch = None
+    try:
+        ch = character()
+    except:
+        return None
+    image = None
+    try:
+        image = ch.image
+    except:
+        image = None
+    if image == None:
+        try:
+            image = get("image")
+        except:
+            image = None
+    if image == None or str(image).strip() == "":
+        return None
+    return str(image).strip()
+
+
 def _pick_balanced_mode():
     modes = ["helpful_tips", "string", "help", "credits"]
     idx = randint(0, len(modes))
@@ -415,6 +452,10 @@ def _branding_kwargs(subsystem, command):
         thumb = merged.logo
     except:
         thumb = None
+    if _command_thumbnail_mode(cfg) == "character":
+        character_thumb = _character_image()
+        if character_thumb != None:
+            thumb = character_thumb
     if thumb == None or str(thumb).strip() == "":
         thumb = DEFAULT_THUMBNAIL
     try:

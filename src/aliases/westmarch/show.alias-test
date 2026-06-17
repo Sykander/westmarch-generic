@@ -23,7 +23,7 @@ vars:
 
 !show
 ---
-"re:```diff[\\s\\S]*exploration: off[\\s\\S]*enc: off[\\s\\S]*forage: off"
+"re:```diff[\\s\\S]*- exploration: off[\\s\\S]*-   enc: off[\\s\\S]*-   forage: off"
 ---
 name: show lists subsystem status
 vars:
@@ -65,7 +65,7 @@ vars:
 
 !show
 ---
-"re:\\+ exploration: on[\\s\\S]*\\+   enc: on[\\s\\S]*forage: off"
+"re:\\+ exploration: on[\\s\\S]*\\+   enc: on[\\s\\S]*-   forage: off"
 ---
 name: show marks enabled subsystem in diff block
 vars:
@@ -126,7 +126,7 @@ vars:
 
 !show player_setup
 ---
-re:Player setup checks:\s+\*\*1\*\*
+re:```yaml[\s\S]*checks: 1[\s\S]*hud.fields
 ---
 name: show section filter player setup summarizes configured checks
 vars:
@@ -142,4 +142,20 @@ vars:
                   {"type": "cvar", "key": "vsheet", "label": "vSheet"},
               ],
           },
+      }
+
+!show display
+---
+re:```yaml[\s\S]*command_thumbnail: character
+---
+name: show section filter display summarizes command thumbnail policy
+vars:
+  uvars:
+    _wm_command: show
+  svars:
+    westmarch_config: "ffff8888-8888-8888-8888-888888888888"
+  gvars:
+    ffff8888-8888-8888-8888-888888888888: |
+      policies = {
+          "display": {"command_thumbnail": "character"},
       }

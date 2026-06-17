@@ -1064,7 +1064,7 @@ embed_display = {
 | `description` | yes | yes | Inherited |
 | `image` | yes | yes | Inherited |
 | `logo` | yes | yes | Inherited |
-| `footer` | yes | yes | String, or list of strings to randomly choose from, used when **`footer_behaviour`** is **`string`**; see [Display policy (footer)](#display-policy-footer) |
+| `footer` | yes | yes | String, or list of strings to randomly choose from, used when **`footer_behaviour`** is **`string`**; see [Display policy](#display-policy) |
 | `colour` | yes | yes | Same validation as base **`display.colour`** |
 
 **`command_display`** keys must match keys in that subsystem’s **`commands`** map (e.g. **`enc`**, **`forage`**, **`library`**). Subsystems without a **`commands`** map (**`downtime`**) may still use **`command_display.downtime`** for the single **`!downtime`** command, or rely on subsystem **`display`** alone.
@@ -1485,8 +1485,8 @@ House rules and **what the engine enforces** vs what stays narrative/manual. Sto
 | **`combat`** | ✓ | `scale_encounters_to_level` *(defer)*, `roll_monster_hp`, `scale_mode`, `max_cr_delta`, `min_cr` *(defer)* | scaling on → warn |
 | **`quest`** | ✓ | `self_assign`, `max_active` | **`self_assign`** + quest encounters → **`misc.commands.quest`** on |
 | **`inventory`** | schema | encumbrance, attunement, **`enforce_*`** | enforcement deferred; warn when enforce on |
-| **`display`** | ✓ | `footer_behaviour`, tips, credits | invalid mode → error |
-| **`player_setup`** | ✓ | `enabled`, `require_character`, `checks` | check type/key/gates |
+| **`display`** | ✓ | `footer_behaviour`, `command_thumbnail`, tips, credits | invalid mode → error |
+| **`player_setup`** | ✓ | `enabled`, `require_character`, `hud`, `checks` | check type/key/gates |
 | **`languages`** | ✓ | `allowed` | unknown names → warn |
 | **`content`** | partial | `enforce_read_cooldowns`, `enforce_library_cooldowns` | uses **`command_config.read`** / **`library`** |
 
@@ -1546,12 +1546,17 @@ policies = {
     "languages": { "allowed": [] },
     "display": {
         "footer_behaviour": "balanced",
+        "command_thumbnail": "default",
         "helpful_tips": [],
         "credits": None,
     },
     "player_setup": {
         "enabled": True,
         "require_character": True,
+        "hud": {
+            "enabled": True,
+            "fields": ["coins", "wallet", "location", "time", "weather"],
+        },
         "checks": [],
     },
 }
@@ -1595,7 +1600,33 @@ Configures the player-facing bare **`!westmarch`** command. These checks do not 
 |-----|------|---------|---------|
 | `enabled` | bool | `True` | When **`False`**, bare `!westmarch` skips player setup checks |
 | `require_character` | bool | `True` | When **`True`**, bare `!westmarch` asks the user to select a character before checking |
+| `hud` | dict \| list \| bool | see below | Controls the compact character HUD shown by bare `!westmarch` |
 | `checks` | list[dict] | `[]` | Generic checks for cvars, uvars, svars, or custom counters |
+
+Default HUD:
+
+```py
+"hud": {
+    "enabled": True,
+    "fields": ["coins", "wallet", "location", "time", "weather"],
+}
+```
+
+Built-in HUD fields only render when their subsystem or command is enabled:
+
+| Field | Requires | Value |
+|-------|----------|-------|
+| `coins` | `subsystems.economy.enabled` | Avrae character coinpurse |
+| `wallet` | `subsystems.economy.commands.wallet` | Configured `currencies` balances from `wg_wallet_<id>` cvars |
+| `location` | `subsystems.travel.commands.location` | Character `wg_location`, resolved through `world_data.locations` when possible |
+| `time` | `subsystems.travel.commands.time` | Clock module output when implemented; otherwise configured/manual world time text |
+| `weather` | `subsystems.travel.commands.weather` | Weather module output when implemented; otherwise configured/manual weather text |
+
+Custom HUD fields use the same storage readers as setup checks:
+
+```py
+{"type": "cvar", "key": "renown", "label": "Renown", "show_empty": True}
+```
 
 Each check:
 
@@ -1618,6 +1649,7 @@ policies = {
     "player_setup": {
         "enabled": True,
         "require_character": True,
+        "hud": {"enabled": True, "fields": ["coins", "wallet", "location"]},
         "checks": [
             {"type": "cvar", "key": "vsheet", "label": "vSheet", "message": "Run `!vsheet setup`."},
             {"type": "cvar", "key": "wg_downtime", "label": "Downtime", "message": "Run `!downtime setup`.", "when_subsystem": "downtime"},
@@ -1797,15 +1829,18 @@ Per-command toggles under **`subsystems.misc`**. MVP ships **`quest`** and **`re
 | `enforce_read_cooldowns` | bool | `False` | When **`True`**, **`!read`** deep-read uses **`command_config.read.cooldown_seconds`** |
 | `enforce_library_cooldowns` | bool | `True` | When **`True`**, **`!library`** uses **`command_config.library.cooldown_seconds`** (default **120**) |
 
-### Display policy (footer)
+### Display policy
 
-**Config path:** **`policies.display`**. Embed **footer** behaviour for player-facing commands — independent of **`display.footer`** static text on the config gvar. Implemented in **[display.gvar](gvars/display.md)** inside **`get_display()`**.
+**Config path:** **`policies.display`**. Embed behaviour for player-facing commands — independent of **`display.footer`** static text on the config gvar. Implemented in **[display.gvar](gvars/display.md)** inside **`get_display()`**.
 
 | Key | Type | Default | Meaning |
 |-----|------|---------|---------|
 | `footer_behaviour` | see below | `"balanced"` | How to populate the embed footer |
+| `command_thumbnail` | `"default"` \| `"character"` | `"default"` | Whether command embed thumbnails use the configured logo/default logo or the selected PC image when available |
 | `helpful_tips` | `[ str, … ]` | `[]` | Owner tips for **`helpful_tips`** mode; engine defaults used when empty |
 | `credits` | `str` \| `None` | `None` | Override credits line for **`credits`** mode; `None` → engine default string |
+
+`command_thumbnail: "character"` changes the default thumbnail passed by **`display.get_display()`**. A command that explicitly passes its own thumbnail, such as hunt/loot monster art, still wins for that embed response.
 
 #### `footer_behaviour`
 

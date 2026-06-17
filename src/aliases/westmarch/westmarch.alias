@@ -2,10 +2,13 @@
 using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(
     auth = env.gvars.auth,
+    clock = env.gvars.clock,
     config = env.gvars.config,
     dicts = env.gvars.dicts,
     display = env.gvars.display,
+    journeys = env.gvars.journeys,
     lists = env.gvars.lists,
+    weather = env.gvars.weather,
 )
 
 ok, msg = auth.is_allowed()
@@ -16,23 +19,7 @@ if not ok:
 
 argslist = &ARGS&
 
-SUPPORTING_WORKSHOPS = [
-    [
-        "vSheet",
-        "keeps character sheet details available to automation such as class and subclass setup.",
-        None,
-    ],
-    [
-        "Bags",
-        "gives players a visible inventory surface; exploration loot can add recovered items to bags.",
-        None,
-    ],
-    [
-        "Notes",
-        "works well for player-facing journals, recipes, quest notes, and campaign reminders.",
-        None,
-    ],
-]
+DEFAULT_HUD_FIELDS = ["coins", "wallet", "location", "time", "weather"]
 
 
 def _read_field(obj, key):
@@ -56,12 +43,19 @@ def _read_field(obj, key):
         "checks": lambda o: o.checks,
         "subsystems": lambda o: o.subsystems,
         "commands": lambda o: o.commands,
+        "config": lambda o: o.config,
+        "currencies": lambda o: o.currencies,
         "type": lambda o: o.type,
         "key": lambda o: o.key,
         "label": lambda o: o.label,
         "name": lambda o: o.name,
+        "plural": lambda o: o.plural,
+        "symbol": lambda o: o.symbol,
         "message": lambda o: o.message,
         "help": lambda o: o.help,
+        "hud": lambda o: o.hud,
+        "fields": lambda o: o.fields,
+        "show_empty": lambda o: o.show_empty,
         "when_subsystem": lambda o: o.when_subsystem,
         "when_command": lambda o: o.when_command,
         "equals": lambda o: o.equals,
@@ -75,6 +69,16 @@ def _read_field(obj, key):
         "economy": lambda o: o.economy,
         "content": lambda o: o.content,
         "misc": lambda o: o.misc,
+        "world_data": lambda o: o.world_data,
+        "locations": lambda o: o.locations,
+        "default_location": lambda o: o.default_location,
+        "current_time": lambda o: o.current_time,
+        "current_weather": lambda o: o.current_weather,
+        "time": lambda o: o.time,
+        "weather": lambda o: o.weather,
+        "current": lambda o: o.current,
+        "description": lambda o: o.description,
+        "mode": lambda o: o.mode,
     }
     if key in attrs:
         try:
@@ -310,17 +314,293 @@ def _enabled_command_lines(cfg):
     return lines
 
 
-def _supporting_workshops_text():
-    lines = []
-    for item in SUPPORTING_WORKSHOPS:
-        label = item[0]
-        text = item[1]
-        url = item[2]
-        if url == None or str(url).strip() == "":
-            lines.append(f"• **{label}** — {text}")
+def _hud_policy(cfg):
+    policy = _setup_policy(cfg)
+    return _read_field(policy, "hud")
+
+
+def _hud_enabled(cfg):
+    hud = _hud_policy(cfg)
+    if hud == False:
+        return False
+    if dicts.is_dict(hud) and _read_field(hud, "enabled") == False:
+        return False
+    return True
+
+
+def _hud_fields(cfg):
+    hud = _hud_policy(cfg)
+    if lists.is_list(hud):
+        return hud
+    if dicts.is_dict(hud):
+        fields = _read_field(hud, "fields")
+        if lists.is_list(fields):
+            return fields
+    return DEFAULT_HUD_FIELDS
+
+
+def _field_label(field, fallback):
+    if dicts.is_dict(field):
+        label = _read_field(field, "label")
+        if _is_nonempty(label):
+            return str(label).strip()
+        name = _read_field(field, "name")
+        if _is_nonempty(name):
+            return str(name).strip()
+    return fallback
+
+
+def _line(label, value):
+    return f"• **{label}:** {value}"
+
+
+def _amount_text(raw):
+    if raw == None or str(raw).strip() == "":
+        return "0"
+    text = str(raw).strip()
+    try:
+        num = float(text)
+        if num == int(num):
+            return str(int(num))
+        return str(num)
+    except:
+        return text
+
+
+def _display_value(value):
+    if value == None:
+        return None
+    if dicts.is_dict(value):
+        for key in ["current", "value", "description", "name", "label"]:
+            nested = _read_field(value, key)
+            if _is_nonempty(nested):
+                return str(nested).strip()
+        return None
+    if lists.is_list(value):
+        if len(value) == 0:
+            return None
+        return ", ".join([str(item).strip() for item in value if _is_nonempty(item)])
+    if str(value).strip() == "":
+        return None
+    return str(value).strip()
+
+
+def _coinpurse_text(ch):
+    if ch == None:
+        return None
+    try:
+        text = str(ch.coinpurse)
+        if _is_nonempty(text):
+            return text
+    except:
+        pass
+    parts = []
+    try:
+        parts.append(f"{ch.coinpurse.pp} pp")
+    except:
+        pass
+    try:
+        parts.append(f"{ch.coinpurse.gp} gp")
+    except:
+        pass
+    try:
+        parts.append(f"{ch.coinpurse.ep} ep")
+    except:
+        pass
+    try:
+        parts.append(f"{ch.coinpurse.sp} sp")
+    except:
+        pass
+    try:
+        parts.append(f"{ch.coinpurse.cp} cp")
+    except:
+        pass
+    if len(parts) > 0:
+        return ", ".join(parts)
+    return None
+
+
+def _currency_label(entry, currency_id, amount_text):
+    if entry != None:
+        symbol = _read_field(entry, "symbol")
+        if _is_nonempty(symbol):
+            return str(symbol).strip()
+        amount = 0
+        try:
+            amount = float(amount_text)
+        except:
+            amount = 0
+        key = "name"
+        if amount != 1:
+            key = "plural"
+        label = _read_field(entry, key)
+        if _is_nonempty(label):
+            return str(label).strip()
+        label = _read_field(entry, "name")
+        if _is_nonempty(label):
+            return str(label).strip()
+    return str(currency_id)
+
+
+def _wallet_text(cfg, ch):
+    currencies = _read_field(cfg, "currencies")
+    if currencies == None or not dicts.is_dict(currencies):
+        return None
+    parts = []
+    for currency_id in currencies:
+        entry = _read_field(currencies, currency_id)
+        raw = _read_cvar(ch, f"wg_wallet_{currency_id}")
+        amount = _amount_text(raw)
+        label = _currency_label(entry, currency_id, amount)
+        parts.append(f"{label}: {amount}")
+    if len(parts) == 0:
+        return None
+    return ", ".join(parts)
+
+
+def _location_text(cfg, ch):
+    loc_id = None
+    loc = None
+    try:
+        loc_id, loc = journeys.get_location(ch, cfg)
+    except:
+        loc_id = None
+        loc = None
+    name = _read_field(loc, "name")
+    if _is_nonempty(name):
+        return str(name).strip()
+    if _is_nonempty(loc_id):
+        return str(loc_id).strip()
+    return "not set"
+
+
+def _time_text(cfg):
+    try:
+        instant = clock.now(cfg)
+        text = clock.format_instant(cfg, instant)
+        if _is_nonempty(text):
+            return str(text).strip()
+    except:
+        pass
+    wd = _read_field(cfg, "world_data")
+    for key in ["current_time", "time", "clock"]:
+        text = _display_value(_read_field(wd, key))
+        if _is_nonempty(text):
+            return text
+    policies = _read_field(cfg, "policies")
+    time_pol = _read_field(policies, "time")
+    mode = _read_field(time_pol, "mode")
+    if _is_nonempty(mode):
+        return str(mode).strip()
+    return None
+
+
+def _weather_text(cfg, ch):
+    try:
+        area = weather.resolve_area_code(cfg, ch, [])
+        season = None
+        try:
+            season = clock.season(cfg)
+        except:
+            season = None
+        text = weather.pick_weather(cfg, area, season if season != None else "default")
+        if _is_nonempty(text):
+            return str(text).strip()
+    except:
+        pass
+    loc = None
+    try:
+        _loc_id, loc = journeys.get_location(ch, cfg)
+    except:
+        loc = None
+    for value in [
+        _read_field(loc, "weather"),
+        _read_field(_read_field(cfg, "world_data"), "current_weather"),
+        _read_field(_read_field(cfg, "world_data"), "weather"),
+    ]:
+        text = _display_value(value)
+        if _is_nonempty(text):
+            return text
+    return None
+
+
+def _builtin_hud_line(cfg, ch, key, label=None):
+    hud_key = str(key).strip().lower()
+    if hud_key in ["coin", "coins", "coinpurse", "gp"]:
+        if not _subsystem_enabled(cfg, "economy"):
+            return None
+        text = _coinpurse_text(ch)
+        if not _is_nonempty(text):
+            return None
+        return _line(label if label != None else "Coins", text)
+    if hud_key == "wallet":
+        if not _command_enabled(cfg, "economy", "wallet"):
+            return None
+        text = _wallet_text(cfg, ch)
+        if not _is_nonempty(text):
+            return None
+        return _line(label if label != None else "Wallet", text)
+    if hud_key == "location":
+        if not _command_enabled(cfg, "travel", "location"):
+            return None
+        return _line(label if label != None else "Location", _location_text(cfg, ch))
+    if hud_key == "time":
+        if not _command_enabled(cfg, "travel", "time"):
+            return None
+        text = _time_text(cfg)
+        if not _is_nonempty(text):
+            return None
+        return _line(label if label != None else "Time", text)
+    if hud_key == "weather":
+        if not _command_enabled(cfg, "travel", "weather"):
+            return None
+        text = _weather_text(cfg, ch)
+        if not _is_nonempty(text):
+            return None
+        return _line(label if label != None else "Weather", text)
+    return None
+
+
+def _custom_hud_line(cfg, ch, field):
+    kind = _read_field(field, "type")
+    key = _read_field(field, "key")
+    if _is_nonempty(kind):
+        kind = str(kind).strip().lower()
+    if _is_nonempty(key):
+        key_text = str(key).strip().lower()
+        label = _field_label(field, key_text)
+        if kind in [None, "", "builtin", "field"] or key_text in ["coins", "coin", "coinpurse", "gp", "wallet", "location", "time", "weather"]:
+            built = _builtin_hud_line(cfg, ch, key_text, label)
+            if built != None:
+                return built
+    if kind == None or str(kind).strip() == "":
+        kind = "cvar"
+    if kind not in ["cvar", "uvar", "svar", "cc", "counter", "custom_counter"]:
+        return None
+    value, _stored_kind = _read_requirement_value(ch, field)
+    if not _is_nonempty(value):
+        if _read_field(field, "show_empty") == True:
+            value = "not set"
         else:
-            lines.append(f"• **[{label}]({url})** — {text}")
-    return "\n".join(lines)
+            return None
+    label = _field_label(field, str(_read_field(field, "key")))
+    return _line(label, str(value))
+
+
+def _hud_lines(cfg, ch):
+    if not _hud_enabled(cfg):
+        return []
+    lines = []
+    for field in _hud_fields(cfg):
+        line = None
+        if dicts.is_dict(field):
+            if _check_applies(cfg, field):
+                line = _custom_hud_line(cfg, ch, field)
+        else:
+            line = _builtin_hud_line(cfg, ch, field)
+        if line != None:
+            lines.append(line)
+    return lines
 
 
 def _unconfigured_help(prefix):
@@ -331,9 +611,6 @@ Usage:
 `{prefix}westmarch show`
 
 **New server?** A **Dragonspeaker** or **Server Aliaser** should start with `{prefix}westmarch setup`.
-
-**Supporting workshops**
-{_supporting_workshops_text()}
 """
 
 
@@ -402,13 +679,12 @@ def _configured_status(prefix, cfg):
         lines.append("**Enabled here**")
         lines = lines + enabled
 
-    if len(missing) == 0 and len(passed) == 0:
+    hud = _hud_lines(cfg, ch)
+    if len(hud) > 0:
         lines.append("")
-        lines.append("No server-specific player setup checks are configured yet.")
+        lines.append("**Character HUD**")
+        lines = lines + hud
 
-    lines.append("")
-    lines.append("**Supporting workshops**")
-    lines.append(_supporting_workshops_text())
     lines.append("")
     lines.append(f"Server configurers can review settings with `{prefix}westmarch show`.")
     return "\n".join(lines)

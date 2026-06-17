@@ -82,7 +82,7 @@ vars:
 
 !setup -p "Recommended Workshops"
 ---
-re:vSheet[\s\S]*Bags[\s\S]*policies.player_setup.checks
+re:vSheet[\s\S]*Bags[\s\S]*command_thumbnail
 ---
 name: recommended workshops page lists companions and player setup policy
 vars:

@@ -67,13 +67,17 @@ def _read_field(obj, key):
         "mode": lambda o: o.mode,
         "downtime": lambda o: o.downtime,
         "footer_behaviour": lambda o: o.footer_behaviour,
+        "command_thumbnail": lambda o: o.command_thumbnail,
         "player_setup": lambda o: o.player_setup,
         "require_character": lambda o: o.require_character,
         "checks": lambda o: o.checks,
+        "hud": lambda o: o.hud,
+        "fields": lambda o: o.fields,
         "world_data": lambda o: o.world_data,
         "locations": lambda o: o.locations,
         "paths": lambda o: o.paths,
         "biomes": lambda o: o.biomes,
+        "currencies": lambda o: o.currencies,
         "gvar_id": lambda o: o.gvar_id,
         "monster_images": lambda o: o.monster_images,
         "show_check_dcs": lambda o: o.show_check_dcs,
@@ -99,6 +103,18 @@ def _nonempty_str(value):
     if value == None:
         return False
     return str(value).strip() != ""
+
+
+def _codeblock(lang, lines):
+    return f"```{lang}\n" + "\n".join(lines) + "\n```"
+
+
+def _bool_text(value):
+    if value == True:
+        return "true"
+    if value == False:
+        return "false"
+    return str(value)
 
 
 def _dict_keys(obj):
@@ -168,7 +184,7 @@ def _enabled_commands_summary(cfg):
         marker = "+"
         status = "on"
         if not on:
-            marker = " "
+            marker = "-"
             status = "off"
         lines.append(f"{marker} {key}: {status}")
         commands = _read_field(block, "commands")
@@ -179,10 +195,10 @@ def _enabled_commands_summary(cfg):
             cmd_marker = "+"
             cmd_status = "on"
             if not command_on:
-                cmd_marker = " "
+                cmd_marker = "-"
                 cmd_status = "off"
             lines.append(f"{cmd_marker}   {cmd}: {cmd_status}")
-    return "```diff\n" + "\n".join(lines) + "\n```"
+    return _codeblock("diff", lines)
 
 
 def _world_data(cfg):
@@ -192,40 +208,41 @@ def _world_data(cfg):
 def _world_summary(cfg):
     wd = _world_data(cfg)
     if wd == None:
-        return "No **world_data** configured."
-    parts = []
-    parts.append(f"locations: **{_count_dict(_read_field(wd, 'locations'))}**")
-    parts.append(f"paths: **{_path_count(wd)}**")
-    parts.append(f"biomes: **{_count_dict(_read_field(wd, 'biomes'))}**")
-    return " · ".join(parts)
+        return _codeblock("yaml", ["world_data: none"])
+    lines = []
+    lines.append(f"locations: {_count_dict(_read_field(wd, 'locations'))}")
+    lines.append(f"paths: {_path_count(wd)}")
+    lines.append(f"biomes: {_count_dict(_read_field(wd, 'biomes'))}")
+    lines.append(f"currencies: {_count_dict(_read_field(cfg, 'currencies'))}")
+    return _codeblock("yaml", lines)
 
 
 def _biomes_summary(cfg):
     wd = _world_data(cfg)
     if wd == None:
-        return "No **world_data.biomes** registry."
+        return _codeblock("yaml", ["biomes: none"])
     registry = _read_field(wd, "biomes")
     count = _count_dict(registry)
     if count == 0:
-        return "No registered biomes."
-    lines = [f"**{count}** registered biome(s):"]
+        return _codeblock("yaml", ["biomes: 0"])
+    lines = [f"registered: {count}"]
     for code in _dict_keys(registry):
         entry = _read_field(registry, code)
-        gid = "—"
+        gid = "none"
         if entry != None and dicts.is_dict(entry):
             raw = _read_field(entry, "gvar_id")
             if raw != None:
                 gid = str(raw).strip()
-                if len(gid) > 28:
-                    gid = gid[0:24] + "…"
-        lines.append(f"• **{code}** → `{gid}`")
-    return "\n".join(lines)
+                if len(gid) > 32:
+                    gid = gid[0:29] + "..."
+        lines.append(f"{code}: {gid}")
+    return _codeblock("yaml", lines)
 
 
 def _display_summary(cfg):
     lines = []
     world_name = "Westmarch"
-    colour = "—"
+    colour = "default"
     logo = "default"
     base = _read_field(cfg, "display")
     if base != None:
@@ -238,15 +255,20 @@ def _display_summary(cfg):
         l = _read_field(base, "logo")
         if _nonempty_str(l):
             logo = str(l)
-    lines.append(f"World: **{world_name}** · base colour: `{colour}`")
-    lines.append(f"Thumbnail: `{logo}`")
+    lines.append(f"world: {world_name}")
+    lines.append(f"base_colour: {colour}")
+    lines.append(f"thumbnail: {logo}")
     policies = _read_field(cfg, "policies")
     disp_pol = _read_field(policies, "display")
     fb = _read_field(disp_pol, "footer_behaviour")
     if fb == None:
         fb = "balanced"
-    lines.append(f"Footer policy: **{fb}**")
-    return "\n".join(lines)
+    command_thumb = _read_field(disp_pol, "command_thumbnail")
+    if command_thumb == None:
+        command_thumb = "default"
+    lines.append(f"command_thumbnail: {command_thumb}")
+    lines.append(f"footer_policy: {fb}")
+    return _codeblock("yaml", lines)
 
 
 def _policy_summary(cfg):
@@ -255,32 +277,39 @@ def _policy_summary(cfg):
     time_pol = _read_field(policies, "time")
     mode = _read_field(time_pol, "mode")
     if mode != None:
-        lines.append(f"time.mode: **{mode}**")
+        lines.append(f"time.mode: {mode}")
     dt_pol = _read_field(policies, "downtime")
     dt_mode = _read_field(dt_pol, "mode")
     if dt_mode != None:
-        lines.append(f"downtime.mode: **{dt_mode}**")
+        lines.append(f"downtime.mode: {dt_mode}")
     disp_pol = _read_field(policies, "display")
     fb = _read_field(disp_pol, "footer_behaviour")
     if fb != None:
-        lines.append(f"display.footer_behaviour: **{fb}**")
+        lines.append(f"display.footer_behaviour: {fb}")
+    command_thumb = _read_field(disp_pol, "command_thumbnail")
+    if command_thumb != None:
+        lines.append(f"display.command_thumbnail: {command_thumb}")
     exp_block = _read_subsystem(cfg, "exploration")
     exp_cfg = _read_field(exp_block, "config")
     image_cfg = _read_field(exp_cfg, "monster_images")
     dcs_cfg = _read_field(exp_cfg, "show_check_dcs")
     if image_cfg != None:
         lines.append(
-            f"exploration.monster_images: hunt **{_read_field(image_cfg, 'hunt')}**, "
-            f"loot **{_read_field(image_cfg, 'loot')}**"
+            f"exploration.monster_images.hunt: {_read_field(image_cfg, 'hunt')}"
+        )
+        lines.append(
+            f"exploration.monster_images.loot: {_read_field(image_cfg, 'loot')}"
         )
     if dcs_cfg != None:
         lines.append(
-            f"exploration.show_check_dcs: hunt **{_read_field(dcs_cfg, 'hunt')}**, "
-            f"loot **{_read_field(dcs_cfg, 'loot')}**"
+            f"exploration.show_check_dcs.hunt: {_bool_text(_read_field(dcs_cfg, 'hunt'))}"
+        )
+        lines.append(
+            f"exploration.show_check_dcs.loot: {_bool_text(_read_field(dcs_cfg, 'loot'))}"
         )
     if len(lines) == 0:
-        return "No notable policies configured."
-    return "\n".join(lines)
+        lines.append("notable: none")
+    return _codeblock("yaml", lines)
 
 
 def _player_setup_summary(cfg):
@@ -288,7 +317,7 @@ def _player_setup_summary(cfg):
     player_setup = _read_field(policies, "player_setup")
     enabled = _read_field(player_setup, "enabled")
     if enabled == False:
-        return "Player setup checks are disabled."
+        return _codeblock("yaml", ["enabled: false"])
     require_character = _read_field(player_setup, "require_character")
     if require_character == None:
         require_character = True
@@ -296,11 +325,39 @@ def _player_setup_summary(cfg):
     count = 0
     if lists.is_list(checks):
         count = len(checks)
-    return (
-        f"Player setup checks: **{count}** configured\n"
-        f"Requires selected character: **{require_character}**\n"
-        f"Players can run **!westmarch** to see their own setup status."
-    )
+    hud = _read_field(player_setup, "hud")
+    hud_enabled = True
+    fields = []
+    if hud == False:
+        hud_enabled = False
+    elif dicts.is_dict(hud):
+        if _read_field(hud, "enabled") == False:
+            hud_enabled = False
+        raw_fields = _read_field(hud, "fields")
+        if lists.is_list(raw_fields):
+            for field in raw_fields:
+                if dicts.is_dict(field):
+                    key = _read_field(field, "key")
+                    kind = _read_field(field, "type")
+                    if key != None:
+                        if kind == None:
+                            kind = "cvar"
+                        fields.append(f"{kind}:{key}")
+                else:
+                    fields.append(str(field))
+    lines = [
+        "enabled: true",
+        f"checks: {count}",
+        f"require_character: {_bool_text(require_character)}",
+        f"hud.enabled: {_bool_text(hud_enabled)}",
+    ]
+    if len(fields) > 0:
+        lines.append("hud.fields:")
+        for field in fields:
+            lines.append(f"  - {field}")
+    else:
+        lines.append("hud.fields: default")
+    return _codeblock("yaml", lines)
 
 
 def _world_name(cfg):
@@ -328,23 +385,27 @@ def summarize_config(section=None):
             ),
         }
     world_name = _world_name(cfg)
-    uuid_text = "—"
+    uuid_text = "-"
     if uuid != None and str(uuid).strip() != "":
         uuid_text = str(uuid).strip()
-    wiring = (
-        f"**Svar:** `{config.SVAR_NAME}`\n"
-        f"**Config gvar:** `{uuid_text}`\n"
-        f"**Editor:** {_editor_link(uuid)}\n"
-        f"**Dashboard:** {_dashboard_link(uuid)}\n"
-        f"**Load:** OK"
-    )
+    wiring_lines = [
+        f"svar = {config.SVAR_NAME}",
+        f"config_gvar = {uuid_text}",
+        "load = OK",
+    ]
     cv = _read_field(cfg, "config_version")
     if cv != None and str(cv).strip() != "":
-        wiring = wiring + f"\n**config_version:** {cv}"
-    runtime = f"**Rules edition:** {config.get_rules_edition()}"
+        wiring_lines.append(f"config_version = {cv}")
+    wiring = (
+        _codeblock("ini", wiring_lines)
+        + f"\n**Editor:** {_editor_link(uuid)}\n"
+        + f"**Dashboard:** {_dashboard_link(uuid)}"
+    )
+    runtime_lines = [f"rules_edition = {config.get_rules_edition()}"]
     rv = _read_field(cfg, "rules_version")
     if rv != None and str(rv).strip() != "":
-        runtime = runtime + f" (config override **{rv}**)"
+        runtime_lines.append(f"config_override = {rv}")
+    runtime = _codeblock("ini", runtime_lines)
     sections = {
         "wiring": wiring,
         "world": _world_summary(cfg),

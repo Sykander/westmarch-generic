@@ -82,8 +82,13 @@ world_data = {
 
 policies = {
     "exploration": {"enforce_cooldowns": True, "avoid_repeat_encounters": "off"},
-    "display": {"footer_behaviour": "balanced", "helpful_tips": [], "credits": None},
-    "player_setup": {"enabled": True, "require_character": True, "checks": []},
+    "display": {"footer_behaviour": "balanced", "command_thumbnail": "default", "helpful_tips": [], "credits": None},
+    "player_setup": {
+        "enabled": True,
+        "require_character": True,
+        "hud": {"enabled": True, "fields": ["coins", "wallet", "location", "time", "weather"]},
+        "checks": [],
+    },
 }
 `;
 
@@ -630,6 +635,13 @@ function DisplayView({
           onChange={(value) => updateConfig('display.logo', value || undefined)}
           help="Overrides the default westmarch-generic GitHub Pages logo used as command embed thumbnails."
         />
+        <SelectField
+          label="Command thumbnail"
+          value={String(readPath(config, 'policies.display.command_thumbnail') ?? 'default')}
+          values={['default', 'character']}
+          onChange={(value) => updateConfig('policies.display.command_thumbnail', value)}
+          help="Default uses the configured logo. Character uses the selected character image when available."
+        />
         <FooterTextListField
           label="Fixed footer texts"
           value={config.display.footer}
@@ -1008,11 +1020,12 @@ function PoliciesView({
           onChange={(value) => updateConfig('policies.display.footer_behaviour', value)}
         />
         <JsonField
-          label="Player setup checks"
+          label="Player setup and HUD"
           value={
             readPath(config, 'policies.player_setup') ?? {
               enabled: true,
               require_character: true,
+              hud: { enabled: true, fields: ['coins', 'wallet', 'location', 'time', 'weather'] },
               checks: [],
             }
           }

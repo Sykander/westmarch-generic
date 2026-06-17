@@ -191,7 +191,17 @@ policies = {
     "languages": {"allowed": []},
     "display": {
         "footer_behaviour": "balanced",
+        "command_thumbnail": "default",  # "default" | "character"
         "helpful_tips": [],
         "credits": None,
+    },
+    "player_setup": {
+        "enabled": True,
+        "require_character": True,
+        "hud": {
+            "enabled": True,
+            "fields": ["coins", "wallet", "location", "time", "weather"],
+        },
+        "checks": [],
     },
 }

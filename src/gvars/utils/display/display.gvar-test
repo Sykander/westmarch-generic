@@ -69,3 +69,23 @@ vars:
           "name": "My Test World",
           "logo": "https://example.test/logo.png",
       }
+
+get_embed = display.get_display()
+return get_embed(desc="hello")
+---
+re:-thumb https://example.test/pc.png
+---
+name: command thumbnail can use selected character image
+vars:
+  svars:
+    westmarch_config: "22225555-5555-5555-5555-555555555555"
+  gvars:
+    22225555-5555-5555-5555-555555555555: |
+      display = {
+          "logo": "https://example.test/logo.png",
+      }
+      policies = {
+          "display": {"command_thumbnail": "character"},
+      }
+character:
+  image: "https://example.test/pc.png"

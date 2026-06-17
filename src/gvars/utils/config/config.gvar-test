@@ -114,6 +114,30 @@ vars:
     aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1: |
       # owner body intentionally empty
 
+return config.cfg.policies.player_setup.hud.fields[0]
+---
+"coins"
+---
+name: empty owner defaults player setup HUD fields
+vars:
+  svars:
+    westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"
+  gvars:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1: |
+      # owner body intentionally empty
+
+return config.cfg.policies.display.command_thumbnail
+---
+"default"
+---
+name: empty owner defaults command thumbnail to configured logo
+vars:
+  svars:
+    westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"
+  gvars:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1: |
+      # owner body intentionally empty
+
 return config.cfg.subsystems.exploration.enabled
 ---
 True

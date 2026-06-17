@@ -142,14 +142,22 @@ Players can run:
 ```
 
 Once `westmarch_config` is set, the bare command checks that the selected character meets the server’s configured player setup checks.
+It can also show a compact character HUD for enabled subsystems, such as coinpurse, configured wallet currencies, location, time, and weather.
 
 Configure those checks with `policies.player_setup`:
 
 ```py
 policies = {
+    "display": {
+        "command_thumbnail": "character",  # optional: command embeds use the selected PC image when available
+    },
     "player_setup": {
         "enabled": True,
         "require_character": True,
+        "hud": {
+            "enabled": True,
+            "fields": ["coins", "wallet", "location", "time", "weather"],
+        },
         "checks": [
             {"type": "cvar", "key": "vsheet", "label": "vSheet", "message": "Run `!vsheet setup`."},
             {"type": "cvar", "key": "wg_downtime", "label": "Downtime", "message": "Run `!downtime setup`.", "when_subsystem": "downtime"},
@@ -195,12 +203,14 @@ Good companions for many westmarch-generic servers:
 
 | Workshop | Why use it |
 |----------|------------|
-| **vSheet** | Sheet/class/subclass automation for setup flows such as `!level` and `!vsheet` |
-| **Bags** | Inventory visibility; exploration rewards can add items to bags |
-| **Notes** | Recipes, quest notes, journals, and reminders |
-| **Targeting Assist** | Combat targeting helpers; choose the 2014 or 2024 variant that matches your rules |
-| **Bard SFX** | Optional scene audio / atmosphere ([workshop](https://avrae.io/dashboard/workshop/638f5e434dbab671607f33a5)) |
-| **Downtime Dungeon** | Optional automated downtime dungeon loop ([workshop](https://avrae.io/dashboard/workshop/672e0ad6edc17a92c4ddbfae)) |
+| **vSheet / Verbose Character Tools** | Sheet/class/subclass automation ([workshop](https://avrae.io/dashboard/workshop/5f7385fe647bb0a416316d1d)) |
+| **Bags** | Inventory visibility; exploration rewards can add items to bags ([workshop](https://avrae.io/dashboard/workshop/6296b723c964982e890e5315)) |
+| **Notes** | Recipes, quest notes, journals, and reminders ([workshop](https://avrae.io/dashboard/workshop/6342ac449fb55be1a501367c)) |
+| **Targeting Assist** | Combat targeting helpers; choose [2014](https://avrae.io/dashboard/workshop/69811ff8d67be6e3d7232edb) or [2024](https://avrae.io/dashboard/workshop/63fe7c97caaad20bc4903309) |
+| **Map Utilities** | Required if your server config uses maps ([workshop](https://avrae.io/dashboard/workshop/5f6a4623f4c89c324d6a5cd3)) |
+| **Tools** | Subscribe when crafting is configured to require tools ([workshop](https://avrae.io/dashboard/workshop/630b0e39b85ea38890666c08)) |
+| **Optional flow helpers** | [Combat Options 2014](https://avrae.io/dashboard/workshop/64000c538b440f92d9975fab), [Auto](https://avrae.io/dashboard/workshop/617805d1137cd863517bc42c), [Initiative Utilities](https://avrae.io/dashboard/workshop/5f88d637f2d59b2718721a9a), [!qb](https://avrae.io/dashboard/workshop/600c00b9a2be999cfcb21a85) |
+| **Optional table extras** | [Potions](https://avrae.io/dashboard/workshop/65adf56c81896a704c651239), [Resting Revised](https://avrae.io/dashboard/workshop/66dcb7c52d6128334efd1c43), [Play Games](https://avrae.io/dashboard/workshop/605cb7331e2241970bbf0f30), [Riptide Shortcuts](https://avrae.io/dashboard/workshop/60069282052554a14d397617), [Bard Workshop](https://avrae.io/dashboard/workshop/638f5e434dbab671607f33a5), [Emotes](https://avrae.io/dashboard/workshop/692625378316717c4a511557), [Drinking](https://avrae.io/dashboard/workshop/6378f00016eb2e36c259169a) |
 
 ---
 

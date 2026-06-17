@@ -1,8 +1,8 @@
 !westmarch
 ---
-re:Dragonspeaker|Server Aliaser|Supporting workshops
+re:Dragonspeaker|Server Aliaser
 ---
-name: unconfigured parent shows setup hint and supporting workshops
+name: unconfigured parent shows setup hint
 vars:
   uvars:
     _wm_command: westmarch
@@ -32,7 +32,7 @@ vars:
 
 !westmarch
 ---
-re:ready for this server|No server-specific player setup checks
+re:ready for this server[\s\S]*Server configurers
 ---
 name: configured parent reports ready when no player setup checks exist
 vars:
@@ -43,6 +43,49 @@ vars:
   gvars:
     ffff1111-1111-1111-1111-111111111111: |
       # empty owner body
+
+!westmarch
+---
+re:Character HUD[\s\S]*Wallet:\*\* Arcane Shards: 3
+---
+name: configured parent shows wallet HUD when economy wallet is enabled
+vars:
+  uvars:
+    _wm_command: westmarch
+  cvars:
+    wg_wallet_shards: "3"
+  svars:
+    westmarch_config: "ffff3333-3333-3333-3333-333333333333"
+  gvars:
+    ffff3333-3333-3333-3333-333333333333: |
+      subsystems = {
+          "economy": {"enabled": True, "commands": {"wallet": True}},
+      }
+      currencies = {
+          "shards": {"name": "Arcane Shard", "plural": "Arcane Shards"},
+      }
+
+!westmarch
+---
+re:Character HUD[\s\S]*Location:\*\* Oakwood[\s\S]*Time:\*\* Highsun[\s\S]*Weather:\*\* Clear skies
+---
+name: configured parent shows travel HUD fields when travel commands are enabled
+vars:
+  uvars:
+    _wm_command: westmarch
+  svars:
+    westmarch_config: "ffff3334-3334-3334-3334-333333333334"
+  gvars:
+    ffff3334-3334-3334-3334-333333333334: |
+      subsystems = {
+          "travel": {"enabled": True, "commands": {"location": True, "time": True, "weather": True}},
+      }
+      world_data = {
+          "default_location": "oakwood",
+          "current_time": "Highsun",
+          "current_weather": "Clear skies",
+          "locations": {"oakwood": {"name": "Oakwood"}},
+      }
 
 !westmarch
 ---

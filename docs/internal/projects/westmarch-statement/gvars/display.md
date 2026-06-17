@@ -69,7 +69,8 @@ Permission-denied and other pre-branding exits should use **`embeds.get_embed(..
 | Subsystem + command | **`ctx.alias`**, hub subcommand arg — same **`COMMAND_MAP`** as [auth.gvar](auth.md) |
 | Display layers | **`cfg.display`** → **`subsystems[subsystem].display`** → **`command_display[command]`** |
 | Admin commands | Subsystem **`admin`** — base **`display`** only (no subsystem layer) |
-| Footer | **`policies.display.footer_behaviour`** — see [Display policy (footer)](../data-shapes.md#display-policy-footer) |
+| Footer | **`policies.display.footer_behaviour`** — see [Display policy](../data-shapes.md#display-policy) |
+| Thumbnail | **`policies.display.command_thumbnail`** can keep the configured logo/default logo or use the selected PC image |
 | Fallbacks | Humanized command/subsystem names, **`display.name`**, guild name, engine default colour |
 
 Engine constants in this gvar (not owner config):
@@ -89,6 +90,10 @@ The web config editor validates config shapes; **`display.gvar`** trusts merged 
 | **`help`** | e.g. *Use `!{command} help` for options* (**`ctx.prefix`**) |
 | **`credits`** | **`policies.display.credits`** or **`DEFAULT_CREDITS`** |
 | **`balanced`** | Random among the four modes above |
+
+### Command thumbnail policy
+
+`policies.display.command_thumbnail` defaults to **`"default"`**, which uses the merged **`logo`** value or the engine logo. Set it to **`"character"`** when command embeds should use the selected PC image as their default thumbnail. Per-response thumbnails passed by command logic still override this default.
 
 ### Per-invocation cache
 

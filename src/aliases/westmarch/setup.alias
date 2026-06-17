@@ -29,9 +29,24 @@ EDITOR_URL = "https://sykander.github.io/westmarch-generic/"
 WORKSHOP_URL = "https://avrae.io/dashboard/workshop"
 GVAR_DASHBOARD_URL = "https://avrae.io/dashboard/gvars"
 SUPPORT_SERVER_URL = "https://discord.gg/ZAkJ44489G"
-BARD_SFX_URL = "https://avrae.io/dashboard/workshop/638f5e434dbab671607f33a5"
-TARGETING_ASSIST_URL = "https://avrae.io/dashboard/workshop/63fe7c97caaad20bc4903309"
-DOWNTIME_DUNGEON_URL = "https://avrae.io/dashboard/workshop/672e0ad6edc17a92c4ddbfae"
+VSHEET_URL = "https://avrae.io/dashboard/workshop/5f7385fe647bb0a416316d1d"
+BAGS_URL = "https://avrae.io/dashboard/workshop/6296b723c964982e890e5315"
+NOTES_URL = "https://avrae.io/dashboard/workshop/6342ac449fb55be1a501367c"
+TARGETING_ASSIST_2014_URL = "https://avrae.io/dashboard/workshop/69811ff8d67be6e3d7232edb"
+TARGETING_ASSIST_2024_URL = "https://avrae.io/dashboard/workshop/63fe7c97caaad20bc4903309"
+COMBAT_OPTIONS_2014_URL = "https://avrae.io/dashboard/workshop/64000c538b440f92d9975fab"
+MAP_UTILITIES_URL = "https://avrae.io/dashboard/workshop/5f6a4623f4c89c324d6a5cd3"
+QB_URL = "https://avrae.io/dashboard/workshop/600c00b9a2be999cfcb21a85"
+AUTO_URL = "https://avrae.io/dashboard/workshop/617805d1137cd863517bc42c"
+INITIATIVE_UTILITIES_URL = "https://avrae.io/dashboard/workshop/5f88d637f2d59b2718721a9a"
+POTIONS_URL = "https://avrae.io/dashboard/workshop/65adf56c81896a704c651239"
+RESTING_REVISED_URL = "https://avrae.io/dashboard/workshop/66dcb7c52d6128334efd1c43"
+PLAY_GAMES_URL = "https://avrae.io/dashboard/workshop/605cb7331e2241970bbf0f30"
+RIPTIDE_SHORTCUTS_URL = "https://avrae.io/dashboard/workshop/60069282052554a14d397617"
+BARD_WORKSHOP_URL = "https://avrae.io/dashboard/workshop/638f5e434dbab671607f33a5"
+EMOTES_URL = "https://avrae.io/dashboard/workshop/692625378316717c4a511557"
+DRINKING_URL = "https://avrae.io/dashboard/workshop/6378f00016eb2e36c259169a"
+TOOLS_URL = "https://avrae.io/dashboard/workshop/630b0e39b85ea38890666c08"
 
 
 def _short_uuid(uuid):
@@ -330,27 +345,33 @@ def _recommended_workshops(prefix):
     return f"""westmarch-generic is the server-configurable engine. These companion workshops are useful depending on which subsystems you enable.
 
 **Strong companions**
-**vSheet** — useful for class, subclass, and sheet-derived automation used by commands such as `!level` or `!vsheet`.
-**Bags** — recommended for inventory visibility; exploration gathering and loot can add items to bags.
-**Notes** — good for recipes, journals, quest notes, and player-facing reminders.
+**vSheet** — {_markdown_link("verbose character tools", VSHEET_URL)} for class, subclass, and sheet-derived automation.
+**Bags** — {_markdown_link("workshop", BAGS_URL)} for inventory visibility; exploration gathering and loot can add items to bags.
+**Notes** — {_markdown_link("workshop", NOTES_URL)} for recipes, journals, quest notes, and player-facing reminders.
 
-**Combat and table flow**
-**Targeting Assist** — {_markdown_link("known workshop link", TARGETING_ASSIST_URL)}. Choose the 2014 or 2024 variant that matches your server rules when both are available.
-**!level** and **!rest** aliases — useful alongside westmarch play, especially when player setup checks ask characters to complete sheet or rest workflows.
+**Combat, maps, and table flow**
+**Targeting Assist** — {_markdown_link("2014", TARGETING_ASSIST_2014_URL)} / {_markdown_link("2024", TARGETING_ASSIST_2024_URL)}; choose the one that matches your rules.
+**Map Utilities** — {_markdown_link("workshop", MAP_UTILITIES_URL)}; required when your server config uses maps.
+Also useful: {_markdown_link("Combat Options 2014", COMBAT_OPTIONS_2014_URL)}, {_markdown_link("Auto", AUTO_URL)}, {_markdown_link("Initiative Utilities", INITIATIVE_UTILITIES_URL)}.
 
-**Atmosphere and downtime**
-**Bard SFX** — {_markdown_link("workshop", BARD_SFX_URL)}; the Discord bot is at https://discorddungeon.com/.
-**Downtime Dungeon** — {_markdown_link("workshop", DOWNTIME_DUNGEON_URL)}; useful if you want an automated downtime adventure loop alongside this engine.
+**Useful optional helpers**
+**Tools** — {_markdown_link("workshop", TOOLS_URL)}; subscribe when crafting is configured to require tools.
+Also optional: {_markdown_link("!qb", QB_URL)}, {_markdown_link("Potions", POTIONS_URL)}, {_markdown_link("Resting Revised", RESTING_REVISED_URL)}, {_markdown_link("Play Games", PLAY_GAMES_URL)}, {_markdown_link("Riptide Shortcuts", RIPTIDE_SHORTCUTS_URL)}, {_markdown_link("Bard Workshop", BARD_WORKSHOP_URL)}, {_markdown_link("Emotes", EMOTES_URL)}, {_markdown_link("Drinking", DRINKING_URL)}.
 
-**Configurable player setup**
-Set `policies.player_setup.checks` in your `westmarch_config` to tell players what their current character still needs. Checks can look for cvars, uvars, svars, or custom counters and can be gated by enabled subsystems or commands.
+**Configurable player setup and HUD**
+Set `policies.player_setup` in your `westmarch_config` to tell players what their current character still needs and which HUD fields appear under `{prefix}westmarch`.
 
 Example:
 ```py
 policies = {{
+    "display": {{"command_thumbnail": "character"}},
     "player_setup": {{
         "enabled": True,
         "require_character": True,
+        "hud": {{
+            "enabled": True,
+            "fields": ["coins", "wallet", "location", "time", "weather"],
+        }},
         "checks": [
             {{"type": "cvar", "key": "wg_downtime", "label": "Downtime", "message": "Run `{prefix}downtime setup`.", "when_subsystem": "downtime"}},
             {{"type": "cvar", "key": "vsheet", "label": "vSheet", "message": "Run your server's `!vsheet` setup command."}},

@@ -43,10 +43,12 @@ const SUBSYSTEMS = Object.keys(DEFAULT_SUBSYSTEM_COMMANDS);
 const VALID_ENC_BIOME = ['auto', 'argument', 'location'];
 const VALID_RULES_VERSION = ['2014', '2024'];
 const VALID_FOOTER = ['helpful_tips', 'string', 'help', 'credits', 'balanced'];
+const VALID_COMMAND_THUMBNAIL = ['default', 'character', 'pc', 'current_character', 'current_pc'];
 const VALID_REPEAT = ['off', 'same_biome', 'global'];
 const VALID_LIBRARY_TOPIC = ['inferred', 'balanced', 'manual', 'restricted'];
 const VALID_MONSTER_IMAGE_MODES = ['thumbnail', 'thumb', 'image', 'off', 'none'];
 const VALID_PLAYER_SETUP_CHECK_TYPES = ['cvar', 'uvar', 'svar', 'cc', 'counter', 'custom_counter'];
+const VALID_PLAYER_SETUP_HUD_FIELDS = ['coins', 'coin', 'coinpurse', 'gp', 'wallet', 'location', 'time', 'weather'];
 const VALID_ENGINE_BIOMES = [
   'beach',
   'forest',
@@ -623,6 +625,34 @@ export function validateConfig(model: ConfigModel | null, parseIssues: ConfigIss
       ),
     );
   }
+  const commandThumbnail = asRecord(model.policies.display).command_thumbnail;
+  if (commandThumbnail != null && typeof commandThumbnail !== 'string') {
+    issues.push(
+      issue(
+        'error',
+        'policies.display.command_thumbnail_type',
+        'Policies',
+        'policies.display.command_thumbnail',
+        'Command thumbnail mode must be text',
+        'Use default or character.',
+      ),
+    );
+  }
+  if (
+    typeof commandThumbnail === 'string' &&
+    !VALID_COMMAND_THUMBNAIL.includes(commandThumbnail.trim().toLowerCase())
+  ) {
+    issues.push(
+      issue(
+        'warning',
+        'policies.display.command_thumbnail',
+        'Policies',
+        'policies.display.command_thumbnail',
+        'Unknown command thumbnail mode',
+        '`command_thumbnail` should be default or character.',
+      ),
+    );
+  }
   if (footerBehaviour === 'string' && !hasAnyFooterText(model)) {
     issues.push(
       issue(
@@ -779,6 +809,8 @@ function validatePlayerSetup(model: ConfigModel, issues: ConfigIssue[]) {
     );
   }
 
+  validatePlayerSetupHud(playerSetup, issues);
+
   if (playerSetup.checks == null) return;
   if (!Array.isArray(playerSetup.checks)) {
     issues.push(
@@ -891,6 +923,122 @@ function validatePlayerSetup(model: ConfigModel, issues: ConfigIssue[]) {
           'policies.player_setup.require_character',
           'Character-scoped setup checks need a selected character',
           'Keep require_character enabled when checking cvars or custom counters.',
+        ),
+      );
+    }
+  });
+}
+
+function validatePlayerSetupHud(playerSetup: AnyRecord, issues: ConfigIssue[]) {
+  const hud = playerSetup.hud;
+  if (hud == null || typeof hud === 'boolean') return;
+
+  let fields: unknown;
+  if (Array.isArray(hud)) {
+    fields = hud;
+  } else if (isPlainRecord(hud)) {
+    const hudRecord = asRecord(hud);
+    if (hudRecord.enabled != null && typeof hudRecord.enabled !== 'boolean') {
+      issues.push(
+        issue(
+          'error',
+          'player_setup.hud_enabled',
+          'Policies',
+          'policies.player_setup.hud.enabled',
+          'HUD enabled must be boolean',
+          'Use True or False.',
+        ),
+      );
+    }
+    fields = hudRecord.fields;
+  } else {
+    issues.push(
+      issue(
+        'error',
+        'player_setup.hud_object',
+        'Policies',
+        'policies.player_setup.hud',
+        'Player setup HUD must be an object or list',
+        'Use {"enabled": True, "fields": ["coins", "location"]}.',
+      ),
+    );
+    return;
+  }
+
+  if (fields == null) return;
+  if (!Array.isArray(fields)) {
+    issues.push(
+      issue(
+        'error',
+        'player_setup.hud_fields_list',
+        'Policies',
+        'policies.player_setup.hud.fields',
+        'HUD fields must be a list',
+        'Use built-in field names or cvar field objects.',
+      ),
+    );
+    return;
+  }
+
+  fields.forEach((entry, index) => {
+    const path = `policies.player_setup.hud.fields.${index}`;
+    if (typeof entry === 'string') {
+      const key = entry.trim().toLowerCase();
+      if (!VALID_PLAYER_SETUP_HUD_FIELDS.includes(key)) {
+        issues.push(
+          issue(
+            'warning',
+            'player_setup.hud_field',
+            'Policies',
+            path,
+            'Unknown HUD field',
+            'Built-in HUD fields are coins, wallet, location, time, and weather.',
+          ),
+        );
+      }
+      return;
+    }
+    if (!isPlainRecord(entry)) {
+      issues.push(
+        issue(
+          'error',
+          'player_setup.hud_field_object',
+          'Policies',
+          path,
+          'HUD field must be text or an object',
+          'Use "coins" or {"type": "cvar", "key": "renown", "label": "Renown"}.',
+        ),
+      );
+      return;
+    }
+    const field = asRecord(entry);
+    const type = String(field.type ?? 'cvar')
+      .trim()
+      .toLowerCase();
+    if (
+      !['builtin', 'field', ...VALID_PLAYER_SETUP_CHECK_TYPES].includes(type) &&
+      !VALID_PLAYER_SETUP_HUD_FIELDS.includes(type)
+    ) {
+      issues.push(
+        issue(
+          'warning',
+          'player_setup.hud_field_type',
+          'Policies',
+          `${path}.type`,
+          'Unknown HUD field type',
+          'Use builtin, cvar, uvar, svar, custom counter, or a built-in HUD field name.',
+        ),
+      );
+    }
+    if (typeof field.key !== 'string' || field.key.trim() === '') {
+      issues.push(
+        issue(
+          'error',
+          'player_setup.hud_field_key',
+          'Policies',
+          `${path}.key`,
+          'HUD field object needs a key',
+          'For built-ins use a key such as location; for cvars use the cvar name.',
         ),
       );
     }
@@ -1263,8 +1411,18 @@ export function createBlankConfig(): ConfigModel {
     },
     policies: {
       exploration: { enforce_cooldowns: true, avoid_repeat_encounters: 'off' },
-      display: { footer_behaviour: 'balanced', helpful_tips: [], credits: null },
-      player_setup: { enabled: true, require_character: true, checks: [] },
+      display: {
+        footer_behaviour: 'balanced',
+        command_thumbnail: 'default',
+        helpful_tips: [],
+        credits: null,
+      },
+      player_setup: {
+        enabled: true,
+        require_character: true,
+        hud: { enabled: true, fields: ['coins', 'wallet', 'location', 'time', 'weather'] },
+        checks: [],
+      },
     },
   });
 }
