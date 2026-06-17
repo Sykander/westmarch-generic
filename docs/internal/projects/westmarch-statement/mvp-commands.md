@@ -258,7 +258,7 @@ Detailed behaviour specs belong in engine implementation and public `docs/config
 |-------|----------|
 | **Phase 0** | Tier A — loader, minimal config shape, one of enc/forage, tests |
 | **Phase 1** | Tiers B–H — full MVP player command set (24 commands), admin commands, template config, setup doc, workshop |
-| **Phase 2** | Extract reference westmarch data; parity tests for ported commands |
+| **Phase 2** | [Reference data extraction, parity tests, editor completion, and release hardening](phase-2-implementation-plan.md) |
 
 Post-MVP: **dungeons**, **diary**, **journal** per [solution-statement.md](solution-statement.md).
 

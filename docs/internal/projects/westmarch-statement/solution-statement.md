@@ -350,17 +350,20 @@ Detailed delivery slices live in [phase-1-implementation-plan.md](phase-1-implem
 
 ### Phase 2 — Migration and polish *(P2)*
 
-**Goal:** Reference westmarch data extracted; house rules and toggles in config.
+**Goal:** Reference westmarch data extracted, parity confidence in place, the MVP config editable through the web editor, and a real release/smoke-test path completed.
+
+Detailed delivery slices live in [phase-2-implementation-plan.md](phase-2-implementation-plan.md).
 
 | Work | Deliverables | Stories |
 |------|--------------|---------|
-| Extract reference config | westmarch → master config gvar | US-5.1, US-5.2 |
-| Subsystem phased cutover | M2 per vertical | US-5.3 |
-| Parity tests | Old vs new where feasible | US-5.4 |
+| Extract reference config | westmarch → master config gvar plus extension gvars where needed | US-5.1, US-5.2 |
+| Subsystem phased cutover | Migration notes and state compatibility per vertical | US-5.3 |
+| Parity tests | Old vs new command behaviour where feasible | US-5.4 |
 | Extension gvars (if needed) | Option C for oversized tables | US-2.6 |
+| Editor completion | Browser validation and guided MVP authoring workflow | US-1.6, US-7.2 |
+| Release pass | Development workshop smoke-tested against staging or real config | US-1.1, US-4.5 |
 | House rules in config | Rates, caps, strings | US-3.4 |
 | Internal docs + rules | Engine/config boundary in AGENTS + Cursor | US-4.6 |
-| Config validation | Web config editor structural checks; migration notes on engine upgrade | US-7.2 |
 
 ---
 

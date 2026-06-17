@@ -10,6 +10,7 @@ Previously named `initial-statement`; renamed to reflect that this is the **west
 | [user-stories.md](user-stories.md) | **US** | Journeys and use cases by persona |
 | [solution-statement.md](solution-statement.md) | **SS** | Architecture, options, implementation plan |
 | [phase-1-implementation-plan.md](phase-1-implementation-plan.md) | **P1** | Deliverable slices for Phase 1 implementation |
+| [phase-2-implementation-plan.md](phase-2-implementation-plan.md) | **P2** | Reference extraction, parity, editor completion, and release hardening |
 | [mvp-commands.md](mvp-commands.md) | **MVP** | Command scope, tiers, config surface |
 | [review.md](review.md) | — | Critical review of the full set |
 | [data-shapes.md](data-shapes.md) | — | Reusable data shapes (encounter, location, path, **policies**, …) |
