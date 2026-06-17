@@ -1,8 +1,8 @@
 !westmarch
 ---
-re:westmarch setup
+re:Dragonspeaker|Server Aliaser|Supporting workshops
 ---
-name: parent help lists subcommands
+name: unconfigured parent shows setup hint and supporting workshops
 vars:
   uvars:
     _wm_command: westmarch
@@ -18,9 +18,70 @@ vars:
 
 !westmarch check
 ---
-re:Subcommands
+re:retired|Westmarch config editor
 ---
-name: unknown trailing arg shows subcommand list
+name: retired check points to editor
 vars:
   uvars:
     _wm_command: westmarch
+  svars:
+    westmarch_config: "ffff1111-1111-1111-1111-111111111111"
+  gvars:
+    ffff1111-1111-1111-1111-111111111111: |
+      # empty owner body
+
+!westmarch
+---
+re:ready for this server|No server-specific player setup checks
+---
+name: configured parent reports ready when no player setup checks exist
+vars:
+  uvars:
+    _wm_command: westmarch
+  svars:
+    westmarch_config: "ffff1111-1111-1111-1111-111111111111"
+  gvars:
+    ffff1111-1111-1111-1111-111111111111: |
+      # empty owner body
+
+!westmarch
+---
+re:Action needed[\s\S]*vSheet[\s\S]*!vsheet setup
+---
+name: configured parent reports missing configured cvar check
+vars:
+  uvars:
+    _wm_command: westmarch
+  svars:
+    westmarch_config: "ffff2222-2222-2222-2222-222222222222"
+  gvars:
+    ffff2222-2222-2222-2222-222222222222: |
+      policies = {
+          "player_setup": {
+              "checks": [
+                  {"type": "cvar", "key": "vsheet", "label": "vSheet", "message": "Run `!vsheet setup`."},
+              ],
+          },
+      }
+
+!westmarch
+---
+re:Ready[\s\S]*vSheet
+---
+name: configured parent passes configured cvar check
+vars:
+  uvars:
+    _wm_command: westmarch
+  cvars:
+    vsheet: "ok"
+  svars:
+    westmarch_config: "ffff2222-2222-2222-2222-222222222222"
+  gvars:
+    ffff2222-2222-2222-2222-222222222222: |
+      policies = {
+          "player_setup": {
+              "checks": [
+                  {"type": "cvar", "key": "vsheet", "label": "vSheet", "message": "Run `!vsheet setup`."},
+              ],
+          },
+      }

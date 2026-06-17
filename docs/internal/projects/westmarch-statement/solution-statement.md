@@ -168,7 +168,7 @@ subsystems = {
 # World data added as verticals port, e.g. locations, paths, encounter pools
 ```
 
-Exact keys per subsystem documented under `docs/` as each vertical lands ([US-2.2](user-stories.md)). **`!westmarch check`** calls [check_config.gvar](gvars/check_config.md) to validate structure and required data for enabled subsystems ([US-7.2](user-stories.md) at P2+).
+Exact keys per subsystem documented under `docs/` as each vertical lands ([US-2.2](user-stories.md)). The web config editor validates structure and required data for enabled subsystems ([US-7.2](user-stories.md) at P2+).
 
 ### Rules edition *(2014 vs 2024)*
 
@@ -195,7 +195,7 @@ Many westmarch mechanics depend on **which D&D 5e rules revision** the table use
 |-----------|--------|
 | 2014 table / SRD-style | Omit **`rules_version`** or set **`"2014"`**; align Avrae rules setting |
 | 2024 revised rules | Set **`rules_version: "2024"`** and use 2024-aligned catalogues |
-| Config override vs Avrae mismatch | **`!westmarch check`** warns; config override wins at runtime |
+| Config override vs Avrae mismatch | Editor validation warns; config override wins at runtime |
 
 Document in public setup guide: *set **`rules_version`** or align Avrae rules with your catalogues.*
 
@@ -210,7 +210,6 @@ Introduce engine modules under `src/gvars/` — see [gvars/README.md](gvars/READ
 
 - **`config.gvar`** — `get_config()` ([config.md](gvars/config.md))
 - **`display.gvar`** — **`get_display()`** — returns configured **`embeds.get_embed`** for ctx ([display.md](gvars/display.md))
-- **`check_config.gvar`** — `validate()` for admin check ([check_config.md](gvars/check_config.md))
 - **`auth.gvar`** — `is_allowed()` — zero-arg; `(success, message)` ([auth.md](gvars/auth.md))
 - Standard not-configured / disabled embeds (inline via **`embeds.get_embed`**, or branded via **`display.get_display()`** when config loads)
 
@@ -220,7 +219,7 @@ All ported aliases use **config** + **auth**; no alias reads svars directly with
 
 | State | Condition | Player-facing behaviour |
 |-------|-----------|-------------------------|
-| **Not wired** | `westmarch_config` unset | Short embed: feature not set up; GM must set svar (no stack trace, no partial data) |
+| **Not wired** | `westmarch_config` unset | Short embed: feature not set up; a Dragonspeaker or Server Aliaser must set svar (no stack trace, no partial data) |
 | **Invalid config** | Svar set but gvar missing, fails load, or schema check fails | Embed: configuration error; generic for players, optional detail for `help`-style GM hints ([US-2.5](user-stories.md)) |
 | **Subsystem disabled** | Config valid but `subsystems.x.enabled == False` | Embed: this feature is disabled on this server ([US-2.4](user-stories.md)) |
 | **Not ported yet** | Engine alias exists but vertical not in this release | Treat as disabled or hide from help; document in release notes |
@@ -246,7 +245,6 @@ westmarch-generic (engine repo)
 │   ├── env.*.gvar         # Engine workshop ids (this repo only)
 │   ├── core/              # Vendored drac2-tools helpers (commands, embeds, rolls, …)
 │   ├── config/            # Loader, defaults merge
-│   ├── check_config/      # validate() for !westmarch check
 │   ├── auth/, pc/, …      # Domain engine modules (ports from westmarch + core)
 │   └── …                  # Subsystem gvars (encounters, world, catalogues, …)
 ├── docs/                  # Server-owner + consumer docs (public)
@@ -311,7 +309,7 @@ Three viable approaches; **recommended: phased extraction (M2)**.
 
 | Work | Deliverables | Stories |
 |------|--------------|---------|
-| Config loader gvar + helpers | [config.gvar](gvars/config.md), [display.gvar](gvars/display.md), [check_config.gvar](gvars/check_config.md), [auth.gvar](gvars/auth.md) | US-4.2, US-1.3, US-2.5, US-6.2, US-1.6 |
+| Config loader gvar + helpers | [config.gvar](gvars/config.md), [display.gvar](gvars/display.md), [auth.gvar](gvars/auth.md) | US-4.2, US-1.3, US-2.5, US-6.2, US-1.6 |
 | Admin commands | **`!westmarch`** hub — [aliases/admin/](aliases/admin/README.md) | US-1.1, US-1.2, US-1.6, US-1.7 |
 | Encounter engine | [encounter_templates](gvars/encounter_templates.md), [encounters](gvars/encounters.md), [data-shapes.md](data-shapes.md) | US-6.1 (partial) |
 | Svar + config v0 | `westmarch_config`, `subsystems` | US-1.4, US-2.2 |
@@ -320,7 +318,7 @@ Three viable approaches; **recommended: phased extraction (M2)**.
 | Tests | Loader + vertical alias-tests with mocked svar/config | US-4.3 |
 | Public setup doc | Adoption steps | US-1.1, US-1.2 |
 
-**Exit criteria:** Server with svar set runs slice; unset svar safe; **`!westmarch check`** reports validation on a template config; CI green; alias-tests cover loader, admin gate, and ported vertical.
+**Exit criteria:** Server with svar set runs slice; unset svar safe; editor validation reports issues on a template config; CI green; alias-tests cover loader, admin gate, and ported vertical.
 
 ---
 
@@ -350,7 +348,7 @@ Three viable approaches; **recommended: phased extraction (M2)**.
 | Extension gvars (if needed) | Option C for oversized tables | US-2.6 |
 | House rules in config | Rates, caps, strings | US-3.4 |
 | Internal docs + rules | Engine/config boundary in AGENTS + Cursor | US-4.6 |
-| Config validation | [check_config.gvar](gvars/check_config.md) — structural checks via `!westmarch check`; migration notes on engine upgrade | US-7.2 |
+| Config validation | Web config editor structural checks; migration notes on engine upgrade | US-7.2 |
 
 ---
 

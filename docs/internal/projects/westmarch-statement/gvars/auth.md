@@ -40,18 +40,15 @@ COMMAND_MAP = {
     "enc": ("exploration", "enc", False),
     "forage": ("exploration", "forage", False),
     # … all MVP player aliases (incl. wallet) …
-    "westmarch": ("admin", None, True),   # requires_admin — no subsystems toggle
+    "westmarch": ("admin", None, False),  # player-facing setup status
     "setup": ("admin", "setup", True),
-    "check": ("admin", "check", True),
     "show": ("admin", "show", True),
 }
 ```
 
-**Setup hub entries:** third tuple value **`requires_admin=True`** — Avrae aliasing role check only; **`_check_config_enabled`** is **skipped** (setup hub is not in **`subsystems`**).
+**Setup hub entries:** **`setup`** and **`show`** use **`requires_admin=True`** — Avrae aliasing role check only; **`_check_command_enabled`** is **skipped**. Bare **`westmarch`** is not admin-gated and handles its own configured player setup checks.
 
 **`ADMIN_ROLES`:** **`Dragonspeaker`** and **`Server Aliaser`** — Discord roles for editing Avrae workshop aliases, gvars, and svars. Not campaign GM/DM authority.
-
-**Phase 0 spike:** confirm `ctx.alias` for `!westmarch check`; adjust `_resolve_invocation()` if sub-alias name differs. Same pattern planned post-MVP for **`!journal`** subcommands ([aliases/misc/journal.md](../aliases/misc/journal.md)).
 
 **Post-MVP `COMMAND_MAP` entries:** **`diary`**, **`journal`**, and hub routing for **`journal` + subcommand** → target misc command toggle.
 
@@ -64,7 +61,7 @@ Each step: on failure **return `(False, message)`**; on pass, continue. Final st
 | 1 | **`_resolve_invocation()`** — map `ctx.alias` → subsystem, command, `requires_admin` | `(False, "Unknown command.")` |
 | 2 | **Guild** — player commands need a guild (`ctx.guild`); admin same | `(False, "This command cannot be run in DMs.")` |
 | 3 | **Avrae aliasing roles** *(only if `requires_admin`)* — engine **`ADMIN_ROLES`** only | `(False, "You need Dragonspeaker or Server Aliaser (Avrae aliasing permissions — not a GM/DM role).")` |
-| 4 | **Config** — `get_config()` (cached); `subsystems[subsystem].enabled`; command toggle *(player commands only — skip when `requires_admin`)* | `(False, "This server is not configured yet. …")` / disabled messages |
+| 4 | **Config** — `get_config()` (cached); `subsystems[subsystem].enabled`; command toggle *(player commands only — skipped for admin subsystem entries)* | `(False, "This server is not configured yet. …")` / disabled messages |
 | 5 | **Character** *(player commands when **`policies.auth.require_character`**)* — active Avrae character selected | `(False, "Select a character first.")` |
 | 6 | **Channel** — `_check_channel(cfg, …)` using `ctx.channel` | `(False, "Run bot commands in #commands, not in RP channels.")` |
 | 7 | **Success** | `(True, "Command allowed.")` |
@@ -77,7 +74,7 @@ Admin commands skip step 6 when `cfg.channel_policy.admin_any_channel` is true (
 
 - `_resolve_invocation()` — `ctx.alias` (+ hub arg fallback)
 - `_check_admin_roles()` — step 3; **`ADMIN_ROLES`** (`Dragonspeaker`, `Server Aliaser`) via **`ctx.author.get_roles()`** (Avrae) / **`ctx.author.roles`** (avrae-ls mock)
-- `_check_config_enabled(subsystem, command)` — step 4; calls `get_config()` internally
+- `_check_command_enabled(subsystem, command)` — step 4; calls `get_config()` internally
 - `_check_character()` — step 5; reads **`policies.auth.require_character`**
 - `_check_channel(subsystem, requires_admin)` — step 6; calls `get_config()` internally
 
@@ -123,8 +120,8 @@ def is_allowed():
         ok, msg = _check_admin_roles()
         if not ok:
             return False, msg
-    else:
-        ok, msg = _check_config_enabled(subsystem, command)
+    elif subsystem != "admin":
+        ok, msg = _check_command_enabled(subsystem, command)
         if not ok:
             return False, msg
         ok, msg = _check_character()

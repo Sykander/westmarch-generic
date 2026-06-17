@@ -78,7 +78,7 @@ Engine constants in this gvar (not owner config):
 - **`DEFAULT_CREDITS`** — when **`credits`** mode and **`policies.display.credits`** is `None`
 - **`DEFAULT_COLOUR`** — passed to **`configure_get_embed`** when no merged hex
 
-**`!westmarch check`** validates config shapes; **`display.gvar`** trusts merged config at runtime.
+The web config editor validates config shapes; **`display.gvar`** trusts merged config at runtime.
 
 ### Footer policy
 
@@ -147,7 +147,7 @@ library.run_search(cfg, get_embed, query)
 
 - Config load / **`DEFAULTS`** merge → [config.md](config.md)
 - Permission gate → [auth.md](auth.md)
-- Config validation → [check_config.md](check_config.md)
+- Config validation → web config editor
 - Raw **`!embed`** string assembly → **`core/embeds`**
 
 ## Tests

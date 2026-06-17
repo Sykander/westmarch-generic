@@ -43,7 +43,7 @@ flowchart TD
 | **`max_workdays`** | Cap on accumulated workdays per character; **`None`** = unlimited |
 | **`acquisition`** | **`manual`** only in MVP — **`!downtime <amount>`** or GM grants |
 
-**Requires:** when **`mode == "tracked"`**, **`subsystems.downtime.enabled`** must be **`True`** — **`!westmarch check`** **errors** otherwise.
+**Requires:** when **`mode == "tracked"`**, **`subsystems.downtime.enabled`** must be **`True`** — the web config editor reports an error otherwise.
 
 **Labels** (not policy) — **`subsystems.downtime.config`**:
 

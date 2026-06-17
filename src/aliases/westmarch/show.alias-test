@@ -93,9 +93,9 @@ vars:
 
 !show
 ---
-"re:- exploration: error[\\s\\S]*-   enc: error"
+"re:\\+ exploration: on[\\s\\S]*\\+   enc: on"
 ---
-name: show marks invalid enabled subsystem red in diff block
+name: show does not validate enabled subsystem data
 vars:
   uvars:
     _wm_command: show
@@ -123,3 +123,23 @@ vars:
   gvars:
     ffff1111-1111-1111-1111-111111111111: |
       # empty owner body
+
+!show player_setup
+---
+re:Player setup checks:\s+\*\*1\*\*
+---
+name: show section filter player setup summarizes configured checks
+vars:
+  uvars:
+    _wm_command: show
+  svars:
+    westmarch_config: "ffff7777-7777-7777-7777-777777777777"
+  gvars:
+    ffff7777-7777-7777-7777-777777777777: |
+      policies = {
+          "player_setup": {
+              "checks": [
+                  {"type": "cvar", "key": "vsheet", "label": "vSheet"},
+              ],
+          },
+      }

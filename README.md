@@ -19,15 +19,15 @@ This repo is the **generic engine**. Per-server content lives in workshop gvars 
 | `src/aliases/` | Player-facing commands and their deployed Markdown help docs |
 | `src/snippets/` | Snippet expansions |
 | `src/gvars/` | Workshop globals (`env`, shared utils, per-server config gvars) |
-| `editor/` | Planned React/Vite web config editor source |
+| `editor/` | React/Vite web config editor source |
 | `utils/sourcemap.*.json` | Deploy source of truth (aliases, snippets, gvar ids) |
 | `utils/*.js` | Env/var generation and TSV → catalogue shards ([utils/README.md](utils/README.md)); sourcemap checks/deploys use the `publish-avrae` CLI |
 | `assets/` | TSV catalogues - input to **`utils/generate-*`** ([content-pipeline](docs/internal/projects/westmarch-statement/content-pipeline.md)) |
-| `public/` | Planned generated static GitHub Pages output for the editor |
+| `public/` | Generated static GitHub Pages output for the editor |
 | `docs/` | Design and consumer documentation |
 | `.cursor/` | Agent rules, cached Avrae/avrae-ls docs, refresh and perf scripts |
 
-### Configuration model (planned)
+### Configuration model
 
 1. **Svar** on the Avrae server — either unset or holding a **gvar UUID**.
 2. **Gvar** at that UUID — contains server-specific tables (areas, loot, encounters, branding, etc.).
@@ -35,7 +35,7 @@ This repo is the **generic engine**. Per-server content lives in workshop gvars 
 
 ### Current status
 
-Scaffolded workshop layout: **25** player/GM aliases (including **`westmarch`** subcommands), **35** engine gvar placeholders, dev/prod sourcemaps with UUIDs from **`unused_gvars.md`**, and source-adjacent workshop help docs. Implementation is stub-only — see [MVP command set](docs/internal/projects/westmarch-statement/mvp-commands.md).
+Workshop layout includes player aliases plus **`westmarch setup`** and **`westmarch show`** admin subcommands, dev/prod sourcemaps with UUIDs from **`unused_gvars.md`**, and source-adjacent workshop help docs. The web config editor at <https://sykander.github.io/westmarch-generic/> is the config validation surface.
 
 ## Documentation
 

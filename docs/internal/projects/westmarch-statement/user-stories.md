@@ -30,7 +30,7 @@ A server wants westmarch-style play without maintaining a fork.
 | **US-1.3** | As a **server owner**, I want commands to behave safely when my config svar is **unset**, **so that** I can deploy the engine first and wire up my world later without broken or misleading behaviour. |
 | **US-1.4** | As a **server owner**, I want to point a config svar at my workshop gvar UUID, **so that** the engine loads **my** server's setup on the next command without redeploying aliases. |
 | **US-1.5** | As a **player**, I want help text and command names to be consistent with other servers running the same engine, **so that** guides and muscle memory transfer across communities. |
-| **US-1.6** | As a **server owner**, I want **`!westmarch check`** to validate my svar wiring and config schema, **so that** I can fix misconfiguration before players hit broken commands. |
+| **US-1.6** | As a **server owner**, I want the web config editor to validate my svar wiring and config schema, **so that** I can fix misconfiguration before players hit broken commands. |
 | **US-1.7** | As a **server owner**, I want **`!westmarch show`** to summarize what the engine loaded and explain each section, **so that** I can confirm my setup without reading raw gvar Python. |
 
 ### Journey sketch

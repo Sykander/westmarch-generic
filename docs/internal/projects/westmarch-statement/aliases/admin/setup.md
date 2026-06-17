@@ -2,7 +2,7 @@
 
 **Subsystem:** admin *(not in config)* · **Phase:** 0–1
 
-**Subcommand** of [`!westmarch`](westmarch.md) — onboarding for server owners: how to create a config gvar, wire the svar, and verify.
+**Subcommand** of [`!westmarch`](westmarch.md) — onboarding for server owners: how to create a config gvar, wire the svar, validate in the editor, and review with Discord summary output.
 
 ## Player-facing behaviour
 
@@ -22,19 +22,20 @@
 If `westmarch_config` svar is set and config loads, page 2 shows:
 
 - Full config gvar UUID and Avrae dashboard lookup link.
-- Point to **`!westmarch check`** and **`!westmarch show`**.
+- Point to the editor **Check** page and **`!westmarch show`**.
 - Page index for the rest of the setup guide.
 
 ## Pages
 
 | # | Page | Purpose |
 |---|------|---------|
-| 1 | **Initial Setup** | Subscribe, create starter config gvar inline, add editors, wire svar, run check |
-| 2 | **General Configuration** | Explain svar → config gvar loading, dashboard link, check/show workflow |
+| 1 | **Initial Setup** | Subscribe, create starter config gvar inline, add editors, wire svar, open editor Check |
+| 2 | **General Configuration** | Explain svar → config gvar loading, dashboard link, editor/show workflow |
 | 3 | **Exploration Subsystem** | Exploration toggles and config fields (`enc_biome_source`, distribution, cooldowns) |
 | 4 | **World Data** | High-level `world_data` map and implemented surfaces |
 | 5 | **Biomes and Locations** | Biome registry, encounter-pool gvars, location inference |
 | 6 | **Monster Data** | `world_data.monsters` overrides for hunt/loot |
+| 7 | **Recommended Workshops** | Companion workshop recommendations and `policies.player_setup` checks |
 
 ## Onboarding content (MVP)
 
@@ -91,7 +92,7 @@ Point this Discord server at your config gvar UUID:
 
 ```
 !svar westmarch_config <your-gvar-uuid>
-!westmarch check
+!westmarch show
 ```
 
 - **Svar name** is fixed: **`westmarch_config`** (see [solution-statement.md](../../solution-statement.md)).
@@ -113,11 +114,10 @@ To clear configuration:
 ### 4 — Verify
 
 ```
-!westmarch check
 !westmarch show
 ```
 
-Fix any errors in your config gvar, then re-run **`check`**. Player commands stay inert or show “not configured” until subsystems are enabled and data is present.
+Fix any errors shown by the web editor, then re-run **`show`**. Player commands stay inert or show “not configured” until subsystems are enabled and data is present.
 
 ## Implementation notes
 
@@ -145,6 +145,6 @@ flowchart TD
 ## Related
 
 - [westmarch.md](westmarch.md) — parent hub
-- [check.md](check.md) · [show.md](show.md) — post-setup verification
+- [show.md](show.md) — post-setup review
 - [mvp-commands.md](../../mvp-commands.md) — full `subsystems` reference
 - [US-1.1](../../user-stories.md), [US-1.2](../../user-stories.md), [US-2.3](../../user-stories.md)

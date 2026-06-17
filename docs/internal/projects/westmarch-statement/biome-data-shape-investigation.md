@@ -226,7 +226,7 @@ Owner reuses standard **`mountain`** / **`cave`** biomes but scales callable **`
 | **R3b** | Configure **named places** with their own encounters, shops, jobs, libraries | Location **`commands`**, **`services`**, optional **`encounters_gvar_id`** |
 | **R4** | **Static** encounters (fixed CR, fixed loot) as default | Callable fields optional for advanced owners |
 | **R5** | **Level scaling** when desired — **owner-authored**, not engine magic | Callable `cr`, `monsters`, `outcomes`, or template factories reading `ectx["character"]` |
-| **R6** | Validate biome + location wiring in **`!westmarch check`** | Registry codes, unloadable gvar, empty pool when kind % > 0; **`encounters_gvar_id`** loadability |
+| **R6** | Validate biome + location wiring in the web editor | Registry codes, unloadable gvar, empty pool when kind % > 0; **`encounters_gvar_id`** loadability |
 
 ### B. Encounter variety (your list + discovered gaps)
 
@@ -383,10 +383,10 @@ Registry unchanged:
 | Pros | Cons |
 |------|------|
 | Biome reads as a **place archetype**, not just a bag of rolls | Slight duplication with registry `name` |
-| **`tags`** enable future filtering without breaking kind-first MVP | More fields to validate in check_config |
+| **`tags`** enable future filtering without breaking kind-first MVP | More fields to validate in the editor |
 | Still one lazy-loaded module | **`library_topics`** belong on **locations**, not biomes (§4) |
 
-**Engine work:** `biomes.gvar` exposes optional getters; **`location_encounters.gvar`** loads place-specific pools; **`check_config`** validates biome + location wiring.
+**Engine work:** `biomes.gvar` exposes optional getters; **`location_encounters.gvar`** loads place-specific pools; editor validation checks biome + location wiring.
 
 ---
 
@@ -488,7 +488,7 @@ pools = { "enc": { "combat": [ "wolf_ambush", "bandit_net" ] } }
 ### Phase 1+ (after first ports)
 
 6. **Prototype Option C** on one large biome preset (e.g. **`forest`**) if **`gather`** feels too noisy.
-7. **`check_config`** — biome pool shape, location **`encounters_gvar_id`** loadability, shop **`location_id`** consistency.
+7. Editor validation — biome pool shape, location **`encounters_gvar_id`** loadability, shop **`location_id`** consistency.
 8. **`dungeon_ids`** on locations when dungeon vertical lands (post-MVP).
 
 ### Explicitly not planned
@@ -667,7 +667,7 @@ Engine **`encounters.process_encounter`** already resolves callables before comb
 1. **Update [data-shapes.md](data-shapes.md)** — biome body (exploration only), location **`encounters_gvar_id`**, location encounter module shape.
 2. **Spec [location_encounters.gvar](gvars/location_encounters.md)** — lazy load, merge with biome pools.
 3. **Implement first biome preset** — `forest.gvar` (exploration pools only).
-4. **Extend `check_config.validate()`** — biome + location encounter wiring.
+4. Extend editor validation — biome + location encounter wiring.
 5. **Add owner scenarios** to [problem-statement.md](problem-statement.md) (§6).
 
 ---

@@ -46,6 +46,7 @@ const VALID_FOOTER = ['helpful_tips', 'string', 'help', 'credits', 'balanced'];
 const VALID_REPEAT = ['off', 'same_biome', 'global'];
 const VALID_LIBRARY_TOPIC = ['inferred', 'balanced', 'manual', 'restricted'];
 const VALID_MONSTER_IMAGE_MODES = ['thumbnail', 'thumb', 'image', 'off', 'none'];
+const VALID_PLAYER_SETUP_CHECK_TYPES = ['cvar', 'uvar', 'svar', 'cc', 'counter', 'custom_counter'];
 const VALID_ENGINE_BIOMES = [
   'beach',
   'forest',
@@ -609,8 +610,6 @@ export function validateConfig(model: ConfigModel | null, parseIssues: ConfigIss
 
   validateDisplayLayer(model.display, 'Display', 'display', 'Base display', issues);
 
-  const footerPolicy = asRecord(asRecord(model.policies.display).footer_behaviour);
-  void footerPolicy;
   const footerBehaviour = asRecord(model.policies.display).footer_behaviour;
   if (typeof footerBehaviour === 'string' && !VALID_FOOTER.includes(footerBehaviour)) {
     issues.push(
@@ -729,11 +728,173 @@ export function validateConfig(model: ConfigModel | null, parseIssues: ConfigIss
   }
 
   validateExploration(model, issues);
+  validatePlayerSetup(model, issues);
   validateWorld(model, issues);
   validateTravel(model, issues);
   validateContent(model, issues);
 
   return issues;
+}
+
+function validatePlayerSetup(model: ConfigModel, issues: ConfigIssue[]) {
+  const rawPlayerSetup = asRecord(model.policies).player_setup;
+  if (rawPlayerSetup == null) return;
+  if (!isPlainRecord(rawPlayerSetup)) {
+    issues.push(
+      issue(
+        'error',
+        'player_setup.object',
+        'Policies',
+        'policies.player_setup',
+        'Player setup must be an object',
+        'Use enabled, require_character, and checks fields.',
+      ),
+    );
+    return;
+  }
+
+  const playerSetup = asRecord(rawPlayerSetup);
+  if (playerSetup.enabled != null && typeof playerSetup.enabled !== 'boolean') {
+    issues.push(
+      issue(
+        'error',
+        'player_setup.enabled',
+        'Policies',
+        'policies.player_setup.enabled',
+        'Player setup enabled must be boolean',
+        'Use True or False.',
+      ),
+    );
+  }
+  if (playerSetup.require_character != null && typeof playerSetup.require_character !== 'boolean') {
+    issues.push(
+      issue(
+        'error',
+        'player_setup.require_character',
+        'Policies',
+        'policies.player_setup.require_character',
+        'Player setup character requirement must be boolean',
+        'Use True or False.',
+      ),
+    );
+  }
+
+  if (playerSetup.checks == null) return;
+  if (!Array.isArray(playerSetup.checks)) {
+    issues.push(
+      issue(
+        'error',
+        'player_setup.checks_list',
+        'Policies',
+        'policies.player_setup.checks',
+        'Player setup checks must be a list',
+        'Each check should be an object with type, key, label, and message.',
+      ),
+    );
+    return;
+  }
+
+  playerSetup.checks.forEach((entry, index) => {
+    const path = `policies.player_setup.checks.${index}`;
+    if (!isPlainRecord(entry)) {
+      issues.push(
+        issue(
+          'error',
+          'player_setup.check_object',
+          'Policies',
+          path,
+          'Player setup check must be an object',
+          'Use a dict such as {"type": "cvar", "key": "wg_downtime", "label": "Downtime"}.',
+        ),
+      );
+      return;
+    }
+
+    const check = asRecord(entry);
+    const type = String(check.type ?? 'cvar')
+      .trim()
+      .toLowerCase();
+    if (!VALID_PLAYER_SETUP_CHECK_TYPES.includes(type)) {
+      issues.push(
+        issue(
+          'error',
+          'player_setup.check_type',
+          'Policies',
+          `${path}.type`,
+          'Unknown player setup check type',
+          'Supported types are cvar, uvar, svar, and custom counter.',
+        ),
+      );
+    }
+    if (typeof check.key !== 'string' || check.key.trim() === '') {
+      issues.push(
+        issue(
+          'error',
+          'player_setup.check_key',
+          'Policies',
+          `${path}.key`,
+          'Player setup check needs a key',
+          'The key is the cvar, uvar, svar, or custom counter name to inspect.',
+        ),
+      );
+    }
+    if (check.one_of != null && !Array.isArray(check.one_of)) {
+      issues.push(
+        issue(
+          'error',
+          'player_setup.one_of',
+          'Policies',
+          `${path}.one_of`,
+          'Player setup one_of must be a list',
+          'Use a list of accepted text values, or omit one_of to only require a non-empty value.',
+        ),
+      );
+    }
+    if (check.when_subsystem != null && !SUBSYSTEMS.includes(String(check.when_subsystem))) {
+      issues.push(
+        issue(
+          'warning',
+          'player_setup.when_subsystem',
+          'Policies',
+          `${path}.when_subsystem`,
+          'Player setup check references an unknown subsystem',
+          'Use a known subsystem key or remove the gate.',
+        ),
+      );
+    }
+    if (check.when_command != null) {
+      const commandGate = String(check.when_command);
+      const [subsystem, command] = commandGate.split('.');
+      const validCommands = DEFAULT_SUBSYSTEM_COMMANDS[subsystem] ?? [];
+      if (!subsystem || !command || !validCommands.includes(command)) {
+        issues.push(
+          issue(
+            'warning',
+            'player_setup.when_command',
+            'Policies',
+            `${path}.when_command`,
+            'Player setup check references an unknown command',
+            'Use a gate such as exploration.loot or remove the gate.',
+          ),
+        );
+      }
+    }
+    if (
+      ['cvar', 'cc', 'counter', 'custom_counter'].includes(type) &&
+      playerSetup.require_character === false
+    ) {
+      issues.push(
+        issue(
+          'warning',
+          'player_setup.character_scope',
+          'Policies',
+          'policies.player_setup.require_character',
+          'Character-scoped setup checks need a selected character',
+          'Keep require_character enabled when checking cvars or custom counters.',
+        ),
+      );
+    }
+  });
 }
 
 function validateWorld(model: ConfigModel, issues: ConfigIssue[]) {
@@ -1103,6 +1264,7 @@ export function createBlankConfig(): ConfigModel {
     policies: {
       exploration: { enforce_cooldowns: true, avoid_repeat_encounters: 'off' },
       display: { footer_behaviour: 'balanced', helpful_tips: [], credits: null },
+      player_setup: { enabled: true, require_character: true, checks: [] },
     },
   });
 }

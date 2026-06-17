@@ -43,7 +43,7 @@ Acceptance:
 
 ## Phase 3 - Browser validation
 
-- Port deterministic checks from `check_config.gvar` into `editor/src/lib/validation`.
+- Implement deterministic config checks in `editor/src/lib/validation`.
 - Represent results as structured `ConfigIssue` objects.
 - Add issue codes, paths, severity, explanations, and suggested fixes.
 - Build a "Check and fix" panel with counts, filters, and "Go to field" actions.
@@ -64,7 +64,7 @@ Initial rule groups:
 
 Acceptance:
 
-- Browser validation can reproduce representative `!westmarch check` errors and warnings from existing `.gvar-test` fixtures.
+- Browser validation can reproduce representative config errors and warnings from existing fixtures.
 - Errors block publish.
 - Export remains available with a warning.
 
@@ -97,7 +97,7 @@ Acceptance:
 Acceptance:
 
 - Common config edits can be made without raw editing.
-- Every field touched by `check_config` has a visible guided control or a documented raw-only fallback.
+- Every field covered by editor validation has a visible guided control or a documented raw-only fallback.
 
 ## Phase 6 - Encounter and biome gvar editors
 

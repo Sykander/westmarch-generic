@@ -14,8 +14,8 @@ ADMIN_ROLES = ["Dragonspeaker", "Server Aliaser"]
 MSG_UNKNOWN = "Unknown command."
 MSG_NO_GUILD = "This command cannot be run in DMs."
 MSG_NOT_CONFIGURED = (
-    "This server is not configured yet. A GM must set the **westmarch_config** svar "
-    "to your config gvar UUID. See **!westmarch setup**."
+    "This server is not configured yet. A **Dragonspeaker** or **Server Aliaser** must set "
+    "the **westmarch_config** svar to your config gvar UUID. See **!westmarch setup**."
 )
 MSG_SUBSYSTEM_DISABLED = "This feature is disabled on this server."
 MSG_NO_CHARACTER = "Select a character first."
@@ -46,9 +46,8 @@ COMMAND_MAP = {
     "read": ("content", "read", False),
     "quest": ("misc", "quest", False),
     "recipe": ("misc", "recipe", False),
-    "westmarch": ("admin", None, True),
+    "westmarch": ("admin", None, False),
     "setup": ("admin", "setup", True),
-    "check": ("admin", "check", True),
     "show": ("admin", "show", True),
 }
 
@@ -246,7 +245,7 @@ def _command_disabled_message(command):
     return f"**!{command}** is disabled on this server."
 
 
-def _check_config_enabled(subsystem, command):
+def _check_command_enabled(subsystem, command):
     cfg = config.cfg
     if cfg == None:
         return False, MSG_NOT_CONFIGURED
@@ -439,8 +438,8 @@ def is_allowed():
         ok, msg = _check_admin_roles()
         if not ok:
             return False, msg
-    else:
-        ok, msg = _check_config_enabled(subsystem, command)
+    elif subsystem != "admin":
+        ok, msg = _check_command_enabled(subsystem, command)
         if not ok:
             return False, msg
         ok, msg = _check_character()

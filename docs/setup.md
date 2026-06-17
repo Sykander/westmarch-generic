@@ -9,7 +9,7 @@ For architecture and config schema detail, see [internal westmarch-statement](in
 ## Prerequisites
 
 - Avrae bot on your Discord server
-- **Dragonspeaker** or **Server Aliaser** — Avrae aliasing permissions to edit workshop aliases, gvars, and svars (required to set svars and run `!westmarch`). Not the same as being campaign GM or DM.
+- **Dragonspeaker** or **Server Aliaser** — Avrae aliasing permissions to edit workshop aliases, gvars, and svars (required to set svars and run `!westmarch setup` / `!westmarch show`). Not the same as being campaign GM or DM.
 - An Avrae workshop slot for your server’s config gvar
 
 ---
@@ -20,7 +20,7 @@ For architecture and config schema detail, see [internal westmarch-statement](in
 2. **Create** a config gvar — duplicate a [starter or preset](internal/projects/westmarch-statement/gvars/configs.md), use the [Westmarch config editor](https://sykander.github.io/westmarch-generic/), or paste via `!gvar editor`.
 3. **Set svar** — `!svar westmarch_config <your-gvar-uuid>`
 4. **Enable** subsystems in your config gvar (`subsystems.exploration.enabled`, etc.).
-5. **Verify** — `!westmarch check` and `!westmarch show`
+5. **Verify** — use the editor **Check** page, then run `!westmarch show`
 
 In Discord you can also run **`!westmarch setup`** for step-by-step embeds (when the engine is deployed).
 
@@ -117,16 +117,44 @@ Downtime uses a single toggle: `"downtime": {"enabled": True}`.
 
 Add world data (`locations`, encounter pools, shops, …) as you enable each vertical. Shapes: [data-shapes](internal/projects/westmarch-statement/data-shapes.md).
 
+If you enable a subsystem that expects another workshop, subscribe that companion too. Exploration rewards can add recovered items to character bags, so pair exploration loot/gathering with your server’s preferred **Bags** alias workshop.
+
 ---
 
 ## 5 — Verify
 
+Use the [Westmarch config editor](https://sykander.github.io/westmarch-generic/) **Check** page before publishing or pasting config changes. The editor is the source of truth for config validation.
+
+After publishing, run:
+
 ```text
-!westmarch check
 !westmarch show
 ```
 
-Fix errors reported by **`check`**, then try a smoke command for an enabled subsystem (e.g. `!forage` once pools exist).
+`show` summarizes the config that the engine loaded; it does not validate. Then try a smoke command for an enabled subsystem (e.g. `!forage` once pools exist).
+
+Players can run:
+
+```text
+!westmarch
+```
+
+Once `westmarch_config` is set, the bare command checks that the selected character meets the server’s configured player setup checks.
+
+Configure those checks with `policies.player_setup`:
+
+```py
+policies = {
+    "player_setup": {
+        "enabled": True,
+        "require_character": True,
+        "checks": [
+            {"type": "cvar", "key": "vsheet", "label": "vSheet", "message": "Run `!vsheet setup`."},
+            {"type": "cvar", "key": "wg_downtime", "label": "Downtime", "message": "Run `!downtime setup`.", "when_subsystem": "downtime"},
+        ],
+    },
+}
+```
 
 ---
 
@@ -134,8 +162,8 @@ Fix errors reported by **`check`**, then try a smoke command for an enabled subs
 
 | State | Typical message |
 |-------|-----------------|
-| **`westmarch_config` unset** | Server not configured — GM must set the svar |
-| **Svar set but config invalid** | Configuration error — someone with aliasing permissions runs `!westmarch check` |
+| **`westmarch_config` unset** | Server not configured — a Dragonspeaker or Server Aliaser must set the svar |
+| **Svar set but config invalid** | Use the web editor Check page before publishing; command errors stay feature-specific |
 | **Subsystem or command disabled in config** | This feature is disabled on this server |
 | **Enabled but missing world data** | Command-specific error (e.g. no encounter pool for biome) |
 
@@ -153,9 +181,24 @@ rules_version = "2014"   # or "2024"
 
 **Resolution order:** **`rules_version`** on config (if set) → Avrae server rules → **`"2014"`**. Aliases use **`config.get_rules_edition()`** — see [data-shapes](internal/projects/westmarch-statement/data-shapes.md#rules_version).
 
-If **`rules_version`** disagrees with Avrae’s setting, **`!westmarch check`** warns; the config value wins at runtime.
+If **`rules_version`** disagrees with Avrae’s setting, the config value wins at runtime. The editor Check page is where validation guidance should live.
 
 Also set **`display.name`** and related fields for world branding — per-subsystem **`display`** / **`command_display`** and **`policies.display.footer_behaviour`** optional — [data-shapes § display](internal/projects/westmarch-statement/data-shapes.md#display) · [§ Embed display inheritance](internal/projects/westmarch-statement/data-shapes.md#embed-display-inheritance).
+
+---
+
+## Companion workshops
+
+Good companions for many westmarch-generic servers:
+
+| Workshop | Why use it |
+|----------|------------|
+| **vSheet** | Sheet/class/subclass automation for setup flows such as `!level` and `!vsheet` |
+| **Bags** | Inventory visibility; exploration rewards can add items to bags |
+| **Notes** | Recipes, quest notes, journals, and reminders |
+| **Targeting Assist** | Combat targeting helpers; choose the 2014 or 2024 variant that matches your rules |
+| **Bard SFX** | Optional scene audio / atmosphere ([workshop](https://avrae.io/dashboard/workshop/638f5e434dbab671607f33a5)) |
+| **Downtime Dungeon** | Optional automated downtime dungeon loop ([workshop](https://avrae.io/dashboard/workshop/672e0ad6edc17a92c4ddbfae)) |
 
 ---
 

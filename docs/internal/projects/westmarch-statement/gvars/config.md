@@ -58,7 +58,7 @@ Shallow + nested merge for MVP:
 | `rules_version` | `None` |
 | `display` | `{}` — base layer only; subsystem **`display`** / **`command_display`** optional per [data-shapes § Embed display inheritance](../data-shapes.md#embed-display-inheritance) |
 | `subsystems` | player-facing subsystems only (exploration, travel, … — **not** admin); nested **`config`**, optional **`display`** / **`command_display`** per subsystem |
-| `policies` | conservative defaults — manual time/downtime, no auto path costs, **`languages.allowed`** `[]`, **`display.footer_behaviour`** `"balanced"` ([data-shapes.md](../data-shapes.md#server-policies)) |
+| `policies` | conservative defaults — manual time/downtime, no auto path costs, **`languages.allowed`** `[]`, **`display.footer_behaviour`** `"balanced"`, **`player_setup`** on with no checks ([data-shapes.md](../data-shapes.md#server-policies)) |
 | `channel_policy` | `{ "admin_any_channel": True, "mode": "any", … }` *(see [auth.md](auth.md))* |
 
 Top-level field shapes: [data-shapes.md § Top-level config fields](../data-shapes.md#top-level-config-fields).
@@ -123,13 +123,13 @@ get_embed = display.get_display()
 
 **auth.gvar** reads **`config.cfg`** / **`get_config()`** — same merged object for the invocation.
 
-**`!westmarch check`** ([check_config.gvar](check_config.md)) may still **warn** when optional world data is missing even though schema defaults exist.
+Config validation is handled by the web editor. Runtime commands may still return feature-specific errors when required world data is missing.
 
 ## Not in this module
 
 - Permission / channel checks → [auth.md](auth.md)
 - Embed display merge, footer policy, Avrae colour normalisation → [display.md](display.md)
-- Validation rules → [check_config.md](check_config.md) · [aliases/admin/check.md](../aliases/admin/check.md)
+- Validation rules → web config editor (`editor/src/lib/config.ts`)
 
 ## Tests
 
@@ -143,7 +143,6 @@ Direct **`config.gvar-test`** (avrae-ls — no alias wrapper). See `src/gvars/ut
 ## Related
 
 - [display.md](display.md) — embed branding for aliases
-- [check_config.md](check_config.md)
 - [auth.md](auth.md)
 - [data-shapes.md](../data-shapes.md) — `display`, embed inheritance, `policies.display`, `rules_version`, `policies.languages`
 - [src/gvars/configs/starter.gvar](../../../../src/gvars/configs/starter.gvar)

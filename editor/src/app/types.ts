@@ -10,6 +10,12 @@ export type SubsystemDefinition = {
   commands: string[];
   implemented: boolean;
   detail: string;
+  dependencies?: Array<{
+    label: string;
+    level: 'required' | 'recommended';
+    detail: string;
+    url?: string;
+  }>;
 };
 
 export type PlannedFeature = {

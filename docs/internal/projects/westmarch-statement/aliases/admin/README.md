@@ -1,12 +1,12 @@
 # Admin — MVP implementation docs
 
-**Not in `subsystems`** — setup hub commands are **Avrae aliasing role-gated only** ([gvars/auth.md](../../gvars/auth.md)). Phase 0–1 (with config loader).
+**Not in `subsystems`** — setup/show commands are **Avrae aliasing role-gated only** ([gvars/auth.md](../../gvars/auth.md)). Bare **`!westmarch`** is player-facing once **`westmarch_config`** is wired. Phase 0–1 (with config loader).
 
 Server setup tooling under **`!westmarch`**. Uses engine [gvars/config.md](../../gvars/config.md) and [gvars/auth.md](../../gvars/auth.md).
 
 ## Avrae aliasing roles *(not GM/DM)*
 
-**`Dragonspeaker`** and **`Server Aliaser`** are Discord roles Avrae uses for **workshop and server-variable permissions** — editing aliases, gvars, and svars. They do **not** mean someone is the campaign GM or DM. A player can hold either role to wire engine config; a GM without those roles cannot run **`!westmarch`**.
+**`Dragonspeaker`** and **`Server Aliaser`** are Discord roles Avrae uses for **workshop and server-variable permissions** — editing aliases, gvars, and svars. They do **not** mean someone is the campaign GM or DM. A player can hold either role to wire engine config; a GM without those roles cannot run **`!westmarch setup`** or **`!westmarch show`**.
 
 ## Config storage (validated architecture)
 
@@ -16,22 +16,21 @@ Server setup tooling under **`!westmarch`**. Uses engine [gvars/config.md](../..
 
 | Invocation | Doc | Purpose |
 |------------|-----|---------|
-| **`!westmarch`** | [westmarch.md](westmarch.md) | Help + subcommand list |
+| **`!westmarch`** | [westmarch.md](westmarch.md) | Unwired setup help; wired player character setup status |
 | **`!westmarch setup`** | [setup.md](setup.md) | Onboarding — `!gvar create` / editor, starter body, `!svar westmarch_config` |
-| **`!westmarch check`** | [check.md](check.md) | Validate setup |
 | **`!westmarch show`** | [show.md](show.md) | Summarize loaded config |
 
 Planned sourcemap: `src/aliases/westmarch/`.
 
 ## Access control
 
-Via **`auth.is_allowed()`** — **`Dragonspeaker`** or **`Server Aliaser`** only. No **`subsystems.admin`** toggle — anyone with those Avrae aliasing roles can run the hub when the engine workshop is subscribed.
+Via **`auth.is_allowed()`** — **`setup`** and **`show`** require **`Dragonspeaker`** or **`Server Aliaser`**. Bare **`!westmarch`** is intentionally open so players can see setup status for their selected character. No **`subsystems.admin`** toggle.
 
 ## Implementation order
 
 1. [gvars/config.md](../../gvars/config.md) + [gvars/auth.md](../../gvars/auth.md)
 2. **`!westmarch setup`**
-3. **`check`** · **`show`**
+3. **`show`** · bare **`!westmarch`** player setup status
 
 ## Related
 

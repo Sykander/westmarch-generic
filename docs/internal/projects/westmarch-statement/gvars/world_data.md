@@ -30,7 +30,7 @@ Engine gvars read **`world_data`** — they do not duplicate it:
 
 ## Travel / location requirement
 
-**`!westmarch check`** errors when **`subsystems.travel`** or **`travel.commands.location`** is on but **`world_data.locations`** or **`default_location`** is missing.
+The web config editor reports an error when **`subsystems.travel`** or **`travel.commands.location`** is on but **`world_data.locations`** or **`default_location`** is missing.
 
 ## Related
 

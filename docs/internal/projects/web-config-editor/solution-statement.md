@@ -109,9 +109,7 @@ The UI should show template-aware labels, validate argument counts, validate poo
 
 ## Guided config check
 
-The browser validator should mirror `!westmarch check` and enrich it for the editor.
-
-`check_config.validate()` currently returns `errors, warnings`. The browser model should represent issues as structured objects:
+The browser validator is the source of truth for config checking and enriches the raw rule results for editor use. The browser model should represent issues as structured objects:
 
 ```ts
 type ConfigIssue = {
@@ -137,7 +135,7 @@ Validation UX:
 
 Rule sources:
 
-- Port deterministic rules from `src/gvars/utils/check_config/check_config.gvar`.
+- Implement deterministic rules in `editor/src/lib/config.ts` / validation helpers.
 - Keep a rule mapping document so browser rules and Drac2 rules can be compared.
 - Add browser tests using the same sample config bodies as `.gvar-test` fixtures where practical.
 
@@ -178,5 +176,5 @@ Avrae operations:
 
 - Avrae API CORS behavior is external and may change.
 - Parser round-tripping Drac2-like config source is the hardest technical risk.
-- Keeping browser validation aligned with `!westmarch check` needs tests and documentation discipline.
+- Keeping browser validation aligned with the documented config model needs tests and documentation discipline.
 - Public repo data licensing remains separate from Pages hosting and editor implementation.

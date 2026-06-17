@@ -46,7 +46,7 @@ Toggle:
 },
 ```
 
-**Validation (`!westmarch check`):** economy + `wallet` enabled but empty `currencies` → warning; unknown currency id in shop/encounter config → error.
+**Editor validation:** economy + `wallet` enabled but empty `currencies` → warning; unknown currency id in shop/encounter config → error.
 
 ## Generic architecture
 

@@ -14,7 +14,7 @@ return auth.is_allowed()[0]
 ---
 True
 ---
-name: admin westmarch allowed for dragonspeaker
+name: parent westmarch allowed
 vars:
   uvars:
     _wm_command: westmarch
@@ -23,7 +23,7 @@ return auth.is_allowed()[1]
 ---
 "Command allowed."
 ---
-name: admin westmarch success message
+name: parent westmarch success message
 vars:
   uvars:
     _wm_command: westmarch
@@ -36,15 +36,6 @@ name: admin setup allowed for dragonspeaker
 vars:
   uvars:
     _wm_command: setup
-
-return auth.is_allowed()[0]
----
-True
----
-name: admin check allowed for dragonspeaker
-vars:
-  uvars:
-    _wm_command: check
 
 return auth.is_allowed()[0]
 ---

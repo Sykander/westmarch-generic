@@ -16,6 +16,13 @@ name: default branding produces embed with westmarch title
 get_embed = display.get_display()
 return get_embed(desc="hello")
 ---
+re:-thumb https://sykander.github.io/westmarch-generic/westmarch-assets/brand/logo.png
+---
+name: default branding uses deployed logo thumbnail
+
+get_embed = display.get_display()
+return get_embed(desc="hello")
+---
 re:My Test World
 ---
 name: base display name becomes embed title
@@ -45,4 +52,20 @@ vars:
       }
       policies = {
           "display": {"footer_behaviour": "string"},
+      }
+
+get_embed = display.get_display()
+return get_embed(desc="hello")
+---
+re:-thumb https://example.test/logo.png
+---
+name: base display logo overrides default thumbnail
+vars:
+  svars:
+    westmarch_config: "22224444-4444-4444-4444-444444444444"
+  gvars:
+    22224444-4444-4444-4444-444444444444: |
+      display = {
+          "name": "My Test World",
+          "logo": "https://example.test/logo.png",
       }

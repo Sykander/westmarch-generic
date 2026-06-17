@@ -78,7 +78,7 @@ When **`policies.exploration.avoid_repeat_encounters`** is not **`off`**:
 3. **`global`** — exclude ids seen for this activity across all biomes.
 4. Filter the kind bucket before uniform random; if the pool would be empty, fall back to unfiltered random and log a dev warning.
 
-Requires **`stats.add_log`** to record **`encounter_id`** on successful picks. **`!westmarch check`** warns when policy is on but stats subsystem path is unavailable.
+Requires **`stats.add_log`** to record **`encounter_id`** on successful picks. The web config editor warns when policy is on but stats subsystem path is unavailable.
 
 ## Monster HP in combat embeds
 

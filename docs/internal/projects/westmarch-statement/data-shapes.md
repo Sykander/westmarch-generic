@@ -437,7 +437,7 @@ cfg.world_data.calendars
 cfg.world_data.biomes.forest.gvar_id
 ```
 
-**Legacy flat keys** — older docs/examples used top-level **`locations`**, **`paths`**, **`encounter_pools`**, **`world_clock`**. **`!westmarch check`** **warns** when those appear without **`world_data`**; loaders accept flat keys during migration only.
+**Legacy flat keys** — older docs/examples used top-level **`locations`**, **`paths`**, **`encounter_pools`**, **`world_clock`**. The web config editor **warns** when those appear without **`world_data`**; loaders accept flat keys during migration only.
 
 ### `world_data` object
 
@@ -957,7 +957,7 @@ cfg.policies.languages.allowed
 |-----|------|---------|---------|
 | `config_version` | `str` | `None` | Owner-defined version label for this config module (e.g. `"1.0"`, `"2026-03-sword-coast"`) — **not** the engine release version |
 
-Used in **`!westmarch show`**, embed footers, and migration notes. **`!westmarch check`** may **warn** when the engine documents a newer recommended schema and **`config_version`** is unset or below a documented minimum.
+Used in **`!westmarch show`**, embed footers, and migration notes. The web config editor may warn when the engine documents a newer recommended schema and **`config_version`** is unset or below a documented minimum.
 
 ### `rules_version`
 
@@ -971,7 +971,7 @@ Used in **`!westmarch show`**, embed footers, and migration notes. **`!westmarch
 2. Else Avrae guild/server rules when Drac2 exposes them
 3. Else **`"2014"`**
 
-When **`rules_version`** is set and differs from Avrae’s rules setting, **`!westmarch check`** emits a **warning** (config override wins at runtime).
+When **`rules_version`** is set and differs from Avrae’s rules setting, the config override wins at runtime. The web config editor is the validation surface for mismatch warnings.
 
 Catalogues may be flat, edition-tagged, or nested by edition — see [Rules edition](#rules-edition) below.
 
@@ -999,7 +999,7 @@ extensions = {
 | **`spells`** | [spells.gvar](gvars/spells.md) | Custom spell list for scribe |
 | **`books`** | [library.gvar](gvars/library.md) | Custom book catalogue |
 
-Values are **36-character workshop gvar UUID strings** only. Unknown keys → **warning**; bad UUID → **error** ([check_config.gvar](gvars/check_config.md)).
+Values are **36-character workshop gvar UUID strings** only. Unknown keys → **warning**; bad UUID → **error** in the web config editor.
 
 Each catalogue **`*.gvar`** checks **`config.get_config().extensions.<key>`** on first load; if set, **`get_gvar(uuid)`** and cache; else engine preset shards ([content-pipeline.md](content-pipeline.md)).
 
@@ -1029,7 +1029,7 @@ display = {
 | `link` | no | Discord invite or wiki — optional “world info” link in admin/show embeds; **not** merged into player command embeds |
 | `colour` | no | Hex accent — **`#RRGGBB`** or **`RRGGBB`** (6 hex digits). Inherited unless overridden; omit for engine default |
 
-**`colour` format:** case-insensitive hex only — no `0x` prefix. **`!westmarch check`** errors on invalid length or non-hex characters at **any** display layer. Aliases call **`display.get_display()`** once, then use the returned **`get_embed`** — [display.gvar](gvars/display.md).
+**`colour` format:** case-insensitive hex only — no `0x` prefix. The web config editor reports invalid length or non-hex characters at **any** display layer. Aliases call **`display.get_display()`** once, then use the returned **`get_embed`** — [display.gvar](gvars/display.md).
 
 Aliases that support a per-invocation colour override (e.g. `-color` arg) should use the override when present, else merged **`colour`**, else engine default.
 
@@ -1222,7 +1222,7 @@ Before picking a concrete encounter, **`encounter_lists`** + **[biomes.gvar](gva
 
 Both modes honour the same **`distribution`** percentages; only the selection algorithm differs.
 
-**`!westmarch check`** errors when:
+The web config editor reports errors when:
 
 - Any **`distribution`** value is not a non-negative integer
 - Unknown keys in **`distribution`** (only **`combat`**, **`quest`**, **`gather`** allowed)
@@ -1336,7 +1336,7 @@ Optional location field for owner-driven inference:
 
 Add **`library_topics`** to [Location](#location) when Tier G lands.
 
-**`!westmarch check`** errors when:
+The web config editor reports errors when:
 
 - Invalid **`library_topic_source`** value
 - **`library_topic_source == "restricted"`** and **`allowed_topics`** missing or empty
@@ -1361,7 +1361,7 @@ Document **`config`** keys in each subsystem’s alias README when implemented. 
 
 ### Cross-subsystem validation
 
-**`!westmarch check`** ([check_config.gvar](gvars/check_config.md)) errors when **`config`** requires another subsystem or **`world_data`** slice that is off or missing — e.g. `exploration.config.enc_biome_source == "location"` but **`travel.commands.location`** is disabled, or **`enc_biome_source == "auto"`** resolves to inferred at check time but locations/travel prerequisites missing *(warning only for auto — runtime falls back to manual)*.
+The web config editor reports errors when **`config`** requires another subsystem or **`world_data`** slice that is off or missing — e.g. `exploration.config.enc_biome_source == "location"` but **`travel.commands.location`** is disabled, or **`enc_biome_source == "auto"`** resolves to inferred while locations/travel prerequisites are missing *(warning only for auto — runtime falls back to manual)*.
 
 Policy ↔ subsystem checks — [Policies MVP checklist](#policies-mvp-checklist) below.
 
@@ -1465,6 +1465,7 @@ House rules and **what the engine enforces** vs what stays narrative/manual. Sto
 | Avoid same encounter twice in a row? | **`policies.exploration.avoid_repeat_encounters`** |
 | Roll monster HP in combat blocks? | **`policies.combat.roll_monster_hp`** |
 | Must player have a character selected? | **`policies.auth.require_character`** |
+| What does bare **`!westmarch`** check for each player? | **`policies.player_setup`** |
 | Can **`!enc`** quest outcomes auto-add to journal? | **`policies.quest.self_assign`** |
 | Rations item name when travel consumes rations? | **`policies.travel.rations_item`** |
 | Library search cooldown enforced? | **`policies.content.enforce_library_cooldowns`** |
@@ -1485,6 +1486,7 @@ House rules and **what the engine enforces** vs what stays narrative/manual. Sto
 | **`quest`** | ✓ | `self_assign`, `max_active` | **`self_assign`** + quest encounters → **`misc.commands.quest`** on |
 | **`inventory`** | schema | encumbrance, attunement, **`enforce_*`** | enforcement deferred; warn when enforce on |
 | **`display`** | ✓ | `footer_behaviour`, tips, credits | invalid mode → error |
+| **`player_setup`** | ✓ | `enabled`, `require_character`, `checks` | check type/key/gates |
 | **`languages`** | ✓ | `allowed` | unknown names → warn |
 | **`content`** | partial | `enforce_read_cooldowns`, `enforce_library_cooldowns` | uses **`command_config.read`** / **`library`** |
 
@@ -1547,6 +1549,11 @@ policies = {
         "helpful_tips": [],
         "credits": None,
     },
+    "player_setup": {
+        "enabled": True,
+        "require_character": True,
+        "checks": [],
+    },
 }
 ```
 
@@ -1570,7 +1577,7 @@ if cfg.policies.travel.consume_rations:
 | **`world_clock`** | Engine config **`world_clock`** + [clock.gvar](gvars/clock.md) drives `!time`; travel/journey may advance clock when that vertical ships. |
 | **`manual`** | Players/GM decide duration narratively; engine does not advance a clock on travel. Optional flavour strings only. |
 
-Requires **`world_clock`** config data when `mode == "world_clock"` — **`!westmarch check`** warns if missing.
+Requires **`world_clock`** config data when `mode == "world_clock"` — the editor warns if missing.
 
 ### `auth`
 
@@ -1579,6 +1586,45 @@ Requires **`world_clock`** config data when `mode == "world_clock"` — **`!west
 | `require_character` | bool | `True` | When **`True`**, player aliases fail early if no active Avrae character is selected |
 
 Checked in **[auth.gvar](gvars/auth.md)** after config/channel gates (before alias body). Admin commands unaffected. westmarch reference: all exploration/economy/crafting commands assume a selected character.
+
+### `player_setup`
+
+Configures the player-facing bare **`!westmarch`** command. These checks do not block other aliases; they tell a player whether their selected character has the server-specific setup pieces that companion workshops expect.
+
+| Key | Type | Default | Meaning |
+|-----|------|---------|---------|
+| `enabled` | bool | `True` | When **`False`**, bare `!westmarch` skips player setup checks |
+| `require_character` | bool | `True` | When **`True`**, bare `!westmarch` asks the user to select a character before checking |
+| `checks` | list[dict] | `[]` | Generic checks for cvars, uvars, svars, or custom counters |
+
+Each check:
+
+| Key | Type | Meaning |
+|-----|------|---------|
+| `type` | `"cvar"` \| `"uvar"` \| `"svar"` \| `"cc"` | Storage surface to inspect; omitted means `"cvar"` |
+| `key` | str | Required cvar/uvar/svar/custom counter name |
+| `label` | str | Player-facing name in the status output |
+| `message` | str | Player-facing fix, usually a companion workshop setup command |
+| `equals` / `value` | scalar | Optional exact required value; omitted means any non-empty value passes |
+| `one_of` | list | Optional accepted values |
+| `invert` | bool | Optional reverse check |
+| `when_subsystem` | str | Only check when the subsystem is enabled |
+| `when_command` | `"subsystem.command"` | Only check when that command is enabled |
+
+Example:
+
+```py
+policies = {
+    "player_setup": {
+        "enabled": True,
+        "require_character": True,
+        "checks": [
+            {"type": "cvar", "key": "vsheet", "label": "vSheet", "message": "Run `!vsheet setup`."},
+            {"type": "cvar", "key": "wg_downtime", "label": "Downtime", "message": "Run `!downtime setup`.", "when_subsystem": "downtime"},
+        ],
+    },
+}
+```
 
 ### `travel`
 
@@ -1614,7 +1660,7 @@ When both cost flags are **`False`**, routes are planning/display only — westm
 
 Labels and flavour (**`workday_hours`**, **`workweek_days`**) live in **`subsystems.downtime.config`** — [downtime.config](#downtimeconfig).
 
-**`!westmarch check`** **errors** when:
+The web config editor reports errors when:
 
 - **`mode == "tracked"`** and **`subsystems.downtime.enabled`** is **`False`**
 - **`max_workdays`** is set and **`max_workdays < 1`**
@@ -1664,7 +1710,7 @@ Per-currency caps: optional **`max_balance`** on each [Currency](#currency) entr
 | `magic_items_carry_limit` | int \| `None` | `None` | Cap on carried magic items independent of attunement; `None` = no cap |
 | `enforce_magic_item_limit` | bool | `False` | Block pickups over **`magic_items_carry_limit`** |
 
-**MVP:** schema + **`!westmarch check`** **warns** when any **`enforce_*`** is **`True`** until enforcement ships in **[pc.gvar](gvars/pc.md)** / buy / loot aliases.
+**MVP:** schema + editor warnings when any **`enforce_*`** is **`True`** until enforcement ships in **[pc.gvar](gvars/pc.md)** / buy / loot aliases.
 
 ### `exploration`
 
@@ -1693,7 +1739,7 @@ Per-command cooldown durations: **`subsystems.exploration.command_config`** — 
 | `scale_encounters_to_level` | MVP behaviour |
 |-----------------------------|---------------|
 | **`False`** *(default)* | Encounter **`cr`** and monsters taken literally from biome pool |
-| **`True`** | **`!westmarch check`** **warns** until scaling ships |
+| **`True`** | The editor warns until scaling ships |
 
 | `roll_monster_hp` | MVP behaviour |
 |-------------------|---------------|
@@ -1722,7 +1768,7 @@ Quest and gather kinds ignore scaling.
 | **`False`** *(default)* | Quest encounters are narrative hooks only — GM or player uses **`!quest add`** manually |
 | **`True`** | **[encounters.gvar](gvars/encounters.md)** outcome handler calls **`quests.activate_from_encounter`** when outcome includes **`quest_id`** |
 
-Requires **`subsystems.misc.commands.quest`** enabled when **`self_assign`** is **`True`** — **`!westmarch check`** **errors** otherwise.
+Requires **`subsystems.misc.commands.quest`** enabled when **`self_assign`** is **`True`** — the editor reports an error otherwise.
 
 **Check:** **`max_active`** set and **< 1** → **error**.
 
@@ -1786,7 +1832,7 @@ Example — FR table with custom tips and fixed footer fallback:
 },
 ```
 
-**`!westmarch check`** **errors** on unknown **`footer_behaviour`** values. **Warns** when **`footer_behaviour`** is **`string`** and no **`footer`** is set at any inheritance layer (runtime still falls back to title / world name).
+The editor reports errors on unknown **`footer_behaviour`** values. It warns when **`footer_behaviour`** is **`string`** and no **`footer`** is set at any inheritance layer (runtime still falls back to title / world name).
 
 ### `languages`
 
@@ -1801,7 +1847,7 @@ Setting-wide **allowed languages** for mechanics that care about language lists 
 | **Empty / omitted** | No restriction — use full language table for resolved **`rules_version`** ([core/languages](gvars/core.md)) |
 | **Non-empty** | Only listed languages are treated as valid for setting checks; character languages **not** in the list may be ignored or flagged in library/comprehension flows |
 
-Names should match Avrae / SRD display names for the active rules version. **`!westmarch check`** **warns** when **`allowed`** contains entries unknown to the engine language table for **`get_rules_edition()`**.
+Names should match Avrae / SRD display names for the active rules version. The editor warns when **`allowed`** contains entries unknown to the engine language table for **`get_rules_edition()`**.
 
 Example — FR table limits exotic tongues:
 

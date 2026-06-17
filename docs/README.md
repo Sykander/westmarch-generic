@@ -41,8 +41,8 @@ flowchart LR
 | Area | Role |
 |------|------|
 | `assets/` | TSV catalogues - **`utils/generate-*`** -> split shard gvars ([content-pipeline.md](internal/projects/westmarch-statement/content-pipeline.md)) |
-| `editor/` | Planned React/Vite web config editor source |
-| `public/` | Planned generated GitHub Pages static output |
+| `editor/` | React/Vite web config editor source |
+| `public/` | Generated GitHub Pages static output |
 | `src/aliases/` | MVP command aliases and Avrae help docs deployed from sourcemap `docs_file` entries — [mvp-commands.md](internal/projects/westmarch-statement/mvp-commands.md) |
 | `src/snippets/` | *(none in MVP — combat snippets deferred)* |
 | `src/gvars/` | Engine workshop globals — see [src/gvars/README.md](../src/gvars/README.md) |
@@ -53,7 +53,7 @@ flowchart LR
 
 All MVP aliases and engine gvars are registered in **`utils/sourcemap.dev.json`** / **`sourcemap.prod.json`** with UUIDs from **`unused_gvars.md`**. Alias help docs are registered with `docs_file` and live beside their alias sources under **`src/aliases/`**. Placeholder bodies return “not implemented” embeds until each tier is ported. Regenerate env after sourcemap edits: **`make build`**.
 
-The **`westmarch`** hub uses sub-aliases (`setup`, `check`, `show`) — same sourcemap nesting pattern as the old bootstrap `example` alias.
+The **`westmarch`** hub uses admin sub-aliases (`setup`, `show`) plus a player-facing bare `!westmarch` setup-status check. Config validation lives in the web editor, not in a Discord `check` command.
 
 ## Further reading
 

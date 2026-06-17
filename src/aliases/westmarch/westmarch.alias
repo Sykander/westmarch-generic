@@ -2,7 +2,10 @@
 using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(
     auth = env.gvars.auth,
+    config = env.gvars.config,
+    dicts = env.gvars.dicts,
     display = env.gvars.display,
+    lists = env.gvars.lists,
 )
 
 ok, msg = auth.is_allowed()
@@ -13,24 +16,418 @@ if not ok:
 
 argslist = &ARGS&
 
-if len(argslist) == 0 or argslist[0] in ["help", "?"]:
-    help_text = f"""Server setup and configuration tools for westmarch-generic.
+SUPPORTING_WORKSHOPS = [
+    [
+        "vSheet",
+        "keeps character sheet details available to automation such as class and subclass setup.",
+        None,
+    ],
+    [
+        "Bags",
+        "gives players a visible inventory surface; exploration loot can add recovered items to bags.",
+        None,
+    ],
+    [
+        "Notes",
+        "works well for player-facing journals, recipes, quest notes, and campaign reminders.",
+        None,
+    ],
+]
+
+
+def _read_field(obj, key):
+    if obj == None:
+        return None
+    try:
+        return obj[key]
+    except:
+        pass
+    try:
+        val = obj[key]
+        if val != None:
+            return val
+    except:
+        pass
+    attrs = {
+        "policies": lambda o: o.policies,
+        "player_setup": lambda o: o.player_setup,
+        "enabled": lambda o: o.enabled,
+        "require_character": lambda o: o.require_character,
+        "checks": lambda o: o.checks,
+        "subsystems": lambda o: o.subsystems,
+        "commands": lambda o: o.commands,
+        "type": lambda o: o.type,
+        "key": lambda o: o.key,
+        "label": lambda o: o.label,
+        "name": lambda o: o.name,
+        "message": lambda o: o.message,
+        "help": lambda o: o.help,
+        "when_subsystem": lambda o: o.when_subsystem,
+        "when_command": lambda o: o.when_command,
+        "equals": lambda o: o.equals,
+        "value": lambda o: o.value,
+        "one_of": lambda o: o.one_of,
+        "invert": lambda o: o.invert,
+        "exploration": lambda o: o.exploration,
+        "travel": lambda o: o.travel,
+        "downtime": lambda o: o.downtime,
+        "crafting": lambda o: o.crafting,
+        "economy": lambda o: o.economy,
+        "content": lambda o: o.content,
+        "misc": lambda o: o.misc,
+    }
+    if key in attrs:
+        try:
+            return attrs[key](obj)
+        except:
+            pass
+    return None
+
+
+def _is_nonempty(value):
+    if value == None:
+        return False
+    if value == True:
+        return True
+    if value == False:
+        return False
+    if lists.is_list(value):
+        return len(value) > 0
+    if dicts.is_dict(value):
+        return len([k for k in value]) > 0
+    return str(value).strip() != ""
+
+
+def _same_text(left, right):
+    if left == None or right == None:
+        return False
+    return str(left).strip().lower() == str(right).strip().lower()
+
+
+def _as_check_list(raw):
+    if raw == None:
+        return []
+    if lists.is_list(raw):
+        return raw
+    return []
+
+
+def _setup_policy(cfg):
+    policies = _read_field(cfg, "policies")
+    return _read_field(policies, "player_setup")
+
+
+def _setup_enabled(policy):
+    raw = _read_field(policy, "enabled")
+    if raw == False:
+        return False
+    return True
+
+
+def _setup_requires_character(policy):
+    raw = _read_field(policy, "require_character")
+    if raw == False:
+        return False
+    return True
+
+
+def _subsystem_block(cfg, subsystem):
+    subs = _read_field(cfg, "subsystems")
+    return _read_field(subs, subsystem)
+
+
+def _subsystem_enabled(cfg, subsystem):
+    block = _subsystem_block(cfg, subsystem)
+    if block == None:
+        return False
+    return _read_field(block, "enabled") == True
+
+
+def _command_enabled(cfg, subsystem, command):
+    block = _subsystem_block(cfg, subsystem)
+    if block == None:
+        return False
+    if _read_field(block, "enabled") != True:
+        return False
+    commands = _read_field(block, "commands")
+    if commands == None:
+        return True
+    return _read_field(commands, command) == True
+
+
+def _check_applies(cfg, check):
+    when_subsystem = _read_field(check, "when_subsystem")
+    if _is_nonempty(when_subsystem) and not _subsystem_enabled(cfg, str(when_subsystem).strip()):
+        return False
+    when_command = _read_field(check, "when_command")
+    if _is_nonempty(when_command):
+        text = str(when_command).strip()
+        bits = text.split(".")
+        if len(bits) == 2:
+            return _command_enabled(cfg, bits[0], bits[1])
+        return False
+    return True
+
+
+def _read_cvar(ch, key):
+    raw = None
+    try:
+        cvars = ch.cvars
+        raw = cvars[key]
+    except:
+        pass
+    if raw != None:
+        return raw
+    try:
+        raw = ch.get_cvar(key)
+    except:
+        pass
+    if raw != None:
+        return raw
+    try:
+        if exists(key):
+            return get(key)
+    except:
+        pass
+    return None
+
+
+def _read_cc(ch, key):
+    try:
+        if ch.cc_exists(key):
+            return ch.get_cc(key)
+    except:
+        pass
+    return None
+
+
+def _read_requirement_value(ch, check):
+    kind = _read_field(check, "type")
+    if kind == None or str(kind).strip() == "":
+        kind = "cvar"
+    kind = str(kind).strip().lower()
+    key = _read_field(check, "key")
+    if key == None or str(key).strip() == "":
+        return None, kind
+    key = str(key).strip()
+    if kind == "cvar":
+        return _read_cvar(ch, key), kind
+    if kind == "uvar":
+        try:
+            return get_uvar(key), kind
+        except:
+            return None, kind
+    if kind == "svar":
+        return get_svar(key), kind
+    if kind in ["cc", "counter", "custom_counter"]:
+        return _read_cc(ch, key), kind
+    return None, kind
+
+
+def _value_passes(value, check):
+    expected = _read_field(check, "equals")
+    if expected == None:
+        expected = _read_field(check, "value")
+    if expected != None:
+        passed = _same_text(value, expected)
+    else:
+        allowed = _read_field(check, "one_of")
+        if lists.is_list(allowed):
+            passed = False
+            for item in allowed:
+                if _same_text(value, item):
+                    passed = True
+        else:
+            passed = _is_nonempty(value)
+    if _read_field(check, "invert") == True:
+        return not passed
+    return passed
+
+
+def _check_label(check):
+    for key in ["label", "name", "key"]:
+        value = _read_field(check, key)
+        if _is_nonempty(value):
+            return str(value).strip()
+    return "Character setup"
+
+
+def _check_message(check):
+    for key in ["message", "help"]:
+        value = _read_field(check, key)
+        if _is_nonempty(value):
+            return str(value).strip()
+    key = _read_field(check, "key")
+    if _is_nonempty(key):
+        return f"Set **{key}** for this character."
+    return "Ask a Dragonspeaker or Server Aliaser how this server wants it configured."
+
+
+def _evaluate_checks(cfg, ch):
+    policy = _setup_policy(cfg)
+    if not _setup_enabled(policy):
+        return [], []
+    configured = _as_check_list(_read_field(policy, "checks"))
+    passed = []
+    missing = []
+    for check in configured:
+        if not dicts.is_dict(check):
+            continue
+        if not _check_applies(cfg, check):
+            continue
+        value, kind = _read_requirement_value(ch, check)
+        label = _check_label(check)
+        if kind not in ["cvar", "uvar", "svar", "cc", "counter", "custom_counter"]:
+            missing.append([label, f"Unknown setup check type **{kind}**."])
+        elif _value_passes(value, check):
+            passed.append(label)
+        else:
+            missing.append([label, _check_message(check)])
+    return passed, missing
+
+
+def _enabled_command_lines(cfg):
+    subs = _read_field(cfg, "subsystems")
+    if subs == None or not dicts.is_dict(subs):
+        return []
+    lines = []
+    for subsystem in ["exploration", "travel", "downtime", "crafting", "economy", "content", "misc"]:
+        block = _read_field(subs, subsystem)
+        if block == None or _read_field(block, "enabled") != True:
+            continue
+        commands = _read_field(block, "commands")
+        enabled = []
+        if commands != None and dicts.is_dict(commands):
+            for cmd in commands:
+                if _read_field(commands, cmd) == True:
+                    enabled.append(f"`!{cmd}`")
+        if len(enabled) == 0 and subsystem == "downtime":
+            enabled.append("`!downtime`")
+        if len(enabled) > 0:
+            lines.append(f"• **{subsystem}**: {', '.join(enabled)}")
+        else:
+            lines.append(f"• **{subsystem}**")
+    return lines
+
+
+def _supporting_workshops_text():
+    lines = []
+    for item in SUPPORTING_WORKSHOPS:
+        label = item[0]
+        text = item[1]
+        url = item[2]
+        if url == None or str(url).strip() == "":
+            lines.append(f"• **{label}** — {text}")
+        else:
+            lines.append(f"• **[{label}]({url})** — {text}")
+    return "\n".join(lines)
+
+
+def _unconfigured_help(prefix):
+    return f"""Server setup and configuration tools for westmarch-generic.
 
 Usage:
-`{ctx.prefix}westmarch setup`
-`{ctx.prefix}westmarch check`
-`{ctx.prefix}westmarch show`
+`{prefix}westmarch setup`
+`{prefix}westmarch show`
 
-**New server?** Start with `{ctx.prefix}westmarch setup`.
+**New server?** A **Dragonspeaker** or **Server Aliaser** should start with `{prefix}westmarch setup`.
+
+**Supporting workshops**
+{_supporting_workshops_text()}
 """
-    return get_embed(desc=help_text)
 
-desc = (
-    f"**Subcommands**\n"
-    f"• `{ctx.prefix}westmarch setup` — onboarding (create gvar, wire svar)\n"
-    f"• `{ctx.prefix}westmarch check` — validate configuration\n"
-    f"• `{ctx.prefix}westmarch show` — summarize loaded config\n\n"
-    f"Requires **Dragonspeaker** or **Server Aliaser**."
-)
-return get_embed(title="Westmarch admin", desc=desc)
+
+def _subcommand_help(prefix, retired=None):
+    lines = ["**Admin commands**"]
+    lines.append(f"• `{prefix}westmarch setup` — onboarding and recommendations")
+    lines.append(f"• `{prefix}westmarch show` — summarize loaded config")
+    lines.append("")
+    lines.append("These require **Dragonspeaker** or **Server Aliaser**.")
+    if retired != None:
+        lines.append("")
+        lines.append(
+            f"`{prefix}westmarch {retired}` was retired. Use the "
+            "[Westmarch config editor](https://sykander.github.io/westmarch-generic/) "
+            "for config validation."
+        )
+    return "\n".join(lines)
+
+
+def _configured_status(prefix, cfg):
+    policy = _setup_policy(cfg)
+    ch = None
+    if _setup_enabled(policy) and _setup_requires_character(policy):
+        try:
+            ch = character()
+        except:
+            ch = None
+        if ch == None:
+            return (
+                "**Select a character first.**\n\n"
+                "Then run this command again to check that character's server setup."
+            )
+    elif _setup_enabled(policy):
+        try:
+            ch = character()
+        except:
+            ch = None
+
+    passed, missing = _evaluate_checks(cfg, ch)
+    name = "your character"
+    try:
+        if ch != None and ch.name != None and str(ch.name).strip() != "":
+            name = f"**{ch.name}**"
+    except:
+        pass
+
+    lines = []
+    if len(missing) == 0:
+        lines.append(f"{name} is ready for this server.")
+    else:
+        lines.append(f"{name} needs setup before everything will work smoothly.")
+        lines.append("")
+        lines.append("**Action needed**")
+        for item in missing:
+            lines.append(f"• **{item[0]}** — {item[1]}")
+
+    if len(passed) > 0:
+        lines.append("")
+        lines.append("**Ready**")
+        for label in passed:
+            lines.append(f"• {label}")
+
+    enabled = _enabled_command_lines(cfg)
+    if len(enabled) > 0:
+        lines.append("")
+        lines.append("**Enabled here**")
+        lines = lines + enabled
+
+    if len(missing) == 0 and len(passed) == 0:
+        lines.append("")
+        lines.append("No server-specific player setup checks are configured yet.")
+
+    lines.append("")
+    lines.append("**Supporting workshops**")
+    lines.append(_supporting_workshops_text())
+    lines.append("")
+    lines.append(f"Server configurers can review settings with `{prefix}westmarch show`.")
+    return "\n".join(lines)
+
+
+uuid = get_svar(config.SVAR_NAME)
+cfg = config.get_config()
+
+if cfg == None or uuid == None or str(uuid).strip() == "":
+    return get_embed(desc=_unconfigured_help(ctx.prefix))
+
+if len(argslist) > 0 and argslist[0] in ["help", "?"]:
+    return get_embed(title="Westmarch commands", desc=_subcommand_help(ctx.prefix))
+
+if len(argslist) > 0:
+    retired = None
+    if str(argslist[0]).strip().lower() == "check":
+        retired = "check"
+    return get_embed(title="Westmarch commands", desc=_subcommand_help(ctx.prefix, retired))
+
+return get_embed(title="Westmarch character setup", desc=_configured_status(ctx.prefix, cfg))
 </drac2>

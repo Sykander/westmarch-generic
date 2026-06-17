@@ -83,6 +83,7 @@ world_data = {
 policies = {
     "exploration": {"enforce_cooldowns": True, "avoid_repeat_encounters": "off"},
     "display": {"footer_behaviour": "balanced", "helpful_tips": [], "credits": None},
+    "player_setup": {"enabled": True, "require_character": True, "checks": []},
 }
 `;
 
@@ -518,7 +519,7 @@ function CheckView(props: {
       <SectionTitle
         icon={<CheckCircle2 size={20} />}
         title="Check"
-        help="Browser checks mirror the spirit of !westmarch check and add field-level guidance."
+        help="Browser checks are the source of truth for config validation and add field-level guidance."
       />
       <div className="issue-list full">
         {props.issues.length === 0 ? (
@@ -623,6 +624,12 @@ function DisplayView({
           onChange={(value) => updateConfig('display.colour', value)}
           help="Six hex digits, with or without a leading #. Clear the text box to omit display.colour from the config."
         />
+        <TextField
+          label="Logo / thumbnail"
+          value={String(config.display.logo ?? '')}
+          onChange={(value) => updateConfig('display.logo', value || undefined)}
+          help="Overrides the default westmarch-generic GitHub Pages logo used as command embed thumbnails."
+        />
         <FooterTextListField
           label="Fixed footer texts"
           value={config.display.footer}
@@ -651,7 +658,7 @@ function SubsystemsView({
 }) {
   const [plannedSubsystem, setPlannedSubsystem] = useState<SubsystemDefinition | null>(null);
   const knownSubsystems = new Set(SUBSYSTEM_DEFINITIONS.map((item) => item.key));
-  const subsystemRows = [
+  const subsystemRows: SubsystemDefinition[] = [
     ...SUBSYSTEM_DEFINITIONS,
     ...Object.keys(config.subsystems)
       .filter((key) => !knownSubsystems.has(key))
@@ -718,6 +725,29 @@ function SubsystemsView({
                 ) : null}
               </div>
               {isPlanned ? <p className="planned-summary">{definition.detail}</p> : null}
+              {definition.dependencies?.length ? (
+                <div className="dependency-list" aria-label={`${definition.label} dependencies`}>
+                  {definition.dependencies.map((dependency) => (
+                    <span
+                      className={`dependency-pill ${dependency.level}`}
+                      key={`${definition.key}:${dependency.label}`}
+                    >
+                      <strong>
+                        {dependency.level === 'required' ? 'Requires' : 'Works with'}{' '}
+                        {dependency.url ? (
+                          <a href={dependency.url} target="_blank" rel="noreferrer">
+                            {dependency.label}
+                            <ExternalLink size={12} aria-hidden="true" />
+                          </a>
+                        ) : (
+                          dependency.label
+                        )}
+                      </strong>
+                      {dependency.detail}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
               <div className="toggle-grid">
                 {commandEntries.map(([command, value]) =>
                   isPlanned ? (
@@ -976,6 +1006,18 @@ function PoliciesView({
         <FooterBehaviourField
           value={String(readPath(config, 'policies.display.footer_behaviour') ?? 'balanced')}
           onChange={(value) => updateConfig('policies.display.footer_behaviour', value)}
+        />
+        <JsonField
+          label="Player setup checks"
+          value={
+            readPath(config, 'policies.player_setup') ?? {
+              enabled: true,
+              require_character: true,
+              checks: [],
+            }
+          }
+          onCommit={(value) => updateConfig('policies.player_setup', value)}
+          minRows={8}
         />
         <JsonField
           label="Exploration distribution"

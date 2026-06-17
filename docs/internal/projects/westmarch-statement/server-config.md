@@ -42,9 +42,9 @@ Aliases never read the svar directly — they call **`config.get_config()`** ([g
 2. **Create** a config gvar — duplicate [src/gvars/configs/starter.gvar](../../../../src/gvars/configs/starter.gvar), a published **example preset** from [gvars/configs.md](gvars/configs.md), or paste starter body via `!gvar editor` ([aliases/admin/setup.md](aliases/admin/setup.md)).
 3. **Set svar** — `!svar westmarch_config <your-gvar-uuid>`.
 4. **Edit** toggles and world data in the gvar editor; changes apply on the next command (no engine redeploy).
-5. **Verify** — `!westmarch check` (validation) and `!westmarch show` (summary).
+5. **Verify** — use the editor **Check** page for validation and `!westmarch show` for the Discord summary.
 
-**Admin gate:** `!westmarch setup` / `check` / `show` only — config content is maintained in the Avrae workshop, not via bot commands.
+**Admin gate:** `!westmarch setup` / `!westmarch show` only — config content is maintained in the Avrae workshop, not via bot commands. Bare `!westmarch` is open so players can see their selected character’s setup status after the server is wired.
 
 ---
 
@@ -64,7 +64,7 @@ Always present after **`get_config()`** merges **`DEFAULTS`** ([gvars/config.md]
 | `subsystems.*.command_config` | Per-command cooldowns and workday costs ([data-shapes.md § Command config](data-shapes.md#command-config)) |
 | `channel_policy` | Optional channel whitelist / RP rules ([gvars/auth.md](gvars/auth.md)) |
 
-**`!westmarch check`** validates structure and data for enabled subsystems; engine release notes cover breaking config changes.
+The web config editor validates structure and data for enabled subsystems; engine release notes cover breaking config changes.
 
 Full toggle tree: [mvp-commands.md § Config toggle shape](mvp-commands.md#config-toggle-shape).
 
@@ -239,7 +239,7 @@ policies = {
 
 **Player flow:** `!travel oakwood` → `!location` shows Oakwood → `!enc` (no args) resolves biome **`forest`** from **`activities.enc`**.
 
-**`!westmarch check`** errors if **`enc_biome_source`** is **`location`** but **`travel.commands.location`** is off or **`world_data.locations`** is missing. **`auto`** warns when location prerequisites are partial but does not error — runtime falls back to manual biome args.
+The web config editor reports an error if **`enc_biome_source`** is **`location`** but **`travel.commands.location`** is off or **`world_data.locations`** is missing. **`auto`** warns when location prerequisites are partial but does not error — runtime falls back to manual biome args.
 
 ---
 
@@ -330,7 +330,7 @@ Three layers — do not conflate:
 | **auth** | `require_character` | Active Avrae character required for player commands |
 | **time** | `mode` | **`world_clock`** needs **`world_data.calendars`** |
 | **travel** | `apply_path_costs`, `consume_rations`, `rations_item` | Journey cost + rations item name |
-| **downtime** | `mode`, `max_workdays`, `acquisition` | **`tracked`** → enable **`subsystems.downtime`**; check **errors** on mismatch |
+| **downtime** | `mode`, `max_workdays`, `acquisition` | **`tracked`** → enable **`subsystems.downtime`**; the editor reports mismatches |
 | **crafting** | `require_downtime_before_roll`, `auto_deduct_*` | Workdays from **`command_config`** + recipe |
 | **economy** | `enforce_cooldowns`, `enforce_wallet_caps`, `starting_gold` | Job cooldown; optional wallet caps + one-time gp grant |
 | **exploration** | `enforce_cooldowns`, `avoid_repeat_encounters` | Cooldown durations in **`command_config`**; repeat window, hunt/loot art, and DC visibility in **`exploration.config`** |
@@ -352,7 +352,7 @@ Three layers — do not conflate:
 
 ## Validation
 
-**`!westmarch check`** ([aliases/admin/check.md](aliases/admin/check.md)) — implemented in [check_config.gvar](gvars/check_config.md), not in `config.gvar`:
+The **Westmarch config editor** is the source of truth for config validation. It checks owner-authored config before export or publish; **`!westmarch show`** only summarizes what the engine loaded and does not report errors.
 
 | Check | Severity |
 |-------|----------|

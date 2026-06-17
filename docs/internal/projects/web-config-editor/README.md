@@ -17,7 +17,7 @@ Project docs:
 - Parse config contents and render a domain-specific editor for toggles, policies, world data, shops, currencies, biome registry, and encounter pools.
 - Support JSON-friendly biome and location pool editing, including compact template rows.
 - Validate the edited config before export or publish.
-- Provide a guided config check similar to `!westmarch check`, with errors, warnings, explanations, field links, and suggested fixes.
+- Provide the authoritative guided config check, with errors, warnings, explanations, field links, and suggested fixes.
 - Export updated gvar contents for manual copy-paste.
 - Optionally publish the updated config directly to Avrae from the browser when credentials and required ids are present. The existing `publish-avrae` package remains the endpoint/behavior reference, but the Pages app cannot use its Node CLI flow directly.
 
@@ -169,7 +169,7 @@ Common failure handling:
 
 ## Validation
 
-Client validation should mirror `!westmarch check` where possible and add editor-specific guidance:
+Client validation is the source of truth for config checking and adds editor-specific guidance:
 
 - Required top-level config sections.
 - Unknown subsystem keys.

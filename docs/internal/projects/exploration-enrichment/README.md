@@ -122,7 +122,7 @@ Rules:
 - `null` means "skip this argument and use the template default" for JSON authors.
 - Rows must expand to normal [encounter](../westmarch-statement/data-shapes.md#encounter-input) dicts before selection or processing.
 - Expanded encounters should be cached per alias invocation so the same row is not repeatedly expanded.
-- `!westmarch check` should validate unknown template names, invalid row types, wrong arg counts, and expansion failures.
+- The web config editor should validate unknown template names, invalid row types, wrong arg counts, and expansion failures.
 
 This keeps biome files easy to generate and edit as JSON while preserving the engine's existing encounter processing model.
 
@@ -157,7 +157,7 @@ Open design points:
 
 - Where owner template functions live: config gvar, biome gvar, or a dedicated `extensions.encounter_templates` gvar.
 - Whether owner templates can override engine template names. Safer default: reject duplicates unless an explicit policy enables overrides.
-- How much static validation can run in `!westmarch check` without executing risky or expensive owner callables.
+- How much static validation can run in the web editor without executing risky or expensive owner callables.
 - How template rows represent keyword-style arguments if positional rows become too brittle. The first version should stay positional for simple JSON editing.
 
 ## Loot Redesign

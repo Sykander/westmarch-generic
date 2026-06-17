@@ -15,7 +15,7 @@ if not ok:
 argslist = &ARGS&
 args = argparse(argslist)
 
-PAGE_TOTAL = 6
+PAGE_TOTAL = 7
 PAGE_TITLES = {
     1: "Initial Setup",
     2: "General Configuration",
@@ -23,10 +23,14 @@ PAGE_TITLES = {
     4: "World Data",
     5: "Biomes and Locations",
     6: "Monster Data",
+    7: "Recommended Workshops",
 }
 EDITOR_URL = "https://sykander.github.io/westmarch-generic/"
 WORKSHOP_URL = "https://avrae.io/dashboard/workshop"
 GVAR_DASHBOARD_URL = "https://avrae.io/dashboard/gvars"
+BARD_SFX_URL = "https://avrae.io/dashboard/workshop/638f5e434dbab671607f33a5"
+TARGETING_ASSIST_URL = "https://avrae.io/dashboard/workshop/63fe7c97caaad20bc4903309"
+DOWNTIME_DUNGEON_URL = "https://avrae.io/dashboard/workshop/672e0ad6edc17a92c4ddbfae"
 
 
 def _short_uuid(uuid):
@@ -109,6 +113,10 @@ def _find_page(value):
         "locations": 5,
         "monsterdata": 6,
         "monsters": 6,
+        "recommendedworkshops": 7,
+        "workshops": 7,
+        "recommendations": 7,
+        "dependencies": 7,
     }
     if normalized in aliases:
         return aliases[normalized]
@@ -179,7 +187,7 @@ To add another editor:
 **3 - Wire the server svar**
 ```text
 {prefix}svar {svar_name} <your-gvar-uuid>
-{prefix}westmarch check
+{prefix}westmarch show
 ```
 
 **4 - Edit it later**
@@ -206,13 +214,9 @@ def _general_configuration(prefix, svar_name, uuid, cfg):
 {_setup_links(uuid)}
 
 **After editing**
-Run:
-```text
-{prefix}westmarch check
-{prefix}westmarch show
-```
+Use the editor **Check** page before publishing, then run `{prefix}westmarch show` in Discord to confirm what the engine loads.
 
-`check` reports invalid or missing wiring. `show` summarizes what the engine loaded so you can confirm changes without reading the whole gvar.
+`show` summarizes what the engine loaded so you can confirm changes without reading the whole gvar.
 
 Most edits apply on the next command run; you do not need to redeploy the engine workshop.
 
@@ -248,7 +252,10 @@ subsystems = {{
 `repeat_exclude_window`: how many recent encounters to avoid when repeat protection is enabled.
 `command_config.<cmd>.cooldown_seconds`: optional per-command cooldown override.
 
-After changing this section, run `{prefix}westmarch check`."""
+**Workshop dependency**
+Exploration rewards can add items to character bags. Subscribe your preferred **Bags** alias workshop when enabling gathering or loot workflows.
+
+After changing this section, use the editor **Check** page before publishing."""
 
 
 def _world_data(prefix):
@@ -295,7 +302,7 @@ world_data = {{
 }}
 ```
 
-Set exploration `enc_biome_source` to `auto` or `location` when you want commands to use character location. Run `{prefix}westmarch check` to catch missing biome codes."""
+Set exploration `enc_biome_source` to `auto` or `location` when you want commands to use character location. Use the editor **Check** page to catch missing biome codes."""
 
 
 def _monster_data(prefix):
@@ -317,6 +324,42 @@ Used by:
 The search checks your `world_data.monsters` first, then the bundled first-letter shard. Use exact or clear prefix names for custom entries."""
 
 
+def _recommended_workshops(prefix):
+    return f"""westmarch-generic is the server-configurable engine. These companion workshops are useful depending on which subsystems you enable.
+
+**Strong companions**
+**vSheet** — useful for class, subclass, and sheet-derived automation used by commands such as `!level` or `!vsheet`.
+**Bags** — recommended for inventory visibility; exploration gathering and loot can add items to bags.
+**Notes** — good for recipes, journals, quest notes, and player-facing reminders.
+
+**Combat and table flow**
+**Targeting Assist** — {_markdown_link("known workshop link", TARGETING_ASSIST_URL)}. Choose the 2014 or 2024 variant that matches your server rules when both are available.
+**!level** and **!rest** aliases — useful alongside westmarch play, especially when player setup checks ask characters to complete sheet or rest workflows.
+
+**Atmosphere and downtime**
+**Bard SFX** — {_markdown_link("workshop", BARD_SFX_URL)}; the Discord bot is at https://discorddungeon.com/.
+**Downtime Dungeon** — {_markdown_link("workshop", DOWNTIME_DUNGEON_URL)}; useful if you want an automated downtime adventure loop alongside this engine.
+
+**Configurable player setup**
+Set `policies.player_setup.checks` in your `westmarch_config` to tell players what their current character still needs. Checks can look for cvars, uvars, svars, or custom counters and can be gated by enabled subsystems or commands.
+
+Example:
+```py
+policies = {{
+    "player_setup": {{
+        "enabled": True,
+        "require_character": True,
+        "checks": [
+            {{"type": "cvar", "key": "wg_downtime", "label": "Downtime", "message": "Run `{prefix}downtime setup`.", "when_subsystem": "downtime"}},
+            {{"type": "cvar", "key": "vsheet", "label": "vSheet", "message": "Run your server's `!vsheet` setup command."}},
+        ],
+    }},
+}}
+```
+
+Players can run `{prefix}westmarch` to see their own setup status."""
+
+
 def _render_page(page, prefix, svar_name, uuid, cfg):
     if page == 1:
         return PAGE_TITLES[1], _initial_setup(prefix, svar_name, uuid)
@@ -330,6 +373,8 @@ def _render_page(page, prefix, svar_name, uuid, cfg):
         return PAGE_TITLES[5], _biomes_locations(prefix)
     if page == 6:
         return PAGE_TITLES[6], _monster_data(prefix)
+    if page == 7:
+        return PAGE_TITLES[7], _recommended_workshops(prefix)
     return "Setup Pages", _page_index(prefix)
 
 if len(argslist) > 0 and argslist[0] in ["help", "?"]:

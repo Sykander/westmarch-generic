@@ -15,11 +15,6 @@
           "docs_file": "src/aliases/westmarch/setup.md"
         },
         {
-          "name": "check",
-          "file": "src/aliases/westmarch/check.alias",
-          "docs_file": "src/aliases/westmarch/check.md"
-        },
-        {
           "name": "show",
           "file": "src/aliases/westmarch/show.alias",
           "docs_file": "src/aliases/westmarch/show.md"
@@ -263,11 +258,6 @@
       "name": "biomes",
       "file": "src/gvars/utils/world/biomes.gvar",
       "id": "9db668e3-5743-4ab8-b610-69877abce4a8"
-    },
-    {
-      "name": "check_config",
-      "file": "src/gvars/utils/check_config/check_config.gvar",
-      "id": "07569169-a35a-494f-ab4f-e3d58a985242"
     },
     {
       "name": "clock",

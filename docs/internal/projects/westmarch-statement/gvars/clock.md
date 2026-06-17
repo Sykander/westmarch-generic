@@ -51,7 +51,7 @@ Manual-only / GM-set instant without unix mapping — **post-MVP**.
 | **`world_clock`** | **`!time`** uses this module + **`world_data.calendars`** |
 | **`manual`** / **`none`** | Alias shows help / narrative-only message |
 
-**`!westmarch check`** warns when **`world_clock`** mode is on but **`world_data.calendars`** is missing.
+The web config editor warns when **`world_clock`** mode is on but **`world_data.calendars`** is missing.
 
 ## Related
 

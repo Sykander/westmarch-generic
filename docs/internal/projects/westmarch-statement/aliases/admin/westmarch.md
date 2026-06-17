@@ -2,7 +2,7 @@
 
 **Subsystem:** admin *(not in config)* · **Phase:** 0–1
 
-**Parent alias** for server setup tooling. Player game commands stay top-level (`!enc`, `!travel`, …); config inspection lives under one branded entry point. Always available to holders of Avrae aliasing roles — **not** toggled via **`subsystems`**.
+**Parent alias** for the branded westmarch entry point. Before **`westmarch_config`** is wired it shows setup help. After wiring, bare **`!westmarch`** is player-facing and reports whether the selected character satisfies server-configured setup checks. Admin inspection lives under **`setup`** and **`show`**.
 
 ## Why `!westmarch` (not `!config` / `westmarch_config`)
 
@@ -21,12 +21,11 @@ Avrae routes `!westmarch <sub>` to nested aliases in the workshop sourcemap. Ali
 
 | Invocation | Sub-alias | Doc | Purpose |
 |------------|-----------|-----|---------|
-| `!westmarch` | *(parent)* | this file | Help + subcommand list |
-| `!westmarch setup` | `setup` | [setup.md](setup.md) | Onboarding — create gvar, wire svar, verify |
-| `!westmarch check` | `check` | [check.md](check.md) | Validate wiring + schema; errors/warnings |
+| `!westmarch` | *(parent)* | this file | Unwired setup help; wired character setup status |
+| `!westmarch setup` | `setup` | [setup.md](setup.md) | Onboarding — create gvar, wire svar, recommendations |
 | `!westmarch show [section]` | `show` | [show.md](show.md) | Summarize loaded config with field glossary |
 
-**Who may run:** **`Dragonspeaker`** or **`Server Aliaser`** (Avrae aliasing permissions — not GM/DM). See [README.md](README.md).
+**Who may run:** anyone may run bare **`!westmarch`**. **`setup`** and **`show`** require **`Dragonspeaker`** or **`Server Aliaser`** (Avrae aliasing permissions — not GM/DM). See [README.md](README.md).
 
 ### Explicit non-goals (MVP)
 
@@ -41,23 +40,29 @@ Avrae routes `!westmarch <sub>` to nested aliases in the workshop sourcemap. Ali
 !westmarch ?
 ```
 
-Default embed:
+When **`westmarch_config`** is unset, the default embed:
 
 - One-line product description
-- **New server?** → **`!westmarch setup`**
-- **Subcommands:** `setup`, `check`, `show` with one-line descriptions
+- **New server?** → **`!westmarch setup`** for a Dragonspeaker or Server Aliaser
+- Supporting workshop recommendations
+
+When **`westmarch_config`** is set and loadable, the default embed:
+
+- Checks the selected character against **`policies.player_setup`**.
+- Shows missing setup actions and passed checks.
+- Lists enabled player commands.
+- Points server configurers to **`!westmarch show`**.
 
 ## Access
 
-**Who may run:** **`Dragonspeaker`** or **`Server Aliaser`** only. Enforced in **`auth.is_allowed()`** — no config toggle. These roles gate Avrae workshop/svar setup, not narrative GM authority.
+Bare **`!westmarch`** is open. **`setup`** and **`show`** are enforced in **`auth.is_allowed()`** with Avrae aliasing roles only. These roles gate workshop/svar setup, not narrative GM authority.
 
 ## Sourcemap layout (planned)
 
 ```
 src/aliases/westmarch/
-  westmarch.alias      # parent — help
+  westmarch.alias      # parent — setup help or player setup status
   setup.alias          # sub-alias
-  check.alias          # sub-alias
   show.alias           # sub-alias
 ```
 
@@ -66,5 +71,5 @@ Shared logic in **[gvars/config.md](../../gvars/config.md)** and **[gvars/auth.m
 ## Related
 
 - [README.md](README.md) — config storage model (svar → gvar), access control
-- [setup.md](setup.md) · [check.md](check.md) · [show.md](show.md)
+- [setup.md](setup.md) · [show.md](show.md)
 - [solution-statement.md](../../solution-statement.md) — Option A + C config architecture

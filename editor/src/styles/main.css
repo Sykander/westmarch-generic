@@ -944,6 +944,43 @@ th {
   line-height: 1.4;
 }
 
+.dependency-list {
+  display: grid;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.dependency-pill {
+  display: grid;
+  gap: 3px;
+  border: 1px solid #d9ded9;
+  border-left-width: 4px;
+  border-radius: 8px;
+  background: #fbfcfb;
+  padding: 8px 10px;
+  color: #44514a;
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+
+.dependency-pill.required {
+  border-left-color: #b74242;
+}
+
+.dependency-pill.recommended {
+  border-left-color: #48745f;
+}
+
+.dependency-pill strong {
+  color: #253229;
+}
+
+.dependency-pill a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .switch-line,
 .check-chip {
   display: inline-flex;

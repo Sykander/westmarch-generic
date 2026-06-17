@@ -1,6 +1,6 @@
 {
   "name": "westmarch-generic",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Configurable westmarch-style Avrae workshop — server setup via svars and config gvars",
   "main": "index.js",
   "scripts": {
@@ -25,7 +25,7 @@
     "lint:check": "eslint . --cache --cache-location .cache/eslint/.eslintcache",
     "lint:fix": "eslint . --fix --cache --cache-location .cache/eslint/.eslintcache && node utils/minify-gvar-json.js",
     "avrae:test-utils": "npm run avrae:test-utils:config && npm run avrae:test-utils:catalogues && npm run avrae:test-utils:gameplay && npm run avrae:test-utils:systems",
-    "avrae:test-utils:config": "avrae-ls --run-tests src/gvars/utils/auth --log-level INFO && avrae-ls --run-tests src/gvars/utils/config --log-level INFO && avrae-ls --run-tests src/gvars/utils/check_config --log-level INFO && avrae-ls --run-tests src/gvars/utils/display --log-level INFO",
+    "avrae:test-utils:config": "avrae-ls --run-tests src/gvars/utils/auth --log-level INFO && avrae-ls --run-tests src/gvars/utils/config --log-level INFO && avrae-ls --run-tests src/gvars/utils/display --log-level INFO",
     "avrae:test-utils:catalogues": "avrae-ls --run-tests src/gvars/utils/catalogues --log-level INFO && avrae-ls --run-tests src/gvars/utils/content --log-level INFO",
     "avrae:test-utils:gameplay": "avrae-ls --run-tests src/gvars/utils/encounters --log-level INFO && avrae-ls --run-tests src/gvars/utils/exploration --log-level INFO && avrae-ls --run-tests src/gvars/utils/world --log-level INFO",
     "avrae:test-utils:systems": "avrae-ls --run-tests src/gvars/utils/core --log-level INFO && avrae-ls --run-tests src/gvars/utils/crafting --log-level INFO && avrae-ls --run-tests src/gvars/utils/economy --log-level INFO && avrae-ls --run-tests src/gvars/utils/misc --log-level INFO && avrae-ls --run-tests src/gvars/utils/pc --log-level INFO",

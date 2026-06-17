@@ -3,23 +3,45 @@ import { DEFAULT_SUBSYSTEM_COMMANDS } from '../lib/config';
 
 const SUBSYSTEM_DETAILS: Record<
   string,
-  Pick<SubsystemDefinition, 'label' | 'implemented' | 'detail'>
+  Pick<SubsystemDefinition, 'label' | 'implemented' | 'detail' | 'dependencies'>
 > = {
   exploration: {
     label: 'Exploration',
     implemented: true,
     detail: 'Exploration activity commands are available in this MVP editor.',
+    dependencies: [
+      {
+        label: 'Bags workshop',
+        level: 'required',
+        detail: 'Loot and gathering rewards can add items to character bags.',
+      },
+    ],
   },
   travel: {
     label: 'Travel',
     implemented: false,
     detail:
       'Travel, location, time, and weather controls are planned but not implemented in the browser editor yet.',
+    dependencies: [
+      {
+        label: 'vSheet',
+        level: 'recommended',
+        detail: 'Character sheet/location conventions are easier to keep consistent.',
+      },
+    ],
   },
   downtime: {
     label: 'Downtime',
     implemented: false,
     detail: 'Downtime controls are planned for a later pass once the command behavior is stable.',
+    dependencies: [
+      {
+        label: 'Bard SFX',
+        level: 'recommended',
+        detail: 'Optional ambient/audio support for downtime scenes.',
+        url: 'https://avrae.io/dashboard/workshop/638f5e434dbab671607f33a5',
+      },
+    ],
   },
   crafting: {
     label: 'Crafting',

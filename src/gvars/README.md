@@ -25,7 +25,6 @@ src/gvars/
     core/                  # commands, embeds, rolls, …
     config/config.gvar     # server config loader
     auth/auth.gvar
-    check_config/
     catalogues/            # monsters, items, spells
     world/                 # biomes, locations, paths, journeys, clock, weather
     pc/, encounters/, exploration/, economy/, crafting/, content/, display/, misc/

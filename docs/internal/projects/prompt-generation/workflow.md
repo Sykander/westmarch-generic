@@ -115,7 +115,7 @@ Target per biome (first pass): **5–10** rows each for `enc.combat`, `enc.gathe
 
 ## Phase 8 — Validate & publish
 
-1. Run `!westmarch check` with config loaded (alias-tests / dev server).
+1. Run the web config editor checks with config loaded.
 2. Fix with [`revision.prompt.md`](../../../../src/prompts/_templates/revision.prompt.md).
 3. Publish workshop gvar; wire `westmarch_config` svar.
 4. Document UUID in [docs/setup.md](../../../../docs/setup.md) when ready.

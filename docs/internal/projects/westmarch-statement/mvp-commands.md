@@ -8,7 +8,7 @@ See [solution-statement.md](solution-statement.md) for architecture and phases; 
 
 ## MVP command set
 
-Twenty-five top-level commands (twenty-four player-facing + setup hub **`westmarch`**), plus shared engine/config infrastructure. The hub exposes **`setup`**, **`check`**, and **`show`** subcommands — **Avrae aliasing role-gated**, not in **`subsystems`**.
+Twenty-five top-level commands (twenty-four player-facing + **`westmarch`**), plus shared engine/config infrastructure. Bare **`westmarch`** is player-facing once wired; **`setup`** and **`show`** are **Avrae aliasing role-gated**, not in **`subsystems`**.
 
 | Command | Subsystem | Enable via config | Primary config data | Source |
 |---------|-----------|-------------------|---------------------|--------|
@@ -36,7 +36,7 @@ Twenty-five top-level commands (twenty-four player-facing + setup hub **`westmar
 | **read** | content | `…commands.read` | Same book engine; deep-read cooldown policy | westmarch |
 | **quest** | misc | `subsystems.misc.commands.quest` | Optional quest categories, labels, permissions | **new** |
 | **recipe** | misc | `…commands.recipe` | Recipe catalogues (items, potions, magic items) | **new** |
-| **westmarch** | admin *(not in config)* | — *(aliasing role-gated)* | Svar wiring, validation rules, display glossary, starter template | **new** — setup hub; subcommands **`setup`**, **`check`**, **`show`** |
+| **westmarch** | admin *(not in config)* | — *(bare command open; setup/show aliasing role-gated)* | Svar wiring, player setup policy, display glossary, starter template | **new** — player setup status plus **`setup`**/**`show`** |
 
 ### Subsystem notes
 
@@ -52,7 +52,7 @@ Twenty-five top-level commands (twenty-four player-facing + setup hub **`westmar
 
 **Misc** — **quest** and **recipe** are MVP player utilities. **quest** surfaces a structured quest log (view active quests, browse entries, add notes under a quest). **recipe** searches and displays recipes from crafting catalogues—complements **craft** / **brew** / **enchant** without replacing them. **diary** (freeform RP notes) and **journal** (optional hub: **`!journal quest`** ≡ **`!quest`**, etc.) ship **post-MVP** — see [aliases/misc/journal.md](aliases/misc/journal.md).
 
-**Setup hub** — **`!westmarch`** is for **Avrae engine setup** (svars, config gvar wiring, validation). Requires **`Dragonspeaker`** or **`Server Aliaser`** — Avrae aliasing permissions to edit workshop aliases and server variables; **not** an in-game GM or DM role. Subcommands **`setup`**, **`check`**, **`show`** are always on when the engine is subscribed — **not** toggled via **`subsystems`**. See [aliases/admin/README.md](aliases/admin/README.md).
+**Setup hub** — bare **`!westmarch`** is player-facing once **`westmarch_config`** is wired and reports the selected character’s configured setup checks. **`!westmarch setup`** and **`!westmarch show`** require **`Dragonspeaker`** or **`Server Aliaser`** — Avrae aliasing permissions to edit workshop aliases and server variables; **not** an in-game GM or DM role. Config validation lives in the web editor. See [aliases/admin/README.md](aliases/admin/README.md).
 
 ---
 
@@ -101,7 +101,8 @@ When a subsystem `enabled` is `False`, all its commands respect the global off s
 | **Books & library** | `library` book catalogue | library, read |
 | **Quest journal** | *(new)* optional categories, display labels | quest |
 | **Recipe index** | **`recipes`** + item/potion/magic catalogues | recipe |
-| **Setup hub access** | Avrae aliasing roles in [auth.gvar](gvars/auth.md) (`Dragonspeaker`, `Server Aliaser`) | `!westmarch` hub (`setup`, `check`, `show`) |
+| **Setup hub access** | Avrae aliasing roles in [auth.gvar](gvars/auth.md) (`Dragonspeaker`, `Server Aliaser`) | `!westmarch setup`, `!westmarch show` |
+| **Player setup status** | `policies.player_setup` | bare `!westmarch` |
 | **Display / identity** | *(optional)* base **`display`**; per-subsystem **`display`** + **`command_display`**; **`policies.display.footer_behaviour`** | Help embeds, command embeds, `!westmarch show`, default embed accent |
 | **Config metadata** | *(optional)* `config_version`, `rules_version` | Owner versioning; rules override |
 | **Language policy** | `policies.languages.allowed` | Setting-valid languages |
@@ -118,7 +119,6 @@ Large catalogues may require **extension gvars** ([solution-statement.md](soluti
 |--------|-----|---------|
 | **config** | [gvars/config.md](gvars/config.md) | All aliases |
 | **display** | [gvars/display.md](gvars/display.md) | All aliases that build embeds — `get_display()` |
-| **`check_config`** | [gvars/check_config.md](gvars/check_config.md) | `!westmarch check` |
 | **biomes** | [gvars/biomes.md](gvars/biomes.md) | Lazy-load biome JSON rows |
 | **auth** | [gvars/auth.md](gvars/auth.md) | All aliases |
 | **pc** | [gvars/pc.md](gvars/pc.md) | Sheet mutations, wallet, downtime |

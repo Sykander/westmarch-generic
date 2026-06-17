@@ -2,7 +2,7 @@
 
 **Subsystem:** admin *(not in config)* · **Phase:** 0–1
 
-**Subcommand** of [`!westmarch`](westmarch.md) — readable summary of the server’s loaded config for GMs and content authors.
+**Subcommand** of [`!westmarch`](westmarch.md) — readable summary of the server’s loaded config for server configurers and content authors.
 
 ## Player-facing behaviour
 
@@ -20,11 +20,11 @@
 |---------|---------|
 | **Wiring** | Svar name, full config gvar UUID, named [Westmarch config editor](https://sykander.github.io/westmarch-generic/) link with `westmarch_config` query param when set, named Avrae dashboard lookup link, load status, optional **`config_version`** |
 | **World** | **`display.get_display()`** default title/footer/colour from base **`display`**; **`cfg.display`** fields for show copy ([display.gvar](../../gvars/display.md)) |
-| **Subsystems** | Diff codeblock: subsystem rows with indented command rows beneath; `+` enabled and valid, neutral lines disabled and valid, `-` enabled with validation errors |
+| **Subsystems** | Diff codeblock: subsystem rows with indented command rows beneath; `+` enabled and neutral lines disabled |
 | **Policies** | Summary of `policies.*` — auth, time, travel, downtime, crafting, economy, exploration, combat, quest, content, inventory, **`languages.allowed`**, **`display.footer_behaviour`** — [data-shapes.md § Server policies](../../data-shapes.md#server-policies) |
 | **Runtime** | **`get_rules_edition()`** — **`rules_version`** override, else Avrae, else 2014 |
 | **Data overview** | Counts where cheap: e.g. N areas, N shops, N books, catalogue sizes |
-| **Pointers** | Link to public schema docs; suggest `!westmarch check` if issues suspected |
+| **Pointers** | Link to the web config editor for validation before publishing changes |
 
 Each section includes a **one-line explanation** where helpful (e.g. when **`rules_version`** overrides Avrae).
 
@@ -46,7 +46,7 @@ flowchart TD
   E --> F[Embed with field glossary]
 ```
 
-Footer may note validation warnings from **`check_config.validate()`** (same rules as **`check`**) when useful.
+Validation is intentionally not run here. The web config editor is the source of truth for config checking; **`show`** only reports what the engine loaded.
 
 ## Implementation checklist
 

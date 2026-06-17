@@ -69,9 +69,6 @@
         "9db668e3-5743-4ab8-b610-69877abce4a8": {
             "filePath": "src/gvars/utils/world/biomes.gvar"
         },
-        "07569169-a35a-494f-ab4f-e3d58a985242": {
-            "filePath": "src/gvars/utils/check_config/check_config.gvar"
-        },
         "4695cda5-fcb6-43d3-aff2-d37112a6fc01": {
             "filePath": "src/gvars/utils/world/clock.gvar"
         },

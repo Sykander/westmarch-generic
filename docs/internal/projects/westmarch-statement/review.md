@@ -101,10 +101,10 @@ flowchart LR
 | Issue | Severity | Notes |
 |-------|----------|-------|
 | **Decision record: rules edition row wrong** | **High** | Table says “**Config field** + optional Avrae inference”; body § Rules edition says **not** an owner config field — **`get_rules_edition()`** only. Fix decision record row |
-| **Phase 0 scope vs “vertical slice”** | **High** | Phase 0 table lists **full encounter engine** (templates, lists, encounters) + admin hub + **`!westmarch check`** — heavier than “one activity command.” Either shrink Phase 0 deliverables or rename goal to “exploration slice + admin” |
+| **Phase 0 scope vs “vertical slice”** | **High** | Phase 0 table lists **full encounter engine** (templates, lists, encounters) + admin hub + validation — heavier than “one activity command.” Either shrink Phase 0 deliverables or rename goal to “exploration slice + admin” |
 | **`core/` timing** | Medium | Phase 1 lists core ports; Phase 0 aliases need **embeds**, **rolls** immediately — **partial `core/` in Phase 0** |
 | **Phase 1 = full MVP** | **High (plan risk)** | 24 player commands in one phase after Phase 0 — still aggressive |
-| **Extension gvar contract** | Medium | Option C chosen; **`extensions.monsters`** referenced in [check.md](aliases/admin/check.md) and [items.md](gvars/items.md) but **no canonical shape in data-shapes.md** |
+| **Extension gvar contract** | Medium | Option C chosen; **`extensions.monsters`** referenced by validation and [items.md](gvars/items.md) but **no canonical shape in data-shapes.md** |
 | **Vertical port order** | — | **Fixed** — **wallet** in step 8; after-MVP numbering 11–12 |
 | **Gantt 2025-06** | Low | Stale placeholders |
 | **Duplicate config schema block** | — | **Resolved** — only one outline block in SS now |
@@ -171,7 +171,7 @@ flowchart LR
 | **World data “TBD per vertical”** | — | **Fixed** — **`world_data`** § in DS (locations, paths, transport, calendars, biome registry) |
 | **Inline encounter pools in examples** | — | **Fixed** in SC — **`world_data.biomes`** + lazy gvar bodies |
 | **Extension resolution unspecified** | Medium | “Engine loaders resolve them” — which gvar function merges extensions? **`config.get_config()`** vs catalogue modules? |
-| **`subsystems.admin` legacy** | Low | [check.md](aliases/admin/check.md) warns — document removal in migration notes |
+| **`subsystems.admin` legacy** | Low | Editor validation warns — document removal in migration notes |
 
 ### SC score: **8/10** completeness · **8/10** clarity — **Approve**
 
@@ -268,7 +268,7 @@ flowchart LR
 | **Recipe discovery encounters** | **P2** | Defer **`outcome type: recipe`** |
 | **Journey `{type: encounter}` steps** | **P1** | No doc for inline roll during travel |
 | **Combat encounters in Phase 0** | **P1** | Gather-only fixtures or narrative combat until Tier C |
-| **Biome body validation** | **P1** | check_config: validate **`pools`** shape when kind % > 0 |
+| **Biome body validation** | **P1** | Editor validation: validate **`pools`** shape when kind % > 0 |
 | **Biome port / generate tooling** | **P2** | **`utils/port-biome.js`** deferred |
 | **Weighted pick within kind** | **P2** | Uniform random only for MVP |
 | **Per-activity `distribution` override** | **P2** | Shared mix intentional |
@@ -293,7 +293,7 @@ flowchart LR
 4. **`encounters.process_encounter`** with gather + gold outcomes  
 5. **`!enc`** with **`distribution: { gather: 100, … }`** or combat deferred  
 6. **`display.get_display()`**, **`auth`**, **`stats.add_log`**, **`pc.check_cooldown`** for **`enc`**  
-7. **`!westmarch check`** — registry, distribution sum, biome load smoke  
+7. Editor validation — registry, distribution sum, biome load smoke  
 
 **Stretch (not blockers):** **`balanced`** mode, quest kind, recipe outcomes, journey encounter steps.
 
@@ -371,7 +371,7 @@ flowchart LR
 2. **Partial `core/`** — at least **embeds**, **rolls**, **strings** (needed by encounter slice)
 3. **`pc.gvar`** — minimal mutators if encounter outcomes apply sheet changes in slice
 4. Encounter pipeline: **templates + lists + encounters** *or* defer outcomes to keep slice thin
-5. One activity command (**enc** or **forage**) + **`!westmarch check`** on starter template
+5. One activity command (**enc** or **forage**) + editor validation on starter template
 6. Spike: **`get_rules_edition()`** (document Avrae availability)
 7. `.alias-test` + CI
 
@@ -434,7 +434,7 @@ Document tranches in SS and MVP § Mapping to solution phases.
 | **P1** | DS encounter input | Kind inference table |
 | **P1** | journeys.md / travel | Journey **`{type: encounter}`** step processing |
 | **P1** | ~~enc.md, exploration README~~ | **Done** — **`display.get_display()`** standard opener |
-| **P1** | check_config | Biome gvar **`pools`** validation |
+| **P1** | Editor validation | Biome gvar **`pools`** validation |
 | **P1** | US | ~~Rewrite **US-3.5**~~ — done (**US-3.5** + **US-3.5a**); add GM persona or rename; P0 + **US-4.3** |
 | **P1** | SS, MVP | Phase **1a–1e** tranches; Phase 0 **partial core/**; honest Phase 0 scope |
 | **P1** | gvars/ | **`crafting.gvar`** doc; extension loader note on config or catalogues |
@@ -509,13 +509,13 @@ Docs lead implementation — expected at this stage.
 
 | Module | Doc | Notes |
 |--------|-----|-------|
-| config, auth, display, check_config | gvars/*.md | Admin hub + loader |
+| config, auth, display | gvars/*.md | Admin hub + loader |
 | pc, stats | pc.md, stats.md | Single write path; cooldown via stats |
 | biomes, encounter_* | biomes.md, encounter_lists.md, encounters.md | Gather-only Phase 0 OK |
 | enc + westmarch admin | aliases/exploration/enc.md, aliases/admin/* | Pipeline documented end-to-end |
 | Partial **core/** | core.md | embeds, rolls, strings minimum |
 
-**Phase 0 exit:** CI green; `!enc` smoke; `!westmarch check` on starter; unset svar safe.
+**Phase 0 exit:** CI green; `!enc` smoke; editor validation on starter; unset svar safe.
 
 ### Not ready — doc gaps block coding
 

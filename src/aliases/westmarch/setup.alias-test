@@ -70,3 +70,12 @@ name: monster data page explains hunt and loot consumers
 vars:
   uvars:
     _wm_command: setup
+
+!setup -p "Recommended Workshops"
+---
+re:vSheet[\s\S]*Bags[\s\S]*policies.player_setup.checks
+---
+name: recommended workshops page lists companions and player setup policy
+vars:
+  uvars:
+    _wm_command: setup

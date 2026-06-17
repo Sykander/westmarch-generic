@@ -30,13 +30,13 @@ Previously named `initial-statement`; renamed to reflect that this is the **west
 | [aliases/economy/](aliases/economy/README.md) | `economy` | job, buy, sell, wallet |
 | [aliases/content/](aliases/content/README.md) | `content` | library, read |
 | [aliases/misc/](aliases/misc/README.md) | `misc` | quest, recipe *(MVP)*; diary, journal hub *(post-MVP)* |
-| [aliases/admin/](aliases/admin/README.md) | *(not in config)* | westmarch (`setup`, `check`, `show`) — role-gated |
+| [aliases/admin/](aliases/admin/README.md) | *(not in config)* | westmarch player setup status; `setup`/`show` role-gated |
 
 ### Engine gvars
 
 | Folder | Modules |
 |--------|---------|
-| [gvars/](gvars/README.md) | `config`, `check_config`, `auth`, `pc`, encounters, journeys, catalogues, … |
+| [gvars/](gvars/README.md) | `config`, `auth`, `pc`, encounters, journeys, catalogues, … |
 | [gvars/configs.md](gvars/configs.md) | Example server presets — FR, generic fantasy, Spelljammer (`src/gvars/configs/`) |
 
 **Read order for newcomers:** PS → US → SS → MVP → review.

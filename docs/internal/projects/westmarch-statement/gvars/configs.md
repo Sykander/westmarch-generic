@@ -106,7 +106,7 @@ Example configs get **workshop gvar slots** in dev/prod sourcemaps when ready to
 3. **`generic_fantasy_2024.gvar`** / **`forgotten_realms_2024.gvar`** — when 2024 catalogue branches exist.
 4. **`spelljammer_2014.gvar`** — after travel/journeys and location model are stable.
 
-Each preset should pass **`!westmarch check`** for the subsystems it enables.
+Each preset should pass the web config editor checks for the subsystems it enables.
 
 ---
 
