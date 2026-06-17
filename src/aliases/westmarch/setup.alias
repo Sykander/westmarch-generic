@@ -28,6 +28,7 @@ PAGE_TITLES = {
 EDITOR_URL = "https://sykander.github.io/westmarch-generic/"
 WORKSHOP_URL = "https://avrae.io/dashboard/workshop"
 GVAR_DASHBOARD_URL = "https://avrae.io/dashboard/gvars"
+SUPPORT_SERVER_URL = "https://discord.gg/ZAkJ44489G"
 BARD_SFX_URL = "https://avrae.io/dashboard/workshop/638f5e434dbab671607f33a5"
 TARGETING_ASSIST_URL = "https://avrae.io/dashboard/workshop/63fe7c97caaad20bc4903309"
 DOWNTIME_DUNGEON_URL = "https://avrae.io/dashboard/workshop/672e0ad6edc17a92c4ddbfae"
@@ -212,6 +213,7 @@ def _general_configuration(prefix, svar_name, uuid, cfg):
 
 **Links**
 {_setup_links(uuid)}
+- {_markdown_link("Westmarch Generic Discord", SUPPORT_SERVER_URL)} - ask setup questions and compare notes with other server owners.
 
 **After editing**
 Use the editor **Check** page before publishing, then run `{prefix}westmarch show` in Discord to confirm what the engine loads.

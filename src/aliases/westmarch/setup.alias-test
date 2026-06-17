@@ -18,7 +18,7 @@ vars:
 
 !setup
 ---
-"re:General Configuration[\\s\\S]*\\[Westmarch config editor\\]\\(https://sykander.github.io/westmarch-generic/\\?westmarch_config=ffff1111-1111-1111-1111-111111111111\\)[\\s\\S]*\\[Avrae gvar dashboard\\]\\(https://avrae.io/dashboard/gvars\\?lookup=ffff1111-1111-1111-1111-111111111111\\)"
+"re:General Configuration[\\s\\S]*\\[Westmarch config editor\\]\\(https://sykander.github.io/westmarch-generic/\\?westmarch_config=ffff1111-1111-1111-1111-111111111111\\)[\\s\\S]*\\[Avrae gvar dashboard\\]\\(https://avrae.io/dashboard/gvars\\?lookup=ffff1111-1111-1111-1111-111111111111\\)[\\s\\S]*\\[Westmarch Generic Discord\\]\\(https://discord.gg/ZAkJ44489G\\)"
 ---
 name: wired defaults to general configuration page
 vars:
@@ -29,6 +29,15 @@ vars:
   gvars:
     ffff1111-1111-1111-1111-111111111111: |
       # empty owner body
+
+!setup -p 2
+---
+re:General Configuration[\s\S]*ask setup questions[\s\S]*https://discord.gg/ZAkJ44489G
+---
+name: general configuration page links support server
+vars:
+  uvars:
+    _wm_command: setup
 
 !setup -p 1
 ---

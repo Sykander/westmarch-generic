@@ -24,6 +24,8 @@ For architecture and config schema detail, see [internal westmarch-statement](in
 
 In Discord you can also run **`!westmarch setup`** for step-by-step embeds (when the engine is deployed).
 
+Need help? Join the [Westmarch Generic Discord](https://discord.gg/ZAkJ44489G) to ask setup questions and compare notes with other server owners.
+
 ---
 
 ## 1 — Subscribe to the engine
