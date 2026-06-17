@@ -28,6 +28,7 @@ display.get_display()
   → encounter_lists.get_encounter(biome, "<activity>", ch, cfg)
   → encounters.process_encounter(...)
   → stats.add_log(ch, extras={ biome, encounter_kind })
+  → journeys.complete_activity_step(ch, cfg, "<activity>", biome)
 ```
 
 See [enc.md](enc.md) and [data-shapes.md](../../data-shapes.md).
@@ -37,6 +38,8 @@ See [enc.md](enc.md) and [data-shapes.md](../../data-shapes.md).
 Manual biome input resolves with **`lists.search_list`** over registered biome codes. Commands use one match, report no matches, or ask for more specificity with up to five matched codes.
 
 **Encounter data** — **`world_data.biomes`** registry on owner config; raw JSON rows tagged with **`activity.kind`** in lazy-loaded biome gvars ([biomes.gvar](../../gvars/biomes.md)). No inline **`encounter_pools`** on config.
+
+**Journey hooks** — successful activity commands complete the active journey step only when the next path step explicitly matches that activity and biome. Plain encounter steps default to **`enc`**; activity-specific steps use **`activity`**, e.g. `{ "type": "encounter", "activity": "forage", "biome": "forest" }`.
 
 **hunt** → **loot** is the combat/loot loop (`!enc` before `!hunt` in westmarch help text).
 

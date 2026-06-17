@@ -31,12 +31,13 @@ westmarch **`get_encounter_list(code, "fish")`** → generic **`biomes.resolve_b
 
 ## Implementation checklist
 
-- [ ] Clone **enc** alias → `src/aliases/exploration/fish.alias`
-- [ ] **`biomes.resolve_biome("fish", args, ch, cfg)`**
-- [ ] **`encounter_lists.get_encounter(biome, "fish", ch, cfg)`**
-- [ ] **`stats.add_log`**
-- [ ] Toggle `exploration.commands.fish`
-- [ ] `fish.alias-test`
+- [x] Thin alias wrapper → `src/aliases/exploration/fish.alias`
+- [x] Shared **`exploration.run_activity("fish", args, get_embed)`** pipeline
+- [x] **`biomes.resolve_biome("fish", args, ch, cfg)`**
+- [x] **`encounter_lists.get_encounter(biome, "fish", ch, cfg)`**
+- [x] **`stats.add_log`**
+- [x] Toggle `exploration.commands.fish`
+- [x] `fish.alias-test`
 
 ## Tier B cluster exit criteria
 
@@ -44,10 +45,11 @@ When **fish** lands with mine/lumber/forage:
 
 | Criterion | Status |
 |-----------|--------|
-| All five activities use **`biomes.resolve_biome`** + shared list builder | Required |
-| Per-command toggles independent | Required |
-| One alias-test per command in CI | Required |
-| Quest/journey overlays still deferred | OK for MVP |
+| All five activities use **`biomes.resolve_biome`** + shared list builder | Done |
+| Per-command toggles independent | Done |
+| One alias-test per command in CI | Done |
+| Quest overlays still deferred | OK for MVP |
+| Matching journey steps complete via shared activity hook | Covered |
 
 ## Related
 

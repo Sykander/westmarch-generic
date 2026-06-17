@@ -31,7 +31,7 @@ Diff from **enc**:
 | Cooldown key | **`"enc"`** | **`"mine"`** |
 | Title/footer | **`command_display.enc`** | **`command_display.mine`** — via **`display.get_display()`** |
 
-No journey integration in westmarch (enc-only).
+westmarch only auto-advanced **enc** journey steps. Generic supports explicit activity-specific path steps through **`activity`**, so a journey step can require `!mine <biome>` when configured that way.
 
 ## Prerequisites
 
@@ -40,12 +40,13 @@ No journey integration in westmarch (enc-only).
 
 ## Implementation checklist
 
-- [ ] Clone **enc** alias → `src/aliases/exploration/mine.alias`
-- [ ] **`biomes.resolve_biome("mine", args, ch, cfg)`**
-- [ ] **`encounter_lists.get_encounter(biome, "mine", ch, cfg)`**
-- [ ] **`stats.add_log(ch, extras={ biome, encounter_kind })`**
-- [ ] Toggle `exploration.commands.mine`
-- [ ] `mine.alias-test` + biome **`mine.gather`** row fixture
+- [x] Thin alias wrapper → `src/aliases/exploration/mine.alias`
+- [x] Shared **`exploration.run_activity("mine", args, get_embed)`** pipeline
+- [x] **`biomes.resolve_biome("mine", args, ch, cfg)`**
+- [x] **`encounter_lists.get_encounter(biome, "mine", ch, cfg)`**
+- [x] **`stats.add_log(ch, extras={ biome, encounter_kind })`**
+- [x] Toggle `exploration.commands.mine`
+- [x] `mine.alias-test` + biome **`mine.gather`** row fixture
 
 ## Exit criteria
 

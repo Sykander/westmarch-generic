@@ -35,13 +35,14 @@ Validates activity dispatch on shared pipeline after the reference **enc** port.
 
 ## Implementation checklist
 
-- [ ] Clone generic **enc** alias → `src/aliases/exploration/forage.alias`
-- [ ] **`display.get_display()`** opener
-- [ ] **`biomes.resolve_biome("forage", args, ch, cfg)`**
-- [ ] **`encounter_lists.get_encounter(biome, "forage", ch, cfg)`**
-- [ ] **`stats.add_log(ch, extras={ biome, encounter_kind })`**
-- [ ] Toggle `exploration.commands.forage`
-- [ ] `forage.alias-test`
+- [x] Thin alias wrapper → `src/aliases/exploration/forage.alias`
+- [x] **`display.get_display()`** opener
+- [x] Shared **`exploration.run_activity("forage", args, get_embed)`** pipeline
+- [x] **`biomes.resolve_biome("forage", args, ch, cfg)`**
+- [x] **`encounter_lists.get_encounter(biome, "forage", ch, cfg)`**
+- [x] **`stats.add_log(ch, extras={ biome, encounter_kind })`**
+- [x] Toggle `exploration.commands.forage`
+- [x] `forage.alias-test` covers manual biome, location mode, cooldown, disabled toggle, and activity-specific journey completion
 
 ## Related
 

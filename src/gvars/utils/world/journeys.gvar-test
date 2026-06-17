@@ -133,3 +133,10 @@ return not advanced and len(messages) == 0 and stored["path_index"] == 0 and sto
 True
 ---
 name: complete_activity_step ignores mismatched biome
+
+step = {"type": "encounter", "activity": "forage", "biome": "forest"}
+return journeys.step_matches_activity(step, "forage", "forest") and not journeys.step_matches_activity(step, "enc", "forest")
+---
+True
+---
+name: step_matches_activity respects explicit activity

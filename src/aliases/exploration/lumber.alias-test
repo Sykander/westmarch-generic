@@ -68,7 +68,7 @@ vars:
 ---
 re:Fallen oak
 ---
-name: "planned: manual biome rolls lumber encounter from pool"
+name: "manual biome rolls lumber encounter from pool"
 vars:
   uvars:
     _wm_command: lumber
@@ -98,7 +98,7 @@ vars:
 ---
 re:biome
 ---
-name: "planned: argument mode requires biome code"
+name: "argument mode requires biome code"
 vars:
   uvars:
     _wm_command: lumber
@@ -125,7 +125,7 @@ vars:
 ---
 re:registered|unknown|invalid
 ---
-name: "planned: unknown biome code rejected"
+name: "unknown biome code rejected"
 vars:
   uvars:
     _wm_command: lumber
@@ -152,7 +152,7 @@ vars:
 ---
 re:forest|Biome|Usage
 ---
-name: "planned: help lists registered biome codes"
+name: "help lists registered biome codes"
 vars:
   uvars:
     _wm_command: lumber
@@ -179,7 +179,7 @@ vars:
 ---
 re:cooldown|wait|seconds
 ---
-name: "planned: cooldown blocks repeat use"
+name: "cooldown blocks repeat use"
 vars:
   uvars:
     _wm_command: lumber
@@ -213,7 +213,7 @@ vars:
 ---
 re:Fallen oak
 ---
-name: "planned: location mode infers biome from character location"
+name: "location mode infers biome from character location"
 vars:
   uvars:
     _wm_command: lumber

@@ -6,7 +6,7 @@ This plan breaks Phase 1 into narrow, testable slices. Each slice should update 
 
 ## Slice 1 — Travel and location
 
-**Status:** in implementation.
+**Status:** implemented; path costs, time/weather, and guided builders remain deferred.
 
 Deliver the smallest useful travel subsystem:
 
@@ -32,12 +32,15 @@ Review notes:
 
 ## Slice 2 — Exploration cluster parity
 
+**Status:** implemented; quest-specific overlays remain deferred until **misc.quest**.
+
 Complete Tier B around the already-shipped encounter pipeline:
 
 - verify `enc`, `forage`, `fish`, `mine`, `lumber` against extracted biome fixtures
 - add any missing command-specific display/cooldown docs
 - wire location-mode exploration to the travel slice
 - keep journey encounter auto-completion covered while expanding activity parity
+- cover explicit activity-specific journey steps such as `!forage forest`
 
 Review notes:
 

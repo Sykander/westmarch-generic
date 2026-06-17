@@ -31,12 +31,13 @@ westmarch **`get_encounter_list(code, "lumber")`** → generic **`biomes.resolve
 
 ## Implementation checklist
 
-- [ ] Clone **enc** alias → `src/aliases/exploration/lumber.alias`
-- [ ] **`biomes.resolve_biome("lumber", args, ch, cfg)`**
-- [ ] **`encounter_lists.get_encounter(biome, "lumber", ch, cfg)`**
-- [ ] **`stats.add_log`**
-- [ ] Toggle `exploration.commands.lumber`
-- [ ] `lumber.alias-test`
+- [x] Thin alias wrapper → `src/aliases/exploration/lumber.alias`
+- [x] Shared **`exploration.run_activity("lumber", args, get_embed)`** pipeline
+- [x] **`biomes.resolve_biome("lumber", args, ch, cfg)`**
+- [x] **`encounter_lists.get_encounter(biome, "lumber", ch, cfg)`**
+- [x] **`stats.add_log`**
+- [x] Toggle `exploration.commands.lumber`
+- [x] `lumber.alias-test`
 
 ## Related
 
