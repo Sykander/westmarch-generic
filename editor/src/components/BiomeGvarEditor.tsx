@@ -7,7 +7,6 @@ const DEFAULT_COMPACT_ROW: CompactEncounterRow = [
   'flavour',
   'Forest sign',
   'You notice a quiet detail in the wild.',
-  'gather',
 ];
 
 export function BiomeGvarEditor({
@@ -55,7 +54,7 @@ export function compactRowSummary(row: CompactEncounterRow) {
   return `${String(row[1] ?? 'unknown')} · ${poolText}`;
 }
 
-function CompactRowJsonEditor({
+export function CompactRowJsonEditor({
   row,
   onChange,
 }: {

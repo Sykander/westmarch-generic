@@ -48,6 +48,7 @@ import {
 import { IssueSummary, RunSteps, SectionCta, severityIcon } from '../components/WorkflowPanels';
 import { EncounterRowBuilder } from '../components/EncounterRowBuilder';
 import { CustomTemplateBuilder } from '../components/CustomTemplateBuilder';
+import { ExpandableBlockRows } from '../components/ExpandableBlockRows';
 import {
   ENGINE_BIOMES,
   ENGINE_BIOME_NOTES,
@@ -3702,16 +3703,37 @@ function BiomesView({
         onCommit={(value) => updateConfig('world_data.biomes', value)}
       />
       <div className="biome-gvar-workbench">
-        <EncounterRowBuilder
-          rows={biomeRows}
-          onRowsChange={setBiomeRows}
-          title="Scratch encounter row builder"
-          rowListTitle="Scratch biome gvar body"
-          templates={templates}
-        />
-        <CustomTemplateBuilder
-          templates={customTemplates}
-          onTemplatesChange={saveCustomTemplates}
+        <ExpandableBlockRows
+          className="workbench-row-list"
+          rows={[
+            {
+              id: 'scratch-biome-tools',
+              title: 'Scratch biome and encounter tools',
+              summary: `${biomeRows.length} scratch rows`,
+              defaultOpen: false,
+              children: (
+                <EncounterRowBuilder
+                  rows={biomeRows}
+                  onRowsChange={setBiomeRows}
+                  title="Scratch encounter row builder"
+                  rowListTitle="Scratch biome gvar body"
+                  templates={templates}
+                />
+              ),
+            },
+            {
+              id: 'encounter-template-builder',
+              title: 'Encounter template builder',
+              summary: `${customTemplates.length} custom templates`,
+              defaultOpen: false,
+              children: (
+                <CustomTemplateBuilder
+                  templates={customTemplates}
+                  onTemplatesChange={saveCustomTemplates}
+                />
+              ),
+            },
+          ]}
         />
       </div>
       {editingBiome ? (

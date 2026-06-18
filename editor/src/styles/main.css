@@ -847,6 +847,10 @@ th {
   margin: 16px 0 12px;
 }
 
+.compact-head {
+  margin-top: 0;
+}
+
 .builder-head h3,
 .collection-editor h3 {
   margin: 0;
@@ -921,6 +925,47 @@ th {
   margin-top: 18px;
   border-top: 1px solid #edf0ec;
   padding-top: 16px;
+}
+
+.workbench-row-list {
+  gap: 12px;
+}
+
+.encounter-row-management,
+.raw-json-parts {
+  display: grid;
+  gap: 12px;
+}
+
+.compact-row-table-wrap {
+  border: 1px solid #e1e5e0;
+  border-radius: 8px;
+}
+
+.compact-row-table th,
+.compact-row-table td {
+  vertical-align: middle;
+}
+
+.compact-row-table th:first-child,
+.compact-row-table td:first-child {
+  width: 54px;
+}
+
+.compact-row-table th:last-child,
+.compact-row-table td:last-child {
+  width: 220px;
+}
+
+.compact-row-table tr.active td {
+  background: #f1f7f2;
+}
+
+.row-action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
 }
 
 .encounter-model-reference {
@@ -2006,13 +2051,33 @@ th {
   gap: 8px;
 }
 
-.pool-tag-list .compact-switch {
+.pool-tag-option {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
   width: 100%;
   min-height: 34px;
-  padding: 5px 10px;
+  border: 1px solid #d9ded9;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-weight: 700;
 }
 
-.pool-tag-list .compact-switch span {
+.pool-tag-option:hover {
+  border-color: #b6c9c0;
+  background: #f4f8f5;
+}
+
+.pool-tag-option input {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+.pool-tag-option span {
+  min-width: 0;
   white-space: nowrap;
 }
 

@@ -124,9 +124,8 @@ def _save(save_name, dc):
         result["ability"] = ability
     return result
 
-def _base(kind, name, description):
+def _base(name, description):
     return {
-        "kind": kind,
         "name": _text(name, "Encounter"),
         "description": _text(description),
     }
@@ -148,7 +147,7 @@ def gather_item(args):
         item = _arg(args, 4, "Supplies")
         total = _arg(args, 5, 1)
         bag = _arg(args, 6)
-    enc = _base("gather", name, desc)
+    enc = _base(name, desc)
     enc["rolls"] = [_roll(check_name, dc)]
     outcome = {"type": "item", "name": _text(item, "Supplies"), "total": _int_or_text(total, 1)}
     if bag is not None and _text(bag).strip() != "":
@@ -157,43 +156,20 @@ def gather_item(args):
     return enc
 
 def skill_check(args):
-    enc = _base(
-        "gather",
-        _arg(args, 0, "Skill check"),
-        _arg(args, 1, "A careful approach may reveal something useful."),
-    )
+    enc = _base(_arg(args, 0, "Skill check"), _arg(args, 1, "A careful approach may reveal something useful."))
     enc["rolls"] = [_roll(_arg(args, 2, "Wisdom (Survival)"), _arg(args, 3, "12"))]
-    if _arg(args, 4) is not None:
-        enc["success"] = _text(_arg(args, 4))
-    if _arg(args, 5) is not None:
-        enc["failure"] = _text(_arg(args, 5))
     return enc
 
 def saving_throw(args):
-    enc = _base(
-        "gather",
-        _arg(args, 0, "Saving throw"),
-        _arg(args, 1, "A sudden threat demands quick reaction."),
-    )
+    enc = _base(_arg(args, 0, "Saving throw"), _arg(args, 1, "A sudden threat demands quick reaction."))
     enc["rolls"] = [_save(_arg(args, 2, "Dexterity"), _arg(args, 3, "12"))]
-    if _arg(args, 4) is not None:
-        enc["success"] = _text(_arg(args, 4))
-    if _arg(args, 5) is not None:
-        enc["failure"] = _text(_arg(args, 5))
     return enc
 
 def story(args):
-    kind = _text(_arg(args, 2, "gather"), "gather").strip().lower()
-    if kind not in ["combat", "quest", "gather"]:
-        kind = "gather"
-    return _base(kind, _arg(args, 0, "Forest sign"), _arg(args, 1, "You notice a quiet detail in the wild."))
+    return _base(_arg(args, 0, "Forest sign"), _arg(args, 1, "You notice a quiet detail in the wild."))
 
 def combat_template(args):
-    enc = _base(
-        "combat",
-        _arg(args, 0, "Hostile creatures"),
-        _arg(args, 1, "Something dangerous moves nearby."),
-    )
+    enc = _base(_arg(args, 0, "Hostile creatures"), _arg(args, 1, "Something dangerous moves nearby."))
     enc["cr"] = _arg(args, 2, 1)
     monsters = _arg(args, 3)
     difficulty = _arg(args, 4)
@@ -219,41 +195,29 @@ def ambush(args):
     return enc
 
 def quest(args):
-    enc = _base(
-        "quest",
-        _arg(args, 0, "Unfinished business"),
-        _arg(args, 1, "A hook asks for follow-up."),
-    )
+    enc = _base(_arg(args, 0, "Unfinished business"), _arg(args, 1, "A hook asks for follow-up."))
     if _arg(args, 2) is not None and _text(_arg(args, 2)).strip() != "":
         enc["reward"] = _text(_arg(args, 2))
     return enc
 
 def gold(args):
-    enc = _base("gather", _arg(args, 0, "Treasure cache"), _arg(args, 1, "Coins glint in the dirt."))
+    enc = _base(_arg(args, 0, "Treasure cache"), _arg(args, 1, "Coins glint in the dirt."))
     enc["outcomes"] = [{"type": "gold", "total": _int_or_text(_arg(args, 2, 1), 1)}]
     return enc
 
 def healing(args):
-    enc = _base(
-        "gather",
-        _arg(args, 0, "Restorative spring"),
-        _arg(args, 1, "A restorative moment eases your wounds."),
-    )
+    enc = _base(_arg(args, 0, "Restorative spring"), _arg(args, 1, "A restorative moment eases your wounds."))
     enc["outcomes"] = [{"type": "healing", "total": _int_or_text(_arg(args, 2, "1d4"), "1d4")}]
     return enc
 
 def healing_check(args):
-    enc = _base(
-        "gather",
-        _arg(args, 0, "Field medicine"),
-        _arg(args, 1, "Careful treatment helps the wounded recover."),
-    )
+    enc = _base(_arg(args, 0, "Field medicine"), _arg(args, 1, "Careful treatment helps the wounded recover."))
     enc["rolls"] = [_roll(_arg(args, 2, "Medicine"), _arg(args, 3, "12"))]
     enc["outcomes"] = [{"type": "healing", "total": _int_or_text(_arg(args, 4, "1d4"), "1d4")}]
     return enc
 
 def damage(args):
-    enc = _base("gather", _arg(args, 0, "Hazard"), _arg(args, 1, "The area turns dangerous."))
+    enc = _base(_arg(args, 0, "Hazard"), _arg(args, 1, "The area turns dangerous."))
     enc["outcomes"] = [{"type": "damage", "total": _int_or_text(_arg(args, 2, "1d4"), "1d4")}]
     return enc
 
@@ -454,10 +418,6 @@ def _fallback_description(encounter, rolls_list, preview_result):
         dc = f" DC {roll.dc}" if roll.dc is not None else ""
         result = "success" if roll.passed else "failure" if roll.passed == False else preview_result
         parts.append(f"{roll.full} **{roll.name}{dc}** ({result})")
-    if preview_result == "success" and _text(encounter.get("success")).strip() != "":
-        parts.append(_text(encounter.get("success")))
-    elif preview_result == "failure" and _text(encounter.get("failure")).strip() != "":
-        parts.append(_text(encounter.get("failure")))
     return "\n".join(parts)
 
 def _mock_roll_for(index, preview_roll, roll_mock):
@@ -599,6 +559,11 @@ def _generate_encounter():
         return fn(args)
     return expand_builtin(template_name, args)
 
+def _clean_encounter(encounter):
+    if not isinstance(encounter, dict):
+        return encounter
+    return {key: value for key, value in encounter.items() if str(key) != "kind"}
+
 def _next_cache_key():
     base = _text(template_name or function_name, "encounter")
     return f"{base}:{len(WG_ENCOUNTER_CACHE) + 1}"
@@ -610,7 +575,7 @@ def _cache_encounter(encounter):
 
 if phase == "process":
     if isinstance(encounter_override, dict):
-        encounter = encounter_override
+        encounter = _clean_encounter(encounter_override)
         cache_key = _cache_encounter(encounter)
     elif encounter_cache_key in WG_ENCOUNTER_CACHE:
         encounter = WG_ENCOUNTER_CACHE[encounter_cache_key]
@@ -624,7 +589,7 @@ if phase == "process":
         "encounterCacheKey": cache_key,
     }
 else:
-    encounter = _generate_encounter()
+    encounter = _clean_encounter(_generate_encounter())
     if not isinstance(encounter, dict):
         raise Exception("Template function did not return an encounter dict.")
     cache_key = _cache_encounter(encounter)
