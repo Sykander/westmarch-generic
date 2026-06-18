@@ -1,6 +1,19 @@
 export type PyodideTemplatePreview = {
   encounter?: Record<string, unknown>;
+  displayOutput?: Record<string, unknown>;
+  encounterCacheKey?: string;
   error?: string;
+};
+
+export type PyodidePreviewPhase = 'encounter' | 'process' | 'full';
+
+export type RollMockMode = 'mockReturns' | 'mockReturnsOnce' | 'mockReturnsNTimes';
+
+export type RollMockConfig = {
+  mode: RollMockMode;
+  values: string[];
+  fallback: string;
+  times: number;
 };
 
 type PendingRequest = {
@@ -13,23 +26,37 @@ let nextId = 1;
 const pending = new Map<number, PendingRequest>();
 
 export function previewTemplateWithPyodide({
+  phase = 'full',
   source,
   functionName,
+  templateId,
   args,
+  previewResult,
+  previewRoll,
   previewCharacter,
+  rollMock,
+  encounterCacheKey,
+  encounterOverride,
 }: {
-  source: string;
+  phase?: PyodidePreviewPhase;
+  source?: string;
   functionName?: string;
+  templateId?: string;
   args: unknown[];
+  previewResult: string;
+  previewRoll: string;
   previewCharacter?: {
     name: string;
     level: number;
   };
+  rollMock?: RollMockConfig;
+  encounterCacheKey?: string;
+  encounterOverride?: Record<string, unknown>;
 }): Promise<PyodideTemplatePreview> {
   if (typeof Worker === 'undefined') {
     return Promise.resolve({ error: 'Python preview is only available in the browser.' });
   }
-  if (/\b(?:import|from|using|eval|exec|open|__import__)\b/.test(source)) {
+  if (source && /\b(?:import|from|using|eval|exec|open|__import__)\b/.test(source)) {
     return Promise.resolve({
       error:
         'Python preview cannot run imports, using(...), eval, exec, open, or __import__. The exported gvar keeps the source unchanged.',
@@ -46,7 +73,20 @@ export function previewTemplateWithPyodide({
       resolve({ error: 'Python preview timed out before the template returned output.' });
     }, 7000);
     pending.set(id, { resolve, timer });
-    pyodideWorker.postMessage({ id, source, functionName, args, previewCharacter });
+    pyodideWorker.postMessage({
+      id,
+      phase,
+      source,
+      functionName,
+      templateId,
+      args,
+      previewResult,
+      previewRoll,
+      previewCharacter,
+      rollMock,
+      encounterCacheKey,
+      encounterOverride,
+    });
   });
 }
 
@@ -64,6 +104,8 @@ function ensureWorker() {
       pending.delete(event.data.id);
       request.resolve({
         encounter: event.data.encounter,
+        displayOutput: event.data.displayOutput,
+        encounterCacheKey: event.data.encounterCacheKey,
         error: event.data.error,
       });
     },

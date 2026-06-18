@@ -129,8 +129,18 @@ jobs:
             npm_script: avrae:test-utils:gameplay
           - shard: utils-systems
             npm_script: avrae:test-utils:systems
-          - shard: aliases
-            npm_script: avrae:test-aliases
+          - shard: aliases-content
+            npm_script: avrae:test-aliases:content
+          - shard: aliases-crafting
+            npm_script: avrae:test-aliases:crafting
+          - shard: aliases-economy
+            npm_script: avrae:test-aliases:economy
+          - shard: aliases-exploration
+            npm_script: avrae:test-aliases:exploration
+          - shard: aliases-travel
+            npm_script: avrae:test-aliases:travel
+          - shard: aliases-westmarch
+            npm_script: avrae:test-aliases:westmarch
 
     steps:
       - name: Checkout

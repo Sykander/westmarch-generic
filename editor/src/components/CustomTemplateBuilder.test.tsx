@@ -35,11 +35,11 @@ test('CustomTemplateBuilder renders expandable template sections', () => {
   assert.match(html, /Row input schema/);
   assert.match(html, /10 configured row inputs/);
   assert.match(html, /Template function/);
-  assert.match(html, /Preview inputs/);
-  assert.match(html, /Preview output/);
+  assert.match(html, /Preview/);
+  assert.match(html, /Inputs, mocks, outputs, and Discord-style embed/);
   assert.match(html, /Save and metadata/);
   assert.equal((html.match(/aria-expanded="true"/g) ?? []).length, 1);
-  assert.equal((html.match(/aria-expanded="false"/g) ?? []).length, 6);
+  assert.equal((html.match(/aria-expanded="false"/g) ?? []).length, 5);
   assert.doesNotMatch(html, /def custom_scene\(args\):/);
   assert.doesNotMatch(html, /Encounter embed preview/);
 });

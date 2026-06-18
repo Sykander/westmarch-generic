@@ -10,13 +10,19 @@ export function useLazyPythonTemplatePreview({
   enabled,
   source,
   functionName,
+  templateId,
   args,
+  previewResult,
+  previewRoll,
   previewCharacter,
 }: {
   enabled: boolean;
-  source: string;
+  source?: string;
   functionName?: string;
+  templateId?: string;
   args: unknown[];
+  previewResult: string;
+  previewRoll: string;
   previewCharacter: {
     name: string;
     level: number;
@@ -30,7 +36,16 @@ export function useLazyPythonTemplatePreview({
     versionRef.current += 1;
     loadingRef.current = false;
     setPythonPreview(null);
-  }, [args, enabled, functionName, previewCharacter, source]);
+  }, [
+    args,
+    enabled,
+    functionName,
+    previewCharacter,
+    previewResult,
+    previewRoll,
+    source,
+    templateId,
+  ]);
 
   const requestPreview = useCallback(() => {
     if (!enabled || loadingRef.current) return;
@@ -42,7 +57,10 @@ export function useLazyPythonTemplatePreview({
     void previewTemplateWithPyodide({
       source,
       functionName,
+      templateId,
       args,
+      previewResult,
+      previewRoll,
       previewCharacter,
     })
       .then((result) => {
@@ -57,7 +75,16 @@ export function useLazyPythonTemplatePreview({
       .finally(() => {
         if (requestVersion === versionRef.current) loadingRef.current = false;
       });
-  }, [args, enabled, functionName, previewCharacter, source]);
+  }, [
+    args,
+    enabled,
+    functionName,
+    previewCharacter,
+    previewResult,
+    previewRoll,
+    source,
+    templateId,
+  ]);
 
   return {
     isPreviewLoading: Boolean(pythonPreview?.loading),

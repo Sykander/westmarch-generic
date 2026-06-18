@@ -67,7 +67,7 @@ make test
 - `npm run lint` — ESLint/Prettier checks for the repo, including the editor.
 - `make sourcemap-test` — runs dev/prod sourcemap validation plus `compare-config`.
 - `npm run types` and `npm run editor:test` — editor typecheck and component/domain tests.
-- `npm run avrae:test-utils:config`, `catalogues`, `gameplay`, `systems`, plus `npm run avrae:test-aliases` — the Avrae test shards used by CI.
+- `npm run avrae:test-utils:config`, `catalogues`, `gameplay`, `systems`, plus `npm run avrae:test-aliases:{content,crafting,economy,exploration,travel,westmarch}` — the Avrae test shards used by CI.
 
 ### Refresh cached Avrae / avrae-ls docs
 

@@ -36,7 +36,9 @@ test('EncounterRowBuilder renders supplied custom templates', () => {
 
   assert.match(html, /travel_clue/);
   assert.match(html, /Encounter fields/);
-  assert.match(html, /3 arguments passed into travel_clue/);
+  assert.match(html, /3 values synced with preview inputs/);
+  assert.match(html, /Preview/);
+  assert.match(html, /Inputs, mocks, outputs, and Discord-style embed/);
   assert.match(html, /Current row/);
   assert.match(html, /Biome gvar JSON rows/);
 });
@@ -54,8 +56,9 @@ test('EncounterRowBuilder renders preview and current-row summaries while collap
     ),
   );
 
+  assert.match(html, /Encounter fields/);
   assert.match(html, /Preview/);
-  assert.match(html, /Mock args, evaluated output, and Discord-style embed/);
+  assert.match(html, /Inputs, mocks, outputs, and Discord-style embed/);
   assert.match(html, /Current row/);
   assert.match(html, /travel_clue/);
   assert.doesNotMatch(html, /Encounter embed preview/);
@@ -75,8 +78,9 @@ test('EncounterRowBuilder uses vertical expandable rows for the builder sections
   );
 
   assert.match(html, /Encounter fields/);
-  assert.match(html, /Pool tags/);
   assert.match(html, /Preview/);
+  assert.match(html, /Pool tags/);
+  assert.match(html, /Current row/);
   assert.equal((html.match(/aria-expanded="true"/g) ?? []).length, 1);
   assert.equal((html.match(/aria-expanded="false"/g) ?? []).length, 4);
 });

@@ -28,8 +28,23 @@ test('buildEncounterPreview expands built-in templates from compact row args', (
 
   assert.equal(preview.name, 'Wild Herbs');
   assert.equal(preview.output?.name, 'Wild Herbs');
-  assert.match(preview.rolls[0], /Survival DC 12 -> 18/);
+  assert.equal(preview.templateOutput?.name, 'Wild Herbs');
+  assert.equal(preview.displayOutput?.name, 'Wild Herbs');
+  assert.match(preview.rolls[0], /18 \*\*Survival DC 12\*\* \(success\)/);
   assert.match(preview.outcomes[0], /Gain 2 x Herbs in Forage/);
+  assert.match(preview.displayOutput?.roll_text ?? '', /18 \*\*Survival DC 12\*\*/);
+  assert.equal(preview.displayOutput?.title, 'Wild Herbs');
+  assert.deepEqual(preview.displayOutput?.rolls[0], {
+    type: 'check',
+    name: 'Survival',
+    ability: 'wis',
+    dc: 12,
+    total: 18,
+    full: '18',
+    passed: true,
+  });
+  assert.equal(preview.displayOutput?.embed.title, 'Wild Herbs');
+  assert.match(preview.displayOutput?.outcome_text ?? '', /Gain 2 x Herbs in Forage/);
 });
 
 test('buildEncounterPreview prefers exact Pyodide encounter results when available', () => {
@@ -63,7 +78,42 @@ test('buildEncounterPreview prefers exact Pyodide encounter results when availab
   assert.equal(preview.kind, 'combat');
   assert.equal(preview.name, 'From Pyodide');
   assert.equal(preview.output?.name, 'From Pyodide');
+  assert.equal(preview.templateOutput?.name, 'From Pyodide');
+  assert.equal(preview.displayOutput?.name, 'From Pyodide');
   assert.match(preview.outcomes[0], /Bandit Captain/);
+  assert.match(preview.displayOutput?.outcome_text ?? '', /Bandit Captain/);
+  assert.match(preview.footer, /Pyodide/);
+});
+
+test('buildEncounterPreview renders Pyodide processed display output when available', () => {
+  const preview = buildEncounterPreview({
+    template: {
+      id: 'gather_item',
+      label: 'Gather item',
+      description: 'Gather resources.',
+      fields: [],
+    },
+    row: [['enc.gather'], 'gather_item', 'Wild Herbs'],
+    previewResult: 'success',
+    previewRoll: '15',
+    pythonPreview: {
+      encounter: {
+        kind: 'gather',
+        name: 'Wild Herbs',
+        description: 'Template encounter.',
+      },
+      displayOutput: {
+        name: 'Wild Herbs',
+        description: 'Processed display.',
+        roll_text: 'Survival DC 12 -> 15 (success)',
+        outcome_text: 'Gain 1 x Herbs in Forage',
+      },
+    },
+  });
+
+  assert.equal(preview.description, 'Processed display.');
+  assert.match(preview.rolls[0], /Survival DC 12 -> 15/);
+  assert.match(preview.outcomes[0], /Gain 1 x Herbs in Forage/);
   assert.match(preview.footer, /Pyodide/);
 });
 
@@ -92,6 +142,37 @@ test('buildEncounterPreview exposes encounter image fields for the preview', () 
 
   assert.equal(preview.thumb, 'https://example.test/thumb.png');
   assert.equal(preview.image, 'https://example.test/image.png');
+  assert.equal(preview.displayOutput?.thumb, 'https://example.test/thumb.png');
+  assert.equal(preview.displayOutput?.image, 'https://example.test/image.png');
+});
+
+test('buildEncounterPreview ignores missing media placeholder strings', () => {
+  const preview = buildEncounterPreview({
+    template: {
+      id: 'raw',
+      label: 'Raw',
+      description: 'Raw encounter.',
+      fields: [],
+    },
+    row: [
+      ['enc.gather'],
+      'raw',
+      {
+        kind: 'gather',
+        name: 'No media scene',
+        description: 'No image should render.',
+        thumb: 'None',
+        image_url: 'null',
+      },
+    ],
+    previewResult: 'success',
+    previewRoll: '15',
+  });
+
+  assert.equal(preview.thumb, undefined);
+  assert.equal(preview.image, undefined);
+  assert.equal(preview.displayOutput?.thumb, undefined);
+  assert.equal(preview.displayOutput?.image, undefined);
 });
 
 test('buildEncounterPreview does not approximate custom templates before Python returns', () => {

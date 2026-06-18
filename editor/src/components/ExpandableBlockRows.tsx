@@ -7,25 +7,42 @@ export type ExpandableBlockRow = {
   summary: ReactNode;
   children: ReactNode;
   defaultOpen?: boolean;
+  htmlId?: string;
 };
 
-export function ExpandableBlockRows({ rows }: { rows: ExpandableBlockRow[] }) {
-  const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
+export function ExpandableBlockRows({
+  rows,
+  className,
+  openRows,
+  onOpenRowsChange,
+}: {
+  rows: ExpandableBlockRow[];
+  className?: string;
+  openRows?: Record<string, boolean>;
+  onOpenRowsChange?: (rows: Record<string, boolean>) => void;
+}) {
+  const [localOpenRows, setLocalOpenRows] = useState<Record<string, boolean>>({});
+  const activeOpenRows = openRows ?? localOpenRows;
+
+  function setRows(nextRows: Record<string, boolean>) {
+    if (onOpenRowsChange) onOpenRowsChange(nextRows);
+    else setLocalOpenRows(nextRows);
+  }
 
   function isOpen(row: ExpandableBlockRow, index: number) {
-    return openRows[row.id] ?? row.defaultOpen ?? index === 0;
+    return activeOpenRows[row.id] ?? row.defaultOpen ?? index === 0;
   }
 
   function toggle(row: ExpandableBlockRow, index: number) {
-    setOpenRows((current) => ({ ...current, [row.id]: !isOpen(row, index) }));
+    setRows({ ...activeOpenRows, [row.id]: !isOpen(row, index) });
   }
 
   return (
-    <div className="builder-row-list">
+    <div className={`builder-row-list${className ? ` ${className}` : ''}`}>
       {rows.map((row, index) => {
         const open = isOpen(row, index);
         return (
-          <article className="builder-row" key={row.id}>
+          <article className={`builder-row${open ? ' open' : ''}`} id={row.htmlId} key={row.id}>
             <header className="builder-row-head">
               <button
                 type="button"

@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
 import type { EncounterTemplate } from '../domain/encounters';
 import { buildEncounterPreview } from '../lib/encounterPreview';
-import { EncounterPreviewPanel } from './EncounterPreviewPanel';
+import { EncounterPreview, EncounterPreviewPanel } from './EncounterPreviewPanel';
 
 const template: EncounterTemplate = {
   id: 'gather_item',
@@ -19,7 +19,53 @@ const template: EncounterTemplate = {
   ],
 };
 
-test('EncounterPreviewPanel renders template, args, output, and embed preview', () => {
+test('EncounterPreviewPanel renders the shared preview inputs by default', () => {
+  const row = [['enc.gather'], 'gather_item', 'Wild Herbs', 'Damp hollow', 'Survival', 12];
+  const preview = buildEncounterPreview({
+    template,
+    row,
+    previewResult: 'success',
+    previewRoll: '15',
+  });
+
+  const html = renderToStaticMarkup(
+    createElement(
+      TooltipProvider,
+      null,
+      createElement(EncounterPreviewPanel, {
+        template,
+        preview,
+        previewResult: 'success',
+        onPreviewResultChange: () => undefined,
+        inputValues: {
+          title: 'Wild Herbs',
+          description: 'Damp hollow',
+          skill: 'Survival',
+          dc: 12,
+        },
+        onInputValueChange: () => undefined,
+        rollValues: '15',
+        onRollValuesChange: () => undefined,
+      }),
+    ),
+  );
+
+  assert.match(html, /Inputs/);
+  assert.match(html, /Mocks/);
+  assert.match(html, /Outputs/);
+  assert.match(html, /View/);
+  assert.match(html, /Template/);
+  assert.match(html, /gather_item\(args\)/);
+  assert.match(html, /Title/);
+  assert.match(html, /Wild Herbs/);
+  assert.match(html, /Template function/);
+  assert.doesNotMatch(html, /Input args/);
+  assert.doesNotMatch(html, /JSON row/);
+  assert.doesNotMatch(html, /Generate Encounter/);
+  assert.doesNotMatch(html, /Encounter embed preview/);
+});
+
+test('EncounterPreview renders the Discord-style embed view', () => {
   const row = [['enc.gather'], 'gather_item', 'Wild Herbs', 'Damp hollow', 'Survival', 12];
   const preview = {
     ...buildEncounterPreview({
@@ -32,35 +78,17 @@ test('EncounterPreviewPanel renders template, args, output, and embed preview', 
     image: 'https://example.test/image.png',
   };
 
-  const html = renderToStaticMarkup(
-    createElement(
-      TooltipProvider,
-      null,
-      createElement(EncounterPreviewPanel, {
-        template,
-        preview,
-        compactRow: row,
-        previewResult: 'success',
-        onPreviewResultChange: () => undefined,
-        previewRoll: '15',
-        onPreviewRollChange: () => undefined,
-      }),
-    ),
-  );
+  const html = renderToStaticMarkup(createElement(EncounterPreview, { preview }));
 
-  assert.match(html, /Template/);
-  assert.match(html, /gather_item\(args\)/);
-  assert.match(html, /Input args/);
-  assert.match(html, /Wild Herbs/);
-  assert.match(html, /Template output/);
-  assert.match(html, /&quot;kind&quot;/);
   assert.match(html, /discord-thumb/);
   assert.match(html, /discord-image/);
   assert.match(html, /Encounter embed preview/);
-  assert.match(html, /Avrae preview/);
+  assert.match(html, /westmarch-assets\/brand\/avrae-avatar.svg/);
+  assert.match(html, /Avrae/);
+  assert.match(html, /APP/);
 });
 
-test('EncounterPreviewPanel renders an explicit refresh placeholder for idle custom previews', () => {
+test('EncounterPreviewPanel keeps idle custom previews behind the View tab', () => {
   const customTemplate: EncounterTemplate = {
     id: 'custom_scene',
     label: 'Custom scene',
@@ -85,19 +113,17 @@ test('EncounterPreviewPanel renders an explicit refresh placeholder for idle cus
       createElement(EncounterPreviewPanel, {
         template: customTemplate,
         preview,
-        compactRow: row,
         previewResult: 'success',
         onPreviewResultChange: () => undefined,
-        previewRoll: '15',
-        onPreviewRollChange: () => undefined,
+        rollValues: '15',
         previewMode: 'idle',
         onPreviewRequest: () => undefined,
       }),
     ),
   );
 
-  assert.match(html, /Encounter preview placeholder/);
-  assert.match(html, /Refresh Python preview/);
-  assert.match(html, /Preview has not been rendered yet/);
-  assert.doesNotMatch(html, /Avrae preview/);
+  assert.match(html, /Inputs/);
+  assert.match(html, /View/);
+  assert.doesNotMatch(html, /Encounter preview placeholder/);
+  assert.doesNotMatch(html, /Encounter embed preview/);
 });

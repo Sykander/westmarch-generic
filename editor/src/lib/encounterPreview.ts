@@ -3,6 +3,37 @@ import type { CompactEncounterRow, EncounterTemplate } from '../domain/encounter
 export type EncounterRecord = Record<string, unknown>;
 type PreviewArg = CompactEncounterRow[number];
 
+export type EncounterRollOutput = {
+  type: string;
+  name: string;
+  total: string | number;
+  full: string;
+  dc?: string | number;
+  passed?: boolean | null;
+  ability?: string;
+};
+
+export type EncounterDisplayOutput = {
+  title: string;
+  name: string;
+  description: string;
+  desc: string;
+  rolls: EncounterRollOutput[];
+  outcomes: EncounterRecord[];
+  outcome_text: string;
+  footer: string;
+  thumb?: string;
+  image?: string;
+  embed: {
+    title: string;
+    desc: string;
+    footer: string;
+    thumb?: string;
+    image?: string;
+  };
+  roll_text?: string;
+};
+
 export type EncounterPreviewModel = {
   kind: string;
   name: string;
@@ -12,6 +43,8 @@ export type EncounterPreviewModel = {
   footer: string;
   thumb?: string;
   image?: string;
+  templateOutput?: EncounterRecord;
+  displayOutput?: EncounterDisplayOutput;
   output?: EncounterRecord;
   notice?: string;
 };
@@ -23,6 +56,7 @@ type PreviewInput = {
   previewRoll: string;
   pythonPreview?: {
     encounter?: EncounterRecord;
+    displayOutput?: Record<string, unknown>;
     error?: string;
     loading?: boolean;
   } | null;
@@ -45,22 +79,121 @@ export function buildEncounterPreview({
   pythonPreview,
 }: PreviewInput): EncounterPreviewModel {
   const args = row.slice(2) as PreviewArg[];
-  const result: EvaluationResult = template.custom
-    ? customTemplatePreviewResult(template, pythonPreview)
-    : expandEncounterTemplate(template, args);
+  const result: EvaluationResult = pythonPreview
+    ? pyodideTemplatePreviewResult(template, pythonPreview)
+    : template.custom
+      ? customTemplatePreviewResult(template, pythonPreview)
+      : expandEncounterTemplate(template, args);
   const encounter = result.encounter ?? unavailableEncounter(template);
+  const hasPyodideDisplayOutput = Boolean(
+    pythonPreview?.displayOutput && isDisplayOutput(pythonPreview.displayOutput),
+  );
+  const displayOutput = hasPyodideDisplayOutput
+    ? (pythonPreview?.displayOutput as EncounterDisplayOutput)
+    : processEncounterPreview(encounter, { previewRoll, previewResult });
 
   return {
     kind: textField(encounter.kind, 'gather'),
-    name: textField(encounter.name, template.label),
-    description: textField(encounter.description, template.description),
-    rolls: previewRolls(encounter.rolls, previewRoll, previewResult),
-    outcomes: previewOutcomes(encounter),
-    footer: previewFooter(template, result),
-    thumb: optionalText(encounter.thumb) ?? optionalText(encounter.thumbnail),
-    image: optionalText(encounter.image) ?? optionalText(encounter.image_url),
+    name: displayOutput.title || displayOutput.name || template.label,
+    description: displayOutput.description || template.description,
+    rolls: displayOutput.rolls?.length
+      ? displayOutput.rolls.map(formatRollOutput)
+      : displayLines(displayOutput.roll_text ?? ''),
+    outcomes: displayLines(displayOutput.outcome_text),
+    footer:
+      hasPyodideDisplayOutput && displayOutput.footer
+        ? displayOutput.footer
+        : previewFooter(template, result),
+    thumb: displayOutput.thumb,
+    image: displayOutput.image,
+    templateOutput: result.encounter,
+    displayOutput,
     output: result.encounter,
     notice: result.error,
+  };
+}
+
+function pyodideTemplatePreviewResult(
+  template: EncounterTemplate,
+  pythonPreview: NonNullable<PreviewInput['pythonPreview']>,
+): EvaluationResult {
+  if (pythonPreview.encounter) {
+    return { encounter: pythonPreview.encounter, evaluated: true, source: 'pyodide' };
+  }
+  if (pythonPreview.error) {
+    return {
+      evaluated: false,
+      error: `Python preview: ${pythonPreview.error}`,
+    };
+  }
+  if (pythonPreview.loading) {
+    return {
+      evaluated: false,
+      error: 'Rendering Python preview with Pyodide.',
+    };
+  }
+  return {
+    evaluated: false,
+    error: template.custom
+      ? 'Custom templates are evaluated with Pyodide for previews.'
+      : 'Template preview has not been rendered yet.',
+  };
+}
+
+export function processEncounterPreview(
+  encounter: EncounterRecord | undefined,
+  {
+    previewRoll,
+    previewResult,
+  }: {
+    previewRoll: string;
+    previewResult: string;
+  },
+): EncounterDisplayOutput {
+  if (!encounter) {
+    return {
+      name: 'Encounter',
+      title: 'Encounter',
+      description: 'No encounter data.',
+      desc: 'No encounter data.',
+      rolls: [],
+      outcomes: [],
+      outcome_text: '',
+      footer: 'Encounter preview',
+      embed: {
+        title: 'Encounter',
+        desc: 'No encounter data.',
+        footer: 'Encounter preview',
+      },
+    };
+  }
+  const name = textField(encounter.name, 'Encounter');
+  const rolls = previewRolls(encounter.rolls, previewRoll, previewResult);
+  const outcomeText = previewOutcomeText(encounter, previewResult);
+  const description = processedDescription(encounter, rolls);
+  const desc = [description, outcomeText].filter((item) => item.trim() !== '').join('\n');
+  const thumb = optionalMediaUrl(encounter.thumb) ?? optionalMediaUrl(encounter.thumbnail);
+  const image = optionalMediaUrl(encounter.image) ?? optionalMediaUrl(encounter.image_url);
+  const footer = 'Encounter preview output';
+  return {
+    title: name,
+    name,
+    description,
+    desc,
+    rolls,
+    outcomes: Array.isArray(encounter.outcomes) ? encounter.outcomes.filter(isRecord) : [],
+    outcome_text: outcomeText,
+    footer,
+    thumb,
+    image,
+    embed: {
+      title: name,
+      desc,
+      footer,
+      ...(thumb ? { thumb } : {}),
+      ...(image ? { image } : {}),
+    },
+    roll_text: rolls.map(formatRollOutput).join('\n'),
   };
 }
 
@@ -303,25 +436,72 @@ function previewFooter(template: EncounterTemplate, result: EvaluationResult) {
   if (template.custom && result.evaluated && result.source === 'pyodide') {
     return `Custom template evaluated with Pyodide: ${template.functionName ?? template.id}(args)`;
   }
+  if (result.evaluated && result.source === 'pyodide') {
+    return `Template evaluated with Pyodide: ${template.functionName ?? template.id}(args)`;
+  }
   if (template.custom)
     return `Custom template preview: ${template.functionName ?? template.id}(args)`;
   if (result.evaluated) return `Template evaluated in browser: ${template.id}`;
   return `Template unavailable: ${template.id}`;
 }
 
-function previewRolls(value: unknown, previewRoll: string, previewResult: string) {
+function previewRolls(
+  value: unknown,
+  previewRoll: string,
+  previewResult: string,
+): EncounterRollOutput[] {
   if (!Array.isArray(value)) return [];
   return value.filter(isRecord).map((rollRecord) => {
     const type = text(rollRecord.type, 'check');
     const name = text(rollRecord.name, type);
     const dc = text(rollRecord.dc);
-    const dcText = dc ? ` DC ${dc}` : '';
-    return `${name}${dcText} -> ${previewRoll} (${previewResult})`;
+    const total = numericOrText(previewRoll);
+    const dcNumber = Number(dc);
+    const totalNumber = Number(total);
+    return {
+      type,
+      name,
+      ...(dc ? { dc: numericOrText(dc) } : {}),
+      ...(text(rollRecord.ability).trim() ? { ability: text(rollRecord.ability) } : {}),
+      total,
+      full: String(total),
+      passed:
+        dc && !Number.isNaN(dcNumber) && !Number.isNaN(totalNumber)
+          ? totalNumber >= dcNumber
+          : previewResult === 'neutral'
+            ? null
+            : previewResult === 'success',
+    };
   });
 }
 
-function previewOutcomes(encounter: EncounterRecord) {
+function formatRollOutput(roll: EncounterRollOutput) {
+  const dcText = roll.dc !== undefined && roll.dc !== '' ? ` DC ${roll.dc}` : '';
+  const resultText = roll.passed === true ? 'success' : roll.passed === false ? 'failure' : 'roll';
+  return `${roll.full} **${roll.name}${dcText}** (${resultText})`;
+}
+
+function processedDescription(encounter: EncounterRecord, rolls: EncounterRollOutput[]) {
+  const description = text(encounter.description);
+  const rollText = rolls.map(formatRollOutput).join('\n');
+  if (!rollText) return description;
+  return [description, rollText].filter((item) => item.trim() !== '').join('\n\n');
+}
+
+function numericOrText(value: unknown) {
+  const number = Number(value);
+  return value !== '' && value !== null && value !== undefined && !Number.isNaN(number)
+    ? number
+    : text(value);
+}
+
+function previewOutcomeText(encounter: EncounterRecord, previewResult: string) {
   const outcomes: string[] = [];
+  if (previewResult === 'success' && text(encounter.success).trim() !== '') {
+    outcomes.push(text(encounter.success));
+  } else if (previewResult === 'failure' && text(encounter.failure).trim() !== '') {
+    outcomes.push(text(encounter.failure));
+  }
   if (text(encounter.reward).trim() !== '') outcomes.push(`Reward: ${text(encounter.reward)}`);
   if (text(encounter.cr).trim() !== '') {
     const monsters = Array.isArray(encounter.monsters)
@@ -335,7 +515,7 @@ function previewOutcomes(encounter: EncounterRecord) {
       `Combat: CR ${text(encounter.cr)}${monsters ? `, ${monsters}` : ''}${difficulty ? ` (${difficulty})` : ''}`,
     );
   }
-  if (!Array.isArray(encounter.outcomes)) return outcomes;
+  if (!Array.isArray(encounter.outcomes)) return outcomes.join('\n');
 
   for (const outcome of encounter.outcomes) {
     if (!isRecord(outcome)) continue;
@@ -356,7 +536,14 @@ function previewOutcomes(encounter: EncounterRecord) {
       outcomes.push(`${type}: ${JSON.stringify(outcome)}`);
     }
   }
-  return outcomes;
+  return outcomes.join('\n');
+}
+
+function displayLines(value: string) {
+  return value
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
 }
 
 function base(kind: string, name: unknown, description: unknown): EncounterRecord {
@@ -451,6 +638,13 @@ function optionalText(value: unknown) {
   return result || undefined;
 }
 
+function optionalMediaUrl(value: unknown) {
+  const result = optionalText(value);
+  if (!result) return undefined;
+  if (['none', 'null', 'undefined'].includes(result.toLowerCase())) return undefined;
+  return result;
+}
+
 function intOrText(value: unknown, fallback: unknown) {
   if (value === undefined || value === null || value === '') return fallback;
   const number = Number(value);
@@ -468,4 +662,8 @@ function cleanKind(value: unknown) {
 
 function isRecord(value: unknown): value is EncounterRecord {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function isDisplayOutput(value: unknown): value is EncounterDisplayOutput {
+  return isRecord(value) && typeof value.name === 'string' && typeof value.description === 'string';
 }

@@ -1,6 +1,6 @@
 {
   "name": "westmarch-generic",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Configurable westmarch-style Avrae workshop — server setup via svars and config gvars",
   "main": "index.js",
   "scripts": {
@@ -31,7 +31,12 @@
     "avrae:test-utils:systems": "avrae-ls --run-tests src/gvars/utils/core --log-level INFO && avrae-ls --run-tests src/gvars/utils/crafting --log-level INFO && avrae-ls --run-tests src/gvars/utils/economy --log-level INFO && avrae-ls --run-tests src/gvars/utils/misc --log-level INFO && avrae-ls --run-tests src/gvars/utils/pc --log-level INFO",
     "avrae:test-config": "npm run avrae:test-utils:config",
     "avrae:test-gvars": "npm run avrae:test-utils",
-    "avrae:test-aliases": "avrae-ls --run-tests src/aliases --log-level INFO",
+    "avrae:test-aliases:content": "avrae-ls --run-tests src/aliases/content --log-level INFO && avrae-ls --run-tests src/aliases/misc --log-level INFO",
+    "avrae:test-aliases:crafting": "avrae-ls --run-tests src/aliases/crafting --log-level INFO",
+    "avrae:test-aliases:economy": "avrae-ls --run-tests src/aliases/downtime --log-level INFO && avrae-ls --run-tests src/aliases/economy --log-level INFO",
+    "avrae:test-aliases:exploration": "avrae-ls --run-tests src/aliases/exploration --log-level INFO",
+    "avrae:test-aliases:travel": "avrae-ls --run-tests src/aliases/travel --log-level INFO",
+    "avrae:test-aliases:westmarch": "avrae-ls --run-tests src/aliases/westmarch --log-level INFO",
     "sourcemap:dev-check": "publish-avrae check-config --sourcemap utils/sourcemap.dev.json",
     "sourcemap:prod-check": "publish-avrae check-config --sourcemap utils/sourcemap.prod.json",
     "sourcemap:compare-check": "publish-avrae compare-config utils/sourcemap.dev.json utils/sourcemap.prod.json"

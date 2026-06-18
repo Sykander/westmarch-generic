@@ -9,13 +9,12 @@ import {
   type EncounterTemplateField,
   type EncounterTemplateInputKind,
 } from '../domain/encounters';
-import { buildEncounterPreview } from '../lib/encounterPreview';
 import { CodeIde } from './CodeIde';
-import { EncounterPreviewPanel } from './EncounterPreviewPanel';
+import { EncounterTemplatePreview } from './EncounterTemplatePreview';
 import { ExpandableBlockRows } from './ExpandableBlockRows';
 import { HelpDialog } from './HelpDialog';
 import { HelpTip } from './HelpTip';
-import { useLazyPythonTemplatePreview } from './useLazyPythonTemplatePreview';
+import { defaultPreviewValue } from './TemplatePreviewArgField';
 
 function slugValue(value: string) {
   return value
@@ -214,10 +213,6 @@ export function CustomTemplateBuilder({
   const [previewValues, setPreviewValues] = useState<Record<string, string | number>>(() =>
     Object.fromEntries(fields.map((field) => [field.key, defaultPreviewValue(field)])),
   );
-  const [previewResult, setPreviewResult] = useState('success');
-  const [previewRoll, setPreviewRoll] = useState('15');
-  const [previewCharacterName, setPreviewCharacterName] = useState('Preview Character');
-  const [previewCharacterLevel, setPreviewCharacterLevel] = useState('5');
   const previewRow = useMemo<CompactEncounterRow>(
     () =>
       buildCompactEncounterRow({
@@ -227,40 +222,6 @@ export function CustomTemplateBuilder({
         selectedPools: ['enc.gather'],
       }),
     [previewValues, template],
-  );
-  const pythonPreviewArgs = useMemo(() => previewRow.slice(2), [previewRow]);
-  const pythonPreviewCharacter = useMemo(
-    () => ({
-      name: previewCharacterName.trim() || 'Preview Character',
-      level: Number(previewCharacterLevel) || 1,
-    }),
-    [previewCharacterLevel, previewCharacterName],
-  );
-  const pythonPreviewEnabled = Boolean(source.trim());
-  const { isPreviewLoading, pythonPreview, requestPreview } = useLazyPythonTemplatePreview({
-    enabled: pythonPreviewEnabled,
-    source,
-    functionName,
-    args: pythonPreviewArgs,
-    previewCharacter: pythonPreviewCharacter,
-  });
-  const previewMode = isPreviewLoading
-    ? 'loading'
-    : pythonPreview
-      ? 'ready'
-      : pythonPreviewEnabled
-        ? 'idle'
-        : 'ready';
-  const preview = useMemo(
-    () =>
-      buildEncounterPreview({
-        template,
-        row: previewRow,
-        previewResult,
-        previewRoll,
-        pythonPreview,
-      }),
-    [previewResult, previewRoll, previewRow, pythonPreview, template],
   );
 
   useEffect(() => {
@@ -404,43 +365,19 @@ export function CustomTemplateBuilder({
             ),
           },
           {
-            id: 'preview-inputs',
-            title: 'Preview inputs',
-            summary: `${fields.length} mock args passed to ${template.functionName}(args)`,
+            id: 'preview',
+            title: 'Preview',
+            summary: 'Inputs, mocks, outputs, and Discord-style embed',
             children: (
-              <div className="form-grid custom-template-preview-inputs">
-                {fields.map((field) => (
-                  <TemplatePreviewArgField
-                    field={field}
-                    value={previewValues[field.key] ?? ''}
-                    onChange={(value) =>
-                      setPreviewValues((current) => ({ ...current, [field.key]: value }))
-                    }
-                    key={field.key}
-                  />
-                ))}
-              </div>
-            ),
-          },
-          {
-            id: 'preview-output',
-            title: 'Preview output',
-            summary: 'Evaluated output and Discord-style embed',
-            children: (
-              <EncounterPreviewPanel
+              <EncounterTemplatePreview
                 template={template}
-                preview={preview}
                 compactRow={previewRow}
-                previewResult={previewResult}
-                onPreviewResultChange={setPreviewResult}
-                previewRoll={previewRoll}
-                onPreviewRollChange={setPreviewRoll}
-                previewCharacterName={previewCharacterName}
-                onPreviewCharacterNameChange={setPreviewCharacterName}
-                previewCharacterLevel={previewCharacterLevel}
-                onPreviewCharacterLevelChange={setPreviewCharacterLevel}
-                previewMode={previewMode}
-                onPreviewRequest={pythonPreviewEnabled ? requestPreview : undefined}
+                inputValues={previewValues}
+                onInputValueChange={(key, value) =>
+                  setPreviewValues((current) => ({ ...current, [key]: value }))
+                }
+                primaryCtaLabel="Create Encounter Template"
+                onPrimaryCta={saveTemplate}
                 className="inline-preview-panel"
               />
             ),
@@ -582,74 +519,6 @@ function TemplateInputEditor({
       </button>
     </div>
   );
-}
-
-function TemplatePreviewArgField({
-  field,
-  value,
-  onChange,
-}: {
-  field: EncounterTemplate['fields'][number];
-  value: string | number;
-  onChange: (value: string | number) => void;
-}) {
-  return (
-    <label className="field">
-      <span>
-        {field.label}
-        <HelpTip label={`${field.label} preview argument help`}>
-          This preview value is passed to the template as the corresponding positional args entry.
-        </HelpTip>
-      </span>
-      {field.type === 'select' ? (
-        <select value={String(value)} onChange={(event) => onChange(event.target.value)}>
-          {(field.values ?? []).map((item) => (
-            <option value={item} key={item}>
-              {item}
-            </option>
-          ))}
-        </select>
-      ) : field.type === 'textarea' ? (
-        <textarea
-          rows={4}
-          value={String(value)}
-          onChange={(event) => onChange(event.target.value)}
-        />
-      ) : (
-        <input
-          type={field.type}
-          value={value}
-          onChange={(event) =>
-            onChange(field.type === 'number' ? Number(event.target.value) : event.target.value)
-          }
-        />
-      )}
-    </label>
-  );
-}
-
-function defaultPreviewValue(field: EncounterTemplate['fields'][number]) {
-  if (field.type === 'number') {
-    if (field.key === 'qty') return 1;
-    if (field.key === 'cr') return 0.25;
-    if (field.key === 'dc') return 12;
-    if (field.inputType === 'dc') return 12;
-    return 1;
-  }
-  if (field.type === 'select') return field.values?.[0] ?? '';
-  if (field.key === 'title') return 'Wild Herbs';
-  if (field.key === 'description') return 'You find useful herbs near a damp hollow.';
-  if (field.key === 'kind') return 'gather';
-  if (field.inputType === 'text_block') return 'You find useful herbs near a damp hollow.';
-  if (field.inputType === 'encounter_kind') return 'gather';
-  if (field.inputType === 'skill_name') return 'Survival';
-  if (field.inputType === 'save_name') return 'Dexterity';
-  if (field.key === 'check') return 'Survival';
-  if (field.key === 'item') return 'Herbs';
-  if (field.key === 'bag') return 'Forage';
-  if (field.key === 'thumb') return 'https://example.test/thumb.png';
-  if (field.key === 'image') return 'https://example.test/scene.png';
-  return '';
 }
 
 function TemplateContractHelp() {
