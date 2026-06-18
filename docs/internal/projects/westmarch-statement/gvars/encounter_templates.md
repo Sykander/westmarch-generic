@@ -55,12 +55,8 @@ through a top-level `encounter_templates` map:
 
 ```py
 def custom_scene(args):
-    title = "Scene"
-    description = "A custom owner-authored encounter."
-    if len(args) > 0:
-        title = args[0]
-    if len(args) > 1:
-        description = args[1]
+    title = _arg(args, 0, "Scene")
+    description = _arg(args, 1, "A custom owner-authored encounter.")
     return {
         "name": title,
         "description": description,
@@ -76,10 +72,42 @@ encounter_templates = {
 ```
 
 The function receives `args`, the compact row values after the template id, and
-must return an encounter dict. Pool tags are matched before the function runs, so
-routing fields do not belong in the returned encounter. The editor may also export
-`encounter_template_meta` with labels and argument names; runtime ignores that
-metadata.
+must return an encounter dict. Use `_arg(args, index, default)` to read row values
+with optional defaults. Pool tags are matched before the function runs, so routing
+fields do not belong in the returned encounter. The editor may also export
+`encounter_template_meta` with labels, argument names, required flags, and
+defaults; runtime ignores that metadata.
+
+The engine module also exposes `encounter_templates.arg(args, index, default)` for
+owner-authored template gvars that import the engine helper instead of defining a
+local `_arg`.
+
+Owner templates can also live in a separate workshop gvar. Point config at that
+gvar with either:
+
+```py
+extensions = {
+    "encounter_templates": "<owner-template-gvar-uuid>",
+}
+
+# or
+encounter_templates_gvar_id = "<owner-template-gvar-uuid>"
+```
+
+The external gvar exports the same `encounter_templates` map:
+
+```py
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(templates = env.gvars.encounter_templates)
+
+def external_scene(args):
+    title = templates.arg(args, 0, "Scene")
+    return {"name": title, "description": "A useful detail."}
+
+encounter_templates = {
+    "external_scene": external_scene,
+}
+```
 
 Common return fields:
 

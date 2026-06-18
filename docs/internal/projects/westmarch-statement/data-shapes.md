@@ -71,10 +71,18 @@ ectx = {
     "rolls": rolls,           # list of resolved roll results (post get_roll)
     "args": args,             # alias invocation args / bonuses
     "encounter": encounter,   # original encounter dict (read-only)
+    "config": config,         # resolved server config, or None
+    "activity": activity,     # enc / forage / mine / ..., or None
+    "biome": biome,           # resolved biome code, or None
+    "location": location,     # current location dict, or None
+    "location_id": location_id,
+    "current_location": location,
+    "current_location_id": location_id,
 }
 ```
 
 **Callable convention:** `def field(ectx):` — always one parameter named **`ectx`**.
+All keys above are present; optional values are **`None`** when they are not known.
 
 ```py
 def description(ectx):
@@ -92,8 +100,11 @@ def description(ectx):
 | `args` | Always (may be empty) |
 | `rolls` | After roll step; `[]` if encounter had no rolls |
 | `encounter` | Always — reference to input dict |
-
-**Future keys** (add to `ectx` only — do not add positional params): `config`, `area_code`, `activity`, journey state, etc.
+| `config` | When the processor can resolve or was passed the server config; else `None` |
+| `activity` | Exploration activity command such as `enc`, `forage`, `mine`; else `None` |
+| `biome` | Resolved biome code for the picked encounter; else `None` |
+| `location`, `current_location` | Current location dict for the character; else `None` |
+| `location_id`, `current_location_id` | Current location id for the character; else `None` |
 
 ---
 

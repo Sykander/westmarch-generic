@@ -351,12 +351,20 @@ function templateFieldFromMeta(value: unknown): EncounterTemplateField | null {
     ? (rawType as EncounterTemplateField['type'])
     : fallback.type;
   const inputType = String(record.inputType ?? record.input_type ?? fallback.inputType);
+  const defaultValue =
+    typeof record.defaultValue === 'string' || typeof record.defaultValue === 'number'
+      ? record.defaultValue
+      : typeof record.default_value === 'string' || typeof record.default_value === 'number'
+        ? record.default_value
+        : undefined;
   return {
     key,
     label: String(record.label ?? fallback.label),
     type,
     inputType: inputType ? (inputType as EncounterTemplateField['inputType']) : fallback.inputType,
     values: asStringList(record.values ?? fallback.values),
+    required: typeof record.required === 'boolean' ? record.required : true,
+    ...(defaultValue == null ? {} : { defaultValue }),
   };
 }
 
@@ -381,6 +389,8 @@ function templateFieldToMeta(field: EncounterTemplateField) {
     type: field.type,
     inputType: field.inputType,
     values: field.values,
+    required: field.required,
+    ...(field.defaultValue == null ? {} : { defaultValue: field.defaultValue }),
   };
 }
 

@@ -55,8 +55,9 @@ True
 name: damage expands simple damage outcome
 
 def custom_scene(args):
-    name = args[0]
-    return {"name": name, "description": "Custom from config"}
+    name = encounter_templates.arg(args, 0)
+    description = encounter_templates.arg(args, 1, "Custom from config")
+    return {"name": name, "description": description}
 
 cfg_fixture = {"encounter_templates": {"custom_scene": custom_scene}}
 enc = encounter_templates.expand_row([["enc.quest"], "custom_scene", "Lost marker"], cfg_fixture)
@@ -64,4 +65,29 @@ return "kind" not in enc and enc["name"] == "Lost marker" and enc["description"]
 ---
 True
 ---
-name: config custom encounter template expands compact rows
+name: config custom encounter template expands compact rows with args helper
+
+cfg_fixture = {"extensions": {"encounter_templates": "eeee7777-7777-7777-7777-777777777777"}}
+enc = encounter_templates.expand_row([["enc.quest"], "external_scene", "Old gate"], cfg_fixture)
+return enc["name"] == "Old gate" and enc["description"] == "External template"
+---
+True
+---
+name: external custom encounter template gvar expands compact rows
+vars:
+  gvars:
+    eeee7777-7777-7777-7777-777777777777: |
+      using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+      using(templates = env.gvars.encounter_templates)
+      def external_scene(args):
+          title = templates.arg(args, 0, "External scene")
+          return {"name": title, "description": "External template"}
+      encounter_templates = {
+          "external_scene": external_scene,
+      }
+
+return encounter_templates.arg(["first"], 0, "fallback") == "first" and encounter_templates.arg([], 0, "fallback") == "fallback"
+---
+True
+---
+name: public arg helper reads optional row values

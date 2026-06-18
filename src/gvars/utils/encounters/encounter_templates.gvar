@@ -21,6 +21,16 @@ def _arg(args, index, default=None):
     return default
 
 
+def arg(args, index, default=None):
+    """Public helper for config-owned template gvars."""
+    return _arg(args, index, default)
+
+
+def _args(args, index, default=None):
+    """Compatibility alias for owner-authored template helpers."""
+    return _arg(args, index, default)
+
+
 def _text(value, default=""):
     if value == None:
         return default
@@ -66,6 +76,11 @@ def _read_field(obj, key):
         pass
     attrs = {
         "encounter_templates": lambda o: o.encounter_templates,
+        "encounter_templates_gvar_id": lambda o: o.encounter_templates_gvar_id,
+        "extensions": lambda o: o.extensions,
+        "gvar_id": lambda o: o.gvar_id,
+        "gvar_ids": lambda o: o.gvar_ids,
+        "gvars": lambda o: o.gvars,
     }
     if key in attrs:
         try:
@@ -319,6 +334,20 @@ def raw(args):
 
 def _custom_template(config_override, key):
     templates = _read_field(config_override, "encounter_templates")
+    fn = _template_from_map(templates, key)
+    if fn != None:
+        return fn
+    for addr in _external_template_gvars(config_override):
+        mod = _load_template_gvar(addr)
+        if mod == None:
+            continue
+        fn = _template_from_map(_read_field(mod, "encounter_templates"), key)
+        if fn != None:
+            return fn
+    return None
+
+
+def _template_from_map(templates, key):
     if templates == None or not dicts.is_dict(templates):
         return None
     direct = _read_field(templates, key)
@@ -328,6 +357,46 @@ def _custom_template(config_override, key):
         if str(name).strip().lower() == key:
             return templates[name]
     return None
+
+
+def _append_template_gvar_ids(target, value):
+    if value == None:
+        return
+    if lists.is_list(value):
+        for item in value:
+            _append_template_gvar_ids(target, item)
+        return
+    if dicts.is_dict(value):
+        direct = _read_field(value, "gvar_id")
+        if direct != None:
+            _append_template_gvar_ids(target, direct)
+        for key in ["gvar_ids", "gvars"]:
+            many = _read_field(value, key)
+            if many != None:
+                _append_template_gvar_ids(target, many)
+        return
+    text = str(value).strip()
+    if text != "":
+        target.append(text)
+
+
+def _external_template_gvars(config_override):
+    ids = []
+    _append_template_gvar_ids(ids, _read_field(config_override, "encounter_templates_gvar_id"))
+    ext = _read_field(config_override, "extensions")
+    _append_template_gvar_ids(ids, _read_field(ext, "encounter_templates"))
+    return ids
+
+
+def _load_template_gvar(addr):
+    if addr == None or str(addr).strip() == "":
+        return None
+    addr = str(addr).strip()
+    try:
+        using(_owner_templates=addr)
+        return _owner_templates
+    except:
+        return None
 
 
 def _expand_custom(template_name, args, config_override=None):

@@ -36,3 +36,40 @@ return result["thumb"] == "https://example.test/thumb.png" and result["image"] =
 True
 ---
 name: process_encounter accepts alternate embed image field names
+
+cfg_fixture = {
+    "world_data": {
+        "default_location": "oakwood",
+        "locations": {
+            "oakwood": {"name": "Oakwood", "biome": "forest"},
+        },
+    },
+}
+
+seen = {}
+enc = {
+    "name": lambda ectx: ectx["current_location"]["name"],
+    "description": lambda ectx: f"{ectx['activity']} in {ectx['biome']} with {len(ectx['args'])} arg",
+    "thumb": lambda ectx: "https://example.test/thumb.png" if ectx["location_id"] == "oakwood" else None,
+}
+result = encounters.process_encounter(
+    enc,
+    character(),
+    {"args": ["guidance"], "config": cfg_fixture, "activity": "enc", "biome": "forest"},
+)
+return result["name"] == "Oakwood" and result["description"] == "enc in forest with 1 arg" and result["thumb"] == "https://example.test/thumb.png"
+---
+True
+---
+name: process_encounter resolves callable fields with one context dict
+
+enc = {
+    "name": lambda ectx: "ok" if "current_location" in ectx and "biome" in ectx and ectx["biome"] == None else "bad",
+    "description": lambda ectx: "no location" if ectx["current_location"] == None else "has location",
+}
+result = encounters.process_encounter(enc, character(), {"args": []})
+return result["name"] == "ok"
+---
+True
+---
+name: process_encounter includes unset context keys as none

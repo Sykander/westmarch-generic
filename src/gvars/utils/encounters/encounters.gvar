@@ -2,7 +2,9 @@
 
 using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(
+    config = env.gvars.config,
     dicts = env.gvars.dicts,
+    journeys = env.gvars.journeys,
     lists = env.gvars.lists,
     strings = env.gvars.strings,
 )
@@ -33,24 +35,90 @@ def _resolve_str(value):
         return ""
 
 
+def _context_value(context, key):
+    if context == None or not dicts.is_dict(context):
+        return None
+    return _read_field(context, key)
+
+
+def _alias_args(args):
+    if args != None and dicts.is_dict(args):
+        if "args" in args:
+            return args["args"]
+        return []
+    if args == None:
+        return []
+    return args
+
+
+def _encounter_context(encounter, character, args=None, rolls=None):
+    if rolls == None:
+        rolls = []
+    context = args if args != None and dicts.is_dict(args) else {}
+    cfg = _context_value(context, "config")
+    if cfg == None:
+        try:
+            cfg = config.get_config()
+        except:
+            pass
+    current_location_id = _context_value(context, "current_location_id")
+    if current_location_id == None:
+        current_location_id = _context_value(context, "location_id")
+    current_location = _context_value(context, "current_location")
+    if current_location == None:
+        current_location = _context_value(context, "location")
+    if current_location == None or current_location_id == None:
+        try:
+            loc_id, loc = journeys.get_location(character, cfg)
+            if current_location_id == None:
+                current_location_id = loc_id
+            if current_location == None:
+                current_location = loc
+        except:
+            pass
+    return {
+        "character": character,
+        "rolls": rolls,
+        "args": _alias_args(args),
+        "encounter": encounter,
+        "config": cfg,
+        "activity": _context_value(context, "activity"),
+        "biome": _context_value(context, "biome"),
+        "location": current_location,
+        "location_id": current_location_id,
+        "current_location": current_location,
+        "current_location_id": current_location_id,
+    }
+
+
+def _resolve_value(value, ectx):
+    try:
+        return value(ectx)
+    except:
+        pass
+    return value
+
+
 def process_encounter(encounter, character, args=None):
     """Return {name, description, outcome_text, thumb, image}."""
     if encounter == None:
         return {"name": "Encounter", "description": "No encounter data.", "outcome_text": "", "thumb": None, "image": None}
-    name = _resolve_str(_read_field(encounter, "name"))
+    rolls = []
+    ectx = _encounter_context(encounter, character, args, rolls)
+    name = _resolve_str(_resolve_value(_read_field(encounter, "name"), ectx))
     if name == "":
         name = "Encounter"
-    desc = _resolve_str(_read_field(encounter, "description"))
-    outcomes = _read_field(encounter, "outcomes")
+    desc = _resolve_str(_resolve_value(_read_field(encounter, "description"), ectx))
+    outcomes = _resolve_value(_read_field(encounter, "outcomes"), ectx)
     outcome_text = ""
     if outcomes != None and lists.is_list(outcomes):
         outcome_text = _apply_outcomes(outcomes, character)
-    thumb = _read_field(encounter, "thumb")
+    thumb = _resolve_value(_read_field(encounter, "thumb"), ectx)
     if thumb == None:
-        thumb = _read_field(encounter, "thumbnail")
-    image = _read_field(encounter, "image")
+        thumb = _resolve_value(_read_field(encounter, "thumbnail"), ectx)
+    image = _resolve_value(_read_field(encounter, "image"), ectx)
     if image == None:
-        image = _read_field(encounter, "image_url")
+        image = _resolve_value(_read_field(encounter, "image_url"), ectx)
     return {
         "name": name,
         "description": desc,

@@ -583,6 +583,16 @@ function functionNameFromTemplate(id: string, value: AnyRecord) {
   return `template_${raw || 'custom'}`;
 }
 
+const CUSTOM_ENCOUNTER_TEMPLATE_HELPERS = `def _arg(args, index, default=None):
+    if args == None:
+        return default
+    try:
+        if index < len(args):
+            return args[index]
+    except:
+        pass
+    return default`;
+
 function customEncounterTemplateExport(model: ConfigModel) {
   const templates = asRecord(model.encounter_templates);
   const entries = Object.entries(templates)
@@ -591,6 +601,7 @@ function customEncounterTemplateExport(model: ConfigModel) {
   if (entries.length === 0) return [] as string[];
 
   const lines: string[] = [];
+  lines.push(CUSTOM_ENCOUNTER_TEMPLATE_HELPERS, '');
   for (const [, value] of entries) {
     const source = String(value.source ?? '').trimEnd();
     lines.push(source, '');

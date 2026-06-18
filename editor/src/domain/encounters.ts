@@ -26,6 +26,8 @@ export type EncounterTemplateField = {
   type: 'text' | 'textarea' | 'number' | 'select';
   inputType?: EncounterTemplateInputKind;
   values?: string[];
+  required?: boolean;
+  defaultValue?: string | number;
 };
 
 export type CompactEncounterRow = Array<

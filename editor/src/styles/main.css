@@ -1717,7 +1717,9 @@ th {
 
 .template-input-row {
   display: grid;
-  grid-template-columns: minmax(140px, 0.8fr) minmax(160px, 1fr) minmax(170px, 0.8fr) minmax(180px, 1fr) auto;
+  grid-template-columns:
+    auto minmax(130px, 0.8fr) minmax(150px, 1fr) minmax(150px, 0.75fr) minmax(110px, auto)
+    minmax(130px, 0.7fr) minmax(150px, 0.8fr) auto;
   gap: 10px;
   align-items: end;
   border: 1px solid #edf0ec;
@@ -1730,8 +1732,53 @@ th {
   gap: 5px;
 }
 
+.template-input-drag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  color: #66746b;
+  cursor: grab;
+}
+
+.template-input-row:active .template-input-drag {
+  cursor: grabbing;
+}
+
+.template-required-field {
+  min-width: 108px;
+}
+
+.inline-checkbox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  min-height: 42px;
+  border: 1px solid #d9ded9;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.inline-checkbox input {
+  margin: 0;
+}
+
+.template-input-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .template-input-remove {
   margin-bottom: 1px;
+}
+
+.template-function-actions {
+  justify-content: flex-start;
 }
 
 .gvar-source-row {
@@ -2605,6 +2652,11 @@ th {
 
   .span-2 {
     grid-column: auto;
+  }
+
+  .template-input-drag,
+  .template-input-actions {
+    justify-content: flex-start;
   }
 
   .cta-bar {

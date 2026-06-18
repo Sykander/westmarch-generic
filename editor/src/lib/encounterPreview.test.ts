@@ -184,7 +184,8 @@ test('buildEncounterPreview does not approximate custom templates before Python 
     description: 'Fallback copy.',
     custom: true,
     functionName: 'custom_scene',
-    source: 'def custom_scene(args):\n    return {"name": args[0], "description": "Exact"}',
+    source:
+      'def custom_scene(args):\n    return {"name": _arg(args, 0, "Scene"), "description": "Exact"}',
     fields: [{ key: 'title', label: 'Title', type: 'text' }],
   };
 

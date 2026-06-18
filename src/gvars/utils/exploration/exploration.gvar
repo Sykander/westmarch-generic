@@ -150,7 +150,21 @@ def run_activity(activity, argslist, get_embed):
     if kind == None:
         kind = "gather"
     enc = _field(pick, "encounter")
-    result = encounters.process_encounter(enc, ch, argslist)
+    loc_id, loc = journeys.get_location(ch, cfg)
+    result = encounters.process_encounter(
+        enc,
+        ch,
+        {
+            "args": argslist,
+            "config": cfg,
+            "activity": activity,
+            "biome": biome,
+            "location_id": loc_id,
+            "location": loc,
+            "current_location_id": loc_id,
+            "current_location": loc,
+        },
+    )
 
     ok_log, log_msg = stats.add_log(
         ch,

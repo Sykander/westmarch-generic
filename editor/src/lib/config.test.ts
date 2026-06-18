@@ -365,16 +365,19 @@ test('custom encounter template functions serialize and parse back into editor m
     encounter_templates: {
       custom_scene: {
         function_name: 'custom_scene',
-        source: 'def custom_scene(args):\n    return {"name": args[0], "description": ""}',
-        args: ['title'],
+        source:
+          'def custom_scene(args):\n    title = _arg(args, 0)\n    skill = _arg(args, 1, "Survival")\n    return {"name": title, "description": skill}',
+        args: ['title', 'skill'],
         fields: [
-          { key: 'title', label: 'Title', type: 'text', inputType: 'text' },
+          { key: 'title', label: 'Title', type: 'text', inputType: 'text', required: true },
           {
             key: 'skill',
             label: 'Skill',
             type: 'select',
             inputType: 'skill_name',
             values: ['Survival', 'Nature'],
+            required: false,
+            defaultValue: 'Survival',
           },
         ],
         label: 'Custom scene',
@@ -386,15 +389,17 @@ test('custom encounter template functions serialize and parse back into editor m
         function_name: 'custom_scene',
         label: 'Custom scene',
         description: 'Custom function template.',
-        args: ['title'],
+        args: ['title', 'skill'],
         fields: [
-          { key: 'title', label: 'Title', type: 'text', inputType: 'text' },
+          { key: 'title', label: 'Title', type: 'text', inputType: 'text', required: true },
           {
             key: 'skill',
             label: 'Skill',
             type: 'select',
             inputType: 'skill_name',
             values: ['Survival', 'Nature'],
+            required: false,
+            defaultValue: 'Survival',
           },
         ],
       },
@@ -402,6 +407,7 @@ test('custom encounter template functions serialize and parse back into editor m
   };
 
   const source = serializeConfig(model);
+  assert.match(source, /def _arg\(args, index, default=None\):/);
   assert.match(source, /def custom_scene\(args\):/);
   assert.match(source, /encounter_templates = \{/);
   assert.match(source, /"custom_scene": custom_scene/);
@@ -410,15 +416,17 @@ test('custom encounter template functions serialize and parse back into editor m
   const template = parsed.model?.encounter_templates?.custom_scene;
   assert.equal(typeof template, 'object');
   assert.match(String((template as Record<string, unknown>).source), /def custom_scene/);
-  assert.deepEqual((template as Record<string, unknown>).args, ['title']);
+  assert.deepEqual((template as Record<string, unknown>).args, ['title', 'skill']);
   assert.deepEqual((template as Record<string, unknown>).fields, [
-    { key: 'title', label: 'Title', type: 'text', inputType: 'text' },
+    { key: 'title', label: 'Title', type: 'text', inputType: 'text', required: true },
     {
       key: 'skill',
       label: 'Skill',
       type: 'select',
       inputType: 'skill_name',
       values: ['Survival', 'Nature'],
+      required: false,
+      defaultValue: 'Survival',
     },
   ]);
 });

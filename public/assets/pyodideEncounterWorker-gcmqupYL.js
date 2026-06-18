@@ -270,10 +270,25 @@ def _read_field(obj, key, default=None):
         return obj.get(key)
     return default
 
+def _encounter_context(encounter, character_obj, rolls_list):
+    return {
+        "character": character_obj,
+        "rolls": rolls_list,
+        "args": args,
+        "encounter": encounter,
+        "config": None,
+        "activity": None,
+        "biome": None,
+        "location": None,
+        "location_id": None,
+        "current_location": None,
+        "current_location_id": None,
+    }
+
 def _resolve_field(encounter, key, character_obj, rolls_list, default=None):
     value = _read_field(encounter, key, default)
     if callable(value):
-        return value(character_obj, rolls_list, args)
+        return value(_encounter_context(encounter, character_obj, rolls_list))
     return value
 
 def process_encounter(encounter, preview_roll, preview_result, roll_mock=None):
@@ -489,6 +504,7 @@ safe_builtins = {
     "int": int,
     "len": len,
     "list": list,
+    "callable": callable,
     "max": max,
     "min": min,
     "range": range,

@@ -467,14 +467,14 @@ function templateKindFromId(templateId: string, args: PreviewArg[]) {
 }
 
 function previewFooter(template: EncounterTemplate, result: EvaluationResult) {
+  const callLabel = `${template.functionName ?? template.id}(args)`;
   if (template.custom && result.evaluated && result.source === 'pyodide') {
-    return `Custom template evaluated with Pyodide: ${template.functionName ?? template.id}(args)`;
+    return `Custom template evaluated with Pyodide: ${callLabel}`;
   }
   if (result.evaluated && result.source === 'pyodide') {
-    return `Template evaluated with Pyodide: ${template.functionName ?? template.id}(args)`;
+    return `Template evaluated with Pyodide: ${callLabel}`;
   }
-  if (template.custom)
-    return `Custom template preview: ${template.functionName ?? template.id}(args)`;
+  if (template.custom) return `Custom template preview: ${callLabel}`;
   if (result.evaluated) return `Template evaluated in browser: ${template.id}`;
   return `Template unavailable: ${template.id}`;
 }

@@ -123,7 +123,7 @@ test('EncounterPreviewPanel keeps idle custom previews behind the View tab', () 
     description: 'Custom template.',
     custom: true,
     functionName: 'custom_scene',
-    source: 'def custom_scene(args):\n    return {"name": args[0]}',
+    source: 'def custom_scene(args):\n    return {"name": _arg(args, 0, "Scene")}',
     fields: [{ key: 'title', label: 'Title', type: 'text' }],
   };
   const row = [['enc.gather'], 'custom_scene', 'Wild Herbs'];

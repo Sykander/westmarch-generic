@@ -13,7 +13,7 @@ const existingTemplate: EncounterTemplate = {
   args: ['title'],
   custom: true,
   functionName: 'travel_clue',
-  source: 'def travel_clue(args):\n    return {"name": args[0]}',
+  source: 'def travel_clue(args):\n    return {"name": _arg(args, 0, "Clue")}',
   fields: [{ key: 'title', label: 'Title', type: 'text' }],
 };
 

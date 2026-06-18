@@ -46,6 +46,7 @@ export function TemplatePreviewArgField({
 }
 
 export function defaultPreviewValue(field: EncounterTemplate['fields'][number]) {
+  if (field.defaultValue != null) return field.defaultValue;
   if (field.type === 'number') {
     if (field.key === 'qty') return 1;
     if (field.key === 'cr') return 0.25;

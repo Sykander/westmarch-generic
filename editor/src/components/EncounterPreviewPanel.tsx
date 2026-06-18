@@ -268,12 +268,13 @@ function PreviewInputsSection({
   onGoToMocks: () => void;
 }) {
   const canEditInputs = Boolean(inputValues && onInputValueChange);
+  const callLabel = `${template.functionName ?? template.id}(args)`;
   return (
     <div className="preview-section-content">
       <section className="preview-template-summary">
         <div className="preview-summary-copy">
           <span>Template</span>
-          <strong>{template.functionName ?? template.id}(args)</strong>
+          <strong>{callLabel}</strong>
           <small>
             {template.custom ? 'Custom Drac2 function via Pyodide' : template.description}
           </small>
@@ -309,9 +310,7 @@ function PreviewInputsSection({
             summary: String(template.functionName ?? template.id),
             children: (
               <section className="preview-data-block">
-                <pre>
-                  {template.source?.trim() || `${template.functionName ?? template.id}(args)`}
-                </pre>
+                <pre>{template.source?.trim() || callLabel}</pre>
               </section>
             ),
           },
