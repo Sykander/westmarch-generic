@@ -93,6 +93,7 @@ function defaultSource(functionName: string) {
 }
 
 type TemplateInputDraft = {
+  draftId: string;
   key: string;
   label: string;
   inputType: EncounterTemplateInputKind;
@@ -112,17 +113,42 @@ const TEMPLATE_INPUT_TYPES: Array<{ value: EncounterTemplateInputKind; label: st
 ];
 
 const DEFAULT_INPUT_DRAFTS: TemplateInputDraft[] = [
-  { key: 'title', label: 'Title', inputType: 'text', options: '' },
-  { key: 'description', label: 'Description', inputType: 'text_block', options: '' },
-  { key: 'kind', label: 'Kind', inputType: 'encounter_kind', options: '' },
-  { key: 'check', label: 'Check', inputType: 'skill_name', options: '' },
-  { key: 'dc', label: 'DC', inputType: 'dc', options: '' },
-  { key: 'item', label: 'Outcome item', inputType: 'text', options: '' },
-  { key: 'qty', label: 'Quantity', inputType: 'number', options: '' },
-  { key: 'bag', label: 'Bag', inputType: 'text', options: '' },
-  { key: 'thumb', label: 'Thumbnail URL', inputType: 'url', options: '' },
-  { key: 'image', label: 'Image URL', inputType: 'url', options: '' },
+  { draftId: 'default-title', key: 'title', label: 'Title', inputType: 'text', options: '' },
+  {
+    draftId: 'default-description',
+    key: 'description',
+    label: 'Description',
+    inputType: 'text_block',
+    options: '',
+  },
+  { draftId: 'default-kind', key: 'kind', label: 'Kind', inputType: 'encounter_kind', options: '' },
+  {
+    draftId: 'default-check',
+    key: 'check',
+    label: 'Check',
+    inputType: 'skill_name',
+    options: '',
+  },
+  { draftId: 'default-dc', key: 'dc', label: 'DC', inputType: 'dc', options: '' },
+  { draftId: 'default-item', key: 'item', label: 'Outcome item', inputType: 'text', options: '' },
+  { draftId: 'default-qty', key: 'qty', label: 'Quantity', inputType: 'number', options: '' },
+  { draftId: 'default-bag', key: 'bag', label: 'Bag', inputType: 'text', options: '' },
+  { draftId: 'default-thumb', key: 'thumb', label: 'Thumbnail URL', inputType: 'url', options: '' },
+  { draftId: 'default-image', key: 'image', label: 'Image URL', inputType: 'url', options: '' },
 ];
+
+let nextTemplateInputDraftId = DEFAULT_INPUT_DRAFTS.length;
+
+function createTemplateInputDraft(index: number): TemplateInputDraft {
+  nextTemplateInputDraftId += 1;
+  return {
+    draftId: `custom-${nextTemplateInputDraftId}`,
+    key: `arg_${index + 1}`,
+    label: `Arg ${index + 1}`,
+    inputType: 'text',
+    options: '',
+  };
+}
 
 function optionValues(text: string) {
   return text
@@ -256,15 +282,7 @@ export function CustomTemplateBuilder({
   }
 
   function addInputDraft() {
-    setInputDrafts((current) => [
-      ...current,
-      {
-        key: `arg_${current.length + 1}`,
-        label: `Arg ${current.length + 1}`,
-        inputType: 'text',
-        options: '',
-      },
-    ]);
+    setInputDrafts((current) => [...current, createTemplateInputDraft(current.length)]);
   }
 
   function removeInputDraft(index: number) {
@@ -338,7 +356,7 @@ export function CustomTemplateBuilder({
                       onChange={(patch) => updateInputDraft(index, patch)}
                       onRemove={() => removeInputDraft(index)}
                       canRemove={inputDrafts.length > 1}
-                      key={`${draft.key}:${index}`}
+                      key={draft.draftId}
                     />
                   ))}
                 </div>
