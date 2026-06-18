@@ -435,6 +435,13 @@ th {
   align-items: stretch;
 }
 
+.field-with-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 8px;
+  align-items: stretch;
+}
+
 .field-action-button {
   min-width: 44px;
   padding: 0 10px;
@@ -1798,6 +1805,37 @@ th {
   gap: 10px;
 }
 
+.command-biome-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 10px;
+}
+
+.command-biome-group {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  border: 1px solid #edf0ec;
+  border-radius: 8px;
+  background: #fbfcfb;
+  padding: 10px;
+}
+
+.command-biome-group > strong {
+  color: #253229;
+  font-size: 0.9rem;
+}
+
+.biome-checkboxes {
+  grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
+  gap: 6px;
+}
+
+.location-gvar-preview {
+  display: grid;
+  gap: 8px;
+}
+
 .distribution-grid {
   align-items: end;
 }
@@ -2486,6 +2524,7 @@ th {
 
   .gvar-source-head,
   .catalogue-row,
+  .field-with-actions,
   .matrix-row,
   .tool-policy .matrix-row,
   .template-input-row,

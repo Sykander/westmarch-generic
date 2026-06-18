@@ -880,7 +880,16 @@ export function App() {
                 <PoliciesView config={config} updateConfig={updateConfig} />
               )}
               {section === 'world' && config && (
-                <WorldView config={config} updateConfig={updateConfig} />
+                <WorldView
+                  config={config}
+                  updateConfig={updateConfig}
+                  token={token}
+                  setStatus={setStatus}
+                  setSteps={setSteps}
+                  upsertRelatedGvar={upsertRelatedGvar}
+                  relatedGvars={relatedGvars}
+                  updateRelatedGvarSource={updateSourceRow}
+                />
               )}
               {section === 'biomes' && config && (
                 <BiomesView
@@ -2419,12 +2428,25 @@ function DistributionEditor({
 function WorldView({
   config,
   updateConfig,
+  token,
+  setStatus,
+  setSteps,
+  upsertRelatedGvar,
+  relatedGvars,
+  updateRelatedGvarSource,
 }: {
   config: ConfigModel;
   updateConfig: (path: string, value: unknown) => void;
+  token: string;
+  setStatus: (value: string) => void;
+  setSteps: (value: RunStep[]) => void;
+  upsertRelatedGvar: (source: LoadedGvarSource) => void;
+  relatedGvars: LoadedGvarSource[];
+  updateRelatedGvarSource: (id: string, value: string) => void;
 }) {
   const locations = asRecord(config.world_data.locations);
   const paths = Array.isArray(config.world_data.paths) ? config.world_data.paths : [];
+  const biomeOptions = Object.keys(asRecord(config.world_data.biomes)).sort();
 
   return (
     <section className="section-panel">
@@ -2442,7 +2464,17 @@ function WorldView({
           help="Used by travel/location commands when no character location is known."
         />
       </div>
-      <LocationEditor locations={locations} updateConfig={updateConfig} />
+      <LocationEditor
+        locations={locations}
+        biomeOptions={biomeOptions}
+        updateConfig={updateConfig}
+        token={token}
+        setStatus={setStatus}
+        setSteps={setSteps}
+        upsertRelatedGvar={upsertRelatedGvar}
+        relatedGvars={relatedGvars}
+        updateRelatedGvarSource={updateRelatedGvarSource}
+      />
       <PathBuilder paths={paths} locations={locations} updateConfig={updateConfig} />
       <details className="advanced-json-details">
         <summary>Advanced world JSON</summary>
@@ -2476,10 +2508,24 @@ const SERVICE_LOCATION_COMMANDS = [
 
 function LocationEditor({
   locations,
+  biomeOptions,
   updateConfig,
+  token,
+  setStatus,
+  setSteps,
+  upsertRelatedGvar,
+  relatedGvars,
+  updateRelatedGvarSource,
 }: {
   locations: AnyRecord;
+  biomeOptions: string[];
   updateConfig: (path: string, value: unknown) => void;
+  token: string;
+  setStatus: (value: string) => void;
+  setSteps: (value: RunStep[]) => void;
+  upsertRelatedGvar: (source: LoadedGvarSource) => void;
+  relatedGvars: LoadedGvarSource[];
+  updateRelatedGvarSource: (id: string, value: string) => void;
 }) {
   const [newLocationId, setNewLocationId] = useState('river_town');
 
@@ -2544,7 +2590,14 @@ function LocationEditor({
             <LocationFields
               id={id}
               location={asRecord(value)}
+              biomeOptions={biomeOptions}
               onChange={(next) => updateLocation(id, next)}
+              token={token}
+              setStatus={setStatus}
+              setSteps={setSteps}
+              upsertRelatedGvar={upsertRelatedGvar}
+              relatedGvars={relatedGvars}
+              updateRelatedGvarSource={updateRelatedGvarSource}
             />
           </details>
         ))}
@@ -2561,16 +2614,32 @@ function LocationEditor({
 function LocationFields({
   id,
   location,
+  biomeOptions,
   onChange,
+  token,
+  setStatus,
+  setSteps,
+  upsertRelatedGvar,
+  relatedGvars,
+  updateRelatedGvarSource,
 }: {
   id: string;
   location: AnyRecord;
+  biomeOptions: string[];
   onChange: (location: AnyRecord) => void;
+  token: string;
+  setStatus: (value: string) => void;
+  setSteps: (value: RunStep[]) => void;
+  upsertRelatedGvar: (source: LoadedGvarSource) => void;
+  relatedGvars: LoadedGvarSource[];
+  updateRelatedGvarSource: (id: string, value: string) => void;
 }) {
   const commands = asRecord(location.commands);
+  const primaryBiomeOptions = optionsWithSelected(biomeOptions, asStringList(location.biome));
 
   function updateField(key: string, value: unknown) {
-    onChange({ ...location, [key]: value || undefined });
+    const nextValue = Array.isArray(value) && value.length === 0 ? undefined : value || undefined;
+    onChange({ ...location, [key]: nextValue });
   }
 
   function updateCommand(command: string, value: unknown) {
@@ -2589,12 +2658,25 @@ function LocationFields({
         onChange={(value) => updateField('name', value)}
         help="Player-facing location name."
       />
-      <TextField
-        label="Primary biome"
-        value={String(location.biome ?? '')}
-        onChange={(value) => updateField('biome', value)}
-        help="Fallback biome code when a command does not list specific biome pools."
-      />
+      <label className="field">
+        <span>
+          Primary biome
+          <HelpTip label="Primary biome help">
+            Fallback biome code when a command does not list specific biome pools.
+          </HelpTip>
+        </span>
+        <select
+          value={String(location.biome ?? '')}
+          onChange={(event) => updateField('biome', event.target.value)}
+        >
+          <option value="">None</option>
+          {primaryBiomeOptions.map((code) => (
+            <option value={code} key={code}>
+              {code}
+            </option>
+          ))}
+        </select>
+      </label>
       <TextField
         label="Image"
         value={String(location.image ?? '')}
@@ -2607,11 +2689,16 @@ function LocationFields({
         onChange={(value) => updateField('link', value)}
         help="Optional Discord channel URL shown with location output."
       />
-      <TextField
-        label="Encounter gvar id"
+      <LocationEncounterGvarField
+        locationId={id}
         value={String(location.encounters_gvar_id ?? '')}
         onChange={(value) => updateField('encounters_gvar_id', value)}
-        help="Optional place-specific encounter module gvar UUID."
+        token={token}
+        setStatus={setStatus}
+        setSteps={setSteps}
+        upsertRelatedGvar={upsertRelatedGvar}
+        relatedGvars={relatedGvars}
+        updateRelatedGvarSource={updateRelatedGvarSource}
       />
       <TextField
         label="Calendar id"
@@ -2649,20 +2736,41 @@ function LocationFields({
         <span>
           Exploration command biomes
           <HelpTip label="Exploration command biomes help">
-            Comma-separated biome codes for commands available at this location.
+            Checked biome codes are available for that command at this location.
           </HelpTip>
         </span>
-        <div className="command-matrix">
-          {EXPLORATION_LOCATION_COMMANDS.map((command) => (
-            <label className="field" key={command}>
-              <span>{command}</span>
-              <input
-                value={arrayToCsv(commands[command])}
-                onChange={(event) => updateCommand(command, csvToArray(event.target.value))}
-                placeholder="forest, road"
-              />
-            </label>
-          ))}
+        <div className="command-biome-grid">
+          {EXPLORATION_LOCATION_COMMANDS.map((command) => {
+            const selected = asStringList(commands[command]);
+            const options = optionsWithSelected(biomeOptions, selected);
+
+            return (
+              <div className="command-biome-group" key={command}>
+                <strong>{command}</strong>
+                {options.length ? (
+                  <div className="checkbox-grid compact biome-checkboxes">
+                    {options.map((code) => (
+                      <label className="option-tile" key={code}>
+                        <input
+                          type="checkbox"
+                          checked={selected.includes(code)}
+                          onChange={(event) =>
+                            updateCommand(
+                              command,
+                              toggleStringListValue(selected, code, event.target.checked),
+                            )
+                          }
+                        />
+                        <span>{code}</span>
+                      </label>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="field-note">Add biome registry entries before wiring commands.</p>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
       <div className="field span-2">
@@ -2685,18 +2793,221 @@ function LocationFields({
           ))}
         </div>
       </div>
-      <TextField
+      <CsvTextField
         label="Services"
-        value={arrayToCsv(location.services)}
-        onChange={(value) => updateField('services', csvToArray(value))}
+        value={location.services}
+        onChange={(value) => updateField('services', value)}
         help="Comma-separated shop or service ids present here."
       />
-      <TextField
+      <CsvTextField
         label="Library topics"
-        value={arrayToCsv(location.library_topics)}
-        onChange={(value) => updateField('library_topics', csvToArray(value))}
+        value={location.library_topics}
+        onChange={(value) => updateField('library_topics', value)}
         help="Comma-separated topic hints for library inference."
       />
+    </div>
+  );
+}
+
+function CsvTextField({
+  label,
+  value,
+  onChange,
+  help,
+  placeholder,
+}: {
+  label: string;
+  value: unknown;
+  onChange: (value: string[]) => void;
+  help?: string;
+  placeholder?: string;
+}) {
+  const externalDraft = useMemo(() => arrayToCsv(value), [value]);
+  const [draft, setDraft] = useState(externalDraft);
+  const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    if (!isEditing) setDraft(externalDraft);
+  }, [externalDraft, isEditing]);
+
+  function commit(text: string) {
+    onChange(csvToArray(text));
+  }
+
+  return (
+    <label className="field">
+      <span>
+        {label}
+        {help ? <HelpTip label={`${label} help`}>{help}</HelpTip> : null}
+      </span>
+      <input
+        value={draft}
+        onFocus={() => setIsEditing(true)}
+        onChange={(event) => {
+          setDraft(event.target.value);
+          commit(event.target.value);
+        }}
+        onBlur={() => {
+          const cleaned = csvToArray(draft);
+          setIsEditing(false);
+          setDraft(arrayToCsv(cleaned));
+          onChange(cleaned);
+        }}
+        placeholder={placeholder}
+      />
+    </label>
+  );
+}
+
+function LocationEncounterGvarField({
+  locationId,
+  value,
+  onChange,
+  token,
+  setStatus,
+  setSteps,
+  upsertRelatedGvar,
+  relatedGvars,
+  updateRelatedGvarSource,
+}: {
+  locationId: string;
+  value: string;
+  onChange: (value: string | undefined) => void;
+  token: string;
+  setStatus: (value: string) => void;
+  setSteps: (value: RunStep[]) => void;
+  upsertRelatedGvar: (source: LoadedGvarSource) => void;
+  relatedGvars: LoadedGvarSource[];
+  updateRelatedGvarSource: (id: string, value: string) => void;
+}) {
+  const [isLoading, setIsLoading] = useState(false);
+  const gvarId = validGvarId(value);
+  const hasValue = value.trim() !== '';
+  const error = hasValue && !gvarId ? 'Encounter gvar ids must be Avrae workshop UUIDs.' : '';
+  const path = `world_data.locations.${locationId}.encounters_gvar_id`;
+  const label = `world data.locations.${locationId}.encounters gvar id`;
+  const source = gvarId ? relatedGvars.find((row) => row.id === gvarId) : undefined;
+  const dashboardUrl = makeGvarDashboardUrl(value);
+
+  async function loadEncounterGvar() {
+    let id = '';
+    try {
+      id = normalizeGvarId(value);
+    } catch (loadError) {
+      const message = loadError instanceof Error ? loadError.message : 'Invalid gvar id.';
+      setStatus(message);
+      setSteps([{ label: `Read ${label}`, state: 'failed', detail: message }]);
+      return;
+    }
+
+    if (!id) {
+      setStatus('Enter an encounter gvar id before loading.');
+      return;
+    }
+
+    if (!token.trim()) {
+      const message = 'Add AVRAE_TOKEN to load this encounter gvar from Avrae.';
+      upsertRelatedGvar({
+        id,
+        label,
+        path,
+        kind: 'gvar',
+        value: '',
+        loaded: false,
+        error: message,
+      });
+      setStatus(message);
+      setSteps([{ label: `Read ${label}`, state: 'failed', detail: 'AVRAE_TOKEN is empty.' }]);
+      return;
+    }
+
+    const nextSteps: RunStep[] = [{ label: `Read ${label}`, state: 'running' }];
+    setSteps([...nextSteps]);
+    setIsLoading(true);
+
+    try {
+      const gvar = await fetchGvar(id, token.trim());
+      const body = String(gvar.value ?? '');
+      upsertRelatedGvar({
+        id,
+        label,
+        path,
+        kind: kindFromSource(body, 'gvar'),
+        value: body,
+        loaded: true,
+      });
+      nextSteps[0] = { label: `Read ${label}`, state: 'success' };
+      setSteps([...nextSteps]);
+      setStatus(`Loaded encounter gvar for ${locationId}.`);
+    } catch (loadError) {
+      const message =
+        loadError instanceof Error ? loadError.message : 'Could not load encounter gvar.';
+      upsertRelatedGvar({
+        id,
+        label,
+        path,
+        kind: 'gvar',
+        value: '',
+        loaded: false,
+        error: message,
+      });
+      nextSteps[0] = { label: `Read ${label}`, state: 'failed', detail: message };
+      setSteps([...nextSteps]);
+      setStatus(message);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  return (
+    <div className="field span-2">
+      <span>
+        Encounter gvar id
+        <HelpTip label="Encounter gvar id help">
+          Optional place-specific encounter module gvar UUID.
+        </HelpTip>
+      </span>
+      <div className="field-with-actions">
+        <input
+          className={error ? 'invalid' : undefined}
+          value={value}
+          onChange={(event) => onChange(event.target.value || undefined)}
+          onBlur={() => {
+            if (!value.trim()) return;
+            const id = validGvarId(value);
+            if (id) onChange(id);
+          }}
+          placeholder="ffffffff-ffff-ffff-ffff-ffffffffffff"
+        />
+        <button
+          type="button"
+          className="field-action-button"
+          onClick={loadEncounterGvar}
+          disabled={!gvarId || isLoading}
+          title={gvarId ? 'Read this encounter gvar from Avrae' : 'Enter a valid gvar UUID'}
+        >
+          <UploadCloud size={16} aria-hidden="true" />
+          Load
+        </button>
+        <button
+          type="button"
+          className="field-action-button"
+          onClick={() => {
+            if (dashboardUrl) window.open(dashboardUrl, '_blank', 'noopener,noreferrer');
+          }}
+          disabled={!dashboardUrl}
+          title="Open in Avrae dashboard"
+          aria-label="Open encounter gvar in Avrae dashboard"
+        >
+          <ExternalLink size={16} aria-hidden="true" />
+        </button>
+      </div>
+      {error ? <small className="field-note">{error}</small> : null}
+      {source ? (
+        <div className="location-gvar-preview">
+          <GvarSourceRows rows={[source]} onChange={updateRelatedGvarSource} />
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -3209,9 +3520,9 @@ function BiomesView({
   }
 
   function updateRowsForBiome(code: string, gvarId: string, rows: CompactEncounterRow[]) {
-    const validGvarId = validBiomeGvarId(gvarId);
-    if (validGvarId) {
-      updateRelatedGvarSource(validGvarId, JSON.stringify(rows, null, 2));
+    const validId = validGvarId(gvarId);
+    if (validId) {
+      updateRelatedGvarSource(validId, JSON.stringify(rows, null, 2));
       return;
     }
 
@@ -3360,10 +3671,10 @@ function BiomesView({
                     <button
                       type="button"
                       onClick={() => {
-                        const validGvarId = validBiomeGvarId(gvarId);
-                        if (validGvarId && !relatedGvars.some((row) => row.id === validGvarId)) {
+                        const validId = validGvarId(gvarId);
+                        if (validId && !relatedGvars.some((row) => row.id === validId)) {
                           upsertRelatedGvar({
-                            id: validGvarId,
+                            id: validId,
                             label: `world_data.biomes.${code}.gvar_id`,
                             path: `world_data.biomes.${code}.gvar_id`,
                             kind: 'json',
@@ -3409,7 +3720,7 @@ function BiomesView({
           biome={asRecord(biomes[editingBiome])}
           rows={rowsForBiome(
             editingBiome,
-            validBiomeGvarId(String(asRecord(biomes[editingBiome]).gvar_id ?? '')),
+            validGvarId(String(asRecord(biomes[editingBiome]).gvar_id ?? '')),
           )}
           onRowsChange={(rows) =>
             updateRowsForBiome(
@@ -3435,7 +3746,7 @@ function compactRowsFromSource(source: string): CompactEncounterRow[] {
   }
 }
 
-function validBiomeGvarId(value: string) {
+function validGvarId(value: string) {
   try {
     return normalizeGvarId(value);
   } catch {

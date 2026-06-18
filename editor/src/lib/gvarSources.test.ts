@@ -25,7 +25,7 @@ test('discoverGvarReferences finds config gvar ids with useful paths and kinds',
       engine_ref: `engine:${LOCATION_ID}`,
       locations: {
         town: {
-          encounter_gvar: LOCATION_ID,
+          encounters_gvar_id: LOCATION_ID,
         },
       },
     },
@@ -43,7 +43,7 @@ test('discoverGvarReferences finds config gvar ids with useful paths and kinds',
   assert.equal(forest?.path, 'world_data.biomes.forest.gvar_id');
   assert.equal(forest?.label, 'world data.biomes.forest.gvar id');
   assert.equal(forest?.kind, 'json');
-  assert.equal(location?.path, 'world_data.locations.town.encounter_gvar');
+  assert.equal(location?.path, 'world_data.locations.town.encounters_gvar_id');
   assert.equal(location?.kind, 'gvar');
   assert.equal(catalogue?.path, 'policies.crafting.catalogue_gvar_id');
   assert.equal(catalogue?.kind, 'json');
@@ -81,14 +81,14 @@ test('discoverGvarReferencesFromSource follows nested JSON gvar ids', () => {
 test('discoverGvarReferencesFromSource falls back to scanning gvar source text', () => {
   const references = discoverGvarReferencesFromSource(
     `nested = "${NESTED_ID}"\nother = "${SECOND_NESTED_ID}"`,
-    'world_data.locations.town.encounter_gvar',
+    'world_data.locations.town.encounters_gvar_id',
   );
 
   assert.deepEqual(
     references.map((reference) => reference.path),
     [
-      'world_data.locations.town.encounter_gvar.source_ref_1',
-      'world_data.locations.town.encounter_gvar.source_ref_2',
+      'world_data.locations.town.encounters_gvar_id.source_ref_1',
+      'world_data.locations.town.encounters_gvar_id.source_ref_2',
     ],
   );
 });

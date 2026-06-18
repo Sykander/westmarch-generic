@@ -1266,6 +1266,27 @@ function validateWorld(model: ConfigModel, issues: ConfigIssue[]) {
       );
     }
   }
+
+  const locations = asRecord(model.world_data.locations);
+  for (const [id, value] of Object.entries(locations)) {
+    const location = asRecord(value);
+    const encountersGvarId = location.encounters_gvar_id;
+    if (encountersGvarId == null || String(encountersGvarId).trim() === '') continue;
+
+    if (!GVAR_ID_RE.test(String(encountersGvarId).trim())) {
+      issues.push(
+        issue(
+          'error',
+          'world.location.encounters_gvar_invalid',
+          'World',
+          `world_data.locations.${id}.encounters_gvar_id`,
+          `${id} has an invalid encounter gvar id`,
+          'Location encounter gvar ids must be Avrae workshop UUIDs.',
+          'Paste a UUID from the Avrae gvar dashboard.',
+        ),
+      );
+    }
+  }
 }
 
 function validateExploration(model: ConfigModel, issues: ConfigIssue[]) {

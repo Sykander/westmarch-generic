@@ -131,6 +131,21 @@ world_data = {
   );
 });
 
+test('location encounter gvar ids must be UUIDs', () => {
+  assert.ok(
+    issueCodes(`
+world_data = {
+    "locations": {
+        "oakwood": {
+            "name": "Oakwood",
+            "encounters_gvar_id": "not-a-gvar",
+        },
+    },
+}
+`).includes('world.location.encounters_gvar_invalid'),
+  );
+});
+
 test('tracked downtime requires downtime subsystem', () => {
   assert.ok(
     issueCodes(`
