@@ -365,8 +365,7 @@ test('custom encounter template functions serialize and parse back into editor m
     encounter_templates: {
       custom_scene: {
         function_name: 'custom_scene',
-        source:
-          'def custom_scene(args):\n    return {"kind": "gather", "name": args[0], "description": ""}',
+        source: 'def custom_scene(args):\n    return {"name": args[0], "description": ""}',
         args: ['title'],
         fields: [
           { key: 'title', label: 'Title', type: 'text', inputType: 'text' },

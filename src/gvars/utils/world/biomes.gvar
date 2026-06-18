@@ -161,6 +161,51 @@ def _row_pool_matches(pool_tags, activity, kind):
     return _pool_token_matches(pool_tags, activity, kind)
 
 
+def _normal_kind(value):
+    if value == None:
+        return None
+    text = str(value).strip().lower()
+    if text in ["combat", "quest", "gather"]:
+        return text
+    return None
+
+
+def _row_template_kind(row):
+    key = str(row[1]).strip().lower()
+    if key in ["combat", "ambush", "damage_combat", "combat_damage", "hazard_combat"]:
+        return "combat"
+    if key in ["quest", "hook"]:
+        return "quest"
+    if key in ["flavour", "flavor", "static", "story"]:
+        if len(row) > 4:
+            legacy_kind = _normal_kind(row[4])
+            if legacy_kind != None:
+                return legacy_kind
+        return "gather"
+    if key in ["gather_item", "gather", "skill_check", "check", "saving_throw", "save"]:
+        return "gather"
+    if key in ["gold", "gp", "healing", "heal", "healing_check", "heal_check", "damage", "hazard"]:
+        return "gather"
+    if key in ["raw", "encounter"] and len(row) > 2:
+        return _normal_kind(_read_field(row[2], "kind"))
+    return None
+
+
+def _row_template_matches(row, kind):
+    row_kind = _row_template_kind(row)
+    if row_kind == None:
+        return True
+    return row_kind == str(kind).strip().lower()
+
+
+def _clean_encounter(enc):
+    result = {}
+    for key in enc:
+        if str(key) != "kind":
+            result[key] = enc[key]
+    return result
+
+
 def _rows_for_payload(payload):
     if lists.is_list(payload):
         return payload
@@ -171,26 +216,24 @@ def _rows_for_payload(payload):
 
 
 def get_pool_entries(code, activity, kind, config=None):
-    """Expanded encounter dicts for activity + kind from loaded biome rows."""
+    """Expanded encounter dicts for activity + selected kind from loaded biome rows."""
     payload = get_biome(code, config)
     if payload == None:
         return []
     rows = _rows_for_payload(payload)
     entries = []
+    cfg = _cfg(config)
     for row in rows:
         if row == None or not lists.is_list(row) or len(row) < 2:
             continue
-        enc = templates.expand_row(row, _cfg(config))
-        if enc == None or not dicts.is_dict(enc):
-            continue
-        enc_kind = _read_field(enc, "kind")
-        if enc_kind == None:
-            enc["kind"] = kind
-        elif str(enc_kind).strip().lower() != str(kind).strip().lower():
-            continue
         if not _row_pool_matches(row[0], activity, kind):
             continue
-        entries.append(enc)
+        if row[0] == None and not _row_template_matches(row, kind):
+            continue
+        enc = templates.expand_row(row, cfg)
+        if enc == None or not dicts.is_dict(enc):
+            continue
+        entries.append(_clean_encounter(enc))
     return entries
 
 

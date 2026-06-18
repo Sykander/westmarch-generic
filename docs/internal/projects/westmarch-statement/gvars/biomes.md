@@ -6,7 +6,7 @@
 
 **Scope:** Biome rows hold **generic wilderness** content only (`enc`, `forage`, `mine`, `fish`, `lumber`). Economy, crafting, content, hunt, loot, and dungeons are **location-scoped** or handled by dedicated engines — see [location_encounters.gvar](location_encounters.md).
 
-**[encounter_lists.gvar](encounter_lists.md)** calls **`get_pool_entries`** after choosing encounter **kind** — filters rows by pool tag and merges with location pools when present.
+**[encounter_lists.gvar](encounter_lists.md)** calls **`get_pool_entries`** after choosing encounter **kind** — filters rows by pool tag before expansion and merges with location pools when present.
 
 ## Dependencies
 
@@ -39,7 +39,7 @@ def get_biome(code, config=None):
 
 def get_pool_entries(code, activity, kind, config=None):
     """
-    List of expanded encounter dicts for activity + kind from loaded biome.
+    List of expanded encounter dicts for activity + selected kind from loaded biome.
     activity: "enc" | "mine" | "forage" | "fish" | "lumber"
     kind: "combat" | "quest" | "gather"
     """
@@ -130,7 +130,7 @@ Biome gvars are raw JSON row lists:
 
 See [data-shapes.md § Biome gvar body](../data-shapes.md#biome-gvar-body-separate-workshop-module).
 
-The first row value is a pool tag list, or `null` for every compatible pool. Tags use `activity.kind`, such as `enc.gather`, `forage.gather`, or `enc.combat`. The second value is an encounter template id from [encounter_templates.md](encounter_templates.md); remaining values are template args.
+The first row value is a pool tag list, or `null` for every compatible pool. Tags use `activity.kind`, such as `enc.gather`, `forage.gather`, or `enc.combat`. The second value is an encounter template id from [encounter_templates.md](encounter_templates.md); remaining values are template args. Pool and built-in template compatibility are checked before expansion.
 
 westmarch **`encounters`** mega-pool + d100 **`get_encounter_list`** — **not** ported. Place-specific service content → [location encounter module](../data-shapes.md#location-encounter-module-separate-workshop-gvar).
 

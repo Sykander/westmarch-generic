@@ -30,9 +30,6 @@ encounter = {
 
     # Sheet effects — optional; static list or callable(ectx)
     "outcomes": [ outcome, ... ] | callable,
-
-    # Exploration mix — optional; used when building enc / activity lists
-    "kind": "combat" | "quest" | "gather",   # see exploration.config.distribution
 }
 ```
 
@@ -42,7 +39,6 @@ encounter = {
 | `description` | yes | Embed body (may include roll text appended by processor) |
 | `rolls` | no | Empty / omitted → skip straight to static fields + outcomes |
 | `outcomes` | no | Omitted → no sheet changes; see [Outcome](#outcome) |
-| `kind` | no | **`combat`**, **`quest`**, or **`gather`** — category for [encounter mix](#explorationconfig); infer from template when omitted (e.g. `cr > 0` → combat) |
 | `cr`, `monsters`, … | no | Combat block when `cr > 0` |
 
 ### Roll spec *(entry in `encounter["rolls"]`)*
@@ -655,7 +651,7 @@ Biome gvars are **raw JSON**, not Drac2 modules. The body is one list of compact
   [["enc.gather", "forage.gather"], "gather_item", "Wild berries", "You find a patch of ripe berries under thorny leaves.", "Wisdom (Survival)", 12, "Berries", 1],
   [["enc.combat"], "combat", "Wolf sign", "Fresh tracks and a low growl warn you that a hungry pack is close.", 1, "Wolf"],
   [["enc.quest"], "quest", "Lost waymarker", "A weathered marker points toward a trail that is not on any current map."],
-  [null, "flavour", "Old campsite", "You find a cold fire ring and bootprints softened by rain.", "gather"]
+  [null, "flavour", "Old campsite", "You find a cold fire ring and bootprints softened by rain."]
 ]
 ```
 
@@ -671,7 +667,7 @@ Each row is:
 | `template_name` | yes | Engine encounter template id from [encounter_templates.gvar](gvars/encounter_templates.md) |
 | `template_args` | no | Positional JSON values passed to that template |
 
-Compatibility is checked after the template expands: a `combat` template only appears when the selected kind is `combat`, `quest` only in `quest`, and `gather` only in `gather`. This lets a single row appear in multiple pools without duplicating the encounter body.
+Compatibility is checked before the template expands: pool tags must match the selected branch, and built-in template ids provide their branch (`combat`, `quest`, or `gather`) for `null` rows. This lets a single row appear in multiple pools without duplicating the encounter body, while keeping routing out of the encounter dict.
 
 | westmarch | westmarch-generic |
 |-----------|-------------------|
@@ -682,7 +678,7 @@ Compatibility is checked after the template expands: a `combat` template only ap
 | **`recipe_encounters`** mixed globally | Recipe-tagged **`gather`** entries or **`economy`** catalogues |
 | d100 **`get_encounter_list`** | **Kind first** ([exploration.config](#explorationconfig) **`distribution`**) → uniform random within matching subset |
 
-Expanded template output matches [Encounter *(input)*](#encounter-input) with explicit **`kind`**.
+Expanded template output matches [Encounter *(input)*](#encounter-input). The selected **`kind`** is selector metadata, not an encounter field.
 
 **Selection algorithm** ([encounter_lists.gvar](gvars/encounter_lists.md)):
 

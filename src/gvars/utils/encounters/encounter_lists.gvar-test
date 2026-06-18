@@ -13,8 +13,8 @@ cfg_fixture = {
         "biomes": {"forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"}},
     },
 }
-enc = encounter_lists.get_encounter("forest", "enc", character(), cfg_fixture)
-return enc != None and enc["kind"] == "gather"
+pick = encounter_lists.get_encounter_pick("forest", "enc", character(), cfg_fixture)
+return pick != None and pick["kind"] == "gather" and "kind" not in pick["encounter"]
 ---
 True
 ---
@@ -45,8 +45,8 @@ cfg_fixture = {
         "biomes": {"forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"}},
     },
 }
-enc = encounter_lists.get_encounter("forest", "enc", character(), cfg_fixture)
-return enc != None and enc["kind"] == "quest"
+pick = encounter_lists.get_encounter_pick("forest", "enc", character(), cfg_fixture)
+return pick != None and pick["kind"] == "quest" and "kind" not in pick["encounter"]
 ---
 True
 ---
@@ -77,8 +77,8 @@ cfg_fixture = {
         "biomes": {"forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"}},
     },
 }
-enc = encounter_lists.get_encounter("forest", "enc", character(), cfg_fixture)
-return enc != None and enc["kind"] == "combat" and enc["name"] == "Forest ambush"
+pick = encounter_lists.get_encounter_pick("forest", "enc", character(), cfg_fixture)
+return pick != None and pick["kind"] == "combat" and pick["encounter"]["name"] == "Forest ambush" and "kind" not in pick["encounter"]
 ---
 True
 ---

@@ -29,6 +29,12 @@ def get_encounter(biome, activity, character, config, location_id=None):
     3. Uniform random choice within combined list
     4. Return encounter dict for encounters.process_encounter
     """
+
+def get_encounter_pick(biome, activity, character, config, location_id=None):
+    """
+    Same selection path, but returns {"kind": selected_kind, "encounter": encounter}.
+    Use this when the caller needs branch metadata for stats/logging.
+    """
 ```
 
 ## Kind selection *(first)*
@@ -53,7 +59,7 @@ Pick one entry at random. Error if list empty.
 
 ## Pool shape
 
-**Biome gvar** — raw JSON row list for exploration activities only ([data-shapes § Biome gvar body](../data-shapes.md#biome-gvar-body-separate-workshop-module)). Candidate rows match the selected `activity.kind` tag, or `null` when the expanded template kind is compatible.
+**Biome gvar** — raw JSON row list for exploration activities only ([data-shapes § Biome gvar body](../data-shapes.md#biome-gvar-body-separate-workshop-module)). Candidate rows match the selected `activity.kind` tag, or `null` when the built-in template branch is compatible. This filtering happens before template expansion.
 
 **Location encounter gvar** — any activity enabled on that place ([data-shapes § Location encounter module](../data-shapes.md#location-encounter-module-separate-workshop-gvar)).
 

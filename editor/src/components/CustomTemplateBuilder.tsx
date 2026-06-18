@@ -41,7 +41,6 @@ function defaultSource(functionName: string) {
   return `def ${functionName}(args):
     name = "Custom encounter"
     description = "Describe what the character finds."
-    kind = "gather"
     check_name = "Survival"
     dc = "12"
     item = "Supplies"
@@ -54,32 +53,25 @@ function defaultSource(functionName: string) {
     if len(args) > 1:
         description = args[1]
     if len(args) > 2:
-        kind = str(args[2]).strip().lower()
+        check_name = args[2]
     if len(args) > 3:
-        check_name = args[3]
+        dc = args[3]
     if len(args) > 4:
-        dc = args[4]
+        item = args[4]
     if len(args) > 5:
-        item = args[5]
+        qty = args[5]
     if len(args) > 6:
-        qty = args[6]
+        bag = args[6]
     if len(args) > 7:
-        bag = args[7]
+        thumb = str(args[7]).strip()
     if len(args) > 8:
-        thumb = str(args[8]).strip()
-    if len(args) > 9:
-        image = str(args[9]).strip()
-    if kind not in ["combat", "quest", "gather"]:
-        kind = "gather"
+        image = str(args[8]).strip()
     encounter = {
-        "kind": kind,
         "name": name,
         "description": description,
         "rolls": [
             {"type": "check", "name": check_name, "ability": "wis", "dc": str(dc)}
         ],
-        "success": "You find something useful.",
-        "failure": "Nothing useful turns up.",
         "outcomes": [
             {"type": "item", "name": item, "total": qty, "bag": bag}
         ],
@@ -107,7 +99,6 @@ const TEMPLATE_INPUT_TYPES: Array<{ value: EncounterTemplateInputKind; label: st
   { value: 'dc', label: 'DC' },
   { value: 'skill_name', label: 'Skill name' },
   { value: 'save_name', label: 'Save name' },
-  { value: 'encounter_kind', label: 'Encounter kind' },
   { value: 'url', label: 'URL' },
   { value: 'custom_select', label: 'Custom select' },
 ];
@@ -121,7 +112,6 @@ const DEFAULT_INPUT_DRAFTS: TemplateInputDraft[] = [
     inputType: 'text_block',
     options: '',
   },
-  { draftId: 'default-kind', key: 'kind', label: 'Kind', inputType: 'encounter_kind', options: '' },
   {
     draftId: 'default-check',
     key: 'check',
@@ -553,7 +543,11 @@ function TemplateContractHelp() {
             Define one function named like the template id. It receives <code>args</code>, the
             positional list after the template id in a compact biome row.
           </p>
-          <pre>{'def custom_scene(args):\n    return {"kind": "gather", "name": "Scene"}'}</pre>
+          <pre>
+            {
+              'def custom_scene(args):\n    return {"name": "Scene", "description": "A useful detail."}'
+            }
+          </pre>
         </article>
         <article className="help-option">
           <strong>Row args</strong>
@@ -563,25 +557,23 @@ function TemplateContractHelp() {
           </p>
         </article>
         <article className="help-option">
-          <strong>Why return kind?</strong>
+          <strong>Pool routing</strong>
           <p>
-            <code>kind</code> routes the encounter through distribution and pool matching. Use{' '}
-            <code>gather</code>, <code>quest</code>, or <code>combat</code>.
+            Compact row pool tags are matched before the template function runs. The returned
+            encounter dict does not include routing fields.
           </p>
         </article>
         <article className="help-option">
           <strong>Return value</strong>
           <p>
-            Return an encounter dict. Use <code>kind</code>, <code>name</code>, and{' '}
-            <code>description</code> at minimum.
+            Return an encounter dict. Use <code>name</code> and <code>description</code> at minimum.
           </p>
         </article>
         <article className="help-option">
           <strong>Common fields</strong>
           <p>
-            <code>rolls</code> may contain check, save, or passive roll dicts. <code>success</code>{' '}
-            and <code>failure</code> describe roll outcomes. <code>outcomes</code> can grant item,
-            gold, healing, damage, or currency changes.
+            <code>rolls</code> may contain check, save, or passive roll dicts. <code>outcomes</code>{' '}
+            can grant item, gold, healing, damage, or currency changes.
           </p>
         </article>
         <article className="help-option">

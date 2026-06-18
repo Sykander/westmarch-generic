@@ -396,7 +396,6 @@ Keep Option B metadata. Encounters gain optional tags:
 
 ```py
 {
-    "kind": "gather",
     "tags": [ "story", "flavour" ],   # or "forage", "hazard", "heal"
     "name": "…",
     "description": "…",
@@ -529,7 +528,6 @@ pools = {
         "combat": [
             {
                 "encounter_id": "forest_wolf_ambush",
-                "kind": "combat",
                 "name": "Wolf pack",
                 "description": "Grey shapes slip between the trees…",
                 "cr": "1",
@@ -537,7 +535,6 @@ pools = {
             },
             {
                 "encounter_id": "forest_owlbear_perception",
-                "kind": "combat",
                 "name": "Owlbear",
                 "description": "An owls hoot catches your attention…",
                 "rolls": [ … ],
@@ -548,7 +545,6 @@ pools = {
         "quest": [
             {
                 "encounter_id": "forest_lost_hunter",
-                "kind": "quest",
                 "name": "Lost hunter",
                 "description": "A hunter asks for escort back to town…",
                 # outcomes with quest_id — when quest vertical lands
@@ -557,13 +553,11 @@ pools = {
         "gather": [
             {
                 "encounter_id": "forest_statue_arthur",
-                "kind": "gather",
                 "name": "Stone statue",
                 "description": "A weathered statue of a legendary king…",
             },
             {
                 "encounter_id": "forest_wild_berries",
-                "kind": "gather",
                 "name": "Wild berries",
                 "description": "You come across wild berries…",
                 "rolls": [ … ],
@@ -589,7 +583,6 @@ pools = {
         "gather": [
             {
                 "encounter_id": "oakwood_heart_tree",
-                "kind": "gather",
                 "name": "Heart of the oakwood",
                 "description": "The oldest oak in the region — a landmark every villager knows.",
             },
@@ -599,7 +592,6 @@ pools = {
         "gather": [
             {
                 "encounter_id": "oakwood_chronicles",
-                "kind": "gather",
                 "name": "Village chronicles",
                 "description": "The clerk keeps ledgers of local history… try `!library history`.",
             },
@@ -609,7 +601,6 @@ pools = {
         "gather": [
             {
                 "encounter_id": "oakwood_mill_shift",
-                "kind": "gather",
                 "name": "Mill shift",
                 "description": "The miller needs strong backs for the afternoon grind…",
             },
@@ -633,7 +624,6 @@ def cr(ectx):
 
 {
     "encounter_id": "forest_wolf_scaled",
-    "kind": "combat",
     "name": "Wolves",
     "description": "The pack sizes itself to the party…",
     "cr": cr,

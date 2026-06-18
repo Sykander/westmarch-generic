@@ -148,7 +148,6 @@ vars:
           ["enc.gather"],
           "raw",
           {
-            "kind": "gather",
             "name": "Image scene",
             "description": "A vista opens.",
             "image": "https://example.test/custom-scene.png"

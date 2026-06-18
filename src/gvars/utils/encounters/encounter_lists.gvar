@@ -124,8 +124,14 @@ def _pick_entry(entries):
     return entries[idx]
 
 
-def get_encounter(biome, activity, character, config=None, location_id=None):
-    """Return encounter dict with kind set, or None if no pool entries."""
+def _encounter_value(enc):
+    if dicts.is_dict(enc):
+        return enc
+    return {"name": str(enc)}
+
+
+def get_encounter_pick(biome, activity, character, config=None, location_id=None):
+    """Return {kind, encounter}, or None if no pool entries."""
     cfg = _cfg(config)
     cmd = activity
     kind = _choose_kind(character, cmd, cfg)
@@ -143,10 +149,12 @@ def get_encounter(biome, activity, character, config=None, location_id=None):
     enc = _pick_entry(entries)
     if enc == None:
         return None
-    if dicts.is_dict(enc):
-        merged = {}
-        for key in enc:
-            merged[key] = enc[key]
-        merged["kind"] = kind
-        return merged
-    return {"kind": kind, "name": str(enc)}
+    return {"kind": kind, "encounter": _encounter_value(enc)}
+
+
+def get_encounter(biome, activity, character, config=None, location_id=None):
+    """Return encounter dict, or None if no pool entries."""
+    pick = get_encounter_pick(biome, activity, character, config, location_id)
+    if pick == None:
+        return None
+    return _read_field(pick, "encounter")

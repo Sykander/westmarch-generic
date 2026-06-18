@@ -140,15 +140,16 @@ def run_activity(activity, argslist, get_embed):
     if resolve_err != None:
         return get_embed(desc=resolve_err)
 
-    enc = encounter_lists.get_encounter(biome, activity, ch, cfg)
-    if enc == None:
+    pick = encounter_lists.get_encounter_pick(biome, activity, ch, cfg)
+    if pick == None:
         return get_embed(
             desc=f"No encounters configured for **{biome}** / **{activity}** on this server."
         )
 
-    kind = _field(enc, "kind")
+    kind = _field(pick, "kind")
     if kind == None:
         kind = "gather"
+    enc = _field(pick, "encounter")
     result = encounters.process_encounter(enc, ch, argslist)
 
     ok_log, log_msg = stats.add_log(

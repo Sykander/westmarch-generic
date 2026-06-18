@@ -46,7 +46,7 @@ Use exact pool tags such as:
 First row value rules:
 
 - A list of tags means the row can appear in those pools.
-- `null` means every compatible pool. Compatibility still follows the template kind, so a `combat` row only appears in combat selections, a `quest` row only in quest selections, and a `gather` row only in gather selections.
+- `null` means every compatible pool. Compatibility follows the built-in template branch before expansion, so a `combat` row only appears in combat selections, a `quest` row only in quest selections, and a `gather` row only in gather selections.
 
 Do **not** include `loot`; it uses the loot session engine, not biome pools. Do **not** include `hunt` unless the brief explicitly says this server branch has biome-backed hunt pools.
 
@@ -60,17 +60,16 @@ Use these templates:
 | `ambush` | combat | name, description, cr, optional monster, optional difficulty, optional dc |
 | `damage_combat` | combat | name, description, cr, optional monster, optional difficulty, optional damage |
 | `quest` | quest | name, description, optional reward_hint |
-| `flavour` | gather by default | name, description, optional kind |
+| `flavour` | gather | name, description |
 | `gather_item` | gather | name, description, check_name, dc, item_name, total, optional bag |
-| `skill_check` | gather | name, description, check_name, dc, optional success_text, optional failure_text |
-| `saving_throw` | gather | name, description, save_name, dc, optional success_text, optional failure_text |
+| `skill_check` | gather | name, description, check_name, dc |
+| `saving_throw` | gather | name, description, save_name, dc |
 | `gold` | gather | name, description, total |
 | `healing` | gather | name, description, total |
 | `healing_check` | gather | name, description, check_name, dc, total |
 | `damage` | gather | name, description, total |
 
 Prefer `gather_item` for forage/lumber finds with item outcomes. Use `flavour` for ambience or non-reward gather beats.
-For `flavour`, the optional kind must be only `combat`, `quest`, or `gather`; omit it unless you specifically need a non-gather row.
 
 ### Volume targets (this chat)
 

@@ -27,14 +27,14 @@ True
 name: saving_throw expands save roll specs
 
 enc = encounter_templates.expand_row([["enc.combat"], "ambush", "Forest ambush", "Shapes rush from the brush.", 1, "Wolf", "hard", 14])
-return enc["kind"] == "combat" and enc["difficulty"] == "hard" and len(enc["rolls"]) == 3 and enc["rolls"][2]["type"] == "passive"
+return "kind" not in enc and enc["difficulty"] == "hard" and len(enc["rolls"]) == 3 and enc["rolls"][2]["type"] == "passive"
 ---
 True
 ---
 name: ambush expands combat and ambush rolls
 
 enc = encounter_templates.expand_row([["enc.combat"], "damage_combat", "Thorn charge", "Thorns tear at you before the fight.", 1, "Needle blight", "medium", "1d6"])
-return enc["kind"] == "combat" and enc["outcomes"][0]["type"] == "damage" and enc["outcomes"][0]["total"] == "1d6"
+return "kind" not in enc and enc["outcomes"][0]["type"] == "damage" and enc["outcomes"][0]["total"] == "1d6"
 ---
 True
 ---
@@ -56,11 +56,11 @@ name: damage expands simple damage outcome
 
 def custom_scene(args):
     name = args[0]
-    return {"kind": "quest", "name": name, "description": "Custom from config"}
+    return {"name": name, "description": "Custom from config"}
 
 cfg_fixture = {"encounter_templates": {"custom_scene": custom_scene}}
 enc = encounter_templates.expand_row([["enc.quest"], "custom_scene", "Lost marker"], cfg_fixture)
-return enc["kind"] == "quest" and enc["name"] == "Lost marker" and enc["description"] == "Custom from config"
+return "kind" not in enc and enc["name"] == "Lost marker" and enc["description"] == "Custom from config"
 ---
 True
 ---

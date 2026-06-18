@@ -13,7 +13,7 @@ const existingTemplate: EncounterTemplate = {
   args: ['title'],
   custom: true,
   functionName: 'travel_clue',
-  source: 'def travel_clue(args):\n    return {"kind": "gather", "name": args[0]}',
+  source: 'def travel_clue(args):\n    return {"name": args[0]}',
   fields: [{ key: 'title', label: 'Title', type: 'text' }],
 };
 
@@ -33,7 +33,7 @@ test('CustomTemplateBuilder renders expandable template sections', () => {
   assert.match(html, /Template id/);
   assert.match(html, /custom_scene/);
   assert.match(html, /Row input schema/);
-  assert.match(html, /10 configured row inputs/);
+  assert.match(html, /9 configured row inputs/);
   assert.match(html, /Template function/);
   assert.match(html, /Preview/);
   assert.match(html, /Inputs, mocks, outputs, and Discord-style embed/);

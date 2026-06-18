@@ -164,7 +164,6 @@ export const BIOME_POOL_TAGS = [
   'lumber.gather',
 ];
 
-const ENCOUNTER_KIND_OPTIONS = ['combat', 'quest', 'gather'];
 const ENCOUNTER_DIFFICULTY_OPTIONS = ['easy', 'medium', 'hard', 'deadly'];
 const CHECK_LABEL_OPTIONS = CHECK_OPTIONS.map((item) => item.label);
 const SAVE_LABEL_OPTIONS = SAVE_OPTIONS.map((item) => item.label);
@@ -193,8 +192,6 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
       { key: 'description', label: 'Description', type: 'text' },
       { key: 'skill', label: 'Check', type: 'select', values: CHECK_LABEL_OPTIONS },
       { key: 'dc', label: 'DC', type: 'number' },
-      { key: 'success', label: 'Success text', type: 'text' },
-      { key: 'failure', label: 'Failure text', type: 'text' },
     ],
   },
   {
@@ -206,28 +203,24 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
       { key: 'description', label: 'Description', type: 'text' },
       { key: 'save', label: 'Save', type: 'select', values: SAVE_LABEL_OPTIONS },
       { key: 'dc', label: 'DC', type: 'number' },
-      { key: 'success', label: 'Success text', type: 'text' },
-      { key: 'failure', label: 'Failure text', type: 'text' },
     ],
   },
   {
     id: 'story',
     label: 'Story',
-    description: 'Descriptive beat with optional kind routing.',
+    description: 'Descriptive gather beat.',
     fields: [
       { key: 'title', label: 'Title', type: 'text' },
       { key: 'description', label: 'Description', type: 'text' },
-      { key: 'kind', label: 'Kind', type: 'select', values: ENCOUNTER_KIND_OPTIONS },
     ],
   },
   {
     id: 'flavour',
     label: 'Flavour',
-    description: 'Non-reward descriptive encounter beat.',
+    description: 'Non-reward descriptive gather beat.',
     fields: [
       { key: 'title', label: 'Title', type: 'text' },
       { key: 'text', label: 'Text', type: 'text' },
-      { key: 'kind', label: 'Kind', type: 'select', values: ENCOUNTER_KIND_OPTIONS },
     ],
   },
   {

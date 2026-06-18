@@ -14,7 +14,7 @@ For biome rows, also follow this style target:
 - Each row should feel like the most interesting thing likely to happen during roughly half a day of travel, not a tiny incidental find.
 - Descriptions should usually be 180-350 characters with a compact scene: environmental setup, complication, and why adventurers must respond.
 - Do not duplicate any pasted titles, examples, or seed rows.
-- For `flavour`, the optional kind must be only `combat`, `quest`, or `gather`; omit it unless needed.
+- For `flavour`, use only `name` and `description`; branch routing comes from row pool tags.
 
 ### Output format (unchanged)
 

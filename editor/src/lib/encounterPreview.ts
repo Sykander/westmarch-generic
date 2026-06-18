@@ -79,11 +79,14 @@ export function buildEncounterPreview({
   pythonPreview,
 }: PreviewInput): EncounterPreviewModel {
   const args = row.slice(2) as PreviewArg[];
-  const result: EvaluationResult = pythonPreview
+  const evaluation: EvaluationResult = pythonPreview
     ? pyodideTemplatePreviewResult(template, pythonPreview)
     : template.custom
       ? customTemplatePreviewResult(template, pythonPreview)
       : expandEncounterTemplate(template, args);
+  const result = evaluation.encounter
+    ? { ...evaluation, encounter: withoutEncounterKind(evaluation.encounter) }
+    : evaluation;
   const encounter = result.encounter ?? unavailableEncounter(template);
   const hasPyodideDisplayOutput = Boolean(
     pythonPreview?.displayOutput && isDisplayOutput(pythonPreview.displayOutput),
@@ -93,7 +96,7 @@ export function buildEncounterPreview({
     : processEncounterPreview(encounter, { previewRoll, previewResult });
 
   return {
-    kind: textField(encounter.kind, 'gather'),
+    kind: previewKind(template, row),
     name: displayOutput.title || displayOutput.name || template.label,
     description: displayOutput.description || template.description,
     rolls: displayOutput.rolls?.length
@@ -169,7 +172,7 @@ export function processEncounterPreview(
   }
   const name = textField(encounter.name, 'Encounter');
   const rolls = previewRolls(encounter.rolls, previewRoll, previewResult);
-  const outcomeText = previewOutcomeText(encounter, previewResult);
+  const outcomeText = previewOutcomeText(encounter);
   const description = processedDescription(encounter, rolls);
   const desc = [description, outcomeText].filter((item) => item.trim() !== '').join('\n');
   const thumb = optionalMediaUrl(encounter.thumb) ?? optionalMediaUrl(encounter.thumbnail);
@@ -297,56 +300,36 @@ function gatherItem(args: PreviewArg[]) {
   };
   if (bag !== undefined && text(bag).trim() !== '') outcome.bag = text(bag);
   return {
-    ...base('gather', name, description),
+    ...base(name, description),
     rolls: [roll(checkName, dc)],
     outcomes: [outcome],
   };
 }
 
 function skillCheck(args: PreviewArg[]) {
-  const encounter: EncounterRecord = {
+  return {
     ...base(
-      'gather',
       arg(args, 0, 'Skill check'),
       arg(args, 1, 'A careful approach may reveal something useful.'),
     ),
     rolls: [roll(arg(args, 2, 'Wisdom (Survival)'), arg(args, 3, '12'))],
   };
-  if (arg(args, 4) !== undefined) encounter.success = text(arg(args, 4));
-  if (arg(args, 5) !== undefined) encounter.failure = text(arg(args, 5));
-  return encounter;
 }
 
 function savingThrow(args: PreviewArg[]) {
-  const encounter: EncounterRecord = {
-    ...base(
-      'gather',
-      arg(args, 0, 'Saving throw'),
-      arg(args, 1, 'A sudden threat demands quick reaction.'),
-    ),
+  return {
+    ...base(arg(args, 0, 'Saving throw'), arg(args, 1, 'A sudden threat demands quick reaction.')),
     rolls: [save(arg(args, 2, 'Dexterity'), arg(args, 3, '12'))],
   };
-  if (arg(args, 4) !== undefined) encounter.success = text(arg(args, 4));
-  if (arg(args, 5) !== undefined) encounter.failure = text(arg(args, 5));
-  return encounter;
 }
 
 function story(args: PreviewArg[]) {
-  const kind = cleanKind(arg(args, 2, 'gather'));
-  return base(
-    kind,
-    arg(args, 0, 'Forest sign'),
-    arg(args, 1, 'You notice a quiet detail in the wild.'),
-  );
+  return base(arg(args, 0, 'Forest sign'), arg(args, 1, 'You notice a quiet detail in the wild.'));
 }
 
 function combatTemplate(args: PreviewArg[]) {
   const encounter: EncounterRecord = {
-    ...base(
-      'combat',
-      arg(args, 0, 'Hostile creatures'),
-      arg(args, 1, 'Something dangerous moves nearby.'),
-    ),
+    ...base(arg(args, 0, 'Hostile creatures'), arg(args, 1, 'Something dangerous moves nearby.')),
     cr: arg(args, 2, 1),
   };
   const monsters = arg(args, 3);
@@ -377,7 +360,6 @@ function ambush(args: PreviewArg[]) {
 
 function quest(args: PreviewArg[]) {
   const encounter = base(
-    'quest',
     arg(args, 0, 'Unfinished business'),
     arg(args, 1, 'A hook asks for follow-up.'),
   );
@@ -387,7 +369,7 @@ function quest(args: PreviewArg[]) {
 
 function gold(args: PreviewArg[]) {
   return {
-    ...base('gather', arg(args, 0, 'Treasure cache'), arg(args, 1, 'Coins glint in the dirt.')),
+    ...base(arg(args, 0, 'Treasure cache'), arg(args, 1, 'Coins glint in the dirt.')),
     outcomes: [{ type: 'gold', total: intOrText(arg(args, 2, 1), 1) }],
   };
 }
@@ -395,7 +377,6 @@ function gold(args: PreviewArg[]) {
 function healing(args: PreviewArg[]) {
   return {
     ...base(
-      'gather',
       arg(args, 0, 'Restorative spring'),
       arg(args, 1, 'A restorative moment eases your wounds.'),
     ),
@@ -406,7 +387,6 @@ function healing(args: PreviewArg[]) {
 function healingCheck(args: PreviewArg[]) {
   return {
     ...base(
-      'gather',
       arg(args, 0, 'Field medicine'),
       arg(args, 1, 'Careful treatment helps the wounded recover.'),
     ),
@@ -417,19 +397,73 @@ function healingCheck(args: PreviewArg[]) {
 
 function damage(args: PreviewArg[]) {
   return {
-    ...base('gather', arg(args, 0, 'Hazard'), arg(args, 1, 'The area turns dangerous.')),
+    ...base(arg(args, 0, 'Hazard'), arg(args, 1, 'The area turns dangerous.')),
     outcomes: [{ type: 'damage', total: intOrText(arg(args, 2, '1d4'), '1d4') }],
   };
 }
 
 function unavailableEncounter(template: EncounterTemplate): EncounterRecord {
   return {
-    kind: 'gather',
     name: template.custom ? 'Preview pending' : template.label,
     description: template.custom
       ? 'Refresh the preview to evaluate the template function.'
       : template.description,
   };
+}
+
+function withoutEncounterKind(record: EncounterRecord): EncounterRecord {
+  return Object.fromEntries(Object.entries(record).filter(([key]) => key !== 'kind'));
+}
+
+function previewKind(template: EncounterTemplate, row: CompactEncounterRow) {
+  const args = row.slice(2) as PreviewArg[];
+  return kindFromPoolTags(row[0]) ?? templateKindFromId(template.id, args) ?? 'gather';
+}
+
+function kindFromPoolTags(value: PreviewArg | undefined) {
+  const tags = Array.isArray(value) ? value : [value];
+  for (const tag of tags) {
+    const token = text(tag).trim().toLowerCase();
+    const parts = token.split('.');
+    const kind = knownKind(token) ?? knownKind(parts[parts.length - 1]);
+    if (kind) return kind;
+  }
+  return undefined;
+}
+
+function templateKindFromId(templateId: string, args: PreviewArg[]) {
+  const key = templateId.trim().toLowerCase();
+  if (['combat', 'ambush', 'damage_combat', 'combat_damage', 'hazard_combat'].includes(key)) {
+    return 'combat';
+  }
+  if (['quest', 'hook'].includes(key)) return 'quest';
+  if (['flavour', 'flavor', 'static', 'story'].includes(key)) {
+    return knownKind(arg(args, 2)) ?? 'gather';
+  }
+  if (['raw', 'encounter'].includes(key) && isRecord(arg(args, 0))) {
+    return knownKind((arg(args, 0) as EncounterRecord).kind);
+  }
+  if (
+    [
+      'gather_item',
+      'gather',
+      'skill_check',
+      'check',
+      'saving_throw',
+      'save',
+      'gold',
+      'gp',
+      'healing',
+      'heal',
+      'healing_check',
+      'heal_check',
+      'damage',
+      'hazard',
+    ].includes(key)
+  ) {
+    return 'gather';
+  }
+  return undefined;
 }
 
 function previewFooter(template: EncounterTemplate, result: EvaluationResult) {
@@ -495,13 +529,8 @@ function numericOrText(value: unknown) {
     : text(value);
 }
 
-function previewOutcomeText(encounter: EncounterRecord, previewResult: string) {
+function previewOutcomeText(encounter: EncounterRecord) {
   const outcomes: string[] = [];
-  if (previewResult === 'success' && text(encounter.success).trim() !== '') {
-    outcomes.push(text(encounter.success));
-  } else if (previewResult === 'failure' && text(encounter.failure).trim() !== '') {
-    outcomes.push(text(encounter.failure));
-  }
   if (text(encounter.reward).trim() !== '') outcomes.push(`Reward: ${text(encounter.reward)}`);
   if (text(encounter.cr).trim() !== '') {
     const monsters = Array.isArray(encounter.monsters)
@@ -546,9 +575,8 @@ function displayLines(value: string) {
     .filter(Boolean);
 }
 
-function base(kind: string, name: unknown, description: unknown): EncounterRecord {
+function base(name: unknown, description: unknown): EncounterRecord {
   return {
-    kind,
     name: text(name, 'Encounter'),
     description: text(description),
   };
@@ -655,9 +683,9 @@ function isNumberish(value: unknown) {
   return value !== null && value !== undefined && value !== '' && !Number.isNaN(Number(value));
 }
 
-function cleanKind(value: unknown) {
-  const kind = text(value, 'gather').trim().toLowerCase();
-  return KIND_FALLBACKS.includes(kind) ? kind : 'gather';
+function knownKind(value: unknown) {
+  const kind = text(value).trim().toLowerCase();
+  return KIND_FALLBACKS.includes(kind) ? kind : undefined;
 }
 
 function isRecord(value: unknown): value is EncounterRecord {

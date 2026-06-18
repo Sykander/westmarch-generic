@@ -56,19 +56,17 @@ test('buildEncounterPreview prefers exact Pyodide encounter results when availab
     description: 'Fallback copy.',
     custom: true,
     functionName: 'custom_scene',
-    source:
-      'def custom_scene(args):\n    return {"kind": "quest", "name": "From Python", "description": "Exact"}',
+    source: 'def custom_scene(args):\n    return {"name": "From Python", "description": "Exact"}',
     fields: [{ key: 'title', label: 'Title', type: 'text' }],
   };
 
   const preview = buildEncounterPreview({
     template,
-    row: [['enc.quest'], 'custom_scene', 'Fallback title'],
+    row: [['enc.combat'], 'custom_scene', 'Fallback title'],
     previewResult: 'neutral',
     previewRoll: '10',
     pythonPreview: {
       encounter: {
-        kind: 'combat',
         name: 'From Pyodide',
         description: 'Exact return value',
         cr: 2,
@@ -81,6 +79,8 @@ test('buildEncounterPreview prefers exact Pyodide encounter results when availab
   assert.equal(preview.name, 'From Pyodide');
   assert.equal(preview.output?.name, 'From Pyodide');
   assert.equal(preview.templateOutput?.name, 'From Pyodide');
+  assert.equal(preview.output?.kind, undefined);
+  assert.equal(preview.templateOutput?.kind, undefined);
   assert.equal(preview.displayOutput?.name, 'From Pyodide');
   assert.match(preview.outcomes[0], /Bandit Captain/);
   assert.match(preview.displayOutput?.outcome_text ?? '', /Bandit Captain/);
@@ -100,7 +100,6 @@ test('buildEncounterPreview renders Pyodide processed display output when availa
     previewRoll: '15',
     pythonPreview: {
       encounter: {
-        kind: 'gather',
         name: 'Wild Herbs',
         description: 'Template encounter.',
       },
@@ -131,7 +130,6 @@ test('buildEncounterPreview exposes encounter image fields for the preview', () 
       ['enc.gather'],
       'raw',
       {
-        kind: 'gather',
         name: 'Image scene',
         description: 'A wide view.',
         thumbnail: 'https://example.test/thumb.png',
@@ -144,6 +142,7 @@ test('buildEncounterPreview exposes encounter image fields for the preview', () 
 
   assert.equal(preview.thumb, 'https://example.test/thumb.png');
   assert.equal(preview.image, 'https://example.test/image.png');
+  assert.equal(preview.output?.kind, undefined);
   assert.equal(preview.displayOutput?.thumb, 'https://example.test/thumb.png');
   assert.equal(preview.displayOutput?.image, 'https://example.test/image.png');
 });
@@ -173,6 +172,7 @@ test('buildEncounterPreview ignores missing media placeholder strings', () => {
 
   assert.equal(preview.thumb, undefined);
   assert.equal(preview.image, undefined);
+  assert.equal(preview.output?.kind, undefined);
   assert.equal(preview.displayOutput?.thumb, undefined);
   assert.equal(preview.displayOutput?.image, undefined);
 });
@@ -184,8 +184,7 @@ test('buildEncounterPreview does not approximate custom templates before Python 
     description: 'Fallback copy.',
     custom: true,
     functionName: 'custom_scene',
-    source:
-      'def custom_scene(args):\n    return {"kind": "quest", "name": args[0], "description": "Exact"}',
+    source: 'def custom_scene(args):\n    return {"name": args[0], "description": "Exact"}',
     fields: [{ key: 'title', label: 'Title', type: 'text' }],
   };
 

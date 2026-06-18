@@ -17,17 +17,17 @@ Biome rows use:
 `encounter_templates.expand_row(row)` ignores the pool tag element and expands the template name plus args:
 
 ```py
-enc = encounter_templates.expand_row([["enc.gather"], "flavour", "Wild berries", "You find ripe berries.", "gather"])
+enc = encounter_templates.expand_row([["enc.gather"], "flavour", "Wild berries", "You find ripe berries."])
 ```
 
 ## Templates (MVP subset)
 
 | Template            | Kind                | Args                                                                                                     |
 | ------------------- | ------------------- | -------------------------------------------------------------------------------------------------------- |
-| `flavour` / `story` | `gather` by default | `name`, `description`, optional `kind`                                                                   |
+| `flavour` / `story` | `gather`            | `name`, `description`                                                                                    |
 | `gather_item`       | `gather`            | `name`, `description`, `check_name`, `dc`, `item_name`, `total`, optional `bag`                          |
-| `skill_check`       | `gather`            | `name`, `description`, `check_name`, `dc`, optional `success_text`, optional `failure_text`              |
-| `saving_throw`      | `gather`            | `name`, `description`, `save_name`, `dc`, optional `success_text`, optional `failure_text`               |
+| `skill_check`       | `gather`            | `name`, `description`, `check_name`, `dc`                                                                |
+| `saving_throw`      | `gather`            | `name`, `description`, `save_name`, `dc`                                                                 |
 | `combat`            | `combat`            | `name`, `description`, `cr`, optional `monster` or monster list, optional `difficulty`                   |
 | `ambush`            | `combat`            | `name`, `description`, `cr`, optional `monster` or monster list, optional `difficulty`, optional `dc`    |
 | `damage_combat`     | `combat`            | `name`, `description`, `cr`, optional `monster` or monster list, optional `difficulty`, optional `total` |
@@ -57,22 +57,14 @@ through a top-level `encounter_templates` map:
 def custom_scene(args):
     title = "Scene"
     description = "A custom owner-authored encounter."
-    kind = "gather"
     if len(args) > 0:
         title = args[0]
     if len(args) > 1:
         description = args[1]
-    if len(args) > 2:
-        kind = str(args[2]).strip().lower()
-    if kind not in ["combat", "quest", "gather"]:
-        kind = "gather"
     return {
-        "kind": kind,
         "name": title,
         "description": description,
         "rolls": [{"type": "check", "name": "Survival", "ability": "wis", "dc": "12"}],
-        "success": "You find something useful.",
-        "failure": "Nothing useful turns up.",
         "outcomes": [{"type": "item", "name": "Supplies", "total": 1, "bag": "Forage"}],
         "thumb": "https://example.test/thumb.png",
         "image": "https://example.test/scene.png",
@@ -84,7 +76,8 @@ encounter_templates = {
 ```
 
 The function receives `args`, the compact row values after the template id, and
-must return an encounter dict. The editor may also export
+must return an encounter dict. Pool tags are matched before the function runs, so
+routing fields do not belong in the returned encounter. The editor may also export
 `encounter_template_meta` with labels and argument names; runtime ignores that
 metadata.
 
@@ -92,10 +85,8 @@ Common return fields:
 
 | Field | Meaning |
 | --- | --- |
-| `kind` | Pool/distribution routing: `gather`, `quest`, or `combat`. |
 | `name`, `description` | Main encounter title and body text. |
 | `rolls` | Optional check/save/passive roll specs. |
-| `success`, `failure` | Optional text for roll outcome branches. |
 | `outcomes` | Optional sheet changes such as `item`, `gold`, `healing`, `damage`, or `currency`. |
 | `thumb`, `image` | Optional embed thumbnail and wide image URLs. |
 | `reward` | Quest reward hint. |

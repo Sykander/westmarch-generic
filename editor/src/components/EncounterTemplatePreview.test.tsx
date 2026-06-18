@@ -66,7 +66,7 @@ test('EncounterTemplatePreview uses the same input tab for custom templates', ()
     description: 'Custom template.',
     custom: true,
     functionName: 'custom_scene',
-    source: 'def custom_scene(args):\n    return {"kind": "gather", "name": args[0]}',
+    source: 'def custom_scene(args):\n    return {"name": args[0]}',
     fields: [{ key: 'title', label: 'Title', type: 'text' }],
   };
 

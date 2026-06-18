@@ -1,4 +1,4 @@
-enc = {"kind": "gather", "name": "Treasure cache", "description": "Coins glint.", "outcomes": [{"type": "gold", "total": "3"}]}
+enc = {"name": "Treasure cache", "description": "Coins glint.", "outcomes": [{"type": "gold", "total": "3"}]}
 result = encounters.process_encounter(enc, character())
 return result["name"] == "Treasure cache" and "3" in result["outcome_text"]
 ---
@@ -6,7 +6,7 @@ True
 ---
 name: process_encounter applies gold outcome
 
-enc = {"kind": "gather", "name": "Empty", "description": "Nothing happens."}
+enc = {"name": "Empty", "description": "Nothing happens."}
 result = encounters.process_encounter(enc, character())
 return result["description"] == "Nothing happens." and result["outcome_text"] == ""
 ---
@@ -21,7 +21,7 @@ True
 ---
 name: process_encounter handles missing encounter
 
-enc = {"kind": "gather", "name": "Scene", "description": "A wide view.", "thumb": "https://example.test/thumb.png", "image": "https://example.test/image.png"}
+enc = {"name": "Scene", "description": "A wide view.", "thumb": "https://example.test/thumb.png", "image": "https://example.test/image.png"}
 result = encounters.process_encounter(enc, character())
 return result["thumb"] == "https://example.test/thumb.png" and result["image"] == "https://example.test/image.png"
 ---
@@ -29,7 +29,7 @@ True
 ---
 name: process_encounter preserves embed image fields
 
-enc = {"kind": "gather", "name": "Scene", "description": "A wide view.", "thumbnail": "https://example.test/thumb.png", "image_url": "https://example.test/image.png"}
+enc = {"name": "Scene", "description": "A wide view.", "thumbnail": "https://example.test/thumb.png", "image_url": "https://example.test/image.png"}
 result = encounters.process_encounter(enc, character())
 return result["thumb"] == "https://example.test/thumb.png" and result["image"] == "https://example.test/image.png"
 ---

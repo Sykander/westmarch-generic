@@ -391,7 +391,7 @@ function PreviewMocksSection({
           value={previewResult}
           values={['success', 'failure', 'neutral']}
           onChange={onPreviewResultChange}
-          help="Controls success/failure text in processed encounter output."
+          help="Controls mocked roll pass/fail state in processed encounter output."
         />
         <label className="field">
           <span>

@@ -1,5 +1,5 @@
 entries = biomes.get_pool_entries("forest", "enc", "gather")
-return len(entries) == 1 and entries[0]["name"] == "Berries in the Wild"
+return len(entries) == 1 and entries[0]["name"] == "Berries in the Wild" and "kind" not in entries[0]
 ---
 True
 ---
@@ -21,7 +21,7 @@ vars:
       [[["enc.gather"], "flavour", "Berries in the Wild", "", "gather"]]
 
 entries = biomes.get_pool_entries("forest", "forage", "gather")
-return len(entries) == 1 and entries[0]["name"] == "Shared Berries"
+return len(entries) == 1 and entries[0]["name"] == "Shared Berries" and "kind" not in entries[0]
 ---
 True
 ---
@@ -58,6 +58,25 @@ vars:
       }
     eeee5555-5555-5555-5555-555555555555: |
       [[null, "flavour", "Any Gather", "", "gather"]]
+
+entries = biomes.get_pool_entries("forest", "enc", "combat")
+return len(entries) == 1 and entries[0]["name"] == "Battlefield sign" and "kind" not in entries[0]
+---
+True
+---
+name: explicit pool tags route rows before template expansion
+vars:
+  svars:
+    westmarch_config: "eeee3333-3333-3333-3333-333333333333"
+  gvars:
+    eeee3333-3333-3333-3333-333333333333: |
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+          },
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      [[["enc.combat"], "flavour", "Battlefield sign", "Old scars in the trees point toward a fight."]]
 
 cfg_fixture = {
     "subsystems": {
