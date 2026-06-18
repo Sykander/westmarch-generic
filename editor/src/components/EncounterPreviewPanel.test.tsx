@@ -66,7 +66,14 @@ test('EncounterPreviewPanel renders the shared preview inputs by default', () =>
 });
 
 test('EncounterPreview renders the Discord-style embed view', () => {
-  const row = [['enc.gather'], 'gather_item', 'Wild Herbs', 'Damp hollow', 'Survival', 12];
+  const row = [
+    ['enc.gather'],
+    'gather_item',
+    'Wild Herbs',
+    'Damp **hollow** with [map](https://example.test/map) and `moss`.\n-# Tiny Discord subtext.',
+    'Survival',
+    12,
+  ];
   const preview = {
     ...buildEncounterPreview({
       template,
@@ -78,14 +85,35 @@ test('EncounterPreview renders the Discord-style embed view', () => {
     image: 'https://example.test/image.png',
   };
 
-  const html = renderToStaticMarkup(createElement(EncounterPreview, { preview }));
+  const html = renderToStaticMarkup(
+    createElement(
+      TooltipProvider,
+      null,
+      createElement(EncounterPreview, {
+        preview,
+      }),
+    ),
+  );
 
   assert.match(html, /discord-thumb/);
   assert.match(html, /discord-image/);
   assert.match(html, /Encounter embed preview/);
-  assert.match(html, /westmarch-assets\/brand\/avrae-avatar.svg/);
+  assert.match(html, /Preview accuracy help/);
+  assert.match(html, /discord-assets\/avrae-profile.webp/);
+  assert.match(html, /discord-assets\/cat_profile.png/);
   assert.match(html, /Avrae/);
   assert.match(html, /APP/);
+  assert.match(html, /Today at 8:53 PM/);
+  assert.match(html, /CoolGuy2026/);
+  assert.match(html, /Use !westmarch help for options\./);
+  assert.match(html, /<strong>hollow<\/strong>/);
+  assert.match(html, /href="https:\/\/example.test\/map"/);
+  assert.match(html, /<code>moss<\/code>/);
+  assert.match(html, /discord-markdown-subtext/);
+  assert.match(html, /Tiny Discord subtext/);
+  assert.doesNotMatch(html, /-# Tiny Discord subtext/);
+  assert.doesNotMatch(html, /Encounter preview output/);
+  assert.match(html, /<strong>Survival DC 12<\/strong>/);
 });
 
 test('EncounterPreviewPanel keeps idle custom previews behind the View tab', () => {

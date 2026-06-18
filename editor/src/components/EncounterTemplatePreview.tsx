@@ -6,7 +6,7 @@ import {
   type PyodideTemplatePreview,
   type RollMockConfig,
 } from '../lib/pyodideEncounterPreview';
-import { EncounterPreviewPanel } from './EncounterPreviewPanel';
+import { EncounterPreviewPanel, type PreviewDiscordProfile } from './EncounterPreviewPanel';
 
 export function EncounterTemplatePreview({
   template,
@@ -27,8 +27,11 @@ export function EncounterTemplatePreview({
 }) {
   const [previewResult, setPreviewResult] = useState('success');
   const [rollValues, setRollValues] = useState('15,15,15,15,15');
-  const [previewCharacterName, setPreviewCharacterName] = useState('Preview Character');
+  const [previewCharacterName, setPreviewCharacterName] = useState('Daenerys Targaryen');
   const [previewCharacterLevel, setPreviewCharacterLevel] = useState('5');
+  const [previewDiscordUserName, setPreviewDiscordUserName] = useState('CoolGuy2026');
+  const [previewDiscordProfile, setPreviewDiscordProfile] = useState<PreviewDiscordProfile>('cat');
+  const [previewDiscordProfileUrl, setPreviewDiscordProfileUrl] = useState('');
   const [encounterResult, setEncounterResult] = useState<PyodideTemplatePreview | null>(null);
   const [displayResult, setDisplayResult] = useState<PyodideTemplatePreview | null>(null);
   const [encounterText, setEncounterText] = useState('');
@@ -37,7 +40,7 @@ export function EncounterTemplatePreview({
   const pythonPreviewArgs = useMemo(() => compactRow.slice(2), [compactRow]);
   const pythonPreviewCharacter = useMemo(
     () => ({
-      name: previewCharacterName.trim() || 'Preview Character',
+      name: previewCharacterName.trim() || 'Daenerys Targaryen',
       level: Number(previewCharacterLevel) || 1,
     }),
     [previewCharacterLevel, previewCharacterName],
@@ -191,6 +194,12 @@ export function EncounterTemplatePreview({
       onPreviewCharacterNameChange={setPreviewCharacterName}
       previewCharacterLevel={previewCharacterLevel}
       onPreviewCharacterLevelChange={setPreviewCharacterLevel}
+      previewDiscordUserName={previewDiscordUserName}
+      onPreviewDiscordUserNameChange={setPreviewDiscordUserName}
+      previewDiscordProfile={previewDiscordProfile}
+      onPreviewDiscordProfileChange={setPreviewDiscordProfile}
+      previewDiscordProfileUrl={previewDiscordProfileUrl}
+      onPreviewDiscordProfileUrlChange={setPreviewDiscordProfileUrl}
       previewMode={previewMode}
       encounterText={encounterText}
       onEncounterTextChange={updateEncounterText}

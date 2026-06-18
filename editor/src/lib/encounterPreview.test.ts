@@ -34,6 +34,7 @@ test('buildEncounterPreview expands built-in templates from compact row args', (
   assert.match(preview.outcomes[0], /Gain 2 x Herbs in Forage/);
   assert.match(preview.displayOutput?.roll_text ?? '', /18 \*\*Survival DC 12\*\*/);
   assert.equal(preview.displayOutput?.title, 'Wild Herbs');
+  assert.equal(preview.displayOutput?.footer, 'Use !westmarch help for options.');
   assert.deepEqual(preview.displayOutput?.rolls[0], {
     type: 'check',
     name: 'Survival',
@@ -44,6 +45,7 @@ test('buildEncounterPreview expands built-in templates from compact row args', (
     passed: true,
   });
   assert.equal(preview.displayOutput?.embed.title, 'Wild Herbs');
+  assert.equal(preview.displayOutput?.embed.footer, 'Use !westmarch help for options.');
   assert.match(preview.displayOutput?.outcome_text ?? '', /Gain 2 x Herbs in Forage/);
 });
 

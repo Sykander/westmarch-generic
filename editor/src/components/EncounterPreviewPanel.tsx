@@ -1,4 +1,6 @@
 import { useId, useState } from 'react';
+import ReactMarkdown, { type Components } from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import type { EncounterTemplate } from '../domain/encounters';
 import type { EncounterPreviewModel } from '../lib/encounterPreview';
 import { ExpandableBlockRows } from './ExpandableBlockRows';
@@ -6,11 +8,73 @@ import { SelectField } from './FormFields';
 import { HelpTip } from './HelpTip';
 import { TemplatePreviewArgField } from './TemplatePreviewArgField';
 
-const AVRAE_AVATAR_URL = `${import.meta.env?.BASE_URL ?? '/westmarch-generic/'}westmarch-assets/brand/avrae-avatar.svg`;
+const DISCORD_ASSET_BASE = `${import.meta.env?.BASE_URL ?? '/westmarch-generic/'}discord-assets/`;
+const AVRAE_AVATAR_URL = `${DISCORD_ASSET_BASE}avrae-profile.webp`;
+const DEFAULT_DISCORD_PROFILE_URL = `${DISCORD_ASSET_BASE}default_profile.png`;
+const CAT_DISCORD_PROFILE_URL = `${DISCORD_ASSET_BASE}cat_profile.png`;
+const PREVIEW_MESSAGE_TIMESTAMP = 'Today at 8:53 PM';
+const PREVIEW_ACCURACY_HELP =
+  'This preview is an indicator, not a guarantee of runtime behaviour. It does not run real Avrae/Drac2 in Discord or ask the Discord API to generate the message preview.';
+
+const DISCORD_MARKDOWN_COMPONENTS = {
+  p({ children }) {
+    return <p className="discord-markdown-paragraph">{children}</p>;
+  },
+  h1({ children }) {
+    return <h1>{children}</h1>;
+  },
+  h2({ children }) {
+    return <h2>{children}</h2>;
+  },
+  h3({ children }) {
+    return <h3>{children}</h3>;
+  },
+  h4({ children }) {
+    return <h4>{children}</h4>;
+  },
+  h5({ children }) {
+    return <h5>{children}</h5>;
+  },
+  h6({ children }) {
+    return <h6>{children}</h6>;
+  },
+  a({ children, href }) {
+    return (
+      <a href={href} target="_blank" rel="noreferrer">
+        {children}
+      </a>
+    );
+  },
+  blockquote({ children }) {
+    return <blockquote>{children}</blockquote>;
+  },
+  code({ children, className }) {
+    return <code className={className}>{children}</code>;
+  },
+  pre({ children }) {
+    return <pre>{children}</pre>;
+  },
+  ul({ children }) {
+    return <ul>{children}</ul>;
+  },
+  ol({ children }) {
+    return <ol>{children}</ol>;
+  },
+  li({ children }) {
+    return <li>{children}</li>;
+  },
+} satisfies Components;
 
 type PreviewRowId = 'inputs' | 'mocks' | 'outputs' | 'view';
 
 export type PreviewMode = 'ready' | 'idle' | 'loading' | 'encounter-ready';
+export type PreviewDiscordProfile = 'default' | 'cat' | 'custom';
+type PreviewAction = {
+  label: string;
+  onClick?: () => void;
+  disabled?: boolean;
+  variant?: 'default' | 'primary' | 'preview';
+};
 
 export function EncounterPreviewPanel({
   template,
@@ -21,10 +85,16 @@ export function EncounterPreviewPanel({
   onPreviewResultChange,
   rollValues = '15,15,15,15,15',
   onRollValuesChange,
-  previewCharacterName = 'Preview Character',
+  previewCharacterName = 'Daenerys Targaryen',
   onPreviewCharacterNameChange,
   previewCharacterLevel = '5',
   onPreviewCharacterLevelChange,
+  previewDiscordUserName = 'CoolGuy2026',
+  onPreviewDiscordUserNameChange,
+  previewDiscordProfile = 'cat',
+  onPreviewDiscordProfileChange,
+  previewDiscordProfileUrl = '',
+  onPreviewDiscordProfileUrlChange,
   previewMode = 'ready',
   encounterText = '',
   onEncounterTextChange,
@@ -48,6 +118,12 @@ export function EncounterPreviewPanel({
   onPreviewCharacterNameChange?: (value: string) => void;
   previewCharacterLevel?: string;
   onPreviewCharacterLevelChange?: (value: string) => void;
+  previewDiscordUserName?: string;
+  onPreviewDiscordUserNameChange?: (value: string) => void;
+  previewDiscordProfile?: PreviewDiscordProfile;
+  onPreviewDiscordProfileChange?: (value: PreviewDiscordProfile) => void;
+  previewDiscordProfileUrl?: string;
+  onPreviewDiscordProfileUrlChange?: (value: string) => void;
   previewMode?: PreviewMode;
   encounterText?: string;
   onEncounterTextChange?: (value: string) => void;
@@ -120,6 +196,12 @@ export function EncounterPreviewPanel({
                 onPreviewCharacterNameChange={onPreviewCharacterNameChange}
                 previewCharacterLevel={previewCharacterLevel}
                 onPreviewCharacterLevelChange={onPreviewCharacterLevelChange}
+                previewDiscordUserName={previewDiscordUserName}
+                onPreviewDiscordUserNameChange={onPreviewDiscordUserNameChange}
+                previewDiscordProfile={previewDiscordProfile}
+                onPreviewDiscordProfileChange={onPreviewDiscordProfileChange}
+                previewDiscordProfileUrl={previewDiscordProfileUrl}
+                onPreviewDiscordProfileUrlChange={onPreviewDiscordProfileUrlChange}
                 onGoToOutputs={() => goTo('outputs')}
                 onGoToView={() => goTo('view')}
               />
@@ -160,6 +242,11 @@ export function EncounterPreviewPanel({
                 onGoToOutputs={() => goTo('outputs')}
                 primaryCtaLabel={primaryCtaLabel}
                 onPrimaryCta={onPrimaryCta}
+                embedAuthorName={previewDiscordUserName}
+                embedAuthorAvatarUrl={discordProfileUrl(
+                  previewDiscordProfile,
+                  previewDiscordProfileUrl,
+                )}
               />
             ),
           },
@@ -245,6 +332,12 @@ function PreviewMocksSection({
   onPreviewCharacterNameChange,
   previewCharacterLevel,
   onPreviewCharacterLevelChange,
+  previewDiscordUserName,
+  onPreviewDiscordUserNameChange,
+  previewDiscordProfile,
+  onPreviewDiscordProfileChange,
+  previewDiscordProfileUrl,
+  onPreviewDiscordProfileUrlChange,
   onGoToOutputs,
   onGoToView,
 }: {
@@ -257,6 +350,12 @@ function PreviewMocksSection({
   onPreviewCharacterNameChange?: (value: string) => void;
   previewCharacterLevel: string;
   onPreviewCharacterLevelChange?: (value: string) => void;
+  previewDiscordUserName: string;
+  onPreviewDiscordUserNameChange?: (value: string) => void;
+  previewDiscordProfile: PreviewDiscordProfile;
+  onPreviewDiscordProfileChange?: (value: PreviewDiscordProfile) => void;
+  previewDiscordProfileUrl: string;
+  onPreviewDiscordProfileUrlChange?: (value: string) => void;
   onGoToOutputs: () => void;
   onGoToView: () => void;
 }) {
@@ -313,6 +412,35 @@ function PreviewMocksSection({
           onChange={(value) => onPreviewCharacterLevelChange?.(value)}
           help="Exposed as character().level."
         />
+        <label className="field">
+          <span>
+            Mock Discord user
+            <HelpTip label="Mock Discord user help">
+              Shown as the embed author row Avrae includes above the embed title.
+            </HelpTip>
+          </span>
+          <input
+            value={previewDiscordUserName}
+            onChange={(event) => onPreviewDiscordUserNameChange?.(event.target.value)}
+          />
+        </label>
+        <SelectField
+          label="Mock Discord profile"
+          value={previewDiscordProfile}
+          values={['default', 'cat', 'custom']}
+          onChange={(value) => onPreviewDiscordProfileChange?.(value as PreviewDiscordProfile)}
+          help="Avatar shown in the Avrae embed author row."
+        />
+        {previewDiscordProfile === 'custom' ? (
+          <label className="field">
+            <span>Profile image URL</span>
+            <input
+              value={previewDiscordProfileUrl}
+              placeholder="https://example.test/avatar.png"
+              onChange={(event) => onPreviewDiscordProfileUrlChange?.(event.target.value)}
+            />
+          </label>
+        ) : null}
       </div>
       <section className="preview-data-block">
         <h4>Roll results</h4>
@@ -409,6 +537,8 @@ function PreviewViewSection({
   onGoToOutputs,
   primaryCtaLabel,
   onPrimaryCta,
+  embedAuthorName,
+  embedAuthorAvatarUrl,
 }: {
   preview: EncounterPreviewModel;
   previewMode: PreviewMode;
@@ -419,27 +549,36 @@ function PreviewViewSection({
   onGoToOutputs: () => void;
   primaryCtaLabel?: string;
   onPrimaryCta?: () => void;
+  embedAuthorName: string;
+  embedAuthorAvatarUrl: string;
 }) {
   const showPlaceholder = Boolean(onPreviewRequest && previewMode !== 'ready');
   return (
     <div className="preview-section-content">
-      <PreviewCtaRow
-        primary={{
-          label: isDisplayLoading ? 'Generating Preview...' : 'Generate Preview',
-          onClick: onPreviewRequest,
-          disabled: !onPreviewRequest || isDisplayLoading,
-        }}
-      />
       {showPlaceholder ? (
-        <EncounterPreviewPlaceholder loading={isDisplayLoading} />
+        <EncounterPreviewPlaceholder loading={isDisplayLoading} preview={preview} />
       ) : (
-        <EncounterPreview preview={preview} />
+        <EncounterPreview
+          preview={preview}
+          embedAuthorName={embedAuthorName}
+          embedAuthorAvatarUrl={embedAuthorAvatarUrl}
+        />
       )}
       <PreviewCtaRow
         secondary={[
           { label: 'Inputs', onClick: onGoToInputs },
           { label: 'Mocks', onClick: onGoToMocks },
           { label: 'Outputs', onClick: onGoToOutputs },
+          ...(onPreviewRequest
+            ? [
+                {
+                  label: isDisplayLoading ? 'Generating Preview...' : 'Generate Preview',
+                  onClick: onPreviewRequest,
+                  disabled: isDisplayLoading,
+                  variant: 'preview' as const,
+                },
+              ]
+            : []),
         ]}
         primary={
           primaryCtaLabel
@@ -460,28 +599,27 @@ function PreviewCtaRow({
   secondary = [],
   error,
 }: {
-  primary?: {
-    label: string;
-    onClick?: () => void;
-    disabled?: boolean;
-  };
-  secondary?: Array<{
-    label: string;
-    onClick: () => void;
-  }>;
+  primary?: PreviewAction;
+  secondary?: PreviewAction[];
   error?: string;
 }) {
   return (
     <div className="preview-action-row">
       {secondary.map((action) => (
-        <button type="button" onClick={action.onClick} key={action.label}>
+        <button
+          type="button"
+          className={previewActionClassName(action)}
+          onClick={action.onClick}
+          disabled={action.disabled}
+          key={action.label}
+        >
           {action.label}
         </button>
       ))}
       {primary ? (
         <button
           type="button"
-          className="primary"
+          className={previewActionClassName({ ...primary, variant: primary.variant ?? 'primary' })}
           onClick={primary.onClick}
           disabled={primary.disabled}
         >
@@ -493,32 +631,65 @@ function PreviewCtaRow({
   );
 }
 
-export function EncounterPreview({ preview }: { preview: EncounterPreviewModel }) {
+function previewActionClassName(action: PreviewAction) {
+  if (action.variant === 'preview') return 'preview-refresh';
+  if (action.variant === 'primary') return 'primary';
+  return undefined;
+}
+
+export function EncounterPreview({
+  preview,
+  embedAuthorName = 'CoolGuy2026',
+  embedAuthorAvatarUrl = CAT_DISCORD_PROFILE_URL,
+}: {
+  preview: EncounterPreviewModel;
+  embedAuthorName?: string;
+  embedAuthorAvatarUrl?: string;
+}) {
+  const embed = preview.displayOutput?.embed;
+  const description = previewEmbedDescription(preview);
+  const title = embed?.title || preview.name;
+  const footer = embed?.footer || preview.footer;
+  const thumb = embed?.thumb || preview.thumb;
+  const image = embed?.image || preview.image;
+  const authorName = embedAuthorName.trim() || 'Discord User';
+  const hasThumbnail = Boolean(thumb);
+
   return (
     <div className="discord-preview" aria-label="Encounter embed preview">
+      <div className="discord-preview-toolbar">
+        <span>Preview</span>
+        <HelpTip label="Preview accuracy help">{PREVIEW_ACCURACY_HELP}</HelpTip>
+      </div>
       <div className="discord-message">
-        <img className="discord-avatar" src={AVRAE_AVATAR_URL} alt="" />
+        <img className="discord-avatar" src={AVRAE_AVATAR_URL} width={40} height={40} alt="" />
         <div className="discord-message-body">
-          <div className="discord-author">
-            <span>Avrae</span>
-            <span className="discord-app-badge">APP</span>
-          </div>
-          <article className={`discord-embed ${preview.kind}`}>
-            {preview.thumb ? <img className="discord-thumb" src={preview.thumb} alt="" /> : null}
-            <header>
-              <span className="discord-kicker">{preview.kind}</span>
-              <h4>{preview.name}</h4>
-            </header>
-            <p>{preview.description}</p>
-            {preview.rolls.map((roll) => (
-              <strong key={roll}>{roll}</strong>
-            ))}
-            {preview.outcomes.map((outcome) => (
-              <span key={outcome}>{outcome}</span>
-            ))}
-            {preview.notice ? <span className="preview-note">{preview.notice}</span> : null}
-            {preview.image ? <img className="discord-image" src={preview.image} alt="" /> : null}
-            <footer>{preview.footer}</footer>
+          <h3 className="discord-message-header">
+            <span className="discord-author">
+              <span>Avrae</span>
+              <span className="discord-app-badge">APP</span>
+            </span>
+            <span className="discord-message-time">{PREVIEW_MESSAGE_TIMESTAMP}</span>
+          </h3>
+          <article
+            className={`discord-embed ${preview.kind}${hasThumbnail ? ' has-thumbnail' : ''}`}
+          >
+            <div className={`discord-embed-grid${hasThumbnail ? ' has-thumbnail' : ''}`}>
+              <div className="discord-embed-author">
+                <img src={embedAuthorAvatarUrl} width={24} height={24} alt="" />
+                <span>{authorName}</span>
+              </div>
+              <h4 className="discord-embed-title">{title}</h4>
+              {description ? (
+                <DiscordMarkdown className="discord-embed-description">
+                  {description}
+                </DiscordMarkdown>
+              ) : null}
+              {thumb ? <img className="discord-thumb" src={thumb} alt="" /> : null}
+              {preview.notice ? <span className="preview-note">{preview.notice}</span> : null}
+              {image ? <img className="discord-image" src={image} alt="" /> : null}
+              <footer>{footer}</footer>
+            </div>
           </article>
         </div>
       </div>
@@ -526,26 +697,112 @@ export function EncounterPreview({ preview }: { preview: EncounterPreviewModel }
   );
 }
 
-function EncounterPreviewPlaceholder({ loading }: { loading: boolean }) {
+function DiscordMarkdown({ children, className }: { children: string; className?: string }) {
+  const parts = splitDiscordMarkdown(children);
+
+  return (
+    <div className={`discord-markdown${className ? ` ${className}` : ''}`}>
+      {parts.map((part, index) =>
+        part.type === 'subtext' ? (
+          <div className="discord-markdown-subtext" key={`${part.type}-${index}`}>
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={DISCORD_MARKDOWN_COMPONENTS}>
+              {part.value}
+            </ReactMarkdown>
+          </div>
+        ) : (
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={DISCORD_MARKDOWN_COMPONENTS}
+            key={`${part.type}-${index}`}
+          >
+            {part.value}
+          </ReactMarkdown>
+        ),
+      )}
+    </div>
+  );
+}
+
+function splitDiscordMarkdown(markdown: string) {
+  const parts: Array<{ type: 'markdown' | 'subtext'; value: string }> = [];
+  const markdownBuffer: string[] = [];
+
+  function flushMarkdown() {
+    const value = markdownBuffer.join('\n').trim();
+    markdownBuffer.length = 0;
+    if (value) parts.push({ type: 'markdown', value });
+  }
+
+  for (const line of markdown.split('\n')) {
+    const subtext = line.match(/^-#\s+(.+)$/);
+    if (subtext) {
+      flushMarkdown();
+      parts.push({ type: 'subtext', value: subtext[1] });
+    } else {
+      markdownBuffer.push(line);
+    }
+  }
+  flushMarkdown();
+  return parts;
+}
+
+function previewEmbedDescription(preview: EncounterPreviewModel) {
+  const embedDesc = preview.displayOutput?.embed?.desc;
+  if (embedDesc?.trim()) return embedDesc;
+  return [preview.description, ...preview.rolls, ...preview.outcomes]
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .join('\n');
+}
+
+function discordProfileUrl(profile: PreviewDiscordProfile, customUrl: string) {
+  if (profile === 'cat') return CAT_DISCORD_PROFILE_URL;
+  if (profile === 'custom') return customUrl.trim() || DEFAULT_DISCORD_PROFILE_URL;
+  return DEFAULT_DISCORD_PROFILE_URL;
+}
+
+function EncounterPreviewPlaceholder({
+  loading,
+  preview,
+}: {
+  loading: boolean;
+  preview: EncounterPreviewModel;
+}) {
+  const thumb = preview.displayOutput?.embed?.thumb || preview.thumb;
+  const hasThumbnail = Boolean(thumb);
+
   return (
     <div
       className={`discord-preview preview-placeholder${loading ? ' loading' : ''}`}
       aria-label="Encounter preview placeholder"
       aria-busy={loading}
     >
+      <div className="discord-preview-toolbar">
+        <span>Preview</span>
+        <HelpTip label="Preview accuracy help">{PREVIEW_ACCURACY_HELP}</HelpTip>
+      </div>
       <div className="discord-message">
-        <img className="discord-avatar" src={AVRAE_AVATAR_URL} alt="" />
+        <img className="discord-avatar" src={AVRAE_AVATAR_URL} width={40} height={40} alt="" />
         <div className="discord-message-body">
-          <div className="discord-author">
+          <h3 className="discord-message-header">
             <span className="skeleton-line author-line" />
-          </div>
-          <article className="discord-embed gather preview-skeleton">
-            <span className="skeleton-line kicker-line" />
-            <span className="skeleton-line title-line" />
-            <span className="skeleton-line text-line wide" />
-            <span className="skeleton-line text-line" />
-            <span className="skeleton-line strong-line" />
-            <span className="skeleton-line footer-line" />
+          </h3>
+          <article
+            className={`discord-embed ${preview.kind} preview-skeleton${hasThumbnail ? ' has-thumbnail' : ''}`}
+          >
+            <div
+              className={`discord-embed-grid preview-skeleton-grid${hasThumbnail ? ' has-thumbnail' : ''}`}
+            >
+              <span className="skeleton-line embed-author-line" />
+              <span className="skeleton-line title-line" />
+              <div className="skeleton-description">
+                <span className="skeleton-line text-line wide" />
+                <span className="skeleton-line text-line" />
+                <span className="skeleton-line strong-line" />
+              </div>
+              {hasThumbnail ? <span className="skeleton-line thumb-line" /> : null}
+              <span className="skeleton-line footer-line" />
+            </div>
           </article>
         </div>
       </div>

@@ -322,11 +322,11 @@ def process_encounter(encounter, preview_roll, preview_result, roll_mock=None):
             "rolls": [],
             "outcomes": [],
             "outcome_text": "",
-            "footer": "Encounter preview output",
+            "footer": "Use !westmarch help for options.",
             "embed": {
                 "title": "Encounter",
                 "desc": "No encounter data.",
-                "footer": "Encounter preview output",
+                "footer": "Use !westmarch help for options.",
             },
         }
     rolls_list = _processed_rolls(encounter.get("rolls"), preview_roll, preview_result, roll_mock)
@@ -352,7 +352,7 @@ def process_encounter(encounter, preview_roll, preview_result, roll_mock=None):
         "rolls": [_roll_to_json(roll) for roll in rolls_list],
         "outcomes": outcomes_list,
         "outcome_text": outcome_text,
-        "footer": "Encounter preview output",
+        "footer": "Use !westmarch help for options.",
     }
     thumb_value = _resolve_field(encounter, "thumb", preview_character_obj, rolls_list)
     if thumb_value is None:
@@ -539,7 +539,7 @@ safe_builtins = {
 
 class PreviewCharacter:
     def __init__(self, data):
-        self.name = data.get("name") or "Preview Character"
+        self.name = data.get("name") or "Daenerys Targaryen"
         self.level = data.get("level") or 1
         self.cvars = data.get("cvars") or {}
 

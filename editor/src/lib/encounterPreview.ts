@@ -174,7 +174,7 @@ export function processEncounterPreview(
   const desc = [description, outcomeText].filter((item) => item.trim() !== '').join('\n');
   const thumb = optionalMediaUrl(encounter.thumb) ?? optionalMediaUrl(encounter.thumbnail);
   const image = optionalMediaUrl(encounter.image) ?? optionalMediaUrl(encounter.image_url);
-  const footer = 'Encounter preview output';
+  const footer = 'Use !westmarch help for options.';
   return {
     title: name,
     name,
