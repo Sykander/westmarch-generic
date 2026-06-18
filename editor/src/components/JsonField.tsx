@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
+import { CodeIde } from './CodeIde';
 
 type JsonFieldProps = {
   label: string;
@@ -28,21 +29,14 @@ export function JsonField({ label, value, onCommit, minRows = 8 }: JsonFieldProp
   }
 
   return (
-    <label className="field span-2">
-      <span>{label}</span>
-      <textarea
-        className={error ? 'code-input invalid' : 'code-input'}
-        rows={minRows}
-        value={text}
-        onChange={(event) => commit(event.target.value)}
-        spellCheck={false}
-      />
+    <>
+      <CodeIde label={label} value={text} onChange={commit} language="json" minLines={minRows} />
       {error ? (
         <span className="field-error">
           <AlertTriangle size={14} aria-hidden="true" />
           {error}
         </span>
       ) : null}
-    </label>
+    </>
   );
 }

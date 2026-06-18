@@ -12,8 +12,8 @@ const SUBSYSTEM_DETAILS: Record<
     dependencies: [
       {
         label: 'Bags workshop',
-        level: 'required',
-        detail: 'Loot and gathering rewards can add items to character bags.',
+        level: 'recommended',
+        detail: 'Can add loot and gathering rewards to character bags when installed.',
       },
     ],
   },
@@ -35,14 +35,6 @@ const SUBSYSTEM_DETAILS: Record<
     implemented: true,
     detail:
       'Downtime command toggles and policy checks are available, including crafting resource integration.',
-    dependencies: [
-      {
-        label: 'Bard SFX',
-        level: 'recommended',
-        detail: 'Optional ambient/audio support for downtime scenes.',
-        url: 'https://avrae.io/dashboard/workshop/638f5e434dbab671607f33a5',
-      },
-    ],
   },
   crafting: {
     label: 'Crafting',
@@ -58,26 +50,37 @@ const SUBSYSTEM_DETAILS: Record<
       {
         label: 'Bags workshop',
         level: 'recommended',
-        detail: 'Bag output and ingredient checks use the configured character bags.',
+        detail: 'Can write crafted output and check ingredients in configured character bags.',
+      },
+      {
+        label: 'Notes workshop',
+        level: 'recommended',
+        detail: 'Can support recipe notes and player-facing crafting reminders when installed.',
       },
     ],
   },
   economy: {
     label: 'Economy',
-    implemented: false,
-    detail:
-      'Job, shop, selling, and wallet controls are planned but not ready for guided editing yet.',
+    implemented: true,
+    detail: 'Job, shop, selling, and wallet command toggles are available in this editor.',
   },
   content: {
     label: 'Content',
-    implemented: false,
-    detail:
-      'Library and reading controls are planned but not implemented in the guided editor yet.',
+    implemented: true,
+    detail: 'Library and reading command toggles are available in this editor.',
   },
   misc: {
     label: 'Misc',
-    implemented: false,
-    detail: 'Quest and recipe controls are planned but still awaiting a proper guided workflow.',
+    implemented: true,
+    detail: 'Quest and recipe command toggles are available in this editor.',
+    dependencies: [
+      {
+        label: 'Notes workshop',
+        level: 'recommended',
+        detail:
+          'Can store quest notes, recipe notes, journals, and player reminders when installed.',
+      },
+    ],
   },
 };
 

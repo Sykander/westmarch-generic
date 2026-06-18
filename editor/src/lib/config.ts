@@ -7,6 +7,8 @@ export type ConfigModel = {
   subsystems: Record<string, AnyRecord>;
   policies: AnyRecord;
   world_data: AnyRecord;
+  encounter_templates?: AnyRecord;
+  encounter_template_meta?: AnyRecord;
 };
 
 export type ConfigIssue = {
@@ -106,6 +108,8 @@ const DEFAULT_MODEL: ConfigModel = {
   subsystems: {},
   policies: {},
   world_data: {},
+  encounter_templates: {},
+  encounter_template_meta: {},
 };
 
 function issue(
@@ -273,6 +277,43 @@ function parseStringAssignment(source: string, name: string): string | undefined
   } catch {
     return value.replace(/^["']|["']$/g, '');
   }
+}
+
+function findTopLevelFunction(source: string, name: string): string {
+  const lines = source.split('\n');
+  const start = lines.findIndex((line) =>
+    new RegExp(`^def\\s+${name}\\s*\\(`).test(line.trimEnd()),
+  );
+  if (start < 0) return '';
+
+  const out = [lines[start]];
+  for (const line of lines.slice(start + 1)) {
+    if (/^\S/.test(line) && line.trim()) break;
+    out.push(line);
+  }
+  return out.join('\n').trimEnd();
+}
+
+function parseEncounterTemplateConfig(source: string, meta: AnyRecord) {
+  const assignment = findAssignment(source, 'encounter_templates');
+  if (!assignment) return {};
+
+  const templates: AnyRecord = {};
+  const entryRe = /["']([a-zA-Z0-9_-]+)["']\s*:\s*([a-zA-Z_][a-zA-Z0-9_]*)/g;
+  for (const match of assignment.matchAll(entryRe)) {
+    const id = match[1];
+    const functionName = match[2];
+    const metadata = asRecord(meta[id]);
+    templates[id] = {
+      function_name: functionName,
+      source: findTopLevelFunction(source, functionName),
+      args: Array.isArray(metadata.args) ? metadata.args : [],
+      fields: Array.isArray(metadata.fields) ? metadata.fields : undefined,
+      label: metadata.label ?? id,
+      description: metadata.description ?? 'Custom encounter template.',
+    };
+  }
+  return templates;
 }
 
 function parseRecordAssignment(source: string, name: string, issues: ConfigIssue[]): AnyRecord {
@@ -456,6 +497,7 @@ export function parseConfig(source: string): ParseResult {
     string,
     AnyRecord
   >;
+  const encounterTemplateMeta = parseRecordAssignment(cleaned, 'encounter_template_meta', issues);
   const model: ConfigModel = {
     ...DEFAULT_MODEL,
     config_version: parseStringAssignment(cleaned, 'config_version'),
@@ -464,6 +506,8 @@ export function parseConfig(source: string): ParseResult {
     subsystems: mergeSubsystemDefaults(parsedSubsystems),
     policies: parseRecordAssignment(cleaned, 'policies', issues),
     world_data: parseRecordAssignment(cleaned, 'world_data', issues),
+    encounter_templates: parseEncounterTemplateConfig(source, encounterTemplateMeta),
+    encounter_template_meta: encounterTemplateMeta,
   };
 
   if (Object.keys(parsedSubsystems).length === 0) {
@@ -526,6 +570,46 @@ function compactValue(value: unknown): unknown {
   );
 }
 
+function functionNameFromSource(source: string) {
+  return /^def\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/m.exec(source)?.[1];
+}
+
+function functionNameFromTemplate(id: string, value: AnyRecord) {
+  const sourceName = functionNameFromSource(String(value.source ?? ''));
+  const raw = String(sourceName ?? value.function_name ?? id)
+    .trim()
+    .replace(/[^a-zA-Z0-9_]/g, '_');
+  if (/^[a-zA-Z_]/.test(raw)) return raw;
+  return `template_${raw || 'custom'}`;
+}
+
+function customEncounterTemplateExport(model: ConfigModel) {
+  const templates = asRecord(model.encounter_templates);
+  const entries = Object.entries(templates)
+    .map(([id, value]) => [id, asRecord(value)] as const)
+    .filter(([, value]) => String(value.source ?? '').trim());
+  if (entries.length === 0) return [] as string[];
+
+  const lines: string[] = [];
+  for (const [, value] of entries) {
+    const source = String(value.source ?? '').trimEnd();
+    lines.push(source, '');
+  }
+
+  lines.push('encounter_templates = {');
+  for (const [id, value] of entries) {
+    lines.push(`    ${JSON.stringify(id)}: ${functionNameFromTemplate(id, value)},`);
+  }
+  lines.push('}', '');
+
+  const meta = compactValue(model.encounter_template_meta) as AnyRecord;
+  if (Object.keys(meta).length > 0) {
+    lines.push(`encounter_template_meta = ${jsonToPy(meta)}`, '');
+  }
+
+  return lines;
+}
+
 export function serializeConfig(model: ConfigModel): string {
   const compactDisplay = compactValue(model.display) as AnyRecord;
   const compactSubsystems = compactValue(model.subsystems) as Record<string, AnyRecord>;
@@ -539,6 +623,9 @@ export function serializeConfig(model: ConfigModel): string {
   if (model.rules_version) {
     lines.push(`rules_version = ${JSON.stringify(model.rules_version)}`, '');
   }
+
+  lines.push(...customEncounterTemplateExport(model));
+
   if (Object.keys(compactDisplay).length > 0) {
     lines.push(`display = ${jsonToPy(compactDisplay)}`, '');
   }
@@ -2020,6 +2107,21 @@ function catalogueSourceStatus(
     }
   }
 
+  for (const key of ['gvar_ids', 'gvars']) {
+    if (record[key] == null) continue;
+    if (!Array.isArray(record[key])) {
+      valid = false;
+      detail = `${key} must be a list of Avrae workshop UUIDs.`;
+      continue;
+    }
+    const ids = record[key] as unknown[];
+    if (ids.length > 0) hasSource = true;
+    if (ids.some((item) => typeof item !== 'string' || !GVAR_ID_RE.test(item.trim()))) {
+      valid = false;
+      detail = `${key} must contain only Avrae workshop UUIDs.`;
+    }
+  }
+
   return { hasSource, valid, detail };
 }
 
@@ -2465,6 +2567,8 @@ export function createBlankConfig(): ConfigModel {
       colour: '#5865F2',
     },
     subsystems: createDefaultSubsystems(),
+    encounter_templates: {},
+    encounter_template_meta: {},
     world_data: {
       biomes: {},
       locations: {},

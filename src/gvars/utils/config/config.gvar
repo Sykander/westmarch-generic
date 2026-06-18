@@ -9,6 +9,8 @@ SVAR_NAME = "westmarch_config"
 DEFAULTS = {
     "config_version": None,
     "rules_version": None,
+    "encounter_templates": {},
+    "encounter_template_meta": {},
     "display": {},
     "subsystems": {
         "exploration": {
@@ -249,6 +251,8 @@ DEFAULTS = {
 OWNER_TOP_LEVEL_KEYS = [
     "config_version",
     "rules_version",
+    "encounter_templates",
+    "encounter_template_meta",
     "display",
     "subsystems",
     "policies",
@@ -338,6 +342,16 @@ def _read_mod_field(mod, key):
     try:
         if key == "rules_version":
             return mod.rules_version
+    except:
+        pass
+    try:
+        if key == "encounter_templates":
+            return mod.encounter_templates
+    except:
+        pass
+    try:
+        if key == "encounter_template_meta":
+            return mod.encounter_template_meta
     except:
         pass
     try:

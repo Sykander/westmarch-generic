@@ -177,4 +177,10 @@ def run_activity(activity, argslist, get_embed):
         desc = "Encounter complete."
     if journey_progressed:
         desc += "\n\n-# " + "\n-# ".join(journey_messages)
+    image = _field(result, "image")
+    if image not in [None, ""] and str(image).strip() != "":
+        return get_embed(desc=desc, image=str(image).strip())
+    thumb = _field(result, "thumb")
+    if thumb not in [None, ""] and str(thumb).strip() != "":
+        return get_embed(desc=desc, thumb=str(thumb).strip())
     return get_embed(desc=desc)

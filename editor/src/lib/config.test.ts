@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { parseConfig, validateConfig } from './config';
+import { parseConfig, serializeConfig, validateConfig, type ConfigModel } from './config';
 
 function issueCodes(source: string): string[] {
   const parsed = parseConfig(source);
@@ -230,6 +230,34 @@ subsystems = {
   assert.equal(codes.includes('crafting.catalogue_source'), false);
 });
 
+test('crafting catalogues can reference multiple owner gvars', () => {
+  const codes = issueCodes(`
+subsystems = {
+    "crafting": {
+        "enabled": True,
+        "commands": {"craft": True, "scribe": True},
+        "config": {
+            "catalogues": {
+                "items": {
+                    "include_engine": True,
+                    "gvar_ids": [
+                        "11111111-1111-1111-1111-111111111111",
+                        "22222222-2222-2222-2222-222222222222",
+                    ],
+                },
+                "spells": {
+                    "gvars": ["33333333-3333-3333-3333-333333333333"],
+                },
+            },
+        },
+    },
+}
+`);
+
+  assert.equal(codes.includes('crafting.catalogue_missing'), false);
+  assert.equal(codes.includes('crafting.catalogue_source'), false);
+});
+
 test('crafting resource policies use manual check or deduct', () => {
   assert.ok(
     issueCodes(`
@@ -311,4 +339,72 @@ subsystems = {
 }
 `).includes('crafting.rules_version'),
   );
+});
+
+test('custom encounter template functions serialize and parse back into editor metadata', () => {
+  const model: ConfigModel = {
+    display: {},
+    subsystems: {},
+    policies: {},
+    world_data: {},
+    encounter_templates: {
+      custom_scene: {
+        function_name: 'custom_scene',
+        source:
+          'def custom_scene(args):\n    return {"kind": "gather", "name": args[0], "description": ""}',
+        args: ['title'],
+        fields: [
+          { key: 'title', label: 'Title', type: 'text', inputType: 'text' },
+          {
+            key: 'skill',
+            label: 'Skill',
+            type: 'select',
+            inputType: 'skill_name',
+            values: ['Survival', 'Nature'],
+          },
+        ],
+        label: 'Custom scene',
+        description: 'Custom function template.',
+      },
+    },
+    encounter_template_meta: {
+      custom_scene: {
+        function_name: 'custom_scene',
+        label: 'Custom scene',
+        description: 'Custom function template.',
+        args: ['title'],
+        fields: [
+          { key: 'title', label: 'Title', type: 'text', inputType: 'text' },
+          {
+            key: 'skill',
+            label: 'Skill',
+            type: 'select',
+            inputType: 'skill_name',
+            values: ['Survival', 'Nature'],
+          },
+        ],
+      },
+    },
+  };
+
+  const source = serializeConfig(model);
+  assert.match(source, /def custom_scene\(args\):/);
+  assert.match(source, /encounter_templates = \{/);
+  assert.match(source, /"custom_scene": custom_scene/);
+
+  const parsed = parseConfig(source);
+  const template = parsed.model?.encounter_templates?.custom_scene;
+  assert.equal(typeof template, 'object');
+  assert.match(String((template as Record<string, unknown>).source), /def custom_scene/);
+  assert.deepEqual((template as Record<string, unknown>).args, ['title']);
+  assert.deepEqual((template as Record<string, unknown>).fields, [
+    { key: 'title', label: 'Title', type: 'text', inputType: 'text' },
+    {
+      key: 'skill',
+      label: 'Skill',
+      type: 'select',
+      inputType: 'skill_name',
+      values: ['Survival', 'Nature'],
+    },
+  ]);
 });

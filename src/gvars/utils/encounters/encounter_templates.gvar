@@ -52,6 +52,29 @@ def _is_numberish(value):
         return False
 
 
+def _read_field(obj, key):
+    if obj == None:
+        return None
+    try:
+        if key in obj:
+            return obj[key]
+    except:
+        pass
+    try:
+        return obj.get(key)
+    except:
+        pass
+    attrs = {
+        "encounter_templates": lambda o: o.encounter_templates,
+    }
+    if key in attrs:
+        try:
+            return attrs[key](obj)
+        except:
+            pass
+    return None
+
+
 def _ability_for_check(check_name):
     text = _text(check_name).lower()
     key = text.replace(" ", "").replace("_", "").replace("-", "")
@@ -310,11 +333,41 @@ def raw(args):
     return None
 
 
-def expand(template_name, args):
+def _custom_template(config_override, key):
+    templates = _read_field(config_override, "encounter_templates")
+    if templates == None or not dicts.is_dict(templates):
+        return None
+    direct = _read_field(templates, key)
+    if direct != None:
+        return direct
+    for name in templates:
+        if str(name).strip().lower() == key:
+            return templates[name]
+    return None
+
+
+def _expand_custom(template_name, args, config_override=None):
+    key = _text(template_name).strip().lower()
+    fn = _custom_template(config_override, key)
+    if fn == None:
+        return None
+    try:
+        enc = fn(args)
+        if enc != None and dicts.is_dict(enc):
+            return enc
+    except:
+        return None
+    return None
+
+
+def expand(template_name, args, config_override=None):
     """Return an encounter dict from a template name + arg list."""
     key = _text(template_name).strip().lower()
     if args == None:
         args = []
+    custom = _expand_custom(template_name, args, config_override)
+    if custom != None:
+        return custom
     if key in ["gather_item", "gather"]:
         return gather_item(args)
     if key in ["skill_check", "check"]:
@@ -344,11 +397,11 @@ def expand(template_name, args):
     return None
 
 
-def expand_row(row):
+def expand_row(row, config_override=None):
     """Expand [pool_tags|null, template_name, *args] to an encounter dict."""
     if row == None or not lists.is_list(row) or len(row) < 2:
         return None
     args = []
     for index in range(2, len(row)):
         args.append(row[index])
-    return expand(row[1], args)
+    return expand(row[1], args, config_override)

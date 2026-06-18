@@ -180,7 +180,7 @@ def get_pool_entries(code, activity, kind, config=None):
     for row in rows:
         if row == None or not lists.is_list(row) or len(row) < 2:
             continue
-        enc = templates.expand_row(row)
+        enc = templates.expand_row(row, _cfg(config))
         if enc == None or not dicts.is_dict(enc):
             continue
         enc_kind = _read_field(enc, "kind")

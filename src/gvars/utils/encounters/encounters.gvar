@@ -34,9 +34,9 @@ def _resolve_str(value):
 
 
 def process_encounter(encounter, character, args=None):
-    """Return {name, description, outcome_text, thumb}."""
+    """Return {name, description, outcome_text, thumb, image}."""
     if encounter == None:
-        return {"name": "Encounter", "description": "No encounter data.", "outcome_text": "", "thumb": None}
+        return {"name": "Encounter", "description": "No encounter data.", "outcome_text": "", "thumb": None, "image": None}
     name = _resolve_str(_read_field(encounter, "name"))
     if name == "":
         name = "Encounter"
@@ -46,11 +46,17 @@ def process_encounter(encounter, character, args=None):
     if outcomes != None and lists.is_list(outcomes):
         outcome_text = _apply_outcomes(outcomes, character)
     thumb = _read_field(encounter, "thumb")
+    if thumb == None:
+        thumb = _read_field(encounter, "thumbnail")
+    image = _read_field(encounter, "image")
+    if image == None:
+        image = _read_field(encounter, "image_url")
     return {
         "name": name,
         "description": desc,
         "outcome_text": outcome_text,
         "thumb": thumb,
+        "image": image,
     }
 
 

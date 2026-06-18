@@ -74,7 +74,7 @@ export function normaliseBiomeCode(value: string) {
 
 export function customGvarError(value: string) {
   if (!value.trim())
-    return 'No gvar id yet. Paste a UUID, or use the planned generate-gvar workflow later.';
+    return 'No gvar id yet. Paste a UUID, or use Add Custom Biome with an Avrae token.';
   try {
     normalizeGvarId(value);
     return '';

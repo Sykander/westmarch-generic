@@ -61,12 +61,16 @@ async function parseResponse(response: Response) {
   }
 }
 
-async function requestAvrae(method: 'GET' | 'POST', id: string, token: string, payload?: unknown) {
-  const gvarId = normalizeGvarId(id);
+async function requestAvraeUrl(
+  method: 'GET' | 'POST',
+  url: string,
+  token: string,
+  payload?: unknown,
+) {
   let response: Response;
 
   try {
-    response = await fetch(`${GVARS_URL}/${encodeURIComponent(gvarId)}`, {
+    response = await fetch(url, {
       method,
       headers: headers(token),
       redirect: 'manual',
@@ -99,6 +103,11 @@ async function requestAvrae(method: 'GET' | 'POST', id: string, token: string, p
   return data;
 }
 
+async function requestAvrae(method: 'GET' | 'POST', id: string, token: string, payload?: unknown) {
+  const gvarId = normalizeGvarId(id);
+  return requestAvraeUrl(method, `${GVARS_URL}/${encodeURIComponent(gvarId)}`, token, payload);
+}
+
 export async function fetchGvar(id: string, token: string): Promise<AvraeGvar> {
   const data = await requestAvrae('GET', id, token);
 
@@ -111,6 +120,52 @@ export async function fetchGvar(id: string, token: string): Promise<AvraeGvar> {
 
 export async function updateGvar(id: string, token: string, body: string): Promise<unknown> {
   return requestAvrae('POST', id, token, { value: body });
+}
+
+export async function createGvar(token: string, body: string, name?: string): Promise<AvraeGvar> {
+  const payload = name?.trim() ? { value: body, name: name.trim() } : { value: body };
+  const data = await requestAvraeUrl('POST', GVARS_URL, token, payload);
+  const id = createdGvarIdFromResponse(data);
+
+  if (!id) {
+    throw new Error('Avrae returned a response without a created gvar id.');
+  }
+
+  const record =
+    data && typeof data === 'object'
+      ? ({ ...(data as Record<string, unknown>), id } as AvraeGvar)
+      : ({ id } as AvraeGvar);
+  return record;
+}
+
+export function createdGvarIdFromResponse(data: unknown): string | null {
+  if (typeof data === 'string') {
+    try {
+      return normalizeGvarId(data);
+    } catch {
+      return null;
+    }
+  }
+
+  if (!data || typeof data !== 'object') return null;
+
+  const record = data as Record<string, unknown>;
+  for (const key of ['id', '_id', 'key', 'uuid', 'gvar_id', 'gvarId']) {
+    const value = record[key];
+    if (typeof value !== 'string') continue;
+    try {
+      return normalizeGvarId(value);
+    } catch {
+      // Keep checking nested/alternate fields.
+    }
+  }
+
+  for (const key of ['data', 'gvar', 'created', 'result']) {
+    const nested = createdGvarIdFromResponse(record[key]);
+    if (nested) return nested;
+  }
+
+  return null;
 }
 
 function errorMessage(response: Response, data: unknown) {

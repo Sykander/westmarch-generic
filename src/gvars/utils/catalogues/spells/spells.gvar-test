@@ -49,3 +49,23 @@ return len(matches) == 2 and "Be more specific" in spells.match_error("spark", m
 True
 ---
 name: spell catalogue reports ambiguous search_list matches
+
+cfg_fixture = {
+    "subsystems": {
+        "crafting": {
+            "config": {
+                "catalogues": {
+                    "spells": {
+                        "gvar_ids": ["9956e1cd-acbb-4879-93a4-84a04e089ddc"],
+                    },
+                },
+            },
+        },
+    },
+}
+hit = spells.search(cfg_fixture, "Fireball")
+return hit != None and spells.spell_name(hit) == "Fireball"
+---
+True
+---
+name: spell catalogue loads multiple gvar id source objects

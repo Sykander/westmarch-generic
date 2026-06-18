@@ -2,15 +2,35 @@ export type EncounterTemplate = {
   id: string;
   label: string;
   description: string;
-  fields: Array<{
-    key: string;
-    label: string;
-    type: 'text' | 'number' | 'select';
-    values?: string[];
-  }>;
+  args?: string[];
+  custom?: boolean;
+  functionName?: string;
+  source?: string;
+  fields: EncounterTemplateField[];
 };
 
-export type CompactEncounterRow = Array<string | number | string[] | null>;
+export type EncounterTemplateInputKind =
+  | 'text'
+  | 'text_block'
+  | 'number'
+  | 'dc'
+  | 'skill_name'
+  | 'save_name'
+  | 'encounter_kind'
+  | 'url'
+  | 'custom_select';
+
+export type EncounterTemplateField = {
+  key: string;
+  label: string;
+  type: 'text' | 'textarea' | 'number' | 'select';
+  inputType?: EncounterTemplateInputKind;
+  values?: string[];
+};
+
+export type CompactEncounterRow = Array<
+  string | number | string[] | Record<string, unknown> | null
+>;
 
 export type RollOption = {
   value: string;

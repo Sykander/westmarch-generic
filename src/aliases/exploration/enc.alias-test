@@ -117,6 +117,45 @@ vars:
     eeee5555-5555-5555-5555-555555555555: |
       [[["enc.gather"], "flavour", "Berries in the Wild", "", "gather"]]
 
+!enc forest
+---
+re:-image https://example.test/custom-scene.png
+---
+name: "manual biome encounter can show custom image"
+vars:
+  svars:
+    westmarch_config: "eeee3a33-3333-3333-3333-333333333333"
+  gvars:
+    eeee3a33-3333-3333-3333-333333333333: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+              "config": {
+                  "enc_biome_source": "argument",
+                  "distribution": {"combat": 0, "quest": 0, "gather": 100},
+              },
+          },
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee5a55-5555-5555-5555-555555555555"},
+          },
+      }
+    eeee5a55-5555-5555-5555-555555555555: |
+      [
+        [
+          ["enc.gather"],
+          "raw",
+          {
+            "kind": "gather",
+            "name": "Image scene",
+            "description": "A vista opens.",
+            "image": "https://example.test/custom-scene.png"
+          }
+        ]
+      ]
+
 !enc desert
 ---
 re:registered|unknown|invalid

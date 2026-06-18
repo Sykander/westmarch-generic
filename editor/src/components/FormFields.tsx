@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { FOOTER_BEHAVIOUR_HELP, FOOTER_BEHAVIOUR_OPTIONS } from '../domain/display';
+import { HelpDialog } from './HelpDialog';
 import { HelpTip } from './HelpTip';
 
 export function SectionTitle({
@@ -181,7 +182,23 @@ export function FooterBehaviourField({
     <label className="field">
       <span>
         Footer behaviour
-        <HelpTip label="Footer behaviour help">{FOOTER_BEHAVIOUR_HELP}</HelpTip>
+        <HelpDialog
+          label="Footer behaviour help"
+          title="Footer behaviour"
+          description={FOOTER_BEHAVIOUR_HELP}
+        >
+          <div className="help-option-list">
+            {FOOTER_BEHAVIOUR_OPTIONS.map((option) => (
+              <article
+                className={option.value === selectValue ? 'help-option active' : 'help-option'}
+                key={option.value}
+              >
+                <strong>{option.label}</strong>
+                <p>{option.help}</p>
+              </article>
+            ))}
+          </div>
+        </HelpDialog>
       </span>
       <select value={selectValue} onChange={(event) => onChange(event.target.value)}>
         {!knownValue && value ? <option value={value}>Unknown: {value}</option> : null}
@@ -191,17 +208,6 @@ export function FooterBehaviourField({
           </option>
         ))}
       </select>
-      <div className="option-help-row" aria-label="Footer behaviour option help">
-        {FOOTER_BEHAVIOUR_OPTIONS.map((option) => (
-          <span
-            className={option.value === selectValue ? 'option-help active' : 'option-help'}
-            key={option.value}
-          >
-            {option.label}
-            <HelpTip label={`${option.label} footer behaviour help`}>{option.help}</HelpTip>
-          </span>
-        ))}
-      </div>
     </label>
   );
 }

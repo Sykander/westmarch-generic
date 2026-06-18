@@ -6,7 +6,6 @@ export type Section =
   | 'policies'
   | 'world'
   | 'biomes'
-  | 'encounters'
   | 'export';
 
 export const SECTIONS: Array<{ id: Section; label: string }> = [
@@ -15,8 +14,7 @@ export const SECTIONS: Array<{ id: Section; label: string }> = [
   { id: 'subsystems', label: 'Subsystems' },
   { id: 'policies', label: 'Policies' },
   { id: 'world', label: 'World' },
-  { id: 'biomes', label: 'Biomes' },
-  { id: 'encounters', label: 'Encounters' },
+  { id: 'biomes', label: 'Biomes & Encounters' },
   { id: 'check', label: 'Check' },
   { id: 'export', label: 'Export' },
 ];
@@ -27,8 +25,7 @@ export const SECTION_DESCRIPTIONS: Record<Section, string> = {
   subsystems: 'Choose command families, command toggles, and subsystem display overrides.',
   policies: 'Tune encounter, crafting, downtime, item output, footer, and distribution behavior.',
   world: 'Configure locations, paths, and world-level travel data.',
-  biomes: 'Wire biome presets or custom biome gvars into the world registry.',
-  encounters: 'Build biome JSON rows from pool tags and encounter templates.',
+  biomes: 'Wire biome presets, custom biome gvars, encounter rows, and custom templates.',
   check: 'Review browser validation before exporting or publishing.',
   export: 'Copy, download, or publish the generated gvar contents.',
 };

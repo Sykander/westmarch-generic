@@ -119,6 +119,12 @@ def _entries_from_source(source):
         gvar_id = _read_field(source, "gvar_id")
         if gvar_id != None and str(gvar_id).strip() != "":
             entries += _entries_from_source(str(gvar_id).strip())
+        for key in ["gvar_ids", "gvars"]:
+            gvar_ids = _read_field(source, key)
+            if lists.is_list(gvar_ids):
+                for next_id in gvar_ids:
+                    if next_id != None and str(next_id).strip() != "":
+                        entries += _entries_from_source(str(next_id).strip())
         return entries
     text = str(source).strip()
     if text == "" or text.startswith("engine:"):

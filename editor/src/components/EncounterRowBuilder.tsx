@@ -12,28 +12,38 @@ import {
   type CompactEncounterRow,
   type EncounterTemplate,
 } from '../domain/encounters';
+import { buildEncounterPreview } from '../lib/encounterPreview';
 import { SelectField } from './FormFields';
 import { BiomeGvarEditor } from './BiomeGvarEditor';
+import { EncounterPreviewPanel } from './EncounterPreviewPanel';
+import { ExpandableBlockRows } from './ExpandableBlockRows';
+import { HelpTip } from './HelpTip';
+import { useLazyPythonTemplatePreview } from './useLazyPythonTemplatePreview';
 
 export function EncounterRowBuilder({
   rows,
   onRowsChange,
   title = 'Encounter row builder',
   rowListTitle = 'Biome gvar JSON rows',
+  templates = ENCOUNTER_TEMPLATES,
 }: {
   rows: CompactEncounterRow[];
   onRowsChange: (rows: CompactEncounterRow[]) => void;
   title?: string;
   rowListTitle?: string;
+  templates?: EncounterTemplate[];
 }) {
   const [templateId, setTemplateId] = useState('gather_item');
-  const template =
-    ENCOUNTER_TEMPLATES.find((item) => item.id === templateId) ?? ENCOUNTER_TEMPLATES[0];
+  const template = templates.find((item) => item.id === templateId) ?? templates[0];
   const [values, setValues] = useState<Record<string, string | number>>(() =>
     defaultEncounterValues(template),
   );
   const [useAnyPool, setUseAnyPool] = useState(false);
   const [selectedPools, setSelectedPools] = useState<string[]>(['enc.gather', 'forage.gather']);
+  const [previewResult, setPreviewResult] = useState('success');
+  const [previewRoll, setPreviewRoll] = useState('15');
+  const [previewCharacterName, setPreviewCharacterName] = useState('Preview Character');
+  const [previewCharacterLevel, setPreviewCharacterLevel] = useState('5');
   const compactRow = useMemo(
     () =>
       buildCompactEncounterRow({
@@ -44,10 +54,45 @@ export function EncounterRowBuilder({
       }),
     [selectedPools, template, useAnyPool, values],
   );
+  const pythonPreviewArgs = useMemo(() => compactRow.slice(2), [compactRow]);
+  const pythonPreviewCharacter = useMemo(
+    () => ({
+      name: previewCharacterName.trim() || 'Preview Character',
+      level: Number(previewCharacterLevel) || 1,
+    }),
+    [previewCharacterLevel, previewCharacterName],
+  );
+  const pythonPreviewEnabled = Boolean(template.custom && template.source?.trim());
+  const { isPreviewLoading, pythonPreview, requestPreview } = useLazyPythonTemplatePreview({
+    enabled: pythonPreviewEnabled,
+    source: template.source ?? '',
+    functionName: template.functionName,
+    args: pythonPreviewArgs,
+    previewCharacter: pythonPreviewCharacter,
+  });
+  const previewMode = template.custom
+    ? isPreviewLoading
+      ? 'loading'
+      : pythonPreview
+        ? 'ready'
+        : pythonPreviewEnabled
+          ? 'idle'
+          : 'ready'
+    : 'ready';
+  const preview = useMemo(
+    () =>
+      buildEncounterPreview({
+        template,
+        row: compactRow,
+        previewResult,
+        previewRoll,
+        pythonPreview,
+      }),
+    [compactRow, previewResult, previewRoll, pythonPreview, template],
+  );
 
   function changeTemplate(nextTemplateId: string) {
-    const nextTemplate =
-      ENCOUNTER_TEMPLATES.find((item) => item.id === nextTemplateId) ?? ENCOUNTER_TEMPLATES[0];
+    const nextTemplate = templates.find((item) => item.id === nextTemplateId) ?? templates[0];
     setTemplateId(nextTemplateId);
     setValues(defaultEncounterValues(nextTemplate));
   }
@@ -66,62 +111,130 @@ export function EncounterRowBuilder({
         <h3>{title}</h3>
         <span>Compact rows become the body of a custom biome gvar.</span>
       </div>
-      <div className="form-grid">
-        <SelectField
-          label="Template"
-          value={template.id}
-          values={ENCOUNTER_TEMPLATES.map((item) => item.id)}
-          onChange={changeTemplate}
-          help={template.description}
-        />
-        {template.fields.map((field) => (
-          <EncounterTemplateField
-            field={field}
-            value={values[field.key] ?? ''}
-            onChange={(value) => updateEncounterField(field.key, value)}
-            key={field.key}
-          />
-        ))}
-        <div className="field span-2">
-          <span>Pool tags</span>
-          <label className="switch-line">
-            <input
-              type="checkbox"
-              checked={useAnyPool}
-              onChange={(event) => setUseAnyPool(event.target.checked)}
-            />
-            <span>Any compatible pool</span>
-          </label>
-          {!useAnyPool ? (
-            <div className="checkbox-grid compact">
-              {BIOME_POOL_TAGS.map((tag) => (
-                <label className="switch-line" key={tag}>
-                  <input
-                    type="checkbox"
-                    checked={selectedPools.includes(tag)}
-                    onChange={(event) => togglePoolTag(tag, event.target.checked)}
+      <ExpandableBlockRows
+        rows={[
+          {
+            id: 'template',
+            title: 'Template',
+            summary: template.description,
+            children: (
+              <div className="encounter-template-strip">
+                <SelectField
+                  label="Template"
+                  value={template.id}
+                  values={templates.map((item) => item.id)}
+                  onChange={changeTemplate}
+                  help={template.description}
+                />
+              </div>
+            ),
+          },
+          {
+            id: 'fields',
+            title: 'Encounter fields',
+            summary: `${template.fields.length} arguments passed into ${template.functionName ?? template.id}`,
+            children: (
+              <div className="form-grid encounter-builder-fields">
+                {template.fields.map((field) => (
+                  <EncounterTemplateField
+                    field={field}
+                    value={values[field.key] ?? ''}
+                    onChange={(value) => updateEncounterField(field.key, value)}
+                    key={field.key}
                   />
-                  <span>{tag}</span>
+                ))}
+              </div>
+            ),
+          },
+          {
+            id: 'pools',
+            title: 'Pool tags',
+            summary: useAnyPool ? 'Any compatible pool' : selectedPools.join(', '),
+            children: (
+              <div className="field">
+                <span>Pool tags</span>
+                <div className="pool-tag-list">
+                  <label className="switch-line compact-switch">
+                    <input
+                      type="checkbox"
+                      checked={useAnyPool}
+                      onChange={(event) => setUseAnyPool(event.target.checked)}
+                    />
+                    <span>Any compatible pool</span>
+                  </label>
+                  {!useAnyPool
+                    ? BIOME_POOL_TAGS.map((tag) => (
+                        <label className="switch-line compact-switch" key={tag}>
+                          <input
+                            type="checkbox"
+                            checked={selectedPools.includes(tag)}
+                            onChange={(event) => togglePoolTag(tag, event.target.checked)}
+                          />
+                          <span>{tag}</span>
+                        </label>
+                      ))
+                    : null}
+                </div>
+              </div>
+            ),
+          },
+          {
+            id: 'preview',
+            title: 'Preview',
+            summary: 'Mock args, evaluated output, and Discord-style embed',
+            children: (
+              <EncounterPreviewPanel
+                template={template}
+                preview={preview}
+                compactRow={compactRow}
+                previewResult={previewResult}
+                onPreviewResultChange={setPreviewResult}
+                previewRoll={previewRoll}
+                onPreviewRollChange={setPreviewRoll}
+                previewCharacterName={template.custom ? previewCharacterName : undefined}
+                onPreviewCharacterNameChange={template.custom ? setPreviewCharacterName : undefined}
+                previewCharacterLevel={template.custom ? previewCharacterLevel : undefined}
+                onPreviewCharacterLevelChange={
+                  template.custom ? setPreviewCharacterLevel : undefined
+                }
+                previewMode={previewMode}
+                onPreviewRequest={
+                  template.custom && pythonPreviewEnabled ? requestPreview : undefined
+                }
+                className="inline-preview-panel"
+              />
+            ),
+          },
+          {
+            id: 'current-row',
+            title: 'Current row',
+            summary: JSON.stringify(compactRow),
+            children: (
+              <>
+                <label className="field">
+                  <span>Current row</span>
+                  <textarea
+                    className="code-input"
+                    rows={4}
+                    readOnly
+                    value={JSON.stringify(compactRow)}
+                  />
                 </label>
-              ))}
-            </div>
-          ) : null}
-        </div>
-        <label className="field span-2">
-          <span>Current row</span>
-          <textarea className="code-input" rows={4} readOnly value={JSON.stringify(compactRow)} />
-        </label>
-        <div className="button-row span-2">
-          <button
-            type="button"
-            className="primary"
-            onClick={() => onRowsChange([...rows, compactRow])}
-          >
-            <Save size={16} aria-hidden="true" />
-            Insert Row
-          </button>
-        </div>
-      </div>
+                <div className="button-row">
+                  <button
+                    type="button"
+                    className="primary"
+                    onClick={() => onRowsChange([...rows, compactRow])}
+                  >
+                    <Save size={16} aria-hidden="true" />
+                    Insert Row
+                  </button>
+                </div>
+              </>
+            ),
+          },
+        ]}
+      />
       <EncounterModelReference />
       <BiomeGvarEditor rows={rows} onRowsChange={onRowsChange} title={rowListTitle} />
     </div>
@@ -184,7 +297,10 @@ function EncounterTemplateField({
 }) {
   return (
     <label className="field">
-      <span>{field.label}</span>
+      <span>
+        {field.label}
+        <HelpTip label={`${field.label} field help`}>{encounterFieldHelp(field.key)}</HelpTip>
+      </span>
       {field.type === 'select' ? (
         <select value={String(value)} onChange={(event) => onChange(event.target.value)}>
           {(field.values ?? []).map((item) => (
@@ -193,6 +309,12 @@ function EncounterTemplateField({
             </option>
           ))}
         </select>
+      ) : field.type === 'textarea' ? (
+        <textarea
+          rows={4}
+          value={String(value)}
+          onChange={(event) => onChange(event.target.value)}
+        />
       ) : (
         <input
           type={field.type}
@@ -204,4 +326,29 @@ function EncounterTemplateField({
       )}
     </label>
   );
+}
+
+function encounterFieldHelp(key: string) {
+  const help: Record<string, string> = {
+    title: 'Short title shown when this encounter is selected.',
+    description: 'Narrative text or setup shown in the encounter embed.',
+    text: 'Flavour text for descriptive templates.',
+    skill: 'The ability or skill label the template should roll.',
+    save: 'The saving throw label the template should roll.',
+    dc: 'Difficulty class used by check, save, ambush, or outcome templates.',
+    item: 'Name of the resource or item awarded by this encounter.',
+    qty: 'Quantity awarded when the outcome grants an item.',
+    bag: 'Character bag name used when bag integration is enabled.',
+    success: 'Text shown on a successful check.',
+    failure: 'Text shown on a failed check.',
+    kind: 'Encounter category used by distribution pools.',
+    cr: 'Challenge rating hint for monster lookup or combat scaling.',
+    monster: 'Monster search name or display name.',
+    difficulty: 'Encounter difficulty label for combat framing.',
+    hook: 'Quest hook text shown to players.',
+    reward: 'Quest reward or promise text.',
+    gold: 'Coin reward; dice strings are supported by the engine template.',
+    total: 'Amount or dice expression used by damage, healing, gold, or similar outcomes.',
+  };
+  return help[key] ?? 'Template argument emitted into the compact biome row.';
 }

@@ -25,10 +25,18 @@ import {
   validateConfig,
 } from '../lib/config';
 import type { AnyRecord, ConfigIssue, ConfigModel } from '../lib/config';
-import { fetchGvar, makeGvarDashboardUrl, normalizeGvarId, updateGvar } from '../lib/avrae';
+import {
+  createGvar,
+  fetchGvar,
+  makeGvarDashboardUrl,
+  normalizeGvarId,
+  updateGvar,
+} from '../lib/avrae';
 import { AvraeTokenHelp } from '../components/AvraeTokenHelp';
 import { HelpTip } from '../components/HelpTip';
+import { HelpDialog } from '../components/HelpDialog';
 import { JsonField } from '../components/JsonField';
+import { GvarSourceRows } from '../components/GvarSourceRows';
 import {
   ColourField,
   FooterBehaviourField,
@@ -38,8 +46,8 @@ import {
   TextField,
 } from '../components/FormFields';
 import { IssueSummary, RunSteps, SectionCta, severityIcon } from '../components/WorkflowPanels';
-import { PlannedFeatureButton } from '../components/PlannedFeature';
 import { EncounterRowBuilder } from '../components/EncounterRowBuilder';
+import { CustomTemplateBuilder } from '../components/CustomTemplateBuilder';
 import {
   ENGINE_BIOMES,
   ENGINE_BIOME_NOTES,
@@ -51,8 +59,24 @@ import {
 } from '../domain/biomes';
 import { DISPLAY_OVERRIDE_HELP, monsterArtSelectValue } from '../domain/display';
 import { SUBSYSTEM_DEFINITIONS } from '../domain/subsystems';
-import type { CompactEncounterRow } from '../domain/encounters';
+import {
+  ABILITY_OPTIONS,
+  CHECK_OPTIONS,
+  ENCOUNTER_TEMPLATES,
+  SAVE_OPTIONS,
+  type CompactEncounterRow,
+  type EncounterTemplateField,
+  type EncounterTemplate,
+} from '../domain/encounters';
 import { asRecord } from '../lib/records';
+import {
+  discoverGvarReferences,
+  discoverGvarReferencesFromSource,
+  kindFromSource,
+  sourceRowsWithBase,
+  type GvarReference,
+  type LoadedGvarSource,
+} from '../lib/gvarSources';
 import { SECTIONS, sectionFor, type Section } from './sections';
 import type { RunStep, SubsystemDefinition } from './types';
 
@@ -90,6 +114,47 @@ const CRAFTING_TOOL_POLICY_DEFAULTS = {
     require_kit: false,
   },
 };
+const HUD_FIELD_OPTIONS = [
+  'coins',
+  'coin',
+  'coinpurse',
+  'gp',
+  'wallet',
+  'location',
+  'time',
+  'weather',
+];
+const CRAFTING_TOOL_OPTIONS = [
+  "Alchemist's Supplies",
+  "Brewer's Supplies",
+  "Calligrapher's Supplies",
+  "Carpenter's Tools",
+  "Cartographer's Tools",
+  "Cobbler's Tools",
+  "Cook's Utensils",
+  "Glassblower's Tools",
+  "Jeweler's Tools",
+  "Leatherworker's Tools",
+  "Mason's Tools",
+  "Painter's Supplies",
+  "Potter's Tools",
+  "Smith's Tools",
+  "Tinker's Tools",
+  "Weaver's Tools",
+  "Woodcarver's Tools",
+  'Disguise Kit',
+  'Forgery Kit',
+  'Herbalism Kit',
+  "Navigator's Tools",
+  "Poisoner's Kit",
+  "Thieves' Tools",
+  'Vehicles (land)',
+  'Vehicles (water)',
+];
+const CRAFTING_CHECK_SKILL_OPTIONS = CHECK_OPTIONS.filter((option) => option.ability).map(
+  (option) => option.value,
+);
+const CRAFTING_CHECK_DC_OPTIONS = ['', '5', '10', '12', '13', '15', '17', '20', '25', '30'];
 
 const STARTER_SNIPPET = `subsystems = {
     "exploration": {
@@ -214,11 +279,174 @@ function focusNextCta() {
   }, 0);
 }
 
+function uniqueReferences(references: GvarReference[], rootId: string) {
+  const seen = new Set([rootId].filter(Boolean));
+  return references.filter((reference) => {
+    if (seen.has(reference.id)) return false;
+    seen.add(reference.id);
+    return true;
+  });
+}
+
+function gvarFilename(id: string, kind: string) {
+  const suffix = kind === 'json' ? 'json' : 'gvar';
+  const safeId = id.replace(/[^a-zA-Z0-9_-]/g, '_');
+  return `${safeId || 'westmarch_config'}.${suffix}`;
+}
+
+function fieldForTemplateArg(arg: string): EncounterTemplate['fields'][number] {
+  const lower = arg.toLowerCase();
+  if (['dc', 'cr', 'qty', 'quantity'].includes(lower)) {
+    return {
+      key: arg,
+      label: titleFromSlug(arg),
+      type: 'number',
+      inputType: lower === 'dc' ? 'dc' : 'number',
+    };
+  }
+  if (lower === 'kind') {
+    return {
+      key: arg,
+      label: 'Kind',
+      type: 'select',
+      inputType: 'encounter_kind',
+      values: ['combat', 'quest', 'gather'],
+    };
+  }
+  if (['skill', 'check', 'check_name', 'skill_name'].includes(lower)) {
+    return {
+      key: arg,
+      label: titleFromSlug(arg),
+      type: 'select',
+      inputType: 'skill_name',
+      values: CHECK_OPTIONS.map((option) => option.label),
+    };
+  }
+  if (['save', 'save_name'].includes(lower)) {
+    return {
+      key: arg,
+      label: titleFromSlug(arg),
+      type: 'select',
+      inputType: 'save_name',
+      values: SAVE_OPTIONS.map((option) => option.label),
+    };
+  }
+  if (['description', 'text', 'body'].includes(lower)) {
+    return { key: arg, label: titleFromSlug(arg), type: 'textarea', inputType: 'text_block' };
+  }
+  if (['thumb', 'thumbnail', 'image', 'image_url', 'url'].includes(lower)) {
+    return { key: arg, label: titleFromSlug(arg), type: 'text', inputType: 'url' };
+  }
+  return { key: arg, label: titleFromSlug(arg), type: 'text', inputType: 'text' };
+}
+
+function templateFieldFromMeta(value: unknown): EncounterTemplateField | null {
+  const record = asRecord(value);
+  const key = String(record.key ?? '').trim();
+  if (!key) return null;
+  const fallback = fieldForTemplateArg(key);
+  const rawType = String(record.type ?? fallback.type);
+  const type = ['text', 'textarea', 'number', 'select'].includes(rawType)
+    ? (rawType as EncounterTemplateField['type'])
+    : fallback.type;
+  const inputType = String(record.inputType ?? record.input_type ?? fallback.inputType);
+  return {
+    key,
+    label: String(record.label ?? fallback.label),
+    type,
+    inputType: inputType ? (inputType as EncounterTemplateField['inputType']) : fallback.inputType,
+    values: asStringList(record.values ?? fallback.values),
+  };
+}
+
+function templateFieldsFromRecord(record: AnyRecord, metaRecord: AnyRecord, args: string[]) {
+  const rawFields = Array.isArray(record.fields)
+    ? record.fields
+    : Array.isArray(metaRecord.fields)
+      ? metaRecord.fields
+      : null;
+  const fields = rawFields
+    ? rawFields
+        .map(templateFieldFromMeta)
+        .filter((field): field is EncounterTemplateField => Boolean(field))
+    : [];
+  return fields.length > 0 ? fields : args.map(fieldForTemplateArg);
+}
+
+function templateFieldToMeta(field: EncounterTemplateField) {
+  return {
+    key: field.key,
+    label: field.label,
+    type: field.type,
+    inputType: field.inputType,
+    values: field.values,
+  };
+}
+
+function customTemplatesFromConfig(config: ConfigModel): EncounterTemplate[] {
+  const templates = asRecord(readPath(config, 'encounter_templates'));
+  const meta = asRecord(readPath(config, 'encounter_template_meta'));
+
+  return Object.entries(templates).map(([id, value]) => {
+    const record = asRecord(value);
+    const metaRecord = asRecord(meta[id]);
+    const args = asStringList(record.args ?? metaRecord.args);
+    const label = String(record.label ?? metaRecord.label ?? titleFromSlug(id));
+    const description = String(
+      record.description ?? metaRecord.description ?? 'Custom encounter template.',
+    );
+    const fields = templateFieldsFromRecord(record, metaRecord, args);
+
+    return {
+      id,
+      label,
+      description,
+      args: fields.map((field) => field.key),
+      custom: true,
+      functionName: String(record.function_name ?? metaRecord.function_name ?? id),
+      source: String(record.source ?? ''),
+      fields,
+    };
+  });
+}
+
+function templatesToConfig(templates: EncounterTemplate[]) {
+  return Object.fromEntries(
+    templates.map((template) => [
+      template.id,
+      {
+        function_name: template.functionName ?? template.id,
+        source: template.source ?? '',
+        args: template.args ?? template.fields.map((field) => field.key),
+        fields: template.fields.map(templateFieldToMeta),
+        label: template.label,
+        description: template.description,
+      },
+    ]),
+  );
+}
+
+function templatesToMeta(templates: EncounterTemplate[]) {
+  return Object.fromEntries(
+    templates.map((template) => [
+      template.id,
+      {
+        function_name: template.functionName ?? template.id,
+        label: template.label,
+        description: template.description,
+        args: template.args ?? template.fields.map((field) => field.key),
+        fields: template.fields.map(templateFieldToMeta),
+      },
+    ]),
+  );
+}
+
 export function App() {
   const [section, setSection] = useState<Section>('setup');
   const [configId, setConfigId] = useState(getInitialConfigId);
   const [token, setToken] = useState('');
   const [rawSource, setRawSource] = useState('');
+  const [relatedGvars, setRelatedGvars] = useState<LoadedGvarSource[]>([]);
   const [config, setConfig] = useState<ConfigModel | null>(null);
   const [rawMode, setRawMode] = useState(false);
   const [status, setStatus] = useState('No config loaded');
@@ -231,11 +459,49 @@ export function App() {
     if (parsed.model) setConfig(parsed.model);
   }, [parsed.model]);
 
+  useEffect(() => {
+    if (!parsed.model || token.trim()) return;
+    setRelatedGvars((current) => {
+      const existing = new Map(current.map((row) => [row.id, row]));
+      const placeholders = uniqueReferences(discoverGvarReferences(parsed.model), '').map(
+        (reference) =>
+          existing.get(reference.id) ?? {
+            ...reference,
+            value: '',
+            loaded: false,
+            error:
+              'Not loaded because AVRAE_TOKEN is empty. Add your Avrae token, then read from Avrae to load this gvar.',
+          },
+      );
+      if (
+        placeholders.length === current.length &&
+        placeholders.every((row, index) => row.id === current[index]?.id)
+      ) {
+        return current;
+      }
+      return placeholders;
+    });
+  }, [parsed.model, token]);
+
   const issues = useMemo(() => validateConfig(config, parsed.issues), [config, parsed.issues]);
 
   const serialized = useMemo(
     () => (config ? serializeConfig(config) : rawSource),
     [config, rawSource],
+  );
+  const setupSourceRows = useMemo(
+    () => sourceRowsWithBase({ configId, rawSource, related: relatedGvars }),
+    [configId, rawSource, relatedGvars],
+  );
+  const exportSourceRows = useMemo(
+    () =>
+      sourceRowsWithBase({
+        configId,
+        rawSource,
+        serialized,
+        related: relatedGvars,
+      }),
+    [configId, rawSource, relatedGvars, serialized],
   );
 
   const errorCount = issues.filter((item) => item.severity === 'error').length;
@@ -244,6 +510,103 @@ export function App() {
 
   function updateConfig(path: string, value: unknown) {
     setConfig((current) => (current ? updatePath(current, path, value) : current));
+  }
+
+  function updateSourceRow(id: string, value: string) {
+    const baseId = setupSourceRows[0]?.id;
+    if (id === baseId) {
+      setRawSource(value);
+      return;
+    }
+
+    setRelatedGvars((current) =>
+      current.map((row) =>
+        row.id === id
+          ? { ...row, value, kind: kindFromSource(value, row.kind), loaded: true }
+          : row,
+      ),
+    );
+  }
+
+  function upsertRelatedGvar(next: LoadedGvarSource) {
+    setRelatedGvars((current) => {
+      const index = current.findIndex((row) => row.id === next.id);
+      if (index < 0) return [...current, next];
+      return current.map((row, rowIndex) => (rowIndex === index ? { ...row, ...next } : row));
+    });
+  }
+
+  async function loadRelatedGvarsForSource(
+    rootId: string,
+    source: string,
+    model: ConfigModel | null,
+  ) {
+    const root = (() => {
+      try {
+        return normalizeGvarId(rootId);
+      } catch {
+        return '';
+      }
+    })();
+    const initialReferences = uniqueReferences(
+      model
+        ? discoverGvarReferences(model)
+        : discoverGvarReferencesFromSource(source, 'westmarch_config'),
+      root,
+    );
+
+    if (!token.trim()) {
+      const placeholders = initialReferences.map((reference) => ({
+        ...reference,
+        value: '',
+        loaded: false,
+        error:
+          'Not loaded because AVRAE_TOKEN is empty. Add your Avrae token, then read from Avrae to load this gvar.',
+      }));
+      setRelatedGvars(placeholders);
+      setStatus('Add AVRAE_TOKEN to load referenced gvars from Avrae.');
+      return placeholders;
+    }
+
+    const queued = [...initialReferences];
+    const seen = new Set(
+      [root, ...initialReferences.map((reference) => reference.id)].filter(Boolean),
+    );
+    const loaded: LoadedGvarSource[] = [];
+    const maxRelatedGvars = 40;
+
+    while (queued.length > 0 && loaded.length < maxRelatedGvars) {
+      const reference = queued.shift();
+      if (!reference) continue;
+
+      try {
+        const gvar = await fetchGvar(reference.id, token.trim());
+        const value = String(gvar.value ?? '');
+        const entry: LoadedGvarSource = {
+          ...reference,
+          kind: kindFromSource(value, reference.kind),
+          value,
+          loaded: true,
+        };
+        loaded.push(entry);
+
+        for (const child of discoverGvarReferencesFromSource(value, reference.path)) {
+          if (seen.has(child.id)) continue;
+          seen.add(child.id);
+          queued.push(child);
+        }
+      } catch (error) {
+        loaded.push({
+          ...reference,
+          value: '',
+          loaded: false,
+          error: error instanceof Error ? error.message : 'Could not load referenced gvar.',
+        });
+      }
+    }
+
+    setRelatedGvars(loaded);
+    return loaded;
   }
 
   async function loadFromAvrae() {
@@ -262,22 +625,63 @@ export function App() {
     }
     setConfigId(gvarId);
     setIsBusy(true);
-    setSteps([{ label: 'Read gvar from Avrae', state: 'running' }]);
+    const nextSteps: RunStep[] = [
+      { label: 'Read westmarch_config from Avrae', state: 'running' },
+      { label: 'Discover referenced gvars', state: 'pending' },
+      { label: 'Read referenced gvars', state: 'pending' },
+    ];
+    setSteps([...nextSteps]);
     try {
       const gvar = await fetchGvar(gvarId, token.trim());
-      setRawSource(String(gvar.value ?? ''));
-      setStatus('Loaded from Avrae. Review the source, then use Next to continue.');
-      setSteps([{ label: 'Read gvar from Avrae', state: 'success' }]);
+      const source = String(gvar.value ?? '');
+      const parsedRemote = parseConfig(source);
+      setRawSource(source);
+      if (parsedRemote.model) setConfig(parsedRemote.model);
+      nextSteps[0] = { label: 'Read westmarch_config from Avrae', state: 'success' };
+      nextSteps[1] = { label: 'Discover referenced gvars', state: 'running' };
+      setSteps([...nextSteps]);
+
+      const references = uniqueReferences(
+        parsedRemote.model
+          ? discoverGvarReferences(parsedRemote.model)
+          : discoverGvarReferencesFromSource(source, 'westmarch_config'),
+        gvarId,
+      );
+      nextSteps[1] = {
+        label: 'Discover referenced gvars',
+        state: 'success',
+        detail: `${references.length} reference(s)`,
+      };
+      nextSteps[2] = { label: 'Read referenced gvars', state: 'running' };
+      setSteps([...nextSteps]);
+
+      const loaded = await loadRelatedGvarsForSource(gvarId, source, parsedRemote.model);
+      const failed = loaded.filter((row) => row.error).length;
+      nextSteps[2] = {
+        label: 'Read referenced gvars',
+        state: failed ? 'warning' : 'success',
+        detail: loaded.length
+          ? `${loaded.length - failed}/${loaded.length} loaded`
+          : 'No references',
+      };
+      setSteps([...nextSteps]);
+      setStatus(
+        loaded.length
+          ? `Loaded config and ${loaded.length - failed} referenced gvar(s).`
+          : 'Loaded from Avrae. Review the source, then use Next to continue.',
+      );
       focusNextCta();
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : 'Avrae load failed');
-      setSteps([
-        {
-          label: 'Read gvar from Avrae',
+      const index = nextSteps.findIndex((item) => item.state === 'running');
+      if (index >= 0) {
+        nextSteps[index] = {
+          ...nextSteps[index],
           state: 'failed',
           detail: error instanceof Error ? error.message : 'Unknown error',
-        },
-      ]);
+        };
+      }
+      setStatus(error instanceof Error ? error.message : 'Avrae load failed');
+      setSteps([...nextSteps]);
     } finally {
       setIsBusy(false);
     }
@@ -309,11 +713,23 @@ export function App() {
     setConfigId(gvarId);
 
     setIsBusy(true);
+    const publishTargets = [
+      { id: gvarId, label: 'westmarch_config', value: serialized },
+      ...relatedGvars
+        .filter((row) => row.loaded && !row.error && row.value.trim())
+        .map((row) => ({ id: row.id, label: row.label, value: row.value })),
+    ];
     const nextSteps: RunStep[] = [
       { label: 'Validate config', state: 'running' },
       { label: 'Serialize gvar body', state: 'pending' },
-      { label: 'Publish to Avrae', state: 'pending' },
-      { label: 'Verify remote body', state: 'pending' },
+      ...publishTargets.map((target) => ({
+        label: `Publish ${target.label}`,
+        state: 'pending' as const,
+      })),
+      ...publishTargets.map((target) => ({
+        label: `Verify ${target.label}`,
+        state: 'pending' as const,
+      })),
     ];
     setSteps([...nextSteps]);
 
@@ -324,23 +740,37 @@ export function App() {
         detail: warningCount > 0 ? `${warningCount} warning(s)` : undefined,
       };
       nextSteps[1] = { label: 'Serialize gvar body', state: 'success' };
-      nextSteps[2] = { label: 'Publish to Avrae', state: 'running' };
-      setSteps([...nextSteps]);
+      for (const [index, target] of publishTargets.entries()) {
+        const stepIndex = 2 + index;
+        nextSteps[stepIndex] = { label: `Publish ${target.label}`, state: 'running' };
+        setSteps([...nextSteps]);
 
-      await updateGvar(gvarId, token.trim(), serialized);
-      nextSteps[2] = { label: 'Publish to Avrae', state: 'success' };
-      nextSteps[3] = { label: 'Verify remote body', state: 'running' };
-      setSteps([...nextSteps]);
+        await updateGvar(target.id, token.trim(), target.value);
+        nextSteps[stepIndex] = { label: `Publish ${target.label}`, state: 'success' };
+        setSteps([...nextSteps]);
+      }
 
-      const remote = await fetchGvar(gvarId, token.trim());
-      const verified = String(remote.value ?? '') === serialized;
-      nextSteps[3] = {
-        label: 'Verify remote body',
-        state: verified ? 'success' : 'warning',
-        detail: verified ? undefined : 'Remote body did not exactly match export text.',
-      };
-      setSteps([...nextSteps]);
-      setStatus(verified ? 'Publish complete' : 'Verify warning after publish');
+      for (const [index, target] of publishTargets.entries()) {
+        const stepIndex = 2 + publishTargets.length + index;
+        nextSteps[stepIndex] = { label: `Verify ${target.label}`, state: 'running' };
+        setSteps([...nextSteps]);
+
+        const remote = await fetchGvar(target.id, token.trim());
+        const verified = String(remote.value ?? '') === target.value;
+        nextSteps[stepIndex] = {
+          label: `Verify ${target.label}`,
+          state: verified ? 'success' : 'warning',
+          detail: verified ? undefined : 'Remote body did not exactly match export text.',
+        };
+        setSteps([...nextSteps]);
+      }
+
+      const verifyWarnings = nextSteps.filter((step) => step.state === 'warning').length;
+      setStatus(
+        verifyWarnings
+          ? `Publish complete with ${verifyWarnings} warning(s).`
+          : `Publish complete for ${publishTargets.length} gvar(s).`,
+      );
     } catch (error) {
       const index = nextSteps.findIndex((item) => item.state === 'running');
       if (index >= 0) {
@@ -399,6 +829,8 @@ export function App() {
             <RawSourceView
               rawSource={rawSource}
               setRawSource={setRawSource}
+              sourceRows={setupSourceRows}
+              updateSourceRow={updateSourceRow}
               parsedMode={parsed.mode}
             />
           ) : (
@@ -409,19 +841,21 @@ export function App() {
                   setConfigId={setConfigId}
                   token={token}
                   setToken={setToken}
-                  rawSource={rawSource}
-                  setRawSource={setRawSource}
+                  sourceRows={setupSourceRows}
+                  updateSourceRow={updateSourceRow}
                   loadFromAvrae={loadFromAvrae}
                   isBusy={isBusy}
                   onBlank={() => {
                     const blank = createBlankConfig();
                     setConfig(blank);
                     setRawSource(serializeConfig(blank));
+                    setRelatedGvars([]);
                     setStatus('Started new config. Use Next when you are ready to continue.');
                     focusNextCta();
                   }}
                   onStarter={() => {
                     setRawSource(STARTER_SNIPPET);
+                    setRelatedGvars([]);
                     setStatus('Starter snippet loaded. Use Next when you are ready to continue.');
                     focusNextCta();
                   }}
@@ -449,14 +883,23 @@ export function App() {
                 <WorldView config={config} updateConfig={updateConfig} />
               )}
               {section === 'biomes' && config && (
-                <BiomesView config={config} updateConfig={updateConfig} />
+                <BiomesView
+                  config={config}
+                  updateConfig={updateConfig}
+                  token={token}
+                  setStatus={setStatus}
+                  setSteps={setSteps}
+                  upsertRelatedGvar={upsertRelatedGvar}
+                  relatedGvars={relatedGvars}
+                  updateRelatedGvarSource={updateSourceRow}
+                />
               )}
-              {section === 'encounters' && <EncountersView />}
               {section === 'export' && (
                 <ExportView
                   serialized={serialized}
                   configId={configId}
                   shareLink={makeShareLink(configId)}
+                  sourceRows={exportSourceRows}
                   steps={steps}
                   publishToAvrae={publishToAvrae}
                   copy={copy}
@@ -464,9 +907,7 @@ export function App() {
                   isBusy={isBusy}
                 />
               )}
-              {!config && section !== 'setup' && section !== 'encounters' && (
-                <EmptyState setSection={setSection} />
-              )}
+              {!config && section !== 'setup' && <EmptyState setSection={setSection} />}
               <SectionCta
                 section={section}
                 setSection={setSection}
@@ -494,8 +935,8 @@ function SetupView(props: {
   setConfigId: (value: string) => void;
   token: string;
   setToken: (value: string) => void;
-  rawSource: string;
-  setRawSource: (value: string) => void;
+  sourceRows: LoadedGvarSource[];
+  updateSourceRow: (id: string, value: string) => void;
   loadFromAvrae: () => void;
   isBusy: boolean;
   onBlank: () => void;
@@ -576,21 +1017,16 @@ function SetupView(props: {
             Starter Source
           </button>
         </div>
-        <label className="field span-2">
+        <div className="field span-2">
           <span>
-            Gvar source
-            <HelpTip label="Gvar source help">
-              Paste the current gvar body here when no token is available.
+            Gvar sources
+            <HelpTip label="Gvar sources help">
+              The base westmarch_config row is expanded first. Referenced gvars load as separate
+              rows named by the config path that pointed at them.
             </HelpTip>
           </span>
-          <textarea
-            className="code-input"
-            rows={18}
-            value={props.rawSource}
-            onChange={(event) => props.setRawSource(event.target.value)}
-            spellCheck={false}
-          />
-        </label>
+          <GvarSourceRows rows={props.sourceRows} onChange={props.updateSourceRow} />
+        </div>
       </div>
     </section>
   );
@@ -821,13 +1257,16 @@ function SubsystemsView({
               {isPlanned ? <p className="planned-summary">{definition.detail}</p> : null}
               {definition.dependencies?.length ? (
                 <div className="dependency-list" aria-label={`${definition.label} dependencies`}>
+                  <span className="dependency-intro">
+                    This subsystem integrates with these other workshops. They are optional.
+                  </span>
                   {definition.dependencies.map((dependency) => (
                     <span
                       className={`dependency-pill ${dependency.level}`}
                       key={`${definition.key}:${dependency.label}`}
                     >
                       <strong>
-                        {dependency.level === 'required' ? 'Requires' : 'Works with'}{' '}
+                        Integrates with{' '}
                         {dependency.url ? (
                           <a href={dependency.url} target="_blank" rel="noreferrer">
                             {dependency.label}
@@ -889,20 +1328,31 @@ function SubsystemsView({
                       </details>
                     ))}
                   </div>
-                  <div className="subsystem-json-grid">
-                    <JsonField
-                      label="Subsystem config JSON"
-                      value={record.config ?? {}}
-                      onCommit={(value) => updateConfig(`subsystems.${key}.config`, value)}
-                      minRows={5}
-                    />
-                    <JsonField
-                      label="Command config JSON"
-                      value={record.command_config ?? {}}
-                      onCommit={(value) => updateConfig(`subsystems.${key}.command_config`, value)}
-                      minRows={5}
-                    />
-                  </div>
+                  <SubsystemAdvancedEditor
+                    subsystemKey={key}
+                    record={record}
+                    commandEntries={commandEntries.map(([command]) => command)}
+                    updateConfig={updateConfig}
+                  />
+                  <details className="advanced-json-details">
+                    <summary>Advanced subsystem JSON</summary>
+                    <div className="subsystem-json-grid">
+                      <JsonField
+                        label="Subsystem config JSON"
+                        value={record.config ?? {}}
+                        onCommit={(value) => updateConfig(`subsystems.${key}.config`, value)}
+                        minRows={5}
+                      />
+                      <JsonField
+                        label="Command config JSON"
+                        value={record.command_config ?? {}}
+                        onCommit={(value) =>
+                          updateConfig(`subsystems.${key}.command_config`, value)
+                        }
+                        minRows={5}
+                      />
+                    </div>
+                  </details>
                 </div>
               </details>
             </div>
@@ -982,6 +1432,108 @@ function DisplayOverrideEditor({
             rows={3}
           />
         </label>
+      </div>
+    </section>
+  );
+}
+
+function SubsystemAdvancedEditor({
+  subsystemKey,
+  record,
+  commandEntries,
+  updateConfig,
+}: {
+  subsystemKey: string;
+  record: AnyRecord;
+  commandEntries: string[];
+  updateConfig: (path: string, value: unknown) => void;
+}) {
+  const config = asRecord(record.config);
+  const commandConfig = asRecord(record.command_config);
+
+  return (
+    <section className="guided-editor">
+      <div className="display-override-head">
+        <h3>Guided config</h3>
+        <HelpTip label={`${subsystemKey} guided config help`}>
+          Common subsystem settings and command cooldowns. Use advanced JSON only for custom fields
+          not represented here.
+        </HelpTip>
+      </div>
+      {subsystemKey === 'exploration' ? (
+        <div className="form-grid compact">
+          <SelectField
+            label="Biome source"
+            value={String(config.enc_biome_source ?? 'auto')}
+            values={['auto', 'argument', 'location']}
+            onChange={(value) =>
+              updateConfig(`subsystems.${subsystemKey}.config.enc_biome_source`, value)
+            }
+            help="Controls whether exploration commands take biome args or infer from location."
+          />
+          <TextField
+            label="Repeat exclude window"
+            value={String(config.repeat_exclude_window ?? '')}
+            onChange={(value) =>
+              updateConfig(
+                `subsystems.${subsystemKey}.config.repeat_exclude_window`,
+                numberOrUndefined(value),
+              )
+            }
+            help="How many recent encounters to exclude where repeat policy applies."
+          />
+          <DistributionEditor
+            value={asRecord(config.distribution)}
+            onChange={(value) =>
+              updateConfig(`subsystems.${subsystemKey}.config.distribution`, value)
+            }
+          />
+        </div>
+      ) : null}
+      {subsystemKey === 'downtime' ? (
+        <div className="form-grid compact">
+          <TextField
+            label="Workday hours"
+            value={String(config.workday_hours ?? '')}
+            onChange={(value) =>
+              updateConfig(
+                `subsystems.${subsystemKey}.config.workday_hours`,
+                numberOrUndefined(value),
+              )
+            }
+            help="Hours counted as one workday."
+          />
+          <TextField
+            label="Workweek days"
+            value={String(config.workweek_days ?? '')}
+            onChange={(value) =>
+              updateConfig(
+                `subsystems.${subsystemKey}.config.workweek_days`,
+                numberOrUndefined(value),
+              )
+            }
+            help="Workdays counted as one workweek."
+          />
+        </div>
+      ) : null}
+      <div className="command-cooldown-grid">
+        {commandEntries.map((command) => {
+          const commandRecord = asRecord(commandConfig[command]);
+          return (
+            <TextField
+              label={`${command} cooldown`}
+              value={String(commandRecord.cooldown_seconds ?? '')}
+              onChange={(value) =>
+                updateConfig(
+                  `subsystems.${subsystemKey}.command_config.${command}.cooldown_seconds`,
+                  numberOrUndefined(value),
+                )
+              }
+              help="Optional cooldown in seconds."
+              key={command}
+            />
+          );
+        })}
       </div>
     </section>
   );
@@ -1262,57 +1814,48 @@ function PoliciesView({
           }
           help="Bag checked for consumed ingredients when material or item policies are enforced."
         />
-        <JsonField
-          label="Crafting catalogues"
-          value={
-            readPath(config, 'subsystems.crafting.config.catalogues') ?? CRAFTING_CATALOGUE_DEFAULTS
-          }
-          onCommit={(value) => updateConfig('subsystems.crafting.config.catalogues', value)}
-          minRows={7}
+        <CraftingCataloguesEditor
+          value={asRecord(
+            readPath(config, 'subsystems.crafting.config.catalogues') ??
+              CRAFTING_CATALOGUE_DEFAULTS,
+          )}
+          onChange={(value) => updateConfig('subsystems.crafting.config.catalogues', value)}
         />
-        <JsonField
-          label="Crafting checks"
-          value={readPath(config, 'subsystems.crafting.config.checks') ?? CRAFTING_CHECK_DEFAULTS}
-          onCommit={(value) => updateConfig('subsystems.crafting.config.checks', value)}
-          minRows={8}
+        <CraftingChecksEditor
+          value={asRecord(
+            readPath(config, 'subsystems.crafting.config.checks') ?? CRAFTING_CHECK_DEFAULTS,
+          )}
+          onChange={(value) => updateConfig('subsystems.crafting.config.checks', value)}
         />
-        <JsonField
-          label="Crafting tool policy"
-          value={
+        <CraftingToolPolicyEditor
+          value={asRecord(
             readPath(config, 'subsystems.crafting.config.tool_policy') ??
-            CRAFTING_TOOL_POLICY_DEFAULTS
-          }
-          onCommit={(value) => updateConfig('subsystems.crafting.config.tool_policy', value)}
-          minRows={8}
+              CRAFTING_TOOL_POLICY_DEFAULTS,
+          )}
+          onChange={(value) => updateConfig('subsystems.crafting.config.tool_policy', value)}
         />
-        <JsonField
-          label="Crafting command overrides"
-          value={readPath(config, 'subsystems.crafting.command_config') ?? {}}
-          onCommit={(value) => updateConfig('subsystems.crafting.command_config', value)}
-          minRows={7}
+        <CraftingCommandOverridesEditor
+          value={asRecord(readPath(config, 'subsystems.crafting.command_config') ?? {})}
+          onChange={(value) => updateConfig('subsystems.crafting.command_config', value)}
         />
         <FooterBehaviourField
           value={String(readPath(config, 'policies.display.footer_behaviour') ?? 'balanced')}
           onChange={(value) => updateConfig('policies.display.footer_behaviour', value)}
         />
-        <JsonField
-          label="Player setup and HUD"
-          value={
+        <PlayerSetupEditor
+          value={asRecord(
             readPath(config, 'policies.player_setup') ?? {
               enabled: true,
               require_character: true,
               hud: { enabled: true, fields: ['coins', 'wallet', 'location', 'time', 'weather'] },
               checks: [],
-            }
-          }
-          onCommit={(value) => updateConfig('policies.player_setup', value)}
-          minRows={8}
+            },
+          )}
+          onChange={(value) => updateConfig('policies.player_setup', value)}
         />
-        <JsonField
-          label="Exploration distribution"
-          value={readPath(config, 'subsystems.exploration.config.distribution') ?? {}}
-          onCommit={(value) => updateConfig('subsystems.exploration.config.distribution', value)}
-          minRows={6}
+        <DistributionEditor
+          value={asRecord(readPath(config, 'subsystems.exploration.config.distribution') ?? {})}
+          onChange={(value) => updateConfig('subsystems.exploration.config.distribution', value)}
         />
         <SelectField
           label="Hunt monster art"
@@ -1389,6 +1932,490 @@ function PoliciesView({
   );
 }
 
+const CRAFTING_COMMANDS = ['craft', 'brew', 'enchant', 'scribe'];
+const CRAFTING_RESOURCE_KEYS = ['gold', 'materials', 'items', 'downtime', 'spell_slot'];
+
+function CraftingCataloguesEditor({
+  value,
+  onChange,
+}: {
+  value: AnyRecord;
+  onChange: (value: AnyRecord) => void;
+}) {
+  const catalogueKeys = ['items', 'potions', 'spells', 'magic_items', 'recipes'];
+
+  function engineSlug(key: string) {
+    const source = CRAFTING_CATALOGUE_DEFAULTS[key as keyof typeof CRAFTING_CATALOGUE_DEFAULTS];
+    return typeof source === 'string' && source.startsWith('engine:') ? source : '';
+  }
+
+  function catalogueDraft(entry: unknown, key: string) {
+    const engine = engineSlug(key);
+    const gvarIds: string[] = [];
+    let includeEngine = false;
+
+    if (typeof entry === 'string') {
+      includeEngine = Boolean(engine && entry === engine);
+      if (entry.trim() && !entry.startsWith('engine:')) gvarIds.push(entry.trim());
+    } else if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
+      const record = asRecord(entry);
+      includeEngine = record.include_engine === true;
+      const gvarId = String(record.gvar_id ?? '').trim();
+      if (gvarId && !gvarId.startsWith('engine:')) gvarIds.push(gvarId);
+      for (const keyName of ['gvar_ids', 'gvars']) {
+        const ids = record[keyName];
+        if (Array.isArray(ids)) {
+          gvarIds.push(...ids.map((item) => String(item).trim()).filter(Boolean));
+        }
+      }
+    }
+
+    return { includeEngine, gvarIds: Array.from(new Set(gvarIds)) };
+  }
+
+  function catalogueValue(entry: unknown, key: string, includeEngine: boolean, gvarIds: string[]) {
+    const engine = engineSlug(key);
+    const cleanIds = gvarIds.map((item) => item.trim()).filter(Boolean);
+    const currentRecord = asRecord(entry);
+    const entries = Array.isArray(currentRecord.entries) ? currentRecord.entries : undefined;
+
+    if (!includeEngine && cleanIds.length === 0) {
+      return entries ? { entries } : null;
+    }
+
+    if (includeEngine && engine && cleanIds.length === 0 && !entries) return engine;
+    if (!includeEngine && cleanIds.length === 1 && !entries) return cleanIds[0];
+
+    const next: AnyRecord = {};
+    if (entries) next.entries = entries;
+    if (includeEngine && engine) next.include_engine = true;
+    if (cleanIds.length === 1) next.gvar_id = cleanIds[0];
+    if (cleanIds.length > 1) next.gvar_ids = cleanIds;
+    return next;
+  }
+
+  function updateSource(key: string, includeEngine: boolean, gvarIds: string[]) {
+    onChange({
+      ...value,
+      [key]: catalogueValue(value[key], key, includeEngine, gvarIds),
+    });
+  }
+
+  return (
+    <section className="field span-2 guided-editor">
+      <span>
+        Crafting catalogue sources
+        <HelpTip label="Crafting catalogue sources help">
+          Engine source slugs, custom gvar UUIDs, or blank when a catalogue is not used.
+        </HelpTip>
+      </span>
+      <div className="catalogue-grid">
+        {catalogueKeys.map((key) => {
+          const engine = engineSlug(key);
+          const { includeEngine, gvarIds } = catalogueDraft(value[key], key);
+          const visibleIds = [...gvarIds, ''];
+          return (
+            <div className="catalogue-row structured" key={key}>
+              <strong>{key}</strong>
+              <label className="field">
+                <span>Engine source</span>
+                <select
+                  value={includeEngine && engine ? engine : ''}
+                  onChange={(event) => updateSource(key, Boolean(event.target.value), gvarIds)}
+                >
+                  <option value="">No engine catalogue</option>
+                  {engine ? <option value={engine}>{engine}</option> : null}
+                </select>
+              </label>
+              <div className="field">
+                <span>
+                  Custom gvar sources
+                  <HelpTip label={`${key} custom catalogue gvars help`}>
+                    Add one or more owner gvar UUIDs for custom catalogue data.
+                  </HelpTip>
+                </span>
+                <div className="gvar-id-list">
+                  {visibleIds.map((id, index) => (
+                    <div className="gvar-id-row" key={index}>
+                      <input
+                        value={id}
+                        onChange={(event) => {
+                          const nextIds = [...visibleIds];
+                          nextIds[index] = event.target.value;
+                          updateSource(key, includeEngine, nextIds);
+                        }}
+                        placeholder="custom gvar UUID"
+                        aria-label={`${key} custom gvar ${index + 1}`}
+                      />
+                      <button
+                        type="button"
+                        className="field-action-button"
+                        onClick={() =>
+                          updateSource(
+                            key,
+                            includeEngine,
+                            visibleIds.filter((_, row) => row !== index),
+                          )
+                        }
+                        aria-label={`Remove ${key} custom gvar ${index + 1}`}
+                        title="Remove custom gvar"
+                      >
+                        <X size={16} aria-hidden="true" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function CraftingChecksEditor({
+  value,
+  onChange,
+}: {
+  value: AnyRecord;
+  onChange: (value: AnyRecord) => void;
+}) {
+  function updateCommand(command: string, patch: AnyRecord) {
+    onChange({ ...value, [command]: { ...asRecord(value[command]), ...patch } });
+  }
+
+  return (
+    <section className="field span-2 guided-editor">
+      <span>
+        Crafting checks
+        <HelpTip label="Crafting checks help">
+          Per-command roll policy. None skips rolls, manual prints guidance, and roll enforces a DC.
+        </HelpTip>
+      </span>
+      <div className="matrix-editor crafting-checks">
+        {CRAFTING_COMMANDS.map((command) => {
+          const record = asRecord(value[command]);
+          return (
+            <div className="matrix-row" key={command}>
+              <strong>{command}</strong>
+              <select
+                value={String(record.mode ?? 'none')}
+                onChange={(event) => updateCommand(command, { mode: event.target.value })}
+                aria-label={`${command} check mode`}
+              >
+                {['none', 'manual', 'roll', 'off'].map((mode) => (
+                  <option value={mode} key={mode}>
+                    {mode}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={String(record.skill ?? '')}
+                onChange={(event) => updateCommand(command, { skill: event.target.value || null })}
+                aria-label={`${command} check skill`}
+              >
+                {optionsWithSelected(
+                  ['', ...CRAFTING_CHECK_SKILL_OPTIONS],
+                  [String(record.skill ?? '')].filter(Boolean),
+                ).map((skill) => (
+                  <option value={skill} key={skill || 'unset'}>
+                    {skill || 'skill'}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={String(record.ability ?? '')}
+                onChange={(event) =>
+                  updateCommand(command, { ability: event.target.value || null })
+                }
+                aria-label={`${command} check ability`}
+              >
+                {optionsWithSelected(
+                  ['', ...ABILITY_OPTIONS],
+                  [String(record.ability ?? '')].filter(Boolean),
+                ).map((ability) => (
+                  <option value={ability} key={ability || 'unset'}>
+                    {ability || 'ability'}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={String(record.dc ?? '')}
+                onChange={(event) =>
+                  updateCommand(command, { dc: numberOrNull(event.target.value) })
+                }
+                aria-label={`${command} check DC`}
+              >
+                {optionsWithSelected(
+                  CRAFTING_CHECK_DC_OPTIONS,
+                  [String(record.dc ?? '')].filter(Boolean),
+                ).map((dc) => (
+                  <option value={dc} key={dc || 'unset'}>
+                    {dc || 'DC'}
+                  </option>
+                ))}
+              </select>
+              <label className="switch-line">
+                <input
+                  type="checkbox"
+                  checked={record.require_success !== false}
+                  onChange={(event) =>
+                    updateCommand(command, { require_success: event.target.checked })
+                  }
+                />
+                <span>Require success</span>
+              </label>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function CraftingToolPolicyEditor({
+  value,
+  onChange,
+}: {
+  value: AnyRecord;
+  onChange: (value: AnyRecord) => void;
+}) {
+  function updateCommand(command: string, patch: AnyRecord) {
+    onChange({ ...value, [command]: { ...asRecord(value[command]), ...patch } });
+  }
+
+  return (
+    <section className="field span-2 guided-editor">
+      <span>
+        Crafting tool policy
+        <HelpTip label="Crafting tool policy help">
+          Per-command tool reminders or checks against proficiencies and optional kit items.
+        </HelpTip>
+      </span>
+      <div className="matrix-editor tool-policy">
+        {CRAFTING_COMMANDS.map((command) => {
+          const record = asRecord(value[command]);
+          return (
+            <div className="matrix-row" key={command}>
+              <strong>{command}</strong>
+              <select
+                value={String(record.mode ?? 'off')}
+                onChange={(event) => updateCommand(command, { mode: event.target.value })}
+                aria-label={`${command} tool mode`}
+              >
+                {['off', 'manual', 'check'].map((mode) => (
+                  <option value={mode} key={mode}>
+                    {mode}
+                  </option>
+                ))}
+              </select>
+              <CheckboxDropdown
+                label={`${command} tools`}
+                value={asStringList(record.tools)}
+                options={CRAFTING_TOOL_OPTIONS}
+                onChange={(tools) => updateCommand(command, { tools })}
+              />
+              <label className="switch-line">
+                <input
+                  type="checkbox"
+                  checked={record.require_proficiency !== false}
+                  onChange={(event) =>
+                    updateCommand(command, { require_proficiency: event.target.checked })
+                  }
+                />
+                <span>Proficiency</span>
+              </label>
+              <label className="switch-line">
+                <input
+                  type="checkbox"
+                  checked={record.require_kit === true}
+                  onChange={(event) =>
+                    updateCommand(command, { require_kit: event.target.checked })
+                  }
+                />
+                <span>Kit item</span>
+              </label>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function CraftingCommandOverridesEditor({
+  value,
+  onChange,
+}: {
+  value: AnyRecord;
+  onChange: (value: AnyRecord) => void;
+}) {
+  function updateCommand(command: string, patch: AnyRecord) {
+    onChange({ ...value, [command]: { ...asRecord(value[command]), ...patch } });
+  }
+
+  return (
+    <section className="field span-2 guided-editor">
+      <span>
+        Crafting command overrides
+        <HelpTip label="Crafting command overrides help">
+          Optional per-command cooldowns, resource policies, and output mode overrides.
+        </HelpTip>
+      </span>
+      <div className="command-override-matrix">
+        {CRAFTING_COMMANDS.map((command) => {
+          const record = asRecord(value[command]);
+          const resources = asRecord(record.resources);
+          return (
+            <details className="command-override" key={command}>
+              <summary>{command}</summary>
+              <div className="form-grid compact">
+                <TextField
+                  label="Cooldown seconds"
+                  value={String(record.cooldown_seconds ?? '')}
+                  onChange={(next) =>
+                    updateCommand(command, { cooldown_seconds: numberOrUndefined(next) })
+                  }
+                  help="Optional per-command cooldown."
+                />
+                <SelectField
+                  label="Output mode"
+                  value={String(record.item_handling ?? '')}
+                  values={['', 'manual', 'bags']}
+                  onChange={(next) => updateCommand(command, { item_handling: next || undefined })}
+                  help="Override crafted item output for this command."
+                />
+                {CRAFTING_RESOURCE_KEYS.map((key) => (
+                  <SelectField
+                    label={key}
+                    value={String(resources[key] ?? '')}
+                    values={['', ...CRAFTING_RESOURCE_MODES]}
+                    onChange={(next) =>
+                      updateCommand(command, {
+                        resources: { ...resources, [key]: next || undefined },
+                      })
+                    }
+                    help={`Override ${key} resource handling for ${command}.`}
+                    key={key}
+                  />
+                ))}
+              </div>
+            </details>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function PlayerSetupEditor({
+  value,
+  onChange,
+}: {
+  value: AnyRecord;
+  onChange: (value: AnyRecord) => void;
+}) {
+  const hud = asRecord(value.hud);
+
+  return (
+    <section className="field span-2 guided-editor">
+      <span>
+        Player setup and HUD
+        <HelpTip label="Player setup help">
+          Controls preflight checks and compact HUD fields shown to players.
+        </HelpTip>
+      </span>
+      <div className="form-grid compact">
+        <label className="switch-line">
+          <input
+            type="checkbox"
+            checked={value.enabled !== false}
+            onChange={(event) => onChange({ ...value, enabled: event.target.checked })}
+          />
+          <span>Enable player setup</span>
+        </label>
+        <label className="switch-line">
+          <input
+            type="checkbox"
+            checked={value.require_character !== false}
+            onChange={(event) => onChange({ ...value, require_character: event.target.checked })}
+          />
+          <span>Require character</span>
+        </label>
+        <label className="switch-line">
+          <input
+            type="checkbox"
+            checked={hud.enabled !== false}
+            onChange={(event) =>
+              onChange({ ...value, hud: { ...hud, enabled: event.target.checked } })
+            }
+          />
+          <span>Enable HUD</span>
+        </label>
+        <CheckboxGroupField
+          label="HUD fields"
+          value={asStringList(hud.fields)}
+          options={HUD_FIELD_OPTIONS}
+          onChange={(fields) => onChange({ ...value, hud: { ...hud, fields } })}
+          help="Built-in player HUD fields to show in compact status output."
+        />
+      </div>
+      <details className="advanced-json-details">
+        <summary>Advanced setup checks JSON</summary>
+        <JsonField
+          label="Setup checks"
+          value={value.checks ?? []}
+          onCommit={(checks) => onChange({ ...value, checks })}
+          minRows={6}
+        />
+      </details>
+    </section>
+  );
+}
+
+function DistributionEditor({
+  value,
+  onChange,
+}: {
+  value: AnyRecord;
+  onChange: (value: AnyRecord) => void;
+}) {
+  const combat = Number(value.combat ?? 0);
+  const quest = Number(value.quest ?? 0);
+  const gather = Number(value.gather ?? 0);
+  const total = combat + quest + gather;
+
+  function update(key: string, next: string) {
+    onChange({ ...value, [key]: numberOrUndefined(next) ?? 0 });
+  }
+
+  return (
+    <section className="field span-2 guided-editor">
+      <span>
+        Exploration distribution
+        <HelpTip label="Exploration distribution help">
+          Percent weights for encounter kind selection. The total should be 100.
+        </HelpTip>
+      </span>
+      <div className="distribution-grid">
+        {['combat', 'quest', 'gather'].map((key) => (
+          <label className="field" key={key}>
+            <span>{key}</span>
+            <input
+              type="number"
+              min="0"
+              value={String(value[key] ?? 0)}
+              onChange={(event) => update(key, event.target.value)}
+            />
+          </label>
+        ))}
+        <span className={total === 100 ? 'badge ok' : 'badge warn'}>Total {total}</span>
+      </div>
+    </section>
+  );
+}
+
 function WorldView({
   config,
   updateConfig,
@@ -1396,6 +2423,9 @@ function WorldView({
   config: ConfigModel;
   updateConfig: (path: string, value: unknown) => void;
 }) {
+  const locations = asRecord(config.world_data.locations);
+  const paths = Array.isArray(config.world_data.paths) ? config.world_data.paths : [];
+
   return (
     <section className="section-panel">
       <SectionTitle
@@ -1404,66 +2434,709 @@ function WorldView({
         help="World data connects locations, travel paths, calendars, and biome lookup."
       />
       <div className="form-grid">
-        <TextField
+        <LocationSelect
           label="Default location"
           value={String(config.world_data.default_location ?? '')}
-          onChange={(value) => updateConfig('world_data.default_location', value)}
+          locationIds={Object.keys(locations)}
+          onChange={(value) => updateConfig('world_data.default_location', value || undefined)}
           help="Used by travel/location commands when no character location is known."
         />
+      </div>
+      <LocationEditor locations={locations} updateConfig={updateConfig} />
+      <PathBuilder paths={paths} locations={locations} updateConfig={updateConfig} />
+      <details className="advanced-json-details">
+        <summary>Advanced world JSON</summary>
         <JsonField
-          label="Locations"
+          label="Locations JSON"
           value={config.world_data.locations ?? {}}
           onCommit={(value) => updateConfig('world_data.locations', value)}
         />
         <JsonField
-          label="Paths"
+          label="Paths JSON"
           value={config.world_data.paths ?? []}
           onCommit={(value) => updateConfig('world_data.paths', value)}
         />
+      </details>
+    </section>
+  );
+}
+
+const EXPLORATION_LOCATION_COMMANDS = ['enc', 'forage', 'fish', 'mine', 'lumber', 'hunt', 'loot'];
+const SERVICE_LOCATION_COMMANDS = [
+  'job',
+  'buy',
+  'sell',
+  'craft',
+  'brew',
+  'enchant',
+  'scribe',
+  'library',
+  'read',
+];
+
+function LocationEditor({
+  locations,
+  updateConfig,
+}: {
+  locations: AnyRecord;
+  updateConfig: (path: string, value: unknown) => void;
+}) {
+  const [newLocationId, setNewLocationId] = useState('river_town');
+
+  function addLocation() {
+    const id = slugValue(newLocationId);
+    if (!id) return;
+    updateConfig('world_data.locations', {
+      ...locations,
+      [id]: { name: titleFromSlug(id), commands: {} },
+    });
+  }
+
+  function updateLocation(id: string, value: AnyRecord) {
+    updateConfig('world_data.locations', { ...locations, [id]: value });
+  }
+
+  function removeLocation(id: string) {
+    updateConfig(
+      'world_data.locations',
+      Object.fromEntries(Object.entries(locations).filter(([key]) => key !== id)),
+    );
+  }
+
+  return (
+    <section className="world-editor">
+      <div className="collection-editor-head">
+        <h3>Locations</h3>
+        <div className="inline-add">
+          <input
+            value={newLocationId}
+            onChange={(event) => setNewLocationId(event.target.value)}
+            placeholder="river_town"
+            aria-label="New location id"
+          />
+          <button type="button" onClick={addLocation}>
+            <Save size={16} aria-hidden="true" />
+            Add Location
+          </button>
+        </div>
       </div>
-      <div className="planned-grid">
-        <PlannedFeatureButton
-          feature={{
-            title: 'Location editor',
-            detail:
-              'Guided location editing will replace the raw JSON box with fields for display, activities, services, library topics, and optional encounter gvars.',
-            plannedItems: [
-              'Location id/name fields',
-              'Activity biome selectors',
-              'Location encounter gvar selector',
-              'Service command settings',
-            ],
-          }}
-        />
-        <PlannedFeatureButton
-          feature={{
-            title: 'Path builder',
-            detail:
-              'Guided paths will let you pick from existing locations and build route steps without hand-editing JSON.',
-            plannedItems: [
-              'From/to location selectors',
-              'Travel step editor',
-              'Transport requirements',
-              'Route validation',
-            ],
-          }}
-        />
+      <div className="collection-list">
+        {Object.entries(locations).map(([id, value], index) => (
+          <details className="collection-item" open={index === 0} key={id}>
+            <summary className="collection-item-head">
+              <div>
+                <strong>{String(asRecord(value).name ?? titleFromSlug(id))}</strong>
+                <span>{id}</span>
+              </div>
+              <button
+                type="button"
+                className="field-action-button"
+                onClick={(event) => {
+                  event.preventDefault();
+                  removeLocation(id);
+                }}
+                aria-label={`Remove ${id}`}
+                title="Remove location"
+              >
+                <X size={16} aria-hidden="true" />
+              </button>
+            </summary>
+            <LocationFields
+              id={id}
+              location={asRecord(value)}
+              onChange={(next) => updateLocation(id, next)}
+            />
+          </details>
+        ))}
+        {Object.keys(locations).length === 0 ? (
+          <p className="collection-empty">
+            No locations yet. Add one to enable location-aware travel.
+          </p>
+        ) : null}
       </div>
     </section>
+  );
+}
+
+function LocationFields({
+  id,
+  location,
+  onChange,
+}: {
+  id: string;
+  location: AnyRecord;
+  onChange: (location: AnyRecord) => void;
+}) {
+  const commands = asRecord(location.commands);
+
+  function updateField(key: string, value: unknown) {
+    onChange({ ...location, [key]: value || undefined });
+  }
+
+  function updateCommand(command: string, value: unknown) {
+    const nextCommands = { ...commands, [command]: value };
+    if (value == null || value === false || (Array.isArray(value) && value.length === 0)) {
+      delete nextCommands[command];
+    }
+    onChange({ ...location, commands: nextCommands });
+  }
+
+  return (
+    <div className="form-grid compact">
+      <TextField
+        label="Name"
+        value={String(location.name ?? titleFromSlug(id))}
+        onChange={(value) => updateField('name', value)}
+        help="Player-facing location name."
+      />
+      <TextField
+        label="Primary biome"
+        value={String(location.biome ?? '')}
+        onChange={(value) => updateField('biome', value)}
+        help="Fallback biome code when a command does not list specific biome pools."
+      />
+      <TextField
+        label="Image"
+        value={String(location.image ?? '')}
+        onChange={(value) => updateField('image', value)}
+        help="Optional embed image URL for location/travel output."
+      />
+      <TextField
+        label="Channel link"
+        value={String(location.link ?? '')}
+        onChange={(value) => updateField('link', value)}
+        help="Optional Discord channel URL shown with location output."
+      />
+      <TextField
+        label="Encounter gvar id"
+        value={String(location.encounters_gvar_id ?? '')}
+        onChange={(value) => updateField('encounters_gvar_id', value)}
+        help="Optional place-specific encounter module gvar UUID."
+      />
+      <TextField
+        label="Calendar id"
+        value={String(location.calendar_id ?? '')}
+        onChange={(value) => updateField('calendar_id', value)}
+        help="Optional key from world_data.calendars for this location."
+      />
+      <label className="field span-2">
+        <span>
+          Description
+          <HelpTip label="Location description help">
+            General player-facing flavour for the location command.
+          </HelpTip>
+        </span>
+        <textarea
+          value={String(location.description ?? '')}
+          onChange={(event) => updateField('description', event.target.value)}
+          rows={3}
+        />
+      </label>
+      <label className="field span-2">
+        <span>
+          Travel description
+          <HelpTip label="Travel description help">
+            Extra prose or warnings shown during travel to or from this location.
+          </HelpTip>
+        </span>
+        <textarea
+          value={String(location.travel_description ?? '')}
+          onChange={(event) => updateField('travel_description', event.target.value)}
+          rows={3}
+        />
+      </label>
+      <div className="field span-2">
+        <span>
+          Exploration command biomes
+          <HelpTip label="Exploration command biomes help">
+            Comma-separated biome codes for commands available at this location.
+          </HelpTip>
+        </span>
+        <div className="command-matrix">
+          {EXPLORATION_LOCATION_COMMANDS.map((command) => (
+            <label className="field" key={command}>
+              <span>{command}</span>
+              <input
+                value={arrayToCsv(commands[command])}
+                onChange={(event) => updateCommand(command, csvToArray(event.target.value))}
+                placeholder="forest, road"
+              />
+            </label>
+          ))}
+        </div>
+      </div>
+      <div className="field span-2">
+        <span>
+          Service commands
+          <HelpTip label="Service commands help">
+            Checked commands are available at this location without a biome list.
+          </HelpTip>
+        </span>
+        <div className="checkbox-grid compact">
+          {SERVICE_LOCATION_COMMANDS.map((command) => (
+            <label className="switch-line" key={command}>
+              <input
+                type="checkbox"
+                checked={commands[command] === true}
+                onChange={(event) => updateCommand(command, event.target.checked || undefined)}
+              />
+              <span>{command}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+      <TextField
+        label="Services"
+        value={arrayToCsv(location.services)}
+        onChange={(value) => updateField('services', csvToArray(value))}
+        help="Comma-separated shop or service ids present here."
+      />
+      <TextField
+        label="Library topics"
+        value={arrayToCsv(location.library_topics)}
+        onChange={(value) => updateField('library_topics', csvToArray(value))}
+        help="Comma-separated topic hints for library inference."
+      />
+    </div>
+  );
+}
+
+function PathBuilder({
+  paths,
+  locations,
+  updateConfig,
+}: {
+  paths: unknown[];
+  locations: AnyRecord;
+  updateConfig: (path: string, value: unknown) => void;
+}) {
+  const locationIds = Object.keys(locations);
+
+  function updatePathItem(index: number, value: AnyRecord) {
+    updateConfig(
+      'world_data.paths',
+      paths.map((item, itemIndex) => (itemIndex === index ? value : item)),
+    );
+  }
+
+  function removePath(index: number) {
+    updateConfig(
+      'world_data.paths',
+      paths.filter((_, itemIndex) => itemIndex !== index),
+    );
+  }
+
+  return (
+    <section className="world-editor">
+      <div className="collection-editor-head">
+        <h3>Paths</h3>
+        <button
+          type="button"
+          onClick={() =>
+            updateConfig('world_data.paths', [
+              ...paths,
+              {
+                from: locationIds[0] ?? '',
+                to: locationIds[1] ?? locationIds[0] ?? '',
+                steps: [{ type: 'encounter', biome: '' }],
+              },
+            ])
+          }
+        >
+          <Save size={16} aria-hidden="true" />
+          Add Path
+        </button>
+      </div>
+      <div className="collection-list">
+        {paths.map((path, index) => {
+          const record = asRecord(path);
+          return (
+            <details className="collection-item" open={index === 0} key={index}>
+              <summary className="collection-item-head">
+                <div>
+                  <strong>
+                    {String(record.from ?? 'unknown')} to {String(record.to ?? 'unknown')}
+                  </strong>
+                  <span>{String(record.label ?? 'route')}</span>
+                </div>
+                <button
+                  type="button"
+                  className="field-action-button"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    removePath(index);
+                  }}
+                  aria-label={`Remove path ${index + 1}`}
+                  title="Remove path"
+                >
+                  <X size={16} aria-hidden="true" />
+                </button>
+              </summary>
+              <PathFields
+                path={record}
+                locationIds={locationIds}
+                onChange={(next) => updatePathItem(index, next)}
+              />
+            </details>
+          );
+        })}
+        {paths.length === 0 ? (
+          <p className="collection-empty">No paths yet. Add one to build travel routes.</p>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+function PathFields({
+  path,
+  locationIds,
+  onChange,
+}: {
+  path: AnyRecord;
+  locationIds: string[];
+  onChange: (path: AnyRecord) => void;
+}) {
+  const requirements = asRecord(path.requirements);
+  const cost = asRecord(path.cost);
+  const steps = Array.isArray(path.steps) ? path.steps.map(asRecord) : [];
+
+  function updateField(key: string, value: unknown) {
+    onChange({ ...path, [key]: value || undefined });
+  }
+
+  function updateStep(index: number, step: AnyRecord) {
+    onChange({
+      ...path,
+      steps: steps.map((item, itemIndex) => (itemIndex === index ? step : item)),
+    });
+  }
+
+  return (
+    <div className="form-grid compact">
+      <LocationSelect
+        label="From"
+        value={String(path.from ?? '')}
+        locationIds={locationIds}
+        onChange={(value) => updateField('from', value)}
+      />
+      <LocationSelect
+        label="To"
+        value={String(path.to ?? '')}
+        locationIds={locationIds}
+        onChange={(value) => updateField('to', value)}
+      />
+      <TextField
+        label="Label"
+        value={String(path.label ?? '')}
+        onChange={(value) => updateField('label', value)}
+        help="Optional display hint for this route."
+      />
+      <TextField
+        label="Transport requirement"
+        value={arrayToCsv(requirements.transport)}
+        onChange={(value) =>
+          updateField('requirements', {
+            ...requirements,
+            transport: csvToSingleOrArray(value),
+          })
+        }
+        help="Transport id or ids required for this path."
+      />
+      <TextField
+        label="Gold cost"
+        value={String(cost.gold ?? '')}
+        onChange={(value) => updateField('cost', { ...cost, gold: numberOrUndefined(value) })}
+        help="Optional lump gold cost for this route."
+      />
+      <div className="field span-2">
+        <span>
+          Journey steps
+          <HelpTip label="Journey steps help">
+            Ordered route steps: encounter, cost, or proceed.
+          </HelpTip>
+        </span>
+        <div className="path-step-list">
+          {steps.map((step, index) => (
+            <div className="path-step-row" key={index}>
+              <select
+                value={String(step.type ?? 'encounter')}
+                onChange={(event) => updateStep(index, { type: event.target.value })}
+                aria-label={`Step ${index + 1} type`}
+              >
+                <option value="encounter">encounter</option>
+                <option value="cost">cost</option>
+                <option value="proceed">proceed</option>
+              </select>
+              {String(step.type ?? 'encounter') === 'encounter' ? (
+                <>
+                  <input
+                    value={String(step.activity ?? '')}
+                    onChange={(event) =>
+                      updateStep(index, { ...step, activity: event.target.value || undefined })
+                    }
+                    placeholder="activity"
+                    aria-label={`Step ${index + 1} activity`}
+                  />
+                  <input
+                    value={String(step.biome ?? '')}
+                    onChange={(event) => updateStep(index, { ...step, biome: event.target.value })}
+                    placeholder="biome"
+                    aria-label={`Step ${index + 1} biome`}
+                  />
+                </>
+              ) : null}
+              {step.type === 'cost' ? (
+                <input
+                  value={String(step.gold ?? '')}
+                  onChange={(event) =>
+                    updateStep(index, { ...step, gold: numberOrUndefined(event.target.value) })
+                  }
+                  placeholder="gold"
+                  aria-label={`Step ${index + 1} gold`}
+                />
+              ) : null}
+              {step.type === 'proceed' ? (
+                <input
+                  value={String(step.description ?? '')}
+                  onChange={(event) =>
+                    updateStep(index, { ...step, description: event.target.value })
+                  }
+                  placeholder="description"
+                  aria-label={`Step ${index + 1} description`}
+                />
+              ) : null}
+              <button
+                type="button"
+                className="field-action-button"
+                onClick={() =>
+                  onChange({ ...path, steps: steps.filter((_, row) => row !== index) })
+                }
+                aria-label={`Remove step ${index + 1}`}
+                title="Remove step"
+              >
+                <X size={16} aria-hidden="true" />
+              </button>
+            </div>
+          ))}
+        </div>
+        <div className="button-row">
+          <button
+            type="button"
+            onClick={() =>
+              onChange({ ...path, steps: [...steps, { type: 'encounter', biome: '' }] })
+            }
+          >
+            <Save size={16} aria-hidden="true" />
+            Add Step
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LocationSelect({
+  label,
+  value,
+  locationIds,
+  onChange,
+  help = 'Location id for this route endpoint.',
+}: {
+  label: string;
+  value: string;
+  locationIds: string[];
+  onChange: (value: string) => void;
+  help?: string;
+}) {
+  const isKnownValue = !value || locationIds.includes(value);
+  return (
+    <label className="field">
+      <span>
+        {label}
+        <HelpTip label={`${label} location help`}>{help}</HelpTip>
+      </span>
+      <select value={value} onChange={(event) => onChange(event.target.value)}>
+        {!isKnownValue ? <option value={value}>Unknown: {value}</option> : null}
+        <option value="">Unset</option>
+        {locationIds.map((id) => (
+          <option value={id} key={id}>
+            {id}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function slugValue(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_ -]/g, '')
+    .replace(/\s+/g, '_');
+}
+
+function titleFromSlug(value: string) {
+  return value
+    .split('_')
+    .map((part) => `${part.slice(0, 1).toUpperCase()}${part.slice(1)}`)
+    .join(' ');
+}
+
+function csvToArray(value: string) {
+  return value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function csvToSingleOrArray(value: string) {
+  const entries = csvToArray(value);
+  if (entries.length === 0) return undefined;
+  return entries.length === 1 ? entries[0] : entries;
+}
+
+function asStringList(value: unknown) {
+  if (Array.isArray(value)) return value.map((item) => String(item)).filter(Boolean);
+  if (typeof value === 'string' && value.trim()) return [value.trim()];
+  return [];
+}
+
+function toggleStringListValue(current: string[], option: string, checked: boolean) {
+  if (checked) return current.includes(option) ? current : [...current, option];
+  return current.filter((item) => item !== option);
+}
+
+function optionsWithSelected(options: string[], selected: string[]) {
+  const seen = new Set(options);
+  return [...options, ...selected.filter((item) => !seen.has(item))];
+}
+
+function arrayToCsv(value: unknown) {
+  if (Array.isArray(value)) return value.map((item) => String(item)).join(', ');
+  if (typeof value === 'string') return value;
+  return '';
+}
+
+function numberOrUndefined(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  const numeric = Number(trimmed);
+  return Number.isFinite(numeric) ? numeric : trimmed;
+}
+
+function numberOrNull(value: string) {
+  const parsed = numberOrUndefined(value);
+  return parsed === undefined ? null : parsed;
+}
+
+function CheckboxGroupField({
+  label,
+  value,
+  options,
+  onChange,
+  help,
+}: {
+  label: string;
+  value: string[];
+  options: string[];
+  onChange: (value: string[]) => void;
+  help?: string;
+}) {
+  const renderedOptions = optionsWithSelected(options, value);
+
+  return (
+    <div className="field span-2">
+      <span>
+        {label}
+        {help ? <HelpTip label={`${label} help`}>{help}</HelpTip> : null}
+      </span>
+      <div className="checkbox-grid option-grid">
+        {renderedOptions.map((option) => (
+          <label className="option-tile" key={option}>
+            <input
+              type="checkbox"
+              checked={value.includes(option)}
+              onChange={(event) =>
+                onChange(toggleStringListValue(value, option, event.target.checked))
+              }
+            />
+            <span>{option}</span>
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CheckboxDropdown({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: string[];
+  options: string[];
+  onChange: (value: string[]) => void;
+}) {
+  const renderedOptions = optionsWithSelected(options, value);
+  const summary = value.length ? `${value.length} selected` : 'None selected';
+
+  return (
+    <details className="multi-select">
+      <summary>{summary}</summary>
+      <div className="multi-select-menu" role="group" aria-label={label}>
+        {renderedOptions.map((option) => (
+          <label className="option-tile" key={option}>
+            <input
+              type="checkbox"
+              checked={value.includes(option)}
+              onChange={(event) =>
+                onChange(toggleStringListValue(value, option, event.target.checked))
+              }
+            />
+            <span>{option}</span>
+          </label>
+        ))}
+      </div>
+    </details>
   );
 }
 
 function BiomesView({
   config,
   updateConfig,
+  token,
+  setStatus,
+  setSteps,
+  upsertRelatedGvar,
+  relatedGvars,
+  updateRelatedGvarSource,
 }: {
   config: ConfigModel;
   updateConfig: (path: string, value: unknown) => void;
+  token: string;
+  setStatus: (value: string) => void;
+  setSteps: (value: RunStep[]) => void;
+  upsertRelatedGvar: (source: LoadedGvarSource) => void;
+  relatedGvars: LoadedGvarSource[];
+  updateRelatedGvarSource: (id: string, value: string) => void;
 }) {
   const biomes = asRecord(config.world_data.biomes);
   const [newCode, setNewCode] = useState('forest');
   const [newPreset, setNewPreset] = useState('forest');
   const [biomeRows, setBiomeRows] = useState<CompactEncounterRow[]>([]);
+  const [editingBiome, setEditingBiome] = useState<string | null>(null);
+  const [localBiomeRows, setLocalBiomeRows] = useState<Record<string, CompactEncounterRow[]>>({});
+  const customTemplates = useMemo(() => customTemplatesFromConfig(config), [config]);
+  const templates = useMemo(() => [...ENCOUNTER_TEMPLATES, ...customTemplates], [customTemplates]);
+
+  function saveCustomTemplates(nextTemplates: EncounterTemplate[]) {
+    updateConfig('encounter_templates', templatesToConfig(nextTemplates));
+    updateConfig('encounter_template_meta', templatesToMeta(nextTemplates));
+  }
 
   function addBiome() {
     const code = normaliseBiomeCode(newCode);
@@ -1474,25 +3147,92 @@ function BiomesView({
     });
   }
 
-  function addCustomBiome() {
+  async function addCustomBiome() {
     const code = normaliseBiomeCode(newCode);
     if (!code) return;
-    updateConfig(`world_data.biomes.${code}`, {
-      name: formatBiomeName(code),
-      gvar_id: undefined,
-    });
+
+    const name = formatBiomeName(code);
+    if (!token.trim()) {
+      updateConfig(`world_data.biomes.${code}`, {
+        name,
+        gvar_id: undefined,
+      });
+      setStatus('Added a custom biome draft. Add an Avrae token to create its backing gvar.');
+      return;
+    }
+
+    const nextSteps: RunStep[] = [
+      { label: `Create ${name} biome gvar`, state: 'running' },
+      { label: 'Insert biome gvar id into config', state: 'pending' },
+    ];
+    setSteps([...nextSteps]);
+
+    try {
+      const body = JSON.stringify([], null, 2);
+      const created = await createGvar(token.trim(), body, `${name} biome`);
+      const id = normalizeGvarId(String(created.id ?? ''));
+      nextSteps[0] = { label: `Create ${name} biome gvar`, state: 'success', detail: id };
+      nextSteps[1] = { label: 'Insert biome gvar id into config', state: 'running' };
+      setSteps([...nextSteps]);
+
+      updateConfig(`world_data.biomes.${code}`, { name, gvar_id: id });
+      upsertRelatedGvar({
+        id,
+        label: `world_data.biomes.${code}.gvar_id`,
+        path: `world_data.biomes.${code}.gvar_id`,
+        kind: 'json',
+        value: body,
+        loaded: true,
+      });
+      nextSteps[1] = { label: 'Insert biome gvar id into config', state: 'success' };
+      setSteps([...nextSteps]);
+      setStatus(`Created custom biome gvar for ${name}.`);
+      setEditingBiome(code);
+    } catch (error) {
+      const index = nextSteps.findIndex((item) => item.state === 'running');
+      if (index >= 0) {
+        nextSteps[index] = {
+          ...nextSteps[index],
+          state: 'failed',
+          detail: error instanceof Error ? error.message : 'Unknown error',
+        };
+      }
+      setSteps([...nextSteps]);
+      setStatus(error instanceof Error ? error.message : 'Could not create custom biome gvar.');
+    }
+  }
+
+  function rowsForBiome(code: string, gvarId: string) {
+    const source = relatedGvars.find((row) => row.id === gvarId);
+    if (source?.value) return compactRowsFromSource(source.value);
+    return localBiomeRows[code] ?? [];
+  }
+
+  function updateRowsForBiome(code: string, gvarId: string, rows: CompactEncounterRow[]) {
+    const validGvarId = validBiomeGvarId(gvarId);
+    if (validGvarId) {
+      updateRelatedGvarSource(validGvarId, JSON.stringify(rows, null, 2));
+      return;
+    }
+
+    setLocalBiomeRows((current) => ({ ...current, [code]: rows }));
   }
 
   return (
     <section className="section-panel">
       <SectionTitle
         icon={<Compass size={20} />}
-        title="Biomes"
-        help="Biome registry entries map short codes to engine or custom biome gvars."
+        title="Biomes & Encounters"
+        help="Biome registry entries map short codes to engine or custom biome gvars. Encounter rows become custom biome gvar bodies."
       />
       <div className="biome-add-row">
         <label className="field">
-          <span>Biome code</span>
+          <span>
+            Biome code
+            <HelpTip label="Biome code help">
+              Stable lowercase key used by locations, paths, and exploration commands.
+            </HelpTip>
+          </span>
           <input
             value={newCode}
             onChange={(event) => setNewCode(event.target.value)}
@@ -1500,7 +3240,12 @@ function BiomesView({
           />
         </label>
         <label className="field">
-          <span>Preset source</span>
+          <span>
+            Preset source
+            <HelpTip label="Preset source help">
+              Engine biome preset to reference when adding a non-custom biome.
+            </HelpTip>
+          </span>
           <select value={newPreset} onChange={(event) => setNewPreset(event.target.value)}>
             {ENGINE_BIOMES.map((code) => (
               <option key={code} value={code}>
@@ -1520,21 +3265,6 @@ function BiomesView({
           </button>
         </div>
       </div>
-      <div className="planned-grid">
-        <PlannedFeatureButton
-          feature={{
-            title: 'Generate biome gvar',
-            detail:
-              'The static editor will later create a new biome gvar body, publish it when a token is available, and write the returned UUID into this registry.',
-            plannedItems: [
-              'Create empty pools body',
-              'Publish custom biome gvar',
-              'Insert generated UUID into world_data.biomes',
-              'Export generated gvar body when publishing is not available',
-            ],
-          }}
-        />
-      </div>
       <div className="table-wrap">
         <table>
           <thead>
@@ -1543,6 +3273,7 @@ function BiomesView({
               <th>Name</th>
               <th>Use preset</th>
               <th>Preset / custom gvar</th>
+              <th>Builder</th>
             </tr>
           </thead>
           <tbody>
@@ -1552,6 +3283,7 @@ function BiomesView({
               const usePreset = Boolean(preset);
               const gvarId = String(biome.gvar_id ?? '');
               const error = usePreset ? '' : customGvarError(gvarId);
+              const customReady = !usePreset && String(biome.name ?? '').trim();
 
               return (
                 <tr key={code}>
@@ -1624,6 +3356,29 @@ function BiomesView({
                       </div>
                     )}
                   </td>
+                  <td>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const validGvarId = validBiomeGvarId(gvarId);
+                        if (validGvarId && !relatedGvars.some((row) => row.id === validGvarId)) {
+                          upsertRelatedGvar({
+                            id: validGvarId,
+                            label: `world_data.biomes.${code}.gvar_id`,
+                            path: `world_data.biomes.${code}.gvar_id`,
+                            kind: 'json',
+                            value: '[]',
+                            loaded: true,
+                          });
+                        }
+                        setEditingBiome(code);
+                      }}
+                      disabled={!customReady}
+                    >
+                      <FileCode2 size={16} aria-hidden="true" />
+                      Open Builder
+                    </button>
+                  </td>
                 </tr>
               );
             })}
@@ -1639,41 +3394,139 @@ function BiomesView({
         <EncounterRowBuilder
           rows={biomeRows}
           onRowsChange={setBiomeRows}
-          title="Custom biome row builder"
-          rowListTitle="Custom biome gvar body"
+          title="Scratch encounter row builder"
+          rowListTitle="Scratch biome gvar body"
+          templates={templates}
+        />
+        <CustomTemplateBuilder
+          templates={customTemplates}
+          onTemplatesChange={saveCustomTemplates}
         />
       </div>
+      {editingBiome ? (
+        <BiomeEncounterModal
+          code={editingBiome}
+          biome={asRecord(biomes[editingBiome])}
+          rows={rowsForBiome(
+            editingBiome,
+            validBiomeGvarId(String(asRecord(biomes[editingBiome]).gvar_id ?? '')),
+          )}
+          onRowsChange={(rows) =>
+            updateRowsForBiome(
+              editingBiome,
+              String(asRecord(biomes[editingBiome]).gvar_id ?? ''),
+              rows,
+            )
+          }
+          templates={templates}
+          onClose={() => setEditingBiome(null)}
+        />
+      ) : null}
     </section>
   );
 }
 
-function EncountersView() {
-  const [rows, setRows] = useState<CompactEncounterRow[]>([]);
+function compactRowsFromSource(source: string): CompactEncounterRow[] {
+  try {
+    const parsed = JSON.parse(source);
+    return Array.isArray(parsed) ? (parsed as CompactEncounterRow[]) : [];
+  } catch {
+    return [];
+  }
+}
 
-  return (
-    <section className="section-panel">
-      <SectionTitle
-        icon={<FileCode2 size={20} />}
-        title="Encounters"
-        help="Build compact JSON rows for biome gvars, with pool tags first and template args after."
-      />
-      <EncounterRowBuilder rows={rows} onRowsChange={setRows} />
-      <div className="planned-grid">
-        <PlannedFeatureButton
-          feature={{
-            title: 'Custom templates',
-            detail:
-              'Custom encounter templates need a schema editor and validation before they can be safely generated into gvar code.',
-            plannedItems: [
-              'Template name',
-              'Field definitions',
-              'Factory output preview',
-              'Template export',
-            ],
-          }}
-        />
-      </div>
-    </section>
+function validBiomeGvarId(value: string) {
+  try {
+    return normalizeGvarId(value);
+  } catch {
+    return '';
+  }
+}
+
+function BiomeEncounterModal({
+  code,
+  biome,
+  rows,
+  onRowsChange,
+  templates,
+  onClose,
+}: {
+  code: string;
+  biome: AnyRecord;
+  rows: CompactEncounterRow[];
+  onRowsChange: (rows: CompactEncounterRow[]) => void;
+  templates: EncounterTemplate[];
+  onClose: () => void;
+}) {
+  const titleId = useId();
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const gvarId = String(biome.gvar_id ?? '');
+
+  useEffect(() => {
+    closeRef.current?.focus();
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') onClose();
+    }
+
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
+
+  return createPortal(
+    <div
+      className="modal-backdrop"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <section
+        className="modal wide-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+      >
+        <header className="modal-header">
+          <div className="modal-heading">
+            <span className="modal-icon" aria-hidden="true">
+              <Compass size={22} />
+            </span>
+            <div>
+              <h2 id={titleId}>{String(biome.name ?? formatBiomeName(code))}</h2>
+              <p>
+                {gvarId
+                  ? `Editing biome gvar ${gvarId}.`
+                  : 'Editing a local draft until this biome has a gvar id.'}
+              </p>
+            </div>
+          </div>
+          <button
+            ref={closeRef}
+            className="icon-only"
+            type="button"
+            aria-label="Close biome encounter builder"
+            onClick={onClose}
+          >
+            <X size={18} aria-hidden="true" />
+          </button>
+        </header>
+        <div className="modal-body">
+          <EncounterRowBuilder
+            rows={rows}
+            onRowsChange={onRowsChange}
+            title="Encounter row builder"
+            rowListTitle="Biome gvar body"
+            templates={templates}
+          />
+          <div className="modal-actions">
+            <button className="primary" type="button" onClick={onClose}>
+              Done
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>,
+    document.body,
   );
 }
 
@@ -1681,6 +3534,7 @@ function ExportView(props: {
   serialized: string;
   configId: string;
   shareLink: string;
+  sourceRows: LoadedGvarSource[];
   steps: RunStep[];
   publishToAvrae: () => void;
   copy: (text: string, label: string) => Promise<void>;
@@ -1697,7 +3551,7 @@ function ExportView(props: {
       <div className="button-row">
         <button type="button" onClick={() => props.copy(props.serialized, 'Gvar body')}>
           <Clipboard size={16} aria-hidden="true" />
-          Copy Gvar
+          Copy Base Gvar
         </button>
         <button
           type="button"
@@ -1724,10 +3578,20 @@ function ExportView(props: {
         <span>Share link</span>
         <input readOnly value={props.shareLink} />
       </label>
-      <label className="field">
-        <span>Generated gvar body</span>
-        <textarea className="code-input" rows={20} readOnly value={props.serialized} />
-      </label>
+      <div className="field">
+        <span>Generated and loaded gvar bodies</span>
+        <GvarSourceRows
+          rows={props.sourceRows}
+          readOnlyIds={props.sourceRows.map((row) => row.id)}
+          onCopy={(value, label) => void props.copy(value, label)}
+          onDownload={(id, value) =>
+            downloadText(
+              gvarFilename(id, props.sourceRows.find((row) => row.id === id)?.kind ?? 'gvar'),
+              value,
+            )
+          }
+        />
+      </div>
       <RunSteps steps={props.steps} />
     </section>
   );
@@ -1736,27 +3600,82 @@ function ExportView(props: {
 function RawSourceView({
   rawSource,
   setRawSource,
+  sourceRows,
+  updateSourceRow,
   parsedMode,
 }: {
   rawSource: string;
   setRawSource: (value: string) => void;
+  sourceRows: LoadedGvarSource[];
+  updateSourceRow: (id: string, value: string) => void;
   parsedMode: string;
 }) {
+  const rows = sourceRows.length
+    ? sourceRows
+    : sourceRowsWithBase({ configId: '', rawSource, related: [] });
+
   return (
     <section className="section-panel">
       <SectionTitle
         icon={<FileCode2 size={20} />}
         title="Raw Source"
-        help="Raw editing preserves content the structural parser cannot understand."
+        help="Directly edit the base config and referenced gvars with syntax highlighting, JSON linting, and Drac2 diagnostics."
       />
       <span className="badge neutral">Parse mode: {parsedMode}</span>
-      <textarea
-        className="code-input raw-editor"
-        value={rawSource}
-        onChange={(event) => setRawSource(event.target.value)}
-        spellCheck={false}
-      />
+      <div className="field span-2">
+        <span>
+          Raw gvar sources
+          <RawSourceHelp />
+        </span>
+        <GvarSourceRows
+          rows={rows}
+          onChange={(id, value) => {
+            if (id === rows[0]?.id) {
+              setRawSource(value);
+              return;
+            }
+            updateSourceRow(id, value);
+          }}
+        />
+      </div>
     </section>
+  );
+}
+
+function RawSourceHelp() {
+  return (
+    <HelpDialog
+      label="Raw gvar source help"
+      title="Writing Config Gvars"
+      description="Directly edit the config and related gvars with syntax highlighting and Drac2 diagnostics."
+    >
+      <div className="help-option-list">
+        <article className="help-option">
+          <strong>Config files are owner gvars</strong>
+          <p>
+            The base config is a Python-style Drac2 module. Define top-level values such as{' '}
+            <code>display</code>, <code>subsystems</code>, <code>world_data</code>, and{' '}
+            <code>policies</code>.
+          </p>
+        </article>
+        <article className="help-option">
+          <strong>Use Python literals</strong>
+          <p>
+            Use dictionaries, lists, strings, numbers, <code>True</code>, <code>False</code>, and{' '}
+            <code>None</code>. The guided editor can parse literal assignments and preserve custom
+            function blocks.
+          </p>
+        </article>
+        <article className="help-option">
+          <strong>Keep large data in separate gvars</strong>
+          <p>
+            Put biome pools, catalogues, books, recipes, and other large JSON bodies in related
+            gvars, then reference their UUIDs from config fields. Each referenced gvar appears as
+            its own collapsible editor row.
+          </p>
+        </article>
+      </div>
+    </HelpDialog>
   );
 }
 

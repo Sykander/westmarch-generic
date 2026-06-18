@@ -58,3 +58,21 @@ return recipe.recipe_tools(entry)[0] == "Calligrapher's Supplies"
 True
 ---
 name: recipe exposes tool options
+
+cfg_fixture = {
+    "subsystems": {
+        "crafting": {
+            "config": {
+                "catalogues": {
+                    "recipes": {"gvar_ids": ["9956e1cd-acbb-4879-93a4-84a04e089ddc"]},
+                },
+            },
+        },
+    },
+}
+entries = recipe.catalogue_entries(cfg_fixture)
+return len(entries) > 0 and recipe.recipe_name(entries[0]) != ""
+---
+True
+---
+name: recipe source loader accepts multiple gvar ids

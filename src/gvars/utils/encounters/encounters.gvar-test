@@ -20,3 +20,19 @@ return result["name"] == "Encounter"
 True
 ---
 name: process_encounter handles missing encounter
+
+enc = {"kind": "gather", "name": "Scene", "description": "A wide view.", "thumb": "https://example.test/thumb.png", "image": "https://example.test/image.png"}
+result = encounters.process_encounter(enc, character())
+return result["thumb"] == "https://example.test/thumb.png" and result["image"] == "https://example.test/image.png"
+---
+True
+---
+name: process_encounter preserves embed image fields
+
+enc = {"kind": "gather", "name": "Scene", "description": "A wide view.", "thumbnail": "https://example.test/thumb.png", "image_url": "https://example.test/image.png"}
+result = encounters.process_encounter(enc, character())
+return result["thumb"] == "https://example.test/thumb.png" and result["image"] == "https://example.test/image.png"
+---
+True
+---
+name: process_encounter accepts alternate embed image field names

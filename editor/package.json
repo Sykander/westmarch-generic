@@ -10,8 +10,11 @@
     "test": "node --loader ./test/tsx-loader.mjs --test src/**/*.test.ts src/**/*.test.tsx"
   },
   "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
     "@radix-ui/react-tooltip": "^1.2.8",
     "lucide-react": "^0.468.0",
+    "monaco-editor": "^0.55.1",
+    "pyodide": "^314.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
