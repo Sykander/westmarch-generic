@@ -64,6 +64,19 @@ vars:
     ffff1111-1111-1111-1111-111111111111: |
       # empty owner body
 
+!show runtime
+---
+"re:```yaml[\\s\\S]*rules_edition: 2024"
+---
+name: show section filter runtime reads server 2024 profile
+profile: server2024
+vars:
+  svars:
+    westmarch_config: "ffff1111-1111-1111-1111-111111111111"
+  gvars:
+    ffff1111-1111-1111-1111-111111111111: |
+      # empty owner body
+
 !show
 ---
 "re:exploration:[\\s\\S]*enabled: true[\\s\\S]*enc: true[\\s\\S]*forage: false"

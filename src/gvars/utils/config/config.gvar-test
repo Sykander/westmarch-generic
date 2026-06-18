@@ -44,15 +44,43 @@ name: rules edition defaults to 2014
 
 return config.get_rules_edition()
 ---
+"2014"
+---
+name: rules edition reads server 2014 profile
+profile: server2014
+
+return config.get_rules_edition()
+---
 "2024"
 ---
-name: rules edition reads configured rules_version
+name: rules edition reads server 2024 profile
+profile: server2024
+
+return config.get_rules_edition()
+---
+"2024"
+---
+name: configured 2024 rules_version overrides server 2014 profile
+profile: server2014
 vars:
   svars:
     westmarch_config: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2"
   gvars:
     bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2: |
       rules_version = "2024"
+
+return config.get_rules_edition()
+---
+"2014"
+---
+name: configured 2014 rules_version overrides server 2024 profile
+profile: server2024
+vars:
+  svars:
+    westmarch_config: "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee5"
+  gvars:
+    eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee5: |
+      rules_version = "2014"
 
 return config.cfg.subsystems.exploration.enabled
 ---

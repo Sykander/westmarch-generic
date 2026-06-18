@@ -43,7 +43,7 @@ Official Read the Docs **RST sources** live next to Cursor rules under **`.curso
 
 The **[avrae-ls](https://github.com/1drturtle/avrae-ls)** language server and **`avrae-ls --run-tests`** behavior are documented upstream in Markdown. Cached copies live under **`.cursor/avrae-ls-reference/upstream/`** (not under product **`docs/`**):
 
-- **Alias tests format, metadata (`name`, `vars`, `character`), expectations:** `upstream/docs/alias-tests.md`
+- **Alias tests format, metadata (`name`, `profile`, `vars`, `character`), expectations:** `upstream/docs/alias-tests.md`
 - **`.avraels.json`**, profiles, `varFiles`, tokens, mock runtime:** `upstream/docs/configuration.md`
 - **Overview (install, VS Code, CLI, testing, troubleshooting):** `upstream/README.md`
 - **Blob links, raw URLs, last fetch, tracked `avrae-ls` version:** **`.cursor/reference-cache.json`** → **`avrae_ls_upstream`**
@@ -51,7 +51,7 @@ The **[avrae-ls](https://github.com/1drturtle/avrae-ls)** language server and **
 
 **When `.alias-test` / `.avraels.json` / `.varfile.json` behavior surprises you:** (1) Read the cached **`alias-tests.md`** and **`configuration.md`**. (2) Compare with **`github_blob`** URLs in **`reference-cache.json`**. If upstream changed, run **`refresh-avrae-ls-docs.sh`** (updates **`last_fetch`**), bump **`tracked_avrae_ls_version`** when you validate a new release, commit. (3) If the cache matches upstream but local **`avrae-ls --version`** differs from **`tracked_avrae_ls_version`**, align or note the drift.
 
-Current test-runner profile behavior: **`--run-tests`** uses **`.avraels.json`** top-level **`defaultProfile`**. There is no supported per-test **`profile:`** metadata or CLI **`--profile`** in the installed runner; test metadata is limited to **`name`**, **`vars`**, and **`character`**.
+Current test-runner profile behavior: **`--run-tests`** uses **`.avraels.json`** top-level **`defaultProfile`** for test cases without a profile. Individual **`.alias-test`** and **`.gvar-test`** cases may set **`profile:`** metadata to select a named profile from **`.avraels.json`**. There is no CLI **`--profile`** flag.
 
 **`.varfile.json`** in this repo is **generated** (see **`drac2-tools-maintainer.mdc`**); how Avrae LS consumes **`varFiles`** is described in **`upstream/docs/configuration.md`**.
 

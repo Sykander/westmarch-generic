@@ -2486,7 +2486,12 @@ function WorldView({
         relatedGvars={relatedGvars}
         updateRelatedGvarSource={updateRelatedGvarSource}
       />
-      <PathBuilder paths={paths} locations={locations} updateConfig={updateConfig} />
+      <PathBuilder
+        paths={paths}
+        locations={locations}
+        biomeOptions={biomeOptions}
+        updateConfig={updateConfig}
+      />
       <details className="advanced-json-details">
         <summary>Advanced world JSON</summary>
         <JsonField
@@ -3026,10 +3031,12 @@ function LocationEncounterGvarField({
 function PathBuilder({
   paths,
   locations,
+  biomeOptions,
   updateConfig,
 }: {
   paths: unknown[];
   locations: AnyRecord;
+  biomeOptions: string[];
   updateConfig: (path: string, value: unknown) => void;
 }) {
   const locationIds = Object.keys(locations);
@@ -3097,6 +3104,7 @@ function PathBuilder({
               <PathFields
                 path={record}
                 locationIds={locationIds}
+                biomeOptions={biomeOptions}
                 onChange={(next) => updatePathItem(index, next)}
               />
             </details>
@@ -3113,10 +3121,12 @@ function PathBuilder({
 function PathFields({
   path,
   locationIds,
+  biomeOptions,
   onChange,
 }: {
   path: AnyRecord;
   locationIds: string[];
+  biomeOptions: string[];
   onChange: (path: AnyRecord) => void;
 }) {
   const requirements = asRecord(path.requirements);
@@ -3179,68 +3189,99 @@ function PathFields({
           </HelpTip>
         </span>
         <div className="path-step-list">
-          {steps.map((step, index) => (
-            <div className="path-step-row" key={index}>
-              <select
-                value={String(step.type ?? 'encounter')}
-                onChange={(event) => updateStep(index, { type: event.target.value })}
-                aria-label={`Step ${index + 1} type`}
-              >
-                <option value="encounter">encounter</option>
-                <option value="cost">cost</option>
-                <option value="proceed">proceed</option>
-              </select>
-              {String(step.type ?? 'encounter') === 'encounter' ? (
-                <>
+          {steps.map((step, index) => {
+            const stepType = String(step.type ?? 'encounter');
+            const activityValue = String(step.activity || 'enc');
+            const activityOptions = optionsWithSelected(EXPLORATION_LOCATION_COMMANDS, [
+              activityValue,
+            ]);
+            const biomeValue = String(step.biome ?? '');
+            const renderedBiomeOptions = optionsWithSelected(
+              biomeOptions,
+              biomeValue ? [biomeValue] : [],
+            );
+
+            return (
+              <div className="path-step-row" key={index}>
+                <select
+                  value={stepType}
+                  onChange={(event) => updateStep(index, { type: event.target.value })}
+                  aria-label={`Step ${index + 1} type`}
+                >
+                  <option value="encounter">encounter</option>
+                  <option value="cost">cost</option>
+                  <option value="proceed">proceed</option>
+                </select>
+                {stepType === 'encounter' ? (
+                  <>
+                    <select
+                      value={activityValue}
+                      onChange={(event) =>
+                        updateStep(index, {
+                          ...step,
+                          activity: event.target.value === 'enc' ? undefined : event.target.value,
+                        })
+                      }
+                      aria-label={`Step ${index + 1} activity`}
+                    >
+                      {activityOptions.map((activity) => (
+                        <option value={activity} key={activity}>
+                          {EXPLORATION_LOCATION_COMMANDS.includes(activity)
+                            ? activity
+                            : `Unknown: ${activity}`}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      value={biomeValue}
+                      onChange={(event) =>
+                        updateStep(index, { ...step, biome: event.target.value })
+                      }
+                      aria-label={`Step ${index + 1} biome`}
+                    >
+                      <option value="">biome</option>
+                      {renderedBiomeOptions.map((code) => (
+                        <option value={code} key={code}>
+                          {biomeOptions.includes(code) ? code : `Unknown: ${code}`}
+                        </option>
+                      ))}
+                    </select>
+                  </>
+                ) : null}
+                {stepType === 'cost' ? (
                   <input
-                    value={String(step.activity ?? '')}
+                    value={String(step.gold ?? '')}
                     onChange={(event) =>
-                      updateStep(index, { ...step, activity: event.target.value || undefined })
+                      updateStep(index, { ...step, gold: numberOrUndefined(event.target.value) })
                     }
-                    placeholder="activity"
-                    aria-label={`Step ${index + 1} activity`}
+                    placeholder="gold"
+                    aria-label={`Step ${index + 1} gold`}
                   />
+                ) : null}
+                {stepType === 'proceed' ? (
                   <input
-                    value={String(step.biome ?? '')}
-                    onChange={(event) => updateStep(index, { ...step, biome: event.target.value })}
-                    placeholder="biome"
-                    aria-label={`Step ${index + 1} biome`}
+                    value={String(step.description ?? '')}
+                    onChange={(event) =>
+                      updateStep(index, { ...step, description: event.target.value })
+                    }
+                    placeholder="description"
+                    aria-label={`Step ${index + 1} description`}
                   />
-                </>
-              ) : null}
-              {step.type === 'cost' ? (
-                <input
-                  value={String(step.gold ?? '')}
-                  onChange={(event) =>
-                    updateStep(index, { ...step, gold: numberOrUndefined(event.target.value) })
+                ) : null}
+                <button
+                  type="button"
+                  className="field-action-button"
+                  onClick={() =>
+                    onChange({ ...path, steps: steps.filter((_, row) => row !== index) })
                   }
-                  placeholder="gold"
-                  aria-label={`Step ${index + 1} gold`}
-                />
-              ) : null}
-              {step.type === 'proceed' ? (
-                <input
-                  value={String(step.description ?? '')}
-                  onChange={(event) =>
-                    updateStep(index, { ...step, description: event.target.value })
-                  }
-                  placeholder="description"
-                  aria-label={`Step ${index + 1} description`}
-                />
-              ) : null}
-              <button
-                type="button"
-                className="field-action-button"
-                onClick={() =>
-                  onChange({ ...path, steps: steps.filter((_, row) => row !== index) })
-                }
-                aria-label={`Remove step ${index + 1}`}
-                title="Remove step"
-              >
-                <X size={16} aria-hidden="true" />
-              </button>
-            </div>
-          ))}
+                  aria-label={`Remove step ${index + 1}`}
+                  title="Remove step"
+                >
+                  <X size={16} aria-hidden="true" />
+                </button>
+              </div>
+            );
+          })}
         </div>
         <div className="button-row">
           <button
