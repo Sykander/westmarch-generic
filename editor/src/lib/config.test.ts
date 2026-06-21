@@ -50,6 +50,58 @@ test('editor starter sources parse cleanly', () => {
   }
 });
 
+test('forgotten realms starter has slice 1 travel baseline', () => {
+  const starterSource = STARTER_SOURCES.find((source) => source.id === 'forgotten-realms-2014');
+  assert.ok(starterSource);
+
+  const parsed = parseConfig(starterSource.source);
+  assert.ok(parsed.model);
+
+  const issues = validateConfig(parsed.model, parsed.issues);
+  const errorCodes = issues
+    .filter((entry) => entry.severity === 'error')
+    .map((entry) => entry.code);
+  assert.deepEqual(errorCodes, []);
+
+  const model = parsed.model as ConfigModel;
+  assert.equal(model.rules_version, '2014');
+  assert.equal(model.display.name, 'Forgotten Realms');
+  assert.equal(model.display.footer, 'Forgotten Realms');
+
+  const travel = model.subsystems.travel as Record<string, unknown>;
+  const commands = travel.commands as Record<string, unknown>;
+  assert.equal(travel.enabled, true);
+  assert.equal(commands.travel, true);
+  assert.equal(commands.location, true);
+  assert.equal(commands.time, true);
+  assert.equal(commands.weather, true);
+
+  const worldData = model.world_data as Record<string, unknown>;
+  assert.equal(worldData.default_location, 'waterdeep');
+  assert.ok((worldData.calendars as Record<string, unknown>).primary);
+  assert.ok(
+    ((worldData.weather as Record<string, unknown>).by_area as Record<string, unknown>).coast,
+  );
+
+  const codes = issues.map((entry) => entry.code);
+  assert.equal(codes.includes('world.calendars.empty'), false);
+  assert.equal(codes.includes('world.weather.empty'), false);
+
+  const serialized = serializeConfig(model);
+  const serializedParsed = parseConfig(serialized);
+  assert.deepEqual(
+    serializedParsed.issues.filter((entry) => entry.code.startsWith('parse.')),
+    [],
+  );
+  assert.ok(serializedParsed.model);
+  assert.deepEqual(
+    validateConfig(serializedParsed.model, serializedParsed.issues)
+      .filter((entry) => entry.severity === 'error')
+      .map((entry) => entry.code),
+    [],
+  );
+});
+
 test('starter-style exploration config validates cleanly for phase 0 checks', () => {
   const codes = issueCodes(`
 display = {"name": "Test March", "colour": "#5865F2"}

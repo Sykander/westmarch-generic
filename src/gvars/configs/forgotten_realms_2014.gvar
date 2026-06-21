@@ -1,17 +1,18 @@
 """Example config - Forgotten Realms, 2014 rules.
 
 Duplicate into your workshop; point !svar westmarch_config at your UUID.
-This preset keeps world details intentionally light and uses engine biome
-modules so owners can configure from a working baseline in the web editor.
+This preset starts with a Sword Coast/Faerun travel baseline and uses engine
+biome modules so owners can configure from a working baseline in the web
+editor.
 """
 
 config_version = "1.0"
 rules_version = "2014"
 
 display = {
-    "name": "Forgotten Realms Westmarch",
-    "description": "A configurable Faerun frontier campaign using 2014 rules.",
-    "footer": "Forgotten Realms Westmarch",
+    "name": "Forgotten Realms",
+    "description": "A Faerun campaign starter for travel, exploration, trade, and downtime across the Sword Coast and the North.",
+    "footer": "Forgotten Realms",
     "colour": "#2F6B4F",
 }
 
@@ -38,12 +39,28 @@ subsystems = {
         },
     },
     "travel": {
-        "enabled": False,
+        "enabled": True,
         "commands": {
-            "travel": False,
-            "location": False,
-            "time": False,
-            "weather": False,
+            "travel": True,
+            "location": True,
+            "time": True,
+            "weather": True,
+        },
+        "config": {
+            "transport_icons": {
+                "walk": "🚶",
+                "fly": "🪽",
+                "horse": "🐎",
+                "boat": "⛵",
+                "riding_horse": "🐎",
+                "cart": "🛞",
+                "wagon": "🛞",
+                "rowboat": "🚣",
+                "ship": "⛵",
+                "sailing_ship": "⛵",
+                "portal": "🌀",
+                "teleport_circle": "🌀",
+            },
         },
     },
     "downtime": {"enabled": False, "commands": {"downtime": False}},
@@ -82,22 +99,136 @@ subsystems = {
 }
 
 world_data = {
-    "default_location": "frontier_camp",
+    "default_location": "waterdeep",
     "locations": {
-        "frontier_camp": {
-            "name": "Frontier Camp",
-            "description": "A small camp on the edge of settled roads and old wilderness.",
-            "biome": "forest",
+        "waterdeep": {
+            "name": "Waterdeep",
+            "description": "The City of Splendors is a vast Sword Coast port, trade hub, and natural starting point for journeys across the North.",
+            "biome": "urban",
+            "calendar_id": "primary",
+            "weather_area": "coast",
             "commands": {
-                "enc": ["forest", "road", "plains"],
-                "forage": ["forest", "plains"],
-                "fish": ["river"],
-                "mine": ["mountain", "cave"],
-                "lumber": ["forest"],
+                "enc": ["urban", "road", "sea"],
+                "fish": ["sea"],
             },
         },
     },
     "paths": [],
+    "calendars": {
+        "primary": {
+            "id": "primary",
+            "name": "Calendar of Harptos",
+            "epoch_unix": 1704067200,
+            "tick_rate": 1,
+            "seconds_per_day": 86400,
+            "start_year": 1492,
+            "months": [
+                {"name": "Hammer", "days": 30},
+                {"name": "Midwinter", "days": 1},
+                {"name": "Alturiak", "days": 30},
+                {"name": "Ches", "days": 30},
+                {"name": "Tarsakh", "days": 30},
+                {"name": "Greengrass", "days": 1},
+                {"name": "Mirtul", "days": 30},
+                {"name": "Kythorn", "days": 30},
+                {"name": "Flamerule", "days": 30},
+                {"name": "Midsummer", "days": 1},
+                {"name": "Eleasis", "days": 30},
+                {"name": "Eleint", "days": 30},
+                {"name": "Highharvestide", "days": 1},
+                {"name": "Marpenoth", "days": 30},
+                {"name": "Uktar", "days": 30},
+                {"name": "Feast of the Moon", "days": 1},
+                {"name": "Nightal", "days": 30},
+            ],
+            "weekdays": [
+                "First-day",
+                "Second-day",
+                "Third-day",
+                "Fourth-day",
+                "Fifth-day",
+                "Sixth-day",
+                "Seventh-day",
+                "Eighth-day",
+                "Ninth-day",
+                "Tenth-day",
+            ],
+            "seasons": [
+                {"name": "spring", "start_day_of_year": 61},
+                {"name": "summer", "start_day_of_year": 153},
+                {"name": "autumn", "start_day_of_year": 245},
+                {"name": "winter", "start_day_of_year": 336},
+            ],
+            "display_format": "{weekday}, {day} {month} {year} DR {hour}:{minute}",
+        },
+    },
+    "weather": {
+        "by_area": {
+            "coast": {
+                "default": [
+                    "Salt wind rolls in from the Sea of Swords, carrying gull cries and a clean bite of spray.",
+                    "Low cloud presses over the harbor while damp breezes turn streets and rigging slick.",
+                    "The sky breaks bright over the coast, with brisk air and long silver light on the water.",
+                ],
+            },
+            "forest": {
+                "default": [
+                    "Cool shade gathers beneath the trees, and the air smells of wet bark and leaf mold.",
+                    "A soft rain ticks through the canopy, muting distant sounds and deepening every trail rut.",
+                    "Sun shafts move between high branches while the undergrowth steams after earlier rain.",
+                ],
+            },
+            "mountain": {
+                "default": [
+                    "Thin wind scrapes across the heights, sharp enough to make every exposed ledge feel higher.",
+                    "Clouds snag on the peaks and spill cold mist through passes and mine roads.",
+                    "Clear mountain light reveals far ridgelines, but the air turns bitter as soon as shadows lengthen.",
+                ],
+            },
+            "plains": {
+                "default": [
+                    "Open wind combs the grasslands, bending trail dust into pale ribbons.",
+                    "A wide, fair sky hangs over the road with only distant cloudbanks to mark the horizon.",
+                    "Fast-moving showers sweep across the plain, brief enough to pass but heavy enough to soak packs.",
+                ],
+            },
+            "swamp": {
+                "default": [
+                    "Humid air lies heavy over black water, and pale mist clings to reeds and drowned roots.",
+                    "Warm rain patters on standing pools while insects rise in whining clouds.",
+                    "A stale breeze pushes marsh fog across the path and hides the shape of the next hummock.",
+                ],
+            },
+            "desert": {
+                "default": [
+                    "Dry heat shimmers over the flats, and every distant ridge looks closer than it is.",
+                    "A gritty wind worries at cloaks and packs, carrying the smell of dust and old stone.",
+                    "The day is clear and punishing, with cold waiting behind the first long shadow.",
+                ],
+            },
+            "tundra": {
+                "default": [
+                    "Cold air cuts over hard ground, and low cloud promises snow before nightfall.",
+                    "A pale sun hangs above the ice, bright but almost warmthless.",
+                    "Wind-driven flurries blur tracks within minutes and turn every landmark uncertain.",
+                ],
+            },
+            "ocean": {
+                "default": [
+                    "Long swells lift the horizon while steady wind fills sails and snaps loose lines.",
+                    "Gray chop breaks against the hull, and the air tastes of rain far out at sea.",
+                    "Clear weather opens the water in every direction, blue above and dark blue below.",
+                ],
+            },
+            "urban": {
+                "default": [
+                    "Crowded streets hold the day's warmth while smoke, rainwater, and kitchen scents mix in the air.",
+                    "Cloud cover dulls the rooftops and turns every alley sound close and sharp.",
+                    "Fair weather brings open shutters, busy markets, and dust rising under cart wheels.",
+                ],
+            },
+        },
+    },
     "biomes": {
         "astral": {"gvar_id": "engine:configs/biomes/astral", "name": "Astral"},
         "beach": {"gvar_id": "engine:configs/biomes/beach", "name": "Beach"},

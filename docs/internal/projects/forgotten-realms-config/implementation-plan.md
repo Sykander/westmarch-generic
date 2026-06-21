@@ -6,7 +6,11 @@ This plan follows the solution statement and keeps work split into reviewable sl
 
 ## Status
 
-Planned. No config implementation has started in this project pass.
+Slices 0-1 are implemented.
+
+- Slice 0 audit: [baseline-audit.md](baseline-audit.md)
+- Slice 1 preset identity/defaults: `src/gvars/configs/forgotten_realms_2014.gvar`
+- Remaining work starts with the transport catalogue and generic `!travel <transport-id>` runtime support.
 
 ## Phase 0 - Baseline audit
 
