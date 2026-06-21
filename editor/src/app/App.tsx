@@ -82,7 +82,7 @@ import {
   type LoadedGvarSource,
 } from '../lib/gvarSources';
 import { SECTIONS, sectionFor, type Section } from './sections';
-import { STARTER_SNIPPET } from './starterSnippet';
+import { STARTER_SOURCES, findStarterSource, type StarterSource } from './starterSources';
 import type { RunStep, SubsystemDefinition } from './types';
 
 const BRAND_LOGO_URL = `${import.meta.env.BASE_URL}westmarch-assets/brand/logo.png`;
@@ -785,6 +785,7 @@ export function App() {
                   updateSourceRow={updateSourceRow}
                   loadFromAvrae={loadFromAvrae}
                   isBusy={isBusy}
+                  starterSources={STARTER_SOURCES}
                   onBlank={() => {
                     const blank = createBlankConfig();
                     setConfig(blank);
@@ -793,10 +794,12 @@ export function App() {
                     setStatus('Started new config. Use Next when you are ready to continue.');
                     focusNextCta();
                   }}
-                  onStarter={() => {
-                    setRawSource(STARTER_SNIPPET);
+                  onStarterSource={(sourceId) => {
+                    const source = findStarterSource(sourceId);
+                    if (!source) return;
+                    setRawSource(source.source);
                     setRelatedGvars([]);
-                    setStatus('Starter snippet loaded. Use Next when you are ready to continue.');
+                    setStatus(`${source.label} loaded. Use Next when you are ready to continue.`);
                     focusNextCta();
                   }}
                 />
@@ -888,8 +891,9 @@ function SetupView(props: {
   updateSourceRow: (id: string, value: string) => void;
   loadFromAvrae: () => void;
   isBusy: boolean;
+  starterSources: readonly StarterSource[];
   onBlank: () => void;
-  onStarter: () => void;
+  onStarterSource: (sourceId: string) => void;
 }) {
   const gvarDashboardUrl = useMemo(() => makeGvarDashboardUrl(props.configId), [props.configId]);
 
@@ -898,7 +902,7 @@ function SetupView(props: {
       <SectionTitle
         icon={<UploadCloud size={20} />}
         title="Setup"
-        help="Load with a token, paste a gvar body, or start from a small literal starter."
+        help="Load with a token, paste a gvar body, or choose a starter source."
       />
       <div className="form-grid">
         <label className="field">
@@ -961,10 +965,26 @@ function SetupView(props: {
             <FileText size={16} aria-hidden="true" />
             New Config
           </button>
-          <button type="button" onClick={props.onStarter}>
-            <FileCode2 size={16} aria-hidden="true" />
-            Starter Source
-          </button>
+          <select
+            className="starter-source-select"
+            value=""
+            onChange={(event) => {
+              const sourceId = event.target.value;
+              if (sourceId) props.onStarterSource(sourceId);
+            }}
+            disabled={props.isBusy}
+            aria-label="Starter source"
+            title="Load a starter source"
+          >
+            <option value="" disabled>
+              Starter source...
+            </option>
+            {props.starterSources.map((source) => (
+              <option value={source.id} key={source.id}>
+                {source.label}
+              </option>
+            ))}
+          </select>
         </div>
         <div className="field span-2">
           <span>
@@ -2860,6 +2880,13 @@ function WorldView({
   const locations = asRecord(config.world_data.locations);
   const paths = Array.isArray(config.world_data.paths) ? config.world_data.paths : [];
   const biomeOptions = Object.keys(asRecord(config.world_data.biomes)).sort();
+  const calendars = asRecord(config.world_data.calendars);
+  const calendarIds = Object.keys(calendars).sort();
+  const weatherRoot = asRecord(config.world_data.weather);
+  const weatherAreasInfo = weatherAreasFromRoot(weatherRoot);
+  const weatherAreaIds = Object.keys(weatherAreasInfo.areas).sort();
+  const customTemplates = useMemo(() => customTemplatesFromConfig(config), [config]);
+  const templates = useMemo(() => [...ENCOUNTER_TEMPLATES, ...customTemplates], [customTemplates]);
 
   return (
     <section className="section-panel">
@@ -2877,9 +2904,18 @@ function WorldView({
           help="Used by travel/location commands when no character location is known."
         />
       </div>
+      <CalendarEditor calendars={calendars} updateConfig={updateConfig} />
+      <WeatherAreaEditor
+        weatherRoot={weatherRoot}
+        weatherAreasInfo={weatherAreasInfo}
+        updateConfig={updateConfig}
+      />
       <LocationEditor
         locations={locations}
         biomeOptions={biomeOptions}
+        calendarIds={calendarIds}
+        weatherAreaIds={weatherAreaIds}
+        templates={templates}
         updateConfig={updateConfig}
         token={token}
         setStatus={setStatus}
@@ -2925,6 +2961,16 @@ function WorldView({
           onCommit={(value) => updateConfig('world_data.locations', value)}
         />
         <JsonField
+          label="Calendars JSON"
+          value={config.world_data.calendars ?? {}}
+          onCommit={(value) => updateConfig('world_data.calendars', value)}
+        />
+        <JsonField
+          label="Weather JSON"
+          value={config.world_data.weather ?? {}}
+          onCommit={(value) => updateConfig('world_data.weather', value)}
+        />
+        <JsonField
           label="Paths JSON"
           value={config.world_data.paths ?? []}
           onCommit={(value) => updateConfig('world_data.paths', value)}
@@ -2950,6 +2996,9 @@ const SERVICE_LOCATION_COMMANDS = [
 function LocationEditor({
   locations,
   biomeOptions,
+  calendarIds,
+  weatherAreaIds,
+  templates,
   updateConfig,
   token,
   setStatus,
@@ -2960,6 +3009,9 @@ function LocationEditor({
 }: {
   locations: AnyRecord;
   biomeOptions: string[];
+  calendarIds: string[];
+  weatherAreaIds: string[];
+  templates: EncounterTemplate[];
   updateConfig: (path: string, value: unknown) => void;
   token: string;
   setStatus: (value: string) => void;
@@ -3032,6 +3084,9 @@ function LocationEditor({
               id={id}
               location={asRecord(value)}
               biomeOptions={biomeOptions}
+              calendarIds={calendarIds}
+              weatherAreaIds={weatherAreaIds}
+              templates={templates}
               onChange={(next) => updateLocation(id, next)}
               token={token}
               setStatus={setStatus}
@@ -3056,6 +3111,9 @@ function LocationFields({
   id,
   location,
   biomeOptions,
+  calendarIds,
+  weatherAreaIds,
+  templates,
   onChange,
   token,
   setStatus,
@@ -3067,6 +3125,9 @@ function LocationFields({
   id: string;
   location: AnyRecord;
   biomeOptions: string[];
+  calendarIds: string[];
+  weatherAreaIds: string[];
+  templates: EncounterTemplate[];
   onChange: (location: AnyRecord) => void;
   token: string;
   setStatus: (value: string) => void;
@@ -3077,6 +3138,13 @@ function LocationFields({
 }) {
   const commands = asRecord(location.commands);
   const primaryBiomeOptions = optionsWithSelected(biomeOptions, asStringList(location.biome));
+  const calendarValue = String(location.calendar_id ?? '');
+  const calendarOptions = optionsWithSelected(calendarIds, calendarValue ? [calendarValue] : []);
+  const weatherAreaValue = String(location.weather_area ?? location.area_code ?? '');
+  const weatherAreaOptions = optionsWithSelected(
+    weatherAreaIds,
+    weatherAreaValue ? [weatherAreaValue] : [],
+  );
 
   function updateField(key: string, value: unknown) {
     const nextValue = Array.isArray(value) && value.length === 0 ? undefined : value || undefined;
@@ -3089,6 +3157,12 @@ function LocationFields({
       delete nextCommands[command];
     }
     onChange({ ...location, commands: nextCommands });
+  }
+
+  function updateWeatherArea(value: string) {
+    const nextLocation: AnyRecord = { ...location, weather_area: value || undefined };
+    if (value) delete nextLocation.area_code;
+    onChange(nextLocation);
   }
 
   return (
@@ -3140,13 +3214,47 @@ function LocationFields({
         upsertRelatedGvar={upsertRelatedGvar}
         relatedGvars={relatedGvars}
         updateRelatedGvarSource={updateRelatedGvarSource}
+        templates={templates}
       />
-      <TextField
-        label="Calendar id"
-        value={String(location.calendar_id ?? '')}
-        onChange={(value) => updateField('calendar_id', value)}
-        help="Optional key from world_data.calendars for this location."
-      />
+      <label className="field">
+        <span>
+          Calendar id
+          <HelpTip label="Location calendar help">
+            Optional key from world_data.calendars for this location.
+          </HelpTip>
+        </span>
+        <select
+          value={calendarValue}
+          onChange={(event) => updateField('calendar_id', event.target.value)}
+        >
+          <option value="">Default calendar</option>
+          {calendarOptions.map((calendarId) => (
+            <option value={calendarId} key={calendarId}>
+              {calendarIds.includes(calendarId) ? calendarId : `Unknown: ${calendarId}`}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="field">
+        <span>
+          Weather area
+          <HelpTip label="Location weather area help">
+            Optional key from world_data.weather.by_area. If unset, weather can infer from biome or
+            enc command areas.
+          </HelpTip>
+        </span>
+        <select
+          value={weatherAreaValue}
+          onChange={(event) => updateWeatherArea(event.target.value)}
+        >
+          <option value="">Infer from biome</option>
+          {weatherAreaOptions.map((areaId) => (
+            <option value={areaId} key={areaId}>
+              {weatherAreaIds.includes(areaId) ? areaId : `Unknown: ${areaId}`}
+            </option>
+          ))}
+        </select>
+      </label>
       <label className="field span-2">
         <span>
           Description
@@ -3310,6 +3418,7 @@ function LocationEncounterGvarField({
   upsertRelatedGvar,
   relatedGvars,
   updateRelatedGvarSource,
+  templates,
 }: {
   locationId: string;
   value: string;
@@ -3320,15 +3429,19 @@ function LocationEncounterGvarField({
   upsertRelatedGvar: (source: LoadedGvarSource) => void;
   relatedGvars: LoadedGvarSource[];
   updateRelatedGvarSource: (id: string, value: string) => void;
+  templates: EncounterTemplate[];
 }) {
   const [isLoading, setIsLoading] = useState(false);
+  const [builderOpen, setBuilderOpen] = useState(false);
   const gvarId = validGvarId(value);
   const hasValue = value.trim() !== '';
-  const error = hasValue && !gvarId ? 'Encounter gvar ids must be Avrae workshop UUIDs.' : '';
+  const error =
+    hasValue && !gvarId ? 'Location encounter gvar ids must be Avrae workshop UUIDs.' : '';
   const path = `world_data.locations.${locationId}.encounters_gvar_id`;
-  const label = `world data.locations.${locationId}.encounters gvar id`;
+  const label = `world data.locations.${locationId}.location encounters gvar id`;
   const source = gvarId ? relatedGvars.find((row) => row.id === gvarId) : undefined;
   const dashboardUrl = makeGvarDashboardUrl(value);
+  const canOpenBuilder = Boolean(gvarId && source?.loaded && !source.error);
 
   async function loadEncounterGvar() {
     let id = '';
@@ -3352,7 +3465,7 @@ function LocationEncounterGvarField({
         id,
         label,
         path,
-        kind: 'gvar',
+        kind: 'json',
         value: '',
         loaded: false,
         error: message,
@@ -3373,7 +3486,7 @@ function LocationEncounterGvarField({
         id,
         label,
         path,
-        kind: kindFromSource(body, 'gvar'),
+        kind: kindFromSource(body, 'json'),
         value: body,
         loaded: true,
       });
@@ -3387,7 +3500,7 @@ function LocationEncounterGvarField({
         id,
         label,
         path,
-        kind: 'gvar',
+        kind: 'json',
         value: '',
         loaded: false,
         error: message,
@@ -3403,12 +3516,13 @@ function LocationEncounterGvarField({
   return (
     <div className="field span-2">
       <span>
-        Encounter gvar id
+        Location encounters gvar id
         <HelpTip label="Encounter gvar id help">
-          Optional place-specific encounter module gvar UUID.
+          Optional place-specific JSON row-list gvar. These rows are layered on top of the selected
+          biome gvar rows when rolling encounters for this location and area.
         </HelpTip>
       </span>
-      <div className="field-with-actions">
+      <div className="field-with-three-actions">
         <input
           className={error ? 'invalid' : undefined}
           value={value}
@@ -3433,6 +3547,20 @@ function LocationEncounterGvarField({
         <button
           type="button"
           className="field-action-button"
+          onClick={() => setBuilderOpen(true)}
+          disabled={!canOpenBuilder}
+          title={
+            canOpenBuilder
+              ? 'Open this location encounter row builder'
+              : 'Load this location encounter gvar before opening the builder'
+          }
+        >
+          <FileCode2 size={16} aria-hidden="true" />
+          Builder
+        </button>
+        <button
+          type="button"
+          className="field-action-button"
           onClick={() => {
             if (dashboardUrl) window.open(dashboardUrl, '_blank', 'noopener,noreferrer');
           }}
@@ -3449,6 +3577,359 @@ function LocationEncounterGvarField({
           <GvarSourceRows rows={[source]} onChange={updateRelatedGvarSource} />
         </div>
       ) : null}
+      {builderOpen && source ? (
+        <EncounterRowsModal
+          title={`${titleFromSlug(locationId)} location encounters`}
+          description={`Editing separate location encounter gvar ${source.id}. These rows layer on top of biome gvar rows at this location.`}
+          rows={compactRowsFromSource(source.value)}
+          onRowsChange={(rows) => updateRelatedGvarSource(source.id, JSON.stringify(rows, null, 2))}
+          templates={templates}
+          rowListTitle="Location encounters gvar body"
+          onClose={() => setBuilderOpen(false)}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function CalendarEditor({
+  calendars,
+  updateConfig,
+}: {
+  calendars: AnyRecord;
+  updateConfig: (path: string, value: unknown) => void;
+}) {
+  const [newCalendarId, setNewCalendarId] = useState('primary');
+
+  function addCalendar() {
+    const id = slugValue(newCalendarId);
+    if (!id) return;
+    updateConfig('world_data.calendars', {
+      ...calendars,
+      [id]: defaultCalendar(id),
+    });
+  }
+
+  function updateCalendar(id: string, value: AnyRecord) {
+    updateConfig('world_data.calendars', { ...calendars, [id]: value });
+  }
+
+  function removeCalendar(id: string) {
+    updateConfig(
+      'world_data.calendars',
+      Object.fromEntries(Object.entries(calendars).filter(([key]) => key !== id)),
+    );
+  }
+
+  return (
+    <section className="world-editor">
+      <div className="collection-editor-head">
+        <h3>Calendars</h3>
+        <div className="inline-add">
+          <input
+            value={newCalendarId}
+            onChange={(event) => setNewCalendarId(event.target.value)}
+            placeholder="primary"
+            aria-label="New calendar id"
+          />
+          <button type="button" onClick={addCalendar}>
+            <Save size={16} aria-hidden="true" />
+            Add Calendar
+          </button>
+        </div>
+      </div>
+      <div className="collection-list">
+        {Object.entries(calendars).map(([id, value], index) => (
+          <details className="collection-item" open={index === 0} key={id}>
+            <summary className="collection-item-head">
+              <div>
+                <strong>{String(asRecord(value).name ?? titleFromSlug(id))}</strong>
+                <span>{id}</span>
+              </div>
+              <button
+                type="button"
+                className="field-action-button"
+                onClick={(event) => {
+                  event.preventDefault();
+                  removeCalendar(id);
+                }}
+                aria-label={`Remove ${id}`}
+                title="Remove calendar"
+              >
+                <X size={16} aria-hidden="true" />
+              </button>
+            </summary>
+            <CalendarFields
+              id={id}
+              calendar={asRecord(value)}
+              onChange={(next) => updateCalendar(id, next)}
+            />
+          </details>
+        ))}
+        {Object.keys(calendars).length === 0 ? (
+          <p className="collection-empty">
+            No calendars yet. Add one to enable the time command and seasonal weather.
+          </p>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+function CalendarFields({
+  id,
+  calendar,
+  onChange,
+}: {
+  id: string;
+  calendar: AnyRecord;
+  onChange: (calendar: AnyRecord) => void;
+}) {
+  function updateField(key: string, value: unknown) {
+    const nextValue = Array.isArray(value) && value.length === 0 ? undefined : value;
+    onChange({ ...calendar, [key]: nextValue === '' ? undefined : nextValue });
+  }
+
+  return (
+    <div className="form-grid compact">
+      <TextField
+        label="Name"
+        value={String(calendar.name ?? titleFromSlug(id))}
+        onChange={(value) => updateField('name', value)}
+        help="Player-facing calendar name shown by the time command."
+      />
+      <TextField
+        label="Start year"
+        value={String(calendar.start_year ?? calendar.year_offset ?? '')}
+        onChange={(value) => updateField('start_year', numberOrUndefined(value))}
+        help="Year added to the calculated world day index."
+      />
+      <TextField
+        label="Epoch unix"
+        value={String(calendar.epoch_unix ?? '')}
+        onChange={(value) => updateField('epoch_unix', numberOrUndefined(value))}
+        help="Unix timestamp where calendar day 0 begins."
+      />
+      <TextField
+        label="Tick rate"
+        value={String(calendar.tick_rate ?? '')}
+        onChange={(value) => updateField('tick_rate', numberOrUndefined(value))}
+        help="In-world seconds per real second. 86400 means one real second per world day."
+      />
+      <TextField
+        label="Seconds per day"
+        value={String(calendar.seconds_per_day ?? '')}
+        onChange={(value) => updateField('seconds_per_day', numberOrUndefined(value))}
+        help="Defaults to 86400 when omitted."
+      />
+      <TextField
+        label="Days per year"
+        value={String(calendar.days_per_year ?? '')}
+        onChange={(value) => updateField('days_per_year', numberOrUndefined(value))}
+        help="Optional fixed year length. Month rows can also define this."
+      />
+      <TextField
+        label="Display format"
+        value={String(calendar.display_format ?? '')}
+        onChange={(value) => updateField('display_format', value)}
+        help="Supports {weekday}, {day}, {month}, {year}, {hour}, {minute}, and {season}."
+      />
+      <CsvTextField
+        label="Weekdays"
+        value={calendar.weekdays}
+        onChange={(value) => updateField('weekdays', value)}
+        help="Comma-separated weekday names."
+      />
+      <label className="field span-2">
+        <span>
+          Months
+          <HelpTip label="Calendar months help">One month per line as name, days.</HelpTip>
+        </span>
+        <textarea
+          value={calendarRowsToText(calendar.months, 'days')}
+          onChange={(event) =>
+            updateField('months', textToCalendarRows(event.target.value, 'days'))
+          }
+          rows={5}
+          placeholder="Hammer, 30"
+        />
+      </label>
+      <label className="field span-2">
+        <span>
+          Seasons
+          <HelpTip label="Calendar seasons help">
+            One season per line as name, start day of year. Weather uses the current season when
+            present.
+          </HelpTip>
+        </span>
+        <textarea
+          value={calendarRowsToText(calendar.seasons, 'start_day_of_year')}
+          onChange={(event) =>
+            updateField('seasons', textToCalendarRows(event.target.value, 'start_day_of_year'))
+          }
+          rows={4}
+          placeholder="Spring, 60"
+        />
+      </label>
+    </div>
+  );
+}
+
+function WeatherAreaEditor({
+  weatherRoot,
+  weatherAreasInfo,
+  updateConfig,
+}: {
+  weatherRoot: AnyRecord;
+  weatherAreasInfo: WeatherAreasInfo;
+  updateConfig: (path: string, value: unknown) => void;
+}) {
+  const [newAreaId, setNewAreaId] = useState('forest');
+  const { areas, containerKey } = weatherAreasInfo;
+
+  function writeAreas(nextAreas: AnyRecord) {
+    if (containerKey === 'root') {
+      updateConfig('world_data.weather', nextAreas);
+      return;
+    }
+    updateConfig('world_data.weather', { ...weatherRoot, [containerKey]: nextAreas });
+  }
+
+  function addArea() {
+    const id = slugValue(newAreaId);
+    if (!id) return;
+    writeAreas({
+      ...areas,
+      [id]: { name: titleFromSlug(id), default: ['Clear skies.'] },
+    });
+  }
+
+  function updateArea(id: string, value: unknown) {
+    writeAreas({ ...areas, [id]: value });
+  }
+
+  function removeArea(id: string) {
+    writeAreas(Object.fromEntries(Object.entries(areas).filter(([key]) => key !== id)));
+  }
+
+  return (
+    <section className="world-editor">
+      <div className="collection-editor-head">
+        <h3>Weather Areas</h3>
+        <div className="inline-add">
+          <input
+            value={newAreaId}
+            onChange={(event) => setNewAreaId(event.target.value)}
+            placeholder="forest"
+            aria-label="New weather area id"
+          />
+          <button type="button" onClick={addArea}>
+            <Save size={16} aria-hidden="true" />
+            Add Area
+          </button>
+        </div>
+      </div>
+      <div className="collection-list">
+        {Object.entries(areas).map(([id, value], index) => {
+          const area = asRecord(value);
+          return (
+            <details className="collection-item" open={index === 0} key={id}>
+              <summary className="collection-item-head">
+                <div>
+                  <strong>{String(area.name ?? titleFromSlug(id))}</strong>
+                  <span>{id}</span>
+                </div>
+                <button
+                  type="button"
+                  className="field-action-button"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    removeArea(id);
+                  }}
+                  aria-label={`Remove ${id}`}
+                  title="Remove weather area"
+                >
+                  <X size={16} aria-hidden="true" />
+                </button>
+              </summary>
+              <WeatherAreaFields value={value} onChange={(next) => updateArea(id, next)} />
+            </details>
+          );
+        })}
+        {Object.keys(areas).length === 0 ? (
+          <p className="collection-empty">
+            No weather areas yet. Add one, then assign it to locations below.
+          </p>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+function WeatherAreaFields({
+  value,
+  onChange,
+}: {
+  value: unknown;
+  onChange: (value: unknown) => void;
+}) {
+  const area = asRecord(value);
+  const seasonEntries = weatherSeasonEntries(value);
+
+  function updateRecordField(key: string, nextValue: unknown) {
+    onChange({ ...area, [key]: nextValue || undefined });
+  }
+
+  return (
+    <div className="form-grid compact">
+      <TextField
+        label="Name"
+        value={String(area.name ?? '')}
+        onChange={(next) => updateRecordField('name', next)}
+        help="Optional display label for editors and docs."
+      />
+      <TextField
+        label="Description"
+        value={String(area.description ?? '')}
+        onChange={(next) => updateRecordField('description', next)}
+        help="Optional editor-facing note for this weather area."
+      />
+      <label className="field span-2">
+        <span>
+          Default forecasts
+          <HelpTip label="Default weather forecasts help">
+            One forecast per line. Weather picks a stable daily entry from this list.
+          </HelpTip>
+        </span>
+        <textarea
+          value={arrayToLines(weatherDefaultEntries(value))}
+          onChange={(event) => {
+            const entries = linesToArray(event.target.value);
+            if (Array.isArray(value) && Object.keys(area).length === 0) {
+              onChange(entries);
+              return;
+            }
+            updateRecordField('default', entries);
+          }}
+          rows={4}
+          placeholder="Cool mist hangs beneath the trees."
+        />
+      </label>
+      <label className="field span-2">
+        <span>
+          Seasonal forecasts
+          <HelpTip label="Seasonal weather forecasts help">
+            One row per season as season name, forecast text. Add multiple lines with the same
+            season for multiple entries.
+          </HelpTip>
+        </span>
+        <textarea
+          value={weatherSeasonEntriesToText(seasonEntries)}
+          onChange={(event) => onChange(applyWeatherSeasonText(value, event.target.value))}
+          rows={5}
+          placeholder="Winter, Snow clouds gather over the road."
+        />
+      </label>
     </div>
   );
 }
@@ -3828,6 +4309,124 @@ function numberOrUndefined(value: string) {
 function numberOrNull(value: string) {
   const parsed = numberOrUndefined(value);
   return parsed === undefined ? null : parsed;
+}
+
+function defaultCalendar(id: string) {
+  return {
+    id,
+    name: titleFromSlug(id),
+    epoch_unix: 0,
+    tick_rate: 86400,
+    seconds_per_day: 86400,
+    start_year: 1492,
+    months: [{ name: 'Hammer', days: 30 }],
+    weekdays: ['Firstday'],
+    display_format: '{weekday}, {day} {month} {year} {hour}:{minute}',
+    seasons: [
+      { name: 'Spring', start_day_of_year: 60 },
+      { name: 'Summer', start_day_of_year: 152 },
+      { name: 'Autumn', start_day_of_year: 244 },
+      { name: 'Winter', start_day_of_year: 335 },
+    ],
+  };
+}
+
+function calendarRowsToText(value: unknown, numericKey: string) {
+  if (!Array.isArray(value)) return '';
+  return value
+    .map((entry) => {
+      const record = asRecord(entry);
+      const name = String(record.name ?? '').trim();
+      const amount = String(record[numericKey] ?? '').trim();
+      return name ? `${name}, ${amount}` : '';
+    })
+    .filter(Boolean)
+    .join('\n');
+}
+
+function textToCalendarRows(value: string, numericKey: string) {
+  return value
+    .split('\n')
+    .map((line) => {
+      const [namePart, amountPart] = line.split(/[|,]/, 2);
+      const name = String(namePart ?? '').trim();
+      if (!name) return null;
+      const amount = numberOrUndefined(String(amountPart ?? ''));
+      return { name, [numericKey]: amount ?? 0 };
+    })
+    .filter((entry) => Boolean(entry)) as AnyRecord[];
+}
+
+function arrayToLines(value: unknown) {
+  if (!Array.isArray(value)) return typeof value === 'string' ? value : '';
+  return value.map((entry) => String(entry)).join('\n');
+}
+
+function linesToArray(value: string) {
+  return value
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+type WeatherAreasInfo = {
+  areas: AnyRecord;
+  containerKey: 'by_area' | 'areas' | 'root';
+};
+
+function weatherAreasFromRoot(root: AnyRecord): WeatherAreasInfo {
+  if (root.by_area != null) return { areas: asRecord(root.by_area), containerKey: 'by_area' };
+  if (root.areas != null) return { areas: asRecord(root.areas), containerKey: 'areas' };
+  if (Object.keys(root).length === 0) return { areas: {}, containerKey: 'by_area' };
+  return { areas: root, containerKey: 'root' };
+}
+
+function weatherDefaultEntries(value: unknown) {
+  if (Array.isArray(value)) return value.map((entry) => String(entry));
+  if (typeof value === 'string' && value.trim()) return [value.trim()];
+  const area = asRecord(value);
+  const entries = area.default ?? area.entries;
+  if (Array.isArray(entries)) return entries.map((entry) => String(entry));
+  if (typeof entries === 'string' && entries.trim()) return [entries.trim()];
+  return [];
+}
+
+function weatherSeasonEntries(value: unknown): Record<string, string[]> {
+  const area = asRecord(value);
+  const seasons: Record<string, string[]> = {};
+  for (const [key, entry] of Object.entries(area)) {
+    if (['name', 'description', 'default', 'entries'].includes(key)) continue;
+    if (Array.isArray(entry)) {
+      seasons[key] = entry.map((item) => String(item));
+    } else if (typeof entry === 'string' && entry.trim()) {
+      seasons[key] = [entry.trim()];
+    }
+  }
+  return seasons;
+}
+
+function weatherSeasonEntriesToText(entries: Record<string, string[]>) {
+  return Object.entries(entries)
+    .flatMap(([season, forecasts]) => forecasts.map((forecast) => `${season}, ${forecast}`))
+    .join('\n');
+}
+
+function applyWeatherSeasonText(value: unknown, text: string) {
+  const currentSeasons = Object.keys(weatherSeasonEntries(value));
+  const next: AnyRecord = Array.isArray(value)
+    ? { default: weatherDefaultEntries(value) }
+    : { ...asRecord(value) };
+  for (const season of currentSeasons) delete next[season];
+
+  for (const line of linesToArray(text)) {
+    const [seasonPart, forecastPart] = line.split(/[|,]/, 2);
+    const season = String(seasonPart ?? '').trim();
+    const forecast = String(forecastPart ?? '').trim();
+    if (!season || !forecast) continue;
+    const existing = Array.isArray(next[season]) ? (next[season] as unknown[]) : [];
+    next[season] = [...existing.map((entry) => String(entry)), forecast];
+  }
+  return next;
 }
 
 function CheckboxGroupField({
@@ -4278,9 +4877,44 @@ function BiomeEncounterModal({
   templates: EncounterTemplate[];
   onClose: () => void;
 }) {
+  const gvarId = String(biome.gvar_id ?? '');
+
+  return (
+    <EncounterRowsModal
+      title={String(biome.name ?? formatBiomeName(code))}
+      description={
+        gvarId
+          ? `Editing biome gvar ${gvarId}.`
+          : 'Editing a local draft until this biome has a gvar id.'
+      }
+      rows={rows}
+      onRowsChange={onRowsChange}
+      templates={templates}
+      rowListTitle="Biome gvar body"
+      onClose={onClose}
+    />
+  );
+}
+
+function EncounterRowsModal({
+  title,
+  description,
+  rows,
+  onRowsChange,
+  templates,
+  rowListTitle,
+  onClose,
+}: {
+  title: string;
+  description: string;
+  rows: CompactEncounterRow[];
+  onRowsChange: (rows: CompactEncounterRow[]) => void;
+  templates: EncounterTemplate[];
+  rowListTitle: string;
+  onClose: () => void;
+}) {
   const titleId = useId();
   const closeRef = useRef<HTMLButtonElement>(null);
-  const gvarId = String(biome.gvar_id ?? '');
 
   useEffect(() => {
     closeRef.current?.focus();
@@ -4312,12 +4946,8 @@ function BiomeEncounterModal({
               <Compass size={22} />
             </span>
             <div>
-              <h2 id={titleId}>{String(biome.name ?? formatBiomeName(code))}</h2>
-              <p>
-                {gvarId
-                  ? `Editing biome gvar ${gvarId}.`
-                  : 'Editing a local draft until this biome has a gvar id.'}
-              </p>
+              <h2 id={titleId}>{title}</h2>
+              <p>{description}</p>
             </div>
           </div>
           <button
@@ -4335,7 +4965,7 @@ function BiomeEncounterModal({
             rows={rows}
             onRowsChange={onRowsChange}
             title="Encounter row builder"
-            rowListTitle="Biome gvar body"
+            rowListTitle={rowListTitle}
             templates={templates}
           />
           <div className="modal-actions">

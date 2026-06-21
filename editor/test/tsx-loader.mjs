@@ -4,6 +4,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import ts from 'typescript';
 
 const sourceExtensions = ['.tsx', '.ts'];
+const rawSuffix = '?raw';
 
 async function exists(filename) {
   try {
@@ -15,11 +16,16 @@ async function exists(filename) {
 }
 
 export async function resolve(specifier, context, defaultResolve) {
-  if (specifier.startsWith('.') || specifier.startsWith('/')) {
+  const isRaw = specifier.endsWith(rawSuffix);
+  const cleanSpecifier = isRaw ? specifier.slice(0, -rawSuffix.length) : specifier;
+
+  if (cleanSpecifier.startsWith('.') || cleanSpecifier.startsWith('/')) {
     const parentPath = context.parentURL
       ? path.dirname(fileURLToPath(context.parentURL))
       : process.cwd();
-    const basePath = specifier.startsWith('/') ? specifier : path.resolve(parentPath, specifier);
+    const basePath = cleanSpecifier.startsWith('/')
+      ? cleanSpecifier
+      : path.resolve(parentPath, cleanSpecifier);
     const candidates = [
       basePath,
       ...sourceExtensions.map((extension) => `${basePath}${extension}`),
@@ -30,7 +36,7 @@ export async function resolve(specifier, context, defaultResolve) {
       if (await exists(candidate)) {
         return {
           shortCircuit: true,
-          url: pathToFileURL(candidate).href,
+          url: `${pathToFileURL(candidate).href}${isRaw ? rawSuffix : ''}`,
         };
       }
     }
@@ -40,6 +46,18 @@ export async function resolve(specifier, context, defaultResolve) {
 }
 
 export async function load(url, context, defaultLoad) {
+  if (url.endsWith(rawSuffix)) {
+    const fileUrl = new URL(url);
+    fileUrl.search = '';
+    const source = await readFile(fileURLToPath(fileUrl), 'utf8');
+
+    return {
+      format: 'module',
+      shortCircuit: true,
+      source: `export default ${JSON.stringify(source)};`,
+    };
+  }
+
   if (sourceExtensions.some((extension) => url.endsWith(extension))) {
     const source = await readFile(fileURLToPath(url), 'utf8');
     const result = ts.transpileModule(source, {

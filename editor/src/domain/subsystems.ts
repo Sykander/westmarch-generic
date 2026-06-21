@@ -21,7 +21,7 @@ const SUBSYSTEM_DETAILS: Record<
     label: 'Travel',
     implemented: true,
     detail:
-      'Travel and location commands are available. Time and weather remain planned for a later Phase 1 slice.',
+      'Travel, location, time, and weather commands are available when their world data is configured.',
     dependencies: [
       {
         label: 'vSheet',

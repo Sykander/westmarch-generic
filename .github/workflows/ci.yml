@@ -125,8 +125,12 @@ jobs:
             npm_script: avrae:test-utils:config
           - shard: utils-catalogues
             npm_script: avrae:test-utils:catalogues
-          - shard: utils-gameplay
-            npm_script: avrae:test-utils:gameplay
+          - shard: utils-gameplay-encounters
+            npm_script: avrae:test-utils:gameplay:encounters
+          - shard: utils-gameplay-exploration
+            npm_script: avrae:test-utils:gameplay:exploration
+          - shard: utils-gameplay-world
+            npm_script: avrae:test-utils:gameplay:world
           - shard: utils-systems
             npm_script: avrae:test-utils:systems
           - shard: aliases-content
@@ -135,8 +139,14 @@ jobs:
             npm_script: avrae:test-aliases:crafting
           - shard: aliases-economy
             npm_script: avrae:test-aliases:economy
-          - shard: aliases-exploration
-            npm_script: avrae:test-aliases:exploration
+          - shard: aliases-exploration-enc
+            npm_script: avrae:test-aliases:exploration:enc
+          - shard: aliases-exploration-creatures
+            npm_script: avrae:test-aliases:exploration:creatures
+          - shard: aliases-exploration-gathering-a
+            npm_script: avrae:test-aliases:exploration:gathering-a
+          - shard: aliases-exploration-gathering-b
+            npm_script: avrae:test-aliases:exploration:gathering-b
           - shard: aliases-travel
             npm_script: avrae:test-aliases:travel
           - shard: aliases-westmarch

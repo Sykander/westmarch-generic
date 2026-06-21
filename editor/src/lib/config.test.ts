@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { parseConfig, serializeConfig, validateConfig, type ConfigModel } from './config';
-import { STARTER_SNIPPET } from '../app/starterSnippet';
+import { STARTER_SOURCES } from '../app/starterSources';
 
 function issuesFor(source: string) {
   const parsed = parseConfig(source);
@@ -23,13 +23,31 @@ function normalizedConfigSource(source: string) {
   return serializeConfig(parsed.model);
 }
 
-test('editor starter snippet matches canonical starter config', () => {
+test('editor starter source matches canonical starter config', () => {
   const canonicalStarter = readFileSync(
     new URL('../../../src/gvars/configs/starter.gvar', import.meta.url),
     'utf8',
   );
+  const editorStarter = STARTER_SOURCES.find((source) => source.id === 'starter');
 
-  assert.equal(normalizedConfigSource(STARTER_SNIPPET), normalizedConfigSource(canonicalStarter));
+  assert.ok(editorStarter);
+  assert.equal(
+    normalizedConfigSource(editorStarter.source),
+    normalizedConfigSource(canonicalStarter),
+  );
+});
+
+test('editor starter sources parse cleanly', () => {
+  for (const starterSource of STARTER_SOURCES) {
+    const parsed = parseConfig(starterSource.source);
+
+    assert.deepEqual(
+      parsed.issues.filter((entry) => entry.code.startsWith('parse.')),
+      [],
+      `${starterSource.label} should parse without parse issues`,
+    );
+    assert.ok(parsed.model, `${starterSource.label} should produce a guided editor model`);
+  }
 });
 
 test('starter-style exploration config validates cleanly for phase 0 checks', () => {
@@ -187,6 +205,39 @@ world_data = {
 }
 `).includes('world.path.endpoint_unknown'),
   );
+});
+
+test('time and weather commands require configured world data', () => {
+  const codes = issueCodes(`
+subsystems = {
+    "travel": {
+        "enabled": True,
+        "commands": {"time": True, "weather": True},
+    },
+}
+`);
+
+  assert.ok(codes.includes('world.calendars.empty'));
+  assert.ok(codes.includes('world.weather.empty'));
+});
+
+test('location calendar and weather area ids must match configured world data', () => {
+  const codes = issueCodes(`
+world_data = {
+    "calendars": {"primary": {"name": "Primary"}},
+    "weather": {"by_area": {"forest": {"default": ["Clear skies."]}}},
+    "locations": {
+        "oakwood": {
+            "name": "Oakwood",
+            "calendar_id": "missing_calendar",
+            "weather_area": "missing_weather",
+        },
+    },
+}
+`);
+
+  assert.ok(codes.includes('world.location.calendar_unknown'));
+  assert.ok(codes.includes('world.location.weather_area_unknown'));
 });
 
 test('travel validation warns for empty encounter biome unless location inference is configured', () => {

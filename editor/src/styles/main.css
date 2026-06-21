@@ -208,6 +208,15 @@ th {
   min-width: 0;
 }
 
+.starter-source-select {
+  width: auto;
+  min-width: 220px;
+  max-width: 100%;
+  min-height: 36px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
 .status-text {
   max-width: min(36vw, 520px);
   overflow: hidden;
@@ -455,6 +464,13 @@ th {
 .field-with-actions {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.field-with-three-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
   gap: 8px;
   align-items: stretch;
 }
@@ -2739,6 +2755,7 @@ article.collection-item > .collection-item-head,
   .gvar-source-head,
   .catalogue-row,
   .field-with-actions,
+  .field-with-three-actions,
   .matrix-row,
   .tool-policy .matrix-row,
   .template-input-row,

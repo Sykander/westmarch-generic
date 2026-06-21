@@ -712,6 +712,13 @@ function asRecord(value: unknown): AnyRecord {
   return isPlainRecord(value) ? value : {};
 }
 
+function weatherAreasFromWorldData(worldData: AnyRecord): AnyRecord {
+  const weather = asRecord(worldData.weather);
+  if (weather.by_area != null) return asRecord(weather.by_area);
+  if (weather.areas != null) return asRecord(weather.areas);
+  return weather;
+}
+
 function isHexColour(value: unknown): boolean {
   if (value == null || value === '') return true;
   const text = String(value).replace(/^#/, '');
@@ -1448,6 +1455,8 @@ function validatePlayerSetupHud(playerSetup: AnyRecord, issues: ConfigIssue[]) {
 
 function validateWorld(model: ConfigModel, issues: ConfigIssue[]) {
   const biomes = asRecord(model.world_data.biomes);
+  const calendars = asRecord(model.world_data.calendars);
+  const weatherAreas = weatherAreasFromWorldData(model.world_data);
 
   for (const [code, value] of Object.entries(biomes)) {
     const biome = asRecord(value);
@@ -1505,6 +1514,46 @@ function validateWorld(model: ConfigModel, issues: ConfigIssue[]) {
   const locations = asRecord(model.world_data.locations);
   for (const [id, value] of Object.entries(locations)) {
     const location = asRecord(value);
+    const calendarId = location.calendar_id;
+    if (
+      typeof calendarId === 'string' &&
+      calendarId.trim() !== '' &&
+      Object.keys(calendars).length > 0 &&
+      !calendars[calendarId.trim()]
+    ) {
+      issues.push(
+        issue(
+          'error',
+          'world.location.calendar_unknown',
+          'World',
+          `world_data.locations.${id}.calendar_id`,
+          `${id} uses an unknown calendar`,
+          '`calendar_id` must match a key in `world_data.calendars`.',
+          'Choose a configured calendar on the World page, or clear this field.',
+        ),
+      );
+    }
+
+    const weatherArea = location.weather_area ?? location.area_code;
+    if (
+      typeof weatherArea === 'string' &&
+      weatherArea.trim() !== '' &&
+      Object.keys(weatherAreas).length > 0 &&
+      !weatherAreas[weatherArea.trim()]
+    ) {
+      issues.push(
+        issue(
+          'error',
+          'world.location.weather_area_unknown',
+          'World',
+          `world_data.locations.${id}.weather_area`,
+          `${id} uses an unknown weather area`,
+          '`weather_area` must match a key in `world_data.weather.by_area`.',
+          'Choose a configured weather area on the World page, or clear this field.',
+        ),
+      );
+    }
+
     const encountersGvarId = location.encounters_gvar_id;
     if (encountersGvarId == null || String(encountersGvarId).trim() === '') continue;
 
@@ -1761,6 +1810,8 @@ function validateTravel(model: ConfigModel, issues: ConfigIssue[]) {
   const implementedTravelOn = locationCommandOn || travelCommandOn;
   const locations = asRecord(model.world_data.locations);
   const defaultLocation = model.world_data.default_location;
+  const calendars = asRecord(model.world_data.calendars);
+  const weatherAreas = weatherAreasFromWorldData(model.world_data);
 
   if (implementedTravelOn && !defaultLocation) {
     issues.push(
@@ -1800,6 +1851,34 @@ function validateTravel(model: ConfigModel, issues: ConfigIssue[]) {
         'world_data.default_location',
         'Default location is not in locations',
         '`world_data.default_location` must match a key in `world_data.locations`.',
+      ),
+    );
+  }
+
+  if (commands.time === true && Object.keys(calendars).length === 0) {
+    issues.push(
+      issue(
+        'error',
+        'world.calendars.empty',
+        'World',
+        'world_data.calendars',
+        'Time command has no calendars',
+        '`!time` needs at least one calendar under `world_data.calendars`.',
+        'Add a calendar on the World page, or disable the time command.',
+      ),
+    );
+  }
+
+  if (commands.weather === true && Object.keys(weatherAreas).length === 0) {
+    issues.push(
+      issue(
+        'error',
+        'world.weather.empty',
+        'World',
+        'world_data.weather',
+        'Weather command has no weather areas',
+        '`!weather` needs configured areas under `world_data.weather.by_area`.',
+        'Add weather areas on the World page, or disable the weather command.',
       ),
     );
   }

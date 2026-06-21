@@ -22,6 +22,8 @@ function sourceKindForPath(path: string): GvarSourceKind {
   const lower = path.toLowerCase();
   if (
     lower.includes('biomes.') ||
+    lower.includes('encounters_gvar_id') ||
+    lower.includes('encounter_gvar') ||
     lower.includes('book_gvar_ids') ||
     lower.includes('catalogue') ||
     lower.includes('catalogues') ||

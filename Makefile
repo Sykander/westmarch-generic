@@ -1,9 +1,11 @@
 CATALOGUE_GENERATORS = generate-monsters generate-items generate-spells generate-books generate-recipes
 GENERATE_TARGETS = $(CATALOGUE_GENERATORS) generate-vars generate-env
-AVRAE_UTILS_TEST_TARGETS = avrae-test-utils-config avrae-test-utils-catalogues avrae-test-utils-gameplay avrae-test-utils-systems
-AVRAE_ALIAS_TEST_TARGETS = avrae-test-aliases-content avrae-test-aliases-crafting avrae-test-aliases-economy avrae-test-aliases-exploration avrae-test-aliases-travel avrae-test-aliases-westmarch
+AVRAE_UTILS_GAMEPLAY_TEST_TARGETS = avrae-test-utils-gameplay-encounters avrae-test-utils-gameplay-exploration avrae-test-utils-gameplay-world
+AVRAE_UTILS_TEST_TARGETS = avrae-test-utils-config avrae-test-utils-catalogues $(AVRAE_UTILS_GAMEPLAY_TEST_TARGETS) avrae-test-utils-systems
+AVRAE_ALIAS_EXPLORATION_TEST_TARGETS = avrae-test-aliases-exploration-enc avrae-test-aliases-exploration-creatures avrae-test-aliases-exploration-gathering-a avrae-test-aliases-exploration-gathering-b
+AVRAE_ALIAS_TEST_TARGETS = avrae-test-aliases-content avrae-test-aliases-crafting avrae-test-aliases-economy $(AVRAE_ALIAS_EXPLORATION_TEST_TARGETS) avrae-test-aliases-travel avrae-test-aliases-westmarch
 AVRAE_SHARD_TEST_TARGETS = $(AVRAE_UTILS_TEST_TARGETS) $(AVRAE_ALIAS_TEST_TARGETS)
-AVRAE_TEST_TARGETS = avrae-test-config avrae-test-gvars avrae-test-utils $(AVRAE_UTILS_TEST_TARGETS) $(AVRAE_ALIAS_TEST_TARGETS)
+AVRAE_TEST_TARGETS = avrae-test-config avrae-test-gvars avrae-test-utils avrae-test-utils-gameplay avrae-test-aliases-exploration $(AVRAE_UTILS_TEST_TARGETS) $(AVRAE_ALIAS_TEST_TARGETS)
 
 .PHONY: build test deploy editor editor-build types editor-test install_node install_editor install_avrae_ls sourcemap-test lint unit-tests $(AVRAE_TEST_TARGETS) $(GENERATE_TARGETS)
 
@@ -96,6 +98,18 @@ avrae-test-aliases-economy: install_avrae_ls
 avrae-test-aliases-exploration: install_avrae_ls
 	npm run avrae:test-aliases:exploration
 
+avrae-test-aliases-exploration-enc: install_avrae_ls
+	npm run avrae:test-aliases:exploration:enc
+
+avrae-test-aliases-exploration-creatures: install_avrae_ls
+	npm run avrae:test-aliases:exploration:creatures
+
+avrae-test-aliases-exploration-gathering-a: install_avrae_ls
+	npm run avrae:test-aliases:exploration:gathering-a
+
+avrae-test-aliases-exploration-gathering-b: install_avrae_ls
+	npm run avrae:test-aliases:exploration:gathering-b
+
 avrae-test-aliases-travel: install_avrae_ls
 	npm run avrae:test-aliases:travel
 
@@ -110,6 +124,15 @@ avrae-test-utils-catalogues: install_avrae_ls
 
 avrae-test-utils-gameplay: install_avrae_ls
 	npm run avrae:test-utils:gameplay
+
+avrae-test-utils-gameplay-encounters: install_avrae_ls
+	npm run avrae:test-utils:gameplay:encounters
+
+avrae-test-utils-gameplay-exploration: install_avrae_ls
+	npm run avrae:test-utils:gameplay:exploration
+
+avrae-test-utils-gameplay-world: install_avrae_ls
+	npm run avrae:test-utils:gameplay:world
 
 avrae-test-utils-systems: install_avrae_ls
 	npm run avrae:test-utils:systems

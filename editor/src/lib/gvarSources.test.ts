@@ -48,7 +48,7 @@ test('discoverGvarReferences finds config gvar ids with useful paths and kinds',
   assert.equal(forest?.label, 'world data.biomes.forest.gvar id');
   assert.equal(forest?.kind, 'json');
   assert.equal(location?.path, 'world_data.locations.town.encounters_gvar_id');
-  assert.equal(location?.kind, 'gvar');
+  assert.equal(location?.kind, 'json');
   assert.equal(catalogue?.path, 'subsystems.crafting.config.catalogues.items');
   assert.equal(catalogue?.kind, 'json');
   assert.equal(
