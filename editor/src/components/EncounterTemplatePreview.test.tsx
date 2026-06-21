@@ -52,7 +52,7 @@ test('EncounterTemplatePreview starts built-in templates on the shared input tab
   assert.match(html, /Mocks/);
   assert.match(html, /Outputs/);
   assert.match(html, /View/);
-  assert.match(html, /Template function/);
+  assert.match(html, /Engine template function/);
   assert.doesNotMatch(html, /Input args/);
   assert.doesNotMatch(html, /JSON row/);
   assert.doesNotMatch(html, /Generate Encounter/);

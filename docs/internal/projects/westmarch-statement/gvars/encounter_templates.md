@@ -43,6 +43,22 @@ ability checks such as `Strength`, and `Initiative`.
 `save_name` accepts standard ability saves plus special saves from `rolls.gvar`
 such as `Death`, `Honor`, and `Sanity`.
 
+`gather_item` emits an `outcomes(ectx)` callable so the item is awarded only when
+the first resolved roll passes.
+
+Built-in templates keep template-specific expansion logic inside the template
+function. Shared helpers are intentionally small:
+
+| Helper | Purpose |
+| --- | --- |
+| `_args(args, index, default)` / `arg(...)` | Read compact row arguments with defaults. |
+| `_display_roll(roll, show_dc=False, show_result=False)` | Format resolved rolls as `{roll.full} **{roll.name}**`, optionally adding DC and Passed/Failed details. |
+| `_display_combat(enemies, surprised=None, details=None)` | Format the standard combat announcement block with enemies and surprise/details lines. |
+
+Combat templates set `combat_text` so `encounters.process_encounter` appends the
+standard block. `ambush` makes `combat_text` callable and reports the character as
+surprised when the first resolved roll fails.
+
 Westmarch conditional templates such as `check_or_damage`, `check_or_gold`,
 `check_or_lose_gold`, and `check_or_monsters` need roll-gated outcomes in
 `encounters.gvar` before editor rows should emit them. Prefer new templates over

@@ -123,6 +123,13 @@ test('template catalogue includes reusable westmarch encounter patterns', () => 
   );
 });
 
+test('engine templates expose read-only source for editor inspection', () => {
+  for (const template of ENCOUNTER_TEMPLATES) {
+    assert.equal(template.custom, undefined);
+    assert.ok(template.source?.includes(`def ${template.functionName ?? template.id}`));
+  }
+});
+
 test('ambush rows include difficulty and dc arguments', () => {
   const ambushTemplate = ENCOUNTER_TEMPLATES.find((template) => template.id === 'ambush');
   assert.ok(ambushTemplate);

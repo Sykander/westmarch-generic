@@ -170,11 +170,212 @@ const ENCOUNTER_DIFFICULTY_OPTIONS = ['easy', 'medium', 'hard', 'deadly'];
 const CHECK_LABEL_OPTIONS = CHECK_OPTIONS.map((item) => item.label);
 const SAVE_LABEL_OPTIONS = SAVE_OPTIONS.map((item) => item.label);
 
+const ENGINE_TEMPLATE_HELPERS_SOURCE = String.raw`# Engine helpers available to built-in encounter templates.
+def _args(args, index, default=None):
+    if args == None:
+        return default
+    try:
+        if index < len(args):
+            return args[index]
+    except:
+        pass
+    return default
+
+def _display_roll(roll, show_dc=False, show_result=False):
+    full = roll.get("full") or roll.get("total") or "0"
+    name = roll.get("name") or "Roll"
+    line = f"{full} **{name}**"
+    details = []
+    if show_dc and roll.get("dc") not in [None, ""]:
+        details.append(f"DC {roll['dc']}")
+    if show_result and roll.get("passed") != None:
+        details.append("Passed" if roll["passed"] else "Failed")
+    if details:
+        line += f" ({', '.join(details)})"
+    return line
+
+def _display_combat(enemies=None, surprised=None, details=None):
+    lines = ["> Combat Initiated!"]
+    for target in surprised or []:
+        lines.append(f"{target} was **surprised**!")
+    for detail in details or []:
+        lines.append(str(detail))
+    lines.append("Enemies:")
+    enemy_lines = []
+    for enemy in enemies or []:
+        if isinstance(enemy, dict):
+            enemy_lines.append(f"* {enemy.get('count', 1)}x {enemy.get('name') or enemy.get('monster')}")
+        else:
+            enemy_lines.append(f"* 1x {enemy}")
+    return "\n".join(lines + (enemy_lines or ["* Generated enemies from target CR"]))`;
+
+const ENGINE_TEMPLATE_SOURCE: Record<string, string> = {
+  gather_item: String.raw`${ENGINE_TEMPLATE_HELPERS_SOURCE}
+
+def gather_item(args):
+    # Args: name, description, check_name, dc, item_name, total, bag?
+    name = _args(args, 0, "Useful find")
+    desc = _args(args, 1, "You find useful supplies in the wild.")
+    check_name = _args(args, 2, "Wisdom (Survival)")
+    dc = _args(args, 3, "12")
+    item = _args(args, 4, "Supplies")
+    total = _args(args, 5, 1)
+    bag = _args(args, 6)
+
+    outcome = {"type": "item", "name": str(item), "total": total}
+    if bag != None and str(bag).strip() != "":
+        outcome["bag"] = str(bag)
+
+    def outcomes(ectx):
+        rolls = ectx["rolls"]
+        if rolls and rolls[0]["passed"] == True:
+            return [outcome]
+        return []
+
+    return {
+        "name": str(name),
+        "description": str(desc),
+        "rolls": [{"type": "check", "name": str(check_name), "dc": str(dc)}],
+        "outcomes": outcomes,
+    }`,
+  skill_check: String.raw`${ENGINE_TEMPLATE_HELPERS_SOURCE}
+
+def skill_check(args):
+    # Args: name, description, check_name, dc
+    return {
+        "name": str(_args(args, 0, "Skill check")),
+        "description": str(_args(args, 1, "A careful approach may reveal something useful.")),
+        "rolls": [{
+            "type": "check",
+            "name": str(_args(args, 2, "Wisdom (Survival)")),
+            "dc": str(_args(args, 3, "12")),
+        }],
+    }`,
+  saving_throw: String.raw`${ENGINE_TEMPLATE_HELPERS_SOURCE}
+
+def saving_throw(args):
+    # Args: name, description, save_name, dc
+    return {
+        "name": str(_args(args, 0, "Saving throw")),
+        "description": str(_args(args, 1, "A sudden threat demands quick reaction.")),
+        "rolls": [{
+            "type": "save",
+            "name": str(_args(args, 2, "Dexterity")),
+            "dc": str(_args(args, 3, "12")),
+        }],
+    }`,
+  story: String.raw`def story(args):
+    return {
+        "name": str(_args(args, 0, "Forest sign")),
+        "description": str(_args(args, 1, "You notice a quiet detail in the wild.")),
+    }`,
+  flavour: String.raw`def flavour(args):
+    return {
+        "name": str(_args(args, 0, "Forest sign")),
+        "description": str(_args(args, 1, "You notice a quiet detail in the wild.")),
+    }`,
+  combat: String.raw`${ENGINE_TEMPLATE_HELPERS_SOURCE}
+
+def combat_template(args):
+    # Args: name, description, cr, monsters?, difficulty?
+    monsters = _args(args, 3)
+    enc = {
+        "name": str(_args(args, 0, "Hostile creatures")),
+        "description": str(_args(args, 1, "Something dangerous moves nearby.")),
+        "cr": _args(args, 2, 1),
+        "monsters": monsters if isinstance(monsters, list) else [str(monsters)],
+    }
+    enc["combat_text"] = _display_combat(enc["monsters"])
+    return enc`,
+  ambush: String.raw`${ENGINE_TEMPLATE_HELPERS_SOURCE}
+
+def ambush(args):
+    # Args: name, description, cr, monsters?, difficulty?, dc?
+    monsters = _args(args, 3)
+    enc = {
+        "name": str(_args(args, 0, "Hostile creatures")),
+        "description": str(_args(args, 1, "Something dangerous moves nearby.")),
+        "cr": _args(args, 2, 1),
+        "monsters": monsters if isinstance(monsters, list) else [str(monsters)],
+    }
+    dc = _args(args, 5, "12")
+    enc["rolls"] = [
+        {"type": "check", "name": "Perception", "ability": "wis", "dc": str(dc)},
+        {"type": "check", "name": "Stealth", "ability": "dex", "dc": str(dc)},
+        {"type": "passive", "name": "Perception", "ability": "wis", "dc": str(dc)},
+    ]
+
+    def combat_text(ectx):
+        surprised = []
+        if ectx["rolls"] and ectx["rolls"][0]["passed"] == False:
+            surprised.append(ectx["character"].name)
+        return _display_combat(enc["monsters"], surprised=surprised)
+
+    enc["combat_text"] = combat_text
+    return enc`,
+  damage_combat: String.raw`${ENGINE_TEMPLATE_HELPERS_SOURCE}
+
+def damage_combat(args):
+    # Args: name, description, cr, monsters?, difficulty?, total?
+    monsters = _args(args, 3)
+    enc = {
+        "name": str(_args(args, 0, "Hostile creatures")),
+        "description": str(_args(args, 1, "Something dangerous moves nearby.")),
+        "cr": _args(args, 2, 1),
+        "monsters": monsters if isinstance(monsters, list) else [str(monsters)],
+    }
+    enc["combat_text"] = _display_combat(enc["monsters"])
+    enc["outcomes"] = [{"type": "damage", "total": _args(args, 5, "1d4")}]
+    return enc`,
+  quest: String.raw`def quest(args):
+    enc = {
+        "name": str(_args(args, 0, "Unfinished business")),
+        "description": str(_args(args, 1, "A hook asks for follow-up.")),
+    }
+    reward = _args(args, 2)
+    if reward != None and str(reward).strip() != "":
+        enc["reward"] = str(reward)
+    return enc`,
+  gold: String.raw`def gold(args):
+    return {
+        "name": str(_args(args, 0, "Treasure cache")),
+        "description": str(_args(args, 1, "Coins glint in the dirt.")),
+        "outcomes": [{"type": "gold", "total": _args(args, 2, 1)}],
+    }`,
+  healing: String.raw`def healing(args):
+    return {
+        "name": str(_args(args, 0, "Restorative spring")),
+        "description": str(_args(args, 1, "A restorative moment eases your wounds.")),
+        "outcomes": [{"type": "healing", "total": _args(args, 2, "1d4")}],
+    }`,
+  healing_check: String.raw`${ENGINE_TEMPLATE_HELPERS_SOURCE}
+
+def healing_check(args):
+    return {
+        "name": str(_args(args, 0, "Field medicine")),
+        "description": str(_args(args, 1, "Careful treatment helps the wounded recover.")),
+        "rolls": [{
+            "type": "check",
+            "name": str(_args(args, 2, "Medicine")),
+            "dc": str(_args(args, 3, "12")),
+        }],
+        "outcomes": [{"type": "healing", "total": _args(args, 4, "1d4")}],
+    }`,
+  damage: String.raw`def damage(args):
+    return {
+        "name": str(_args(args, 0, "Hazard")),
+        "description": str(_args(args, 1, "The area turns dangerous.")),
+        "outcomes": [{"type": "damage", "total": _args(args, 2, "1d4")}],
+    }`,
+};
+
 export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
   {
     id: 'gather_item',
     label: 'Gather item',
     description: 'Skill check that grants an item or resource outcome.',
+    functionName: 'gather_item',
+    source: ENGINE_TEMPLATE_SOURCE.gather_item,
     fields: [
       { key: 'title', label: 'Title', type: 'text' },
       { key: 'description', label: 'Description', type: 'text' },
@@ -189,6 +390,8 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     id: 'skill_check',
     label: 'Skill check',
     description: 'Generic pass/fail exploration check.',
+    functionName: 'skill_check',
+    source: ENGINE_TEMPLATE_SOURCE.skill_check,
     fields: [
       { key: 'title', label: 'Title', type: 'text' },
       { key: 'description', label: 'Description', type: 'text' },
@@ -200,6 +403,8 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     id: 'saving_throw',
     label: 'Saving throw',
     description: 'Generic pass/fail encounter save.',
+    functionName: 'saving_throw',
+    source: ENGINE_TEMPLATE_SOURCE.saving_throw,
     fields: [
       { key: 'title', label: 'Title', type: 'text' },
       { key: 'description', label: 'Description', type: 'text' },
@@ -211,6 +416,8 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     id: 'story',
     label: 'Story',
     description: 'Descriptive gather beat.',
+    functionName: 'story',
+    source: ENGINE_TEMPLATE_SOURCE.story,
     fields: [
       { key: 'title', label: 'Title', type: 'text' },
       { key: 'description', label: 'Description', type: 'text' },
@@ -220,6 +427,8 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     id: 'flavour',
     label: 'Flavour',
     description: 'Non-reward descriptive gather beat.',
+    functionName: 'flavour',
+    source: ENGINE_TEMPLATE_SOURCE.flavour,
     fields: [
       { key: 'title', label: 'Title', type: 'text' },
       { key: 'text', label: 'Text', type: 'text' },
@@ -229,6 +438,8 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     id: 'combat',
     label: 'Combat',
     description: 'Simple monster encounter stub.',
+    functionName: 'combat_template',
+    source: ENGINE_TEMPLATE_SOURCE.combat,
     fields: [
       { key: 'title', label: 'Title', type: 'text' },
       { key: 'description', label: 'Description', type: 'text' },
@@ -246,6 +457,8 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     id: 'ambush',
     label: 'Ambush',
     description: 'Combat encounter with perception and stealth ambush framing.',
+    functionName: 'ambush',
+    source: ENGINE_TEMPLATE_SOURCE.ambush,
     fields: [
       { key: 'title', label: 'Title', type: 'text' },
       { key: 'description', label: 'Description', type: 'text' },
@@ -264,6 +477,8 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     id: 'damage_combat',
     label: 'Damage + combat',
     description: 'Combat encounter that also applies a damage outcome.',
+    functionName: 'damage_combat',
+    source: ENGINE_TEMPLATE_SOURCE.damage_combat,
     fields: [
       { key: 'title', label: 'Title', type: 'text' },
       { key: 'description', label: 'Description', type: 'text' },
@@ -282,6 +497,8 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     id: 'quest',
     label: 'Quest',
     description: 'Quest hook or objective stub.',
+    functionName: 'quest',
+    source: ENGINE_TEMPLATE_SOURCE.quest,
     fields: [
       { key: 'title', label: 'Title', type: 'text' },
       { key: 'hook', label: 'Hook', type: 'text' },
@@ -292,6 +509,8 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     id: 'gold',
     label: 'Gold',
     description: 'Simple coin reward encounter.',
+    functionName: 'gold',
+    source: ENGINE_TEMPLATE_SOURCE.gold,
     fields: [
       { key: 'title', label: 'Title', type: 'text' },
       { key: 'description', label: 'Description', type: 'text' },
@@ -302,6 +521,8 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     id: 'healing',
     label: 'Healing',
     description: 'Simple hit point recovery encounter.',
+    functionName: 'healing',
+    source: ENGINE_TEMPLATE_SOURCE.healing,
     fields: [
       { key: 'title', label: 'Title', type: 'text' },
       { key: 'description', label: 'Description', type: 'text' },
@@ -312,6 +533,8 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     id: 'healing_check',
     label: 'Healing check',
     description: 'Medicine-style check with a healing outcome.',
+    functionName: 'healing_check',
+    source: ENGINE_TEMPLATE_SOURCE.healing_check,
     fields: [
       { key: 'title', label: 'Title', type: 'text' },
       { key: 'description', label: 'Description', type: 'text' },
@@ -324,6 +547,8 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     id: 'damage',
     label: 'Damage',
     description: 'Simple damage encounter or environmental hazard.',
+    functionName: 'damage',
+    source: ENGINE_TEMPLATE_SOURCE.damage,
     fields: [
       { key: 'title', label: 'Title', type: 'text' },
       { key: 'description', label: 'Description', type: 'text' },

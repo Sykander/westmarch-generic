@@ -109,6 +109,9 @@ def process_encounter(encounter, character, args=None):
     if name == "":
         name = "Encounter"
     desc = _resolve_str(_resolve_value(_read_field(encounter, "description"), ectx))
+    combat_text = _resolve_str(_resolve_value(_read_field(encounter, "combat_text"), ectx))
+    if combat_text != "":
+        desc = "\n\n".join([part for part in [desc, combat_text] if part != ""])
     outcomes = _resolve_value(_read_field(encounter, "outcomes"), ectx)
     outcome_text = ""
     if outcomes != None and lists.is_list(outcomes):

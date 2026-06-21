@@ -30,9 +30,9 @@ test('buildEncounterPreview expands built-in templates from compact row args', (
   assert.equal(preview.output?.name, 'Wild Herbs');
   assert.equal(preview.templateOutput?.name, 'Wild Herbs');
   assert.equal(preview.displayOutput?.name, 'Wild Herbs');
-  assert.match(preview.rolls[0], /18 \*\*Survival DC 12\*\* \(success\)/);
+  assert.match(preview.rolls[0], /18 \*\*Survival\*\* \(DC 12, Passed\)/);
   assert.match(preview.outcomes[0], /Gain 2 x Herbs in Forage/);
-  assert.match(preview.displayOutput?.roll_text ?? '', /18 \*\*Survival DC 12\*\*/);
+  assert.match(preview.displayOutput?.roll_text ?? '', /18 \*\*Survival\*\* \(DC 12, Passed\)/);
   assert.equal(preview.displayOutput?.title, 'Wild Herbs');
   assert.equal(preview.displayOutput?.footer, 'Use !westmarch help for options.');
   assert.deepEqual(preview.displayOutput?.rolls[0], {
@@ -47,6 +47,43 @@ test('buildEncounterPreview expands built-in templates from compact row args', (
   assert.equal(preview.displayOutput?.embed.title, 'Wild Herbs');
   assert.equal(preview.displayOutput?.embed.footer, 'Use !westmarch help for options.');
   assert.match(preview.displayOutput?.outcome_text ?? '', /Gain 2 x Herbs in Forage/);
+});
+
+test('buildEncounterPreview gates gather item outcomes on first roll success', () => {
+  const input = {
+    template: {
+      id: 'gather_item',
+      label: 'Gather item',
+      description: 'Gather resources.',
+      fields: [],
+    },
+    row: [
+      ['enc.gather'],
+      'gather_item',
+      'Wild Herbs',
+      'Damp hollow.',
+      'Survival',
+      12,
+      'Herbs',
+      2,
+      'Forage',
+    ],
+  };
+
+  const failedPreview = buildEncounterPreview({
+    ...input,
+    previewResult: 'failure',
+    previewRoll: '1',
+  });
+  const successPreview = buildEncounterPreview({
+    ...input,
+    previewResult: 'success',
+    previewRoll: '18',
+  });
+
+  assert.equal(failedPreview.outcomes.length, 0);
+  assert.equal(failedPreview.displayOutput?.outcomes.length, 0);
+  assert.match(successPreview.outcomes[0], /Gain 2 x Herbs in Forage/);
 });
 
 test('buildEncounterPreview prefers exact Pyodide encounter results when available', () => {
@@ -82,7 +119,7 @@ test('buildEncounterPreview prefers exact Pyodide encounter results when availab
   assert.equal(preview.output?.kind, undefined);
   assert.equal(preview.templateOutput?.kind, undefined);
   assert.equal(preview.displayOutput?.name, 'From Pyodide');
-  assert.match(preview.outcomes[0], /Bandit Captain/);
+  assert.match(preview.outcomes.join('\n'), /Bandit Captain/);
   assert.match(preview.displayOutput?.outcome_text ?? '', /Bandit Captain/);
   assert.match(preview.footer, /Pyodide/);
 });

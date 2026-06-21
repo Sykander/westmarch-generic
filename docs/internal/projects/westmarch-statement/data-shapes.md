@@ -30,6 +30,7 @@ encounter = {
 
     # Sheet effects — optional; static list or callable(ectx)
     "outcomes": [ outcome, ... ] | callable,
+    "combat_text": str | callable,       # optional standardized combat announcement
 }
 ```
 
@@ -39,6 +40,7 @@ encounter = {
 | `description` | yes | Embed body (may include roll text appended by processor) |
 | `rolls` | no | Empty / omitted → skip straight to static fields + outcomes |
 | `outcomes` | no | Omitted → no sheet changes; see [Outcome](#outcome) |
+| `combat_text` | no | Appended to description after callables resolve; templates use it for standardized combat announcements |
 | `cr`, `monsters`, … | no | Combat block when `cr > 0` |
 
 ### Roll spec *(entry in `encounter["rolls"]`)*

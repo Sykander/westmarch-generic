@@ -49,6 +49,20 @@ export type EncounterPreviewModel = {
   notice?: string;
 };
 
+type EncounterPreviewContext = {
+  character: Record<string, unknown>;
+  rolls: EncounterRollOutput[];
+  args: unknown[];
+  encounter: EncounterRecord;
+  config: null;
+  activity: null;
+  biome: null;
+  location: null;
+  location_id: null;
+  current_location: null;
+  current_location_id: null;
+};
+
 type PreviewInput = {
   template: EncounterTemplate;
   row: CompactEncounterRow;
@@ -170,10 +184,19 @@ export function processEncounterPreview(
       },
     };
   }
-  const name = textField(encounter.name, 'Encounter');
   const rolls = previewRolls(encounter.rolls, previewRoll, previewResult);
-  const outcomeText = previewOutcomeText(encounter);
-  const description = processedDescription(encounter, rolls);
+  const ectx = previewContext(encounter, rolls);
+  const name = textField(resolveEncounterValue(encounter.name, ectx), 'Encounter');
+  const descriptionValue = resolveEncounterValue(encounter.description, ectx);
+  const resolvedOutcomes = resolvedOutcomeList(resolveEncounterValue(encounter.outcomes, ectx));
+  const combatText = text(resolveEncounterValue(encounter.combat_text, ectx)).trim();
+  const outcomeText = previewOutcomeText(encounter, resolvedOutcomes, ectx);
+  const description = [
+    processedDescription({ ...encounter, description: descriptionValue }, rolls),
+    combatText,
+  ]
+    .filter((item) => item.trim() !== '')
+    .join('\n\n');
   const desc = [description, outcomeText].filter((item) => item.trim() !== '').join('\n');
   const thumb = optionalMediaUrl(encounter.thumb) ?? optionalMediaUrl(encounter.thumbnail);
   const image = optionalMediaUrl(encounter.image) ?? optionalMediaUrl(encounter.image_url);
@@ -184,7 +207,7 @@ export function processEncounterPreview(
     description,
     desc,
     rolls,
-    outcomes: Array.isArray(encounter.outcomes) ? encounter.outcomes.filter(isRecord) : [],
+    outcomes: resolvedOutcomes,
     outcome_text: outcomeText,
     footer,
     thumb,
@@ -302,7 +325,7 @@ function gatherItem(args: PreviewArg[]) {
   return {
     ...base(name, description),
     rolls: [roll(checkName, dc)],
-    outcomes: [outcome],
+    outcomes: (ectx: EncounterPreviewContext) => (firstRollPassed(ectx) ? [outcome] : []),
   };
 }
 
@@ -328,15 +351,16 @@ function story(args: PreviewArg[]) {
 }
 
 function combatTemplate(args: PreviewArg[]) {
+  const monsters = arg(args, 3);
   const encounter: EncounterRecord = {
     ...base(arg(args, 0, 'Hostile creatures'), arg(args, 1, 'Something dangerous moves nearby.')),
     cr: arg(args, 2, 1),
   };
-  const monsters = arg(args, 3);
   const difficulty = arg(args, 4);
   if (Array.isArray(monsters)) encounter.monsters = monsters;
   else if (text(monsters).trim() !== '') encounter.monsters = [text(monsters)];
   if (text(difficulty).trim() !== '') encounter.difficulty = text(difficulty);
+  encounter.combat_text = displayCombat(encounter.monsters);
   return encounter;
 }
 
@@ -348,7 +372,7 @@ function damageCombat(args: PreviewArg[]) {
 }
 
 function ambush(args: PreviewArg[]) {
-  return {
+  const encounter: EncounterRecord = {
     ...combatTemplate(args),
     rolls: [
       roll('Perception', arg(args, 5, '12')),
@@ -356,6 +380,13 @@ function ambush(args: PreviewArg[]) {
       { type: 'passive', name: 'Perception', ability: 'wis', dc: text(arg(args, 5, '12'), '12') },
     ],
   };
+  encounter.combat_text = (ectx: EncounterPreviewContext) => {
+    const first = ectx.rolls[0];
+    return displayCombat(encounter.monsters, {
+      surprised: first?.passed === false ? [text(ectx.character.name, 'The party')] : [],
+    });
+  };
+  return encounter;
 }
 
 function quest(args: PreviewArg[]) {
@@ -510,9 +541,7 @@ function previewRolls(
 }
 
 function formatRollOutput(roll: EncounterRollOutput) {
-  const dcText = roll.dc !== undefined && roll.dc !== '' ? ` DC ${roll.dc}` : '';
-  const resultText = roll.passed === true ? 'success' : roll.passed === false ? 'failure' : 'roll';
-  return `${roll.full} **${roll.name}${dcText}** (${resultText})`;
+  return displayRoll(roll, { showDc: true, showResult: true });
 }
 
 function processedDescription(encounter: EncounterRecord, rolls: EncounterRollOutput[]) {
@@ -529,24 +558,25 @@ function numericOrText(value: unknown) {
     : text(value);
 }
 
-function previewOutcomeText(encounter: EncounterRecord) {
+function previewOutcomeText(
+  encounter: EncounterRecord,
+  resolvedOutcomes?: EncounterRecord[],
+  ectx?: EncounterPreviewContext,
+) {
   const outcomes: string[] = [];
-  if (text(encounter.reward).trim() !== '') outcomes.push(`Reward: ${text(encounter.reward)}`);
-  if (text(encounter.cr).trim() !== '') {
-    const monsters = Array.isArray(encounter.monsters)
-      ? encounter.monsters
-          .map((item) => text(item))
-          .filter(Boolean)
-          .join(', ')
-      : '';
-    const difficulty = text(encounter.difficulty).trim();
-    outcomes.push(
-      `Combat: CR ${text(encounter.cr)}${monsters ? `, ${monsters}` : ''}${difficulty ? ` (${difficulty})` : ''}`,
-    );
+  const reward = ectx ? resolveEncounterValue(encounter.reward, ectx) : encounter.reward;
+  const cr = ectx ? resolveEncounterValue(encounter.cr, ectx) : encounter.cr;
+  const monstersValue = ectx ? resolveEncounterValue(encounter.monsters, ectx) : encounter.monsters;
+  const combatText = ectx
+    ? resolveEncounterValue(encounter.combat_text, ectx)
+    : encounter.combat_text;
+  if (text(reward).trim() !== '') outcomes.push(`Reward: ${text(reward)}`);
+  if (text(cr).trim() !== '' && text(combatText).trim() === '') {
+    outcomes.push(displayCombat(monstersValue));
   }
-  if (!Array.isArray(encounter.outcomes)) return outcomes.join('\n');
 
-  for (const outcome of encounter.outcomes) {
+  const resolved = resolvedOutcomes ?? resolvedOutcomeList(encounter.outcomes);
+  for (const outcome of resolved) {
     if (!isRecord(outcome)) continue;
     const type = text(outcome.type);
     if (type === 'item') {
@@ -566,6 +596,93 @@ function previewOutcomeText(encounter: EncounterRecord) {
     }
   }
   return outcomes.join('\n');
+}
+
+function previewContext(
+  encounter: EncounterRecord,
+  rolls: EncounterRollOutput[],
+): EncounterPreviewContext {
+  return {
+    character: {},
+    rolls,
+    args: [],
+    encounter,
+    config: null,
+    activity: null,
+    biome: null,
+    location: null,
+    location_id: null,
+    current_location: null,
+    current_location_id: null,
+  };
+}
+
+function resolveEncounterValue(value: unknown, ectx: EncounterPreviewContext) {
+  if (typeof value !== 'function') return value;
+  try {
+    return (value as (context: EncounterPreviewContext) => unknown)(ectx);
+  } catch {
+    return undefined;
+  }
+}
+
+function resolvedOutcomeList(value: unknown) {
+  return Array.isArray(value) ? value.filter(isRecord) : [];
+}
+
+function firstRollPassed(ectx: EncounterPreviewContext) {
+  const first = ectx.rolls[0];
+  if (!first) return false;
+  return (
+    first.passed === true || (first as EncounterRollOutput & { success?: boolean }).success === true
+  );
+}
+
+function displayRoll(
+  roll: EncounterRollOutput,
+  { showDc = false, showResult = false }: { showDc?: boolean; showResult?: boolean } = {},
+) {
+  const line = `${roll.full} **${roll.name || 'Roll'}**`;
+  const details: string[] = [];
+  if (showDc && roll.dc !== undefined && roll.dc !== '') details.push(`DC ${roll.dc}`);
+  if (showResult && roll.passed !== null && roll.passed !== undefined) {
+    details.push(roll.passed ? 'Passed' : 'Failed');
+  }
+  return details.length ? `${line} (${details.join(', ')})` : line;
+}
+
+function displayCombat(
+  enemies: unknown,
+  { surprised = [], details = [] }: { surprised?: unknown[]; details?: unknown[] } = {},
+) {
+  const lines = ['> Combat Initiated!'];
+  for (const target of surprised) {
+    const name = text(target).trim();
+    if (name) lines.push(`${name} was **surprised**!`);
+  }
+  for (const detail of details) {
+    const line = text(detail).trim();
+    if (line) lines.push(line);
+  }
+  lines.push('Enemies:');
+  const enemyLines = enemyList(enemies).map((enemy) => `* ${enemy.count}x ${enemy.name}`);
+  lines.push(...(enemyLines.length ? enemyLines : ['* Generated enemies from target CR']));
+  return lines.join('\n');
+}
+
+function enemyList(enemies: unknown) {
+  const values = Array.isArray(enemies) ? enemies : enemies === undefined ? [] : [enemies];
+  return values
+    .map((enemy) => {
+      if (isRecord(enemy)) {
+        return {
+          count: Number(enemy.count ?? enemy.qty ?? 1) || 1,
+          name: text(enemy.name ?? enemy.monster).trim(),
+        };
+      }
+      return { count: 1, name: text(enemy).trim() };
+    })
+    .filter((enemy) => enemy.name);
 }
 
 function displayLines(value: string) {

@@ -204,6 +204,83 @@ def _base(name, description):
         "description": _text(description),
     }
 
+def _roll_field(roll, key):
+    if roll is None:
+        return None
+    if isinstance(roll, dict):
+        return roll.get(key)
+    return getattr(roll, key, None)
+
+def _first_roll_passed(ectx):
+    rolls = ectx.get("rolls") if isinstance(ectx, dict) else []
+    if not isinstance(rolls, list) or len(rolls) == 0:
+        return False
+    passed = _roll_field(rolls[0], "passed")
+    if passed is None:
+        passed = _roll_field(rolls[0], "success")
+    return passed is True
+
+def _display_roll(roll, show_dc=False, show_result=False):
+    full = _roll_field(roll, "full") or _roll_field(roll, "total") or "0"
+    name = _roll_field(roll, "name") or "Roll"
+    line = f"{full} **{name}**"
+    details = []
+    dc = _roll_field(roll, "dc")
+    if show_dc and dc not in [None, ""]:
+        details.append(f"DC {dc}")
+    passed = _roll_field(roll, "passed")
+    if passed is None:
+        passed = _roll_field(roll, "success")
+    if show_result and passed is not None:
+        details.append("Passed" if passed is True else "Failed")
+    if details:
+        line += f" ({', '.join(details)})"
+    return line
+
+def _enemy_line(enemy):
+    if enemy is None:
+        return None
+    count = 1
+    name = None
+    if isinstance(enemy, dict):
+        try:
+            count = int(enemy.get("count") or enemy.get("qty") or 1)
+        except Exception:
+            count = 1
+        name = enemy.get("name") or enemy.get("monster")
+    else:
+        name = enemy
+    text = _text(name).strip()
+    if text == "":
+        return None
+    return f"* {count}x {text}"
+
+def _display_combat(enemies=None, surprised=None, details=None):
+    lines = ["> Combat Initiated!"]
+    if surprised is not None:
+        surprise_list = surprised if isinstance(surprised, list) else [surprised]
+        for target in surprise_list:
+            text = _text(target).strip()
+            if text != "":
+                lines.append(f"{text} was **surprised**!")
+    if details is not None:
+        detail_list = details if isinstance(details, list) else [details]
+        for detail in detail_list:
+            text = _text(detail).strip()
+            if text != "":
+                lines.append(text)
+    lines.append("Enemies:")
+    enemy_lines = []
+    if enemies is not None:
+        enemy_list = enemies if isinstance(enemies, list) else [enemies]
+        for enemy in enemy_list:
+            line = _enemy_line(enemy)
+            if line is not None:
+                enemy_lines.append(line)
+    if not enemy_lines:
+        enemy_lines.append("* Generated enemies from target CR")
+    return "\n".join(lines + enemy_lines)
+
 def gather_item(args):
     if len(args) >= 5 and _is_numberish(_arg(args, 2)):
         name = _arg(args, 0, "Useful find")
@@ -226,7 +303,11 @@ def gather_item(args):
     outcome = {"type": "item", "name": _text(item, "Supplies"), "total": _int_or_text(total, 1)}
     if bag is not None and _text(bag).strip() != "":
         outcome["bag"] = _text(bag)
-    enc["outcomes"] = [outcome]
+    def outcomes(ectx):
+        if _first_roll_passed(ectx):
+            return [outcome]
+        return []
+    enc["outcomes"] = outcomes
     return enc
 
 def skill_check(args):
@@ -251,6 +332,7 @@ def combat_template(args):
         enc["monsters"] = monsters if isinstance(monsters, list) else [_text(monsters)]
     if difficulty is not None and _text(difficulty).strip() != "":
         enc["difficulty"] = _text(difficulty)
+    enc["combat_text"] = _display_combat(enc.get("monsters"))
     return enc
 
 def damage_combat(args):
@@ -266,6 +348,14 @@ def ambush(args):
         _roll("Stealth", dc),
         {"type": "passive", "name": "Perception", "ability": "wis", "dc": _text(dc, "12")},
     ]
+    def combat_text(ectx):
+        surprised = []
+        rolls = ectx.get("rolls") if isinstance(ectx, dict) else []
+        if isinstance(rolls, list) and len(rolls) > 0 and _roll_field(rolls[0], "passed") is False:
+            character_obj = ectx.get("character") if isinstance(ectx, dict) else None
+            surprised.append(getattr(character_obj, "name", None) or "The party")
+        return _display_combat(enc.get("monsters"), surprised=surprised)
+    enc["combat_text"] = combat_text
     return enc
 
 def quest(args):
@@ -389,8 +479,11 @@ def process_encounter(encounter, preview_roll, preview_result, roll_mock=None):
     difficulty = _text(_resolve_field(encounter, "difficulty", preview_character_obj, rolls_list, "medium"), "medium")
     monsters_value = _resolve_field(encounter, "monsters", preview_character_obj, rolls_list, [])
     monsters_list = monsters_value if isinstance(monsters_value, list) else ([_text(monsters_value)] if _text(monsters_value).strip() != "" else [])
-    if _is_positive(cr):
+    combat_text = _text(_resolve_field(encounter, "combat_text", preview_character_obj, rolls_list, ""))
+    if _is_positive(cr) and combat_text.strip() == "":
         description = _append_combat_text(description, cr, difficulty, monsters_list)
+    elif combat_text.strip() != "":
+        description = "\n\n".join([part for part in [description.strip(), combat_text.strip()] if part != ""])
     outcomes_value = _resolve_field(encounter, "outcomes", preview_character_obj, rolls_list, [])
     outcomes_list = outcomes_value if isinstance(outcomes_value, list) else []
     outcome_text = process_outcomes(outcomes_list, preview_character_obj)
@@ -484,19 +577,8 @@ def _is_positive(value):
         return False
 
 def _append_combat_text(description, cr, difficulty, monsters_list):
-    monster_lines = []
-    for monster in monsters_list:
-        text = _text(monster).strip()
-        if text != "":
-            monster_lines.append(f"* {text}")
-    if not monster_lines:
-        monster_lines.append("* Generated monsters from target CR")
-    monster_add_command = "!multiline" + "".join([f'\n!i madd "{_text(monster).strip()}"' for monster in monsters_list if _text(monster).strip() != ""])
-    fence = chr(96) * 3
-    monsters_text = f"""**Monsters**
-{chr(10).join(monster_lines)}
-{fence}{monster_add_command}{fence}"""
-    return (description.strip() + "\n" if description.strip() != "" else "") + monsters_text
+    combat_text = _display_combat(monsters_list)
+    return "\n\n".join([part for part in [description.strip(), combat_text] if part != ""])
 
 def _fallback_description(encounter, rolls_list, preview_result):
     parts = []
@@ -504,9 +586,7 @@ def _fallback_description(encounter, rolls_list, preview_result):
     if description.strip() != "":
         parts.append(description)
     for roll in rolls_list:
-        dc = f" DC {roll.dc}" if roll.dc is not None else ""
-        result = "success" if roll.passed else "failure" if roll.passed == False else preview_result
-        parts.append(f"{roll.full} **{roll.name}{dc}** ({result})")
+        parts.append(_display_roll(roll, show_dc=True, show_result=True))
     return "\n".join(parts)
 
 def _mock_roll_for(index, preview_roll, roll_mock):

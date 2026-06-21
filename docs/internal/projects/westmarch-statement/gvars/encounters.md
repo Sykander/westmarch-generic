@@ -18,8 +18,8 @@ def process_encounter(encounter, character, args):
 
 1. **Rolls** — for each entry in `encounter["rolls"]`, call **`env.gvars.rolls`** **`get_roll(...)`** with `args` bonuses.
 2. **Build `ectx`** — `{ character, rolls, args, encounter }` ([Encounter context](../data-shapes.md#encounter-context--ectx)).
-3. **Resolve fields** — `name`, `description`, `cr`, `difficulty`, `monsters`, media — str or `callable(ectx)`.
-4. **Combat** — if `cr > 0`, build combat block via monsters helper; honour **`policies.combat.roll_monster_hp`** ([data-shapes § combat](../data-shapes.md#combat-post-mvp-scaling--schema-reserved)).
+3. **Resolve fields** — `name`, `description`, `combat_text`, `cr`, `difficulty`, `monsters`, media — str or `callable(ectx)`.
+4. **Combat** — append `combat_text` when provided; combat templates use `encounter_templates._display_combat(...)` for a standard block.
 5. **Outcomes** — resolve `outcomes` (static list or `callable(ectx)`), then **`_apply_outcomes(outcomes, character)`** internally.
 6. **Return** — [encounter_result](../data-shapes.md#encounter-result--encounter_result) dict (`outcome_text` included).
 

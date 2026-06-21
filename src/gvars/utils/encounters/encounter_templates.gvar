@@ -40,28 +40,6 @@ def _text(value, default=""):
         return default
 
 
-def _int_or_text(value, default=0):
-    if value == None:
-        return default
-    try:
-        return int(value)
-    except:
-        return value
-
-
-def _is_numberish(value):
-    try:
-        int(value)
-        return True
-    except:
-        pass
-    try:
-        float(value)
-        return True
-    except:
-        return False
-
-
 def _read_field(obj, key):
     if obj == None:
         return None
@@ -90,93 +68,110 @@ def _read_field(obj, key):
     return None
 
 
-def _ability_for_check(check_name):
-    text = _text(check_name).lower()
-    key = text.replace(" ", "").replace("_", "").replace("-", "")
-    ability_map = {
-        "strength": "str",
-        "athletics": "str",
-        "dexterity": "dex",
-        "initiative": "dex",
-        "acrobatics": "dex",
-        "sleightofhand": "dex",
-        "stealth": "dex",
-        "constitution": "con",
-        "intelligence": "int",
-        "arcana": "int",
-        "history": "int",
-        "investigation": "int",
-        "nature": "int",
-        "religion": "int",
-        "wisdom": "wis",
-        "animalhandling": "wis",
-        "insight": "wis",
-        "medicine": "wis",
-        "perception": "wis",
-        "survival": "wis",
-        "charisma": "cha",
-        "deception": "cha",
-        "intimidation": "cha",
-        "performance": "cha",
-        "persuasion": "cha",
+def _field(roll, key):
+    if roll == None:
+        return None
+    if dicts.is_dict(roll):
+        return _read_field(roll, key)
+    try:
+        return roll[key]
+    except:
+        pass
+    attrs = {
+        "passed": lambda o: o.passed,
+        "success": lambda o: o.success,
     }
-    if key in ability_map:
-        return ability_map[key]
-    if "athletics" in text:
-        return "str"
-    if "acrobatics" in text or "sleight" in text or "stealth" in text:
-        return "dex"
-    if "arcana" in text or "history" in text or "investigation" in text or "nature" in text or "religion" in text:
-        return "int"
-    if "animal" in text or "insight" in text or "medicine" in text or "perception" in text or "survival" in text:
-        return "wis"
-    if "deception" in text or "intimidation" in text or "performance" in text or "persuasion" in text:
-        return "cha"
-    return "wis"
-
-
-def _ability_for_save(save_name):
-    text = _text(save_name).lower()
-    key = text.replace(" ", "").replace("_", "").replace("-", "")
-    ability_map = {
-        "strength": "str",
-        "dexterity": "dex",
-        "constitution": "con",
-        "intelligence": "int",
-        "wisdom": "wis",
-        "charisma": "cha",
-    }
-    if key in ability_map:
-        return ability_map[key]
+    if key in attrs:
+        try:
+            return attrs[key](roll)
+        except:
+            pass
     return None
 
 
-def _roll(check_name, dc):
-    return {
-        "type": "check",
-        "name": _text(check_name, "Wisdom (Survival)"),
-        "ability": _ability_for_check(check_name),
-        "dc": _text(dc, "12"),
-    }
+def _display_roll(roll, show_dc=False, show_result=False):
+    """Return the standard one-line display for a resolved roll."""
+    full = _field(roll, "full")
+    if full == None or str(full).strip() == "":
+        full = _field(roll, "total")
+    name = _field(roll, "name")
+    if name == None or str(name).strip() == "":
+        name = "Roll"
+    line = f"{full} **{name}**"
+    details = []
+    dc = _field(roll, "dc")
+    if show_dc and dc not in [None, ""]:
+        details.append(f"DC {dc}")
+    passed = _field(roll, "passed")
+    if passed == None:
+        passed = _field(roll, "success")
+    if show_result and passed != None:
+        details.append("Passed" if passed == True else "Failed")
+    if len(details) > 0:
+        line += f" ({', '.join(details)})"
+    return line
 
 
-def _save(save_name, dc):
-    result = {
-        "type": "save",
-        "name": _text(save_name, "Dexterity"),
-        "dc": _text(dc, "12"),
-    }
-    ability = _ability_for_save(save_name)
-    if ability != None:
-        result["ability"] = ability
-    return result
+def _enemy_line(enemy):
+    if enemy == None:
+        return None
+    count = 1
+    name = None
+    if dicts.is_dict(enemy):
+        raw_count = _read_field(enemy, "count")
+        if raw_count == None:
+            raw_count = _read_field(enemy, "qty")
+        try:
+            count = int(raw_count)
+        except:
+            count = 1
+        name = _read_field(enemy, "name")
+        if name == None:
+            name = _read_field(enemy, "monster")
+    else:
+        name = enemy
+    text = _text(name).strip()
+    if text == "":
+        return None
+    return f"* {count}x {text}"
 
 
-def _base(name, description):
-    return {
-        "name": _text(name, "Encounter"),
-        "description": _text(description),
-    }
+def _display_combat(enemies=None, surprised=None, details=None):
+    """Return the standard combat announcement block."""
+    lines = ["> Combat Initiated!"]
+    if surprised != None:
+        surprise_list = surprised if lists.is_list(surprised) else [surprised]
+        for target in surprise_list:
+            text = _text(target).strip()
+            if text != "":
+                lines.append(f"{text} was **surprised**!")
+    if details != None:
+        detail_list = details if lists.is_list(details) else [details]
+        for detail in detail_list:
+            text = _text(detail).strip()
+            if text != "":
+                lines.append(text)
+    lines.append("Enemies:")
+    enemy_lines = []
+    if enemies != None:
+        enemy_list = enemies if lists.is_list(enemies) else [enemies]
+        for enemy in enemy_list:
+            line = _enemy_line(enemy)
+            if line != None:
+                enemy_lines.append(line)
+    if len(enemy_lines) == 0:
+        enemy_lines.append("* Generated enemies from target CR")
+    return "\n".join(lines + enemy_lines)
+
+
+def display_roll(roll, show_dc=False, show_result=False):
+    """Public wrapper for tests and owner-authored helper gvars."""
+    return _display_roll(roll, show_dc, show_result)
+
+
+def display_combat(enemies=None, surprised=None, details=None):
+    """Public wrapper for tests and owner-authored helper gvars."""
+    return _display_combat(enemies, surprised, details)
 
 
 def gather_item(args):
@@ -185,28 +180,107 @@ def gather_item(args):
     Canonical args: name, description, check_name, dc, item_name, total, bag?
     Legacy editor args accepted: name, check_name, dc, item_name, total, activity?
     """
-    if len(args) >= 5 and _is_numberish(_arg(args, 2)):
-        name = _arg(args, 0, "Useful find")
-        check_name = _arg(args, 1, "Wisdom (Survival)")
-        dc = _arg(args, 2, "12")
-        item = _arg(args, 3, "Supplies")
-        total = _arg(args, 4, 1)
+    def numberish(value):
+        try:
+            int(value)
+            return True
+        except:
+            pass
+        try:
+            float(value)
+            return True
+        except:
+            return False
+
+    def int_or_text(value, default=1):
+        if value == None:
+            return default
+        try:
+            return int(value)
+        except:
+            return value
+
+    def ability_for_check(check_name):
+        text = str(check_name).lower()
+        key = text.replace(" ", "").replace("_", "").replace("-", "")
+        ability_map = {
+            "strength": "str",
+            "athletics": "str",
+            "dexterity": "dex",
+            "initiative": "dex",
+            "acrobatics": "dex",
+            "sleightofhand": "dex",
+            "stealth": "dex",
+            "constitution": "con",
+            "intelligence": "int",
+            "arcana": "int",
+            "history": "int",
+            "investigation": "int",
+            "nature": "int",
+            "religion": "int",
+            "wisdom": "wis",
+            "animalhandling": "wis",
+            "insight": "wis",
+            "medicine": "wis",
+            "perception": "wis",
+            "survival": "wis",
+            "charisma": "cha",
+            "deception": "cha",
+            "intimidation": "cha",
+            "performance": "cha",
+            "persuasion": "cha",
+        }
+        if key in ability_map:
+            return ability_map[key]
+        if "athletics" in text:
+            return "str"
+        if "acrobatics" in text or "sleight" in text or "stealth" in text:
+            return "dex"
+        if "arcana" in text or "history" in text or "investigation" in text or "nature" in text or "religion" in text:
+            return "int"
+        if "animal" in text or "insight" in text or "medicine" in text or "perception" in text or "survival" in text:
+            return "wis"
+        if "deception" in text or "intimidation" in text or "performance" in text or "persuasion" in text:
+            return "cha"
+        return "wis"
+
+    def first_roll_passed(ectx):
+        rolls = _read_field(ectx, "rolls")
+        if rolls == None or not lists.is_list(rolls) or len(rolls) == 0:
+            return False
+        passed = _field(rolls[0], "passed")
+        if passed == None:
+            passed = _field(rolls[0], "success")
+        return passed == True
+
+    if len(args) >= 5 and numberish(_args(args, 2)):
+        name = _args(args, 0, "Useful find")
+        check_name = _args(args, 1, "Wisdom (Survival)")
+        dc = _args(args, 2, "12")
+        item = _args(args, 3, "Supplies")
+        total = _args(args, 4, 1)
         bag = None
         desc = f"You gather **{item}** from the area."
     else:
-        name = _arg(args, 0, "Useful find")
-        desc = _arg(args, 1, "You find useful supplies in the wild.")
-        check_name = _arg(args, 2, "Wisdom (Survival)")
-        dc = _arg(args, 3, "12")
-        item = _arg(args, 4, "Supplies")
-        total = _arg(args, 5, 1)
-        bag = _arg(args, 6)
-    enc = _base(name, desc)
-    enc["rolls"] = [_roll(check_name, dc)]
-    outcome = {"type": "item", "name": _text(item, "Supplies"), "total": _int_or_text(total, 1)}
-    if bag != None and _text(bag).strip() != "":
-        outcome["bag"] = _text(bag)
-    enc["outcomes"] = [outcome]
+        name = _args(args, 0, "Useful find")
+        desc = _args(args, 1, "You find useful supplies in the wild.")
+        check_name = _args(args, 2, "Wisdom (Survival)")
+        dc = _args(args, 3, "12")
+        item = _args(args, 4, "Supplies")
+        total = _args(args, 5, 1)
+        bag = _args(args, 6)
+    enc = {"name": str(name), "description": str(desc)}
+    enc["rolls"] = [{"type": "check", "name": str(check_name), "ability": ability_for_check(check_name), "dc": str(dc)}]
+    outcome = {"type": "item", "name": str(item), "total": int_or_text(total, 1)}
+    if bag != None and str(bag).strip() != "":
+        outcome["bag"] = str(bag)
+
+    def outcomes(ectx):
+        if first_roll_passed(ectx):
+            return [outcome]
+        return []
+
+    enc["outcomes"] = outcomes
     return enc
 
 
@@ -215,13 +289,59 @@ def skill_check(args):
 
     Args: name, description, check_name, dc
     """
-    name = _arg(args, 0, "Skill check")
-    desc = _arg(args, 1, "A careful approach may reveal something useful.")
-    check_name = _arg(args, 2, "Wisdom (Survival)")
-    dc = _arg(args, 3, "12")
-    enc = _base(name, desc)
-    enc["rolls"] = [_roll(check_name, dc)]
-    return enc
+    def ability_for_check(check_name):
+        text = str(check_name).lower()
+        key = text.replace(" ", "").replace("_", "").replace("-", "")
+        ability_map = {
+            "strength": "str",
+            "athletics": "str",
+            "dexterity": "dex",
+            "initiative": "dex",
+            "acrobatics": "dex",
+            "sleightofhand": "dex",
+            "stealth": "dex",
+            "constitution": "con",
+            "intelligence": "int",
+            "arcana": "int",
+            "history": "int",
+            "investigation": "int",
+            "nature": "int",
+            "religion": "int",
+            "wisdom": "wis",
+            "animalhandling": "wis",
+            "insight": "wis",
+            "medicine": "wis",
+            "perception": "wis",
+            "survival": "wis",
+            "charisma": "cha",
+            "deception": "cha",
+            "intimidation": "cha",
+            "performance": "cha",
+            "persuasion": "cha",
+        }
+        if key in ability_map:
+            return ability_map[key]
+        if "athletics" in text:
+            return "str"
+        if "acrobatics" in text or "sleight" in text or "stealth" in text:
+            return "dex"
+        if "arcana" in text or "history" in text or "investigation" in text or "nature" in text or "religion" in text:
+            return "int"
+        if "animal" in text or "insight" in text or "medicine" in text or "perception" in text or "survival" in text:
+            return "wis"
+        if "deception" in text or "intimidation" in text or "performance" in text or "persuasion" in text:
+            return "cha"
+        return "wis"
+
+    name = _args(args, 0, "Skill check")
+    desc = _args(args, 1, "A careful approach may reveal something useful.")
+    check_name = _args(args, 2, "Wisdom (Survival)")
+    dc = _args(args, 3, "12")
+    return {
+        "name": str(name),
+        "description": str(desc),
+        "rolls": [{"type": "check", "name": str(check_name), "ability": ability_for_check(check_name), "dc": str(dc)}],
+    }
 
 
 def saving_throw(args):
@@ -229,104 +349,263 @@ def saving_throw(args):
 
     Args: name, description, save_name, dc
     """
-    name = _arg(args, 0, "Saving throw")
-    desc = _arg(args, 1, "A sudden threat demands quick reaction.")
-    save_name = _arg(args, 2, "Dexterity")
-    dc = _arg(args, 3, "12")
-    enc = _base(name, desc)
-    enc["rolls"] = [_save(save_name, dc)]
-    return enc
+    def ability_for_save(save_name):
+        key = str(save_name).lower().replace(" ", "").replace("_", "").replace("-", "")
+        ability_map = {
+            "strength": "str",
+            "dexterity": "dex",
+            "constitution": "con",
+            "intelligence": "int",
+            "wisdom": "wis",
+            "charisma": "cha",
+        }
+        if key in ability_map:
+            return ability_map[key]
+        return None
+
+    name = _args(args, 0, "Saving throw")
+    desc = _args(args, 1, "A sudden threat demands quick reaction.")
+    save_name = _args(args, 2, "Dexterity")
+    dc = _args(args, 3, "12")
+    save_roll = {"type": "save", "name": str(save_name), "dc": str(dc)}
+    ability = ability_for_save(save_name)
+    if ability != None:
+        save_roll["ability"] = ability
+    return {"name": str(name), "description": str(desc), "rolls": [save_roll]}
 
 
 def flavour(args):
     """Non-reward descriptive beat. Args: name, description"""
-    return _base(_arg(args, 0, "Forest sign"), _arg(args, 1, "You notice a quiet detail in the wild."))
+    return {
+        "name": str(_args(args, 0, "Forest sign")),
+        "description": str(_args(args, 1, "You notice a quiet detail in the wild.")),
+    }
 
 
 def story(args):
     """Descriptive encounter beat. Args: name, description"""
-    return flavour(args)
+    return {
+        "name": str(_args(args, 0, "Forest sign")),
+        "description": str(_args(args, 1, "You notice a quiet detail in the wild.")),
+    }
 
 
 def combat_template(args):
     """Simple combat encounter. Args: name, description, cr, monsters?, difficulty?"""
-    name = _arg(args, 0, "Hostile creatures")
-    desc = _arg(args, 1, "Something dangerous moves nearby.")
-    cr = _arg(args, 2, 1)
-    monsters = _arg(args, 3)
-    difficulty = _arg(args, 4)
-    enc = _base(name, desc)
+    name = _args(args, 0, "Hostile creatures")
+    desc = _args(args, 1, "Something dangerous moves nearby.")
+    cr = _args(args, 2, 1)
+    monsters = _args(args, 3)
+    difficulty = _args(args, 4)
+    enc = {"name": str(name), "description": str(desc), "cr": cr}
     enc["cr"] = cr
     if monsters != None and _text(monsters).strip() != "":
         if lists.is_list(monsters):
             enc["monsters"] = monsters
         else:
-            enc["monsters"] = [_text(monsters)]
+            enc["monsters"] = [str(monsters)]
     if difficulty != None and _text(difficulty).strip() != "":
-        enc["difficulty"] = _text(difficulty)
+        enc["difficulty"] = str(difficulty)
+    enc["combat_text"] = _display_combat(_read_field(enc, "monsters"))
     return enc
 
 
 def damage_combat(args):
     """Combat plus damage outcome. Args: name, description, cr, monsters?, difficulty?, total?"""
-    enc = combat_template(args)
-    enc["outcomes"] = [{"type": "damage", "total": _int_or_text(_arg(args, 5, "1d4"), "1d4")}]
+    def int_or_text(value, default="1d4"):
+        if value == None:
+            return default
+        try:
+            return int(value)
+        except:
+            return value
+
+    name = _args(args, 0, "Hostile creatures")
+    desc = _args(args, 1, "Something dangerous moves nearby.")
+    cr = _args(args, 2, 1)
+    monsters = _args(args, 3)
+    difficulty = _args(args, 4)
+    total = _args(args, 5, "1d4")
+    enc = {"name": str(name), "description": str(desc), "cr": cr}
+    if monsters != None and _text(monsters).strip() != "":
+        if lists.is_list(monsters):
+            enc["monsters"] = monsters
+        else:
+            enc["monsters"] = [str(monsters)]
+    if difficulty != None and _text(difficulty).strip() != "":
+        enc["difficulty"] = str(difficulty)
+    enc["combat_text"] = _display_combat(_read_field(enc, "monsters"))
+    enc["outcomes"] = [{"type": "damage", "total": int_or_text(total, "1d4")}]
     return enc
 
 
 def ambush(args):
     """Ambush encounter. Args: name, description, cr, monsters?, difficulty?, dc?"""
-    enc = combat_template(args)
-    dc = _arg(args, 5, "12")
+    name = _args(args, 0, "Hostile creatures")
+    desc = _args(args, 1, "Something dangerous moves nearby.")
+    cr = _args(args, 2, 1)
+    monsters = _args(args, 3)
+    difficulty = _args(args, 4)
+    dc = _args(args, 5, "12")
+    enc = {"name": str(name), "description": str(desc), "cr": cr}
+    if monsters != None and _text(monsters).strip() != "":
+        if lists.is_list(monsters):
+            enc["monsters"] = monsters
+        else:
+            enc["monsters"] = [str(monsters)]
+    if difficulty != None and _text(difficulty).strip() != "":
+        enc["difficulty"] = str(difficulty)
     enc["rolls"] = [
-        _roll("Perception", dc),
-        _roll("Stealth", dc),
+        {"type": "check", "name": "Perception", "ability": "wis", "dc": str(dc)},
+        {"type": "check", "name": "Stealth", "ability": "dex", "dc": str(dc)},
         {"type": "passive", "name": "Perception", "ability": "wis", "dc": _text(dc, "12")},
     ]
+
+    def combat_text(ectx):
+        surprised = []
+        rolls = _read_field(ectx, "rolls")
+        if rolls != None and lists.is_list(rolls) and len(rolls) > 0:
+            passed = _field(rolls[0], "passed")
+            if passed == None:
+                passed = _field(rolls[0], "success")
+            if passed == False:
+                ch = _read_field(ectx, "character")
+                name = _read_field(ch, "name")
+                if name == None:
+                    try:
+                        name = ch.name
+                    except:
+                        name = "The party"
+                surprised.append(name)
+        return _display_combat(_read_field(enc, "monsters"), surprised=surprised)
+
+    enc["combat_text"] = combat_text
     return enc
 
 
 def quest(args):
     """Quest hook. Args: name, description, reward_hint?"""
-    enc = _base(_arg(args, 0, "Unfinished business"), _arg(args, 1, "A hook asks for follow-up."))
-    reward = _arg(args, 2)
+    enc = {
+        "name": str(_args(args, 0, "Unfinished business")),
+        "description": str(_args(args, 1, "A hook asks for follow-up.")),
+    }
+    reward = _args(args, 2)
     if reward != None and _text(reward).strip() != "":
-        enc["reward"] = _text(reward)
+        enc["reward"] = str(reward)
     return enc
 
 
 def gold(args):
     """Simple gp reward. Args: name, description, total"""
-    enc = _base(_arg(args, 0, "Treasure cache"), _arg(args, 1, "Coins glint in the dirt."))
-    enc["outcomes"] = [{"type": "gold", "total": _int_or_text(_arg(args, 2, 1), 1)}]
+    def int_or_text(value, default=1):
+        if value == None:
+            return default
+        try:
+            return int(value)
+        except:
+            return value
+
+    enc = {
+        "name": str(_args(args, 0, "Treasure cache")),
+        "description": str(_args(args, 1, "Coins glint in the dirt.")),
+    }
+    enc["outcomes"] = [{"type": "gold", "total": int_or_text(_args(args, 2, 1), 1)}]
     return enc
 
 
 def healing(args):
     """Simple healing encounter. Args: name, description, total"""
-    enc = _base(_arg(args, 0, "Restorative spring"), _arg(args, 1, "A restorative moment eases your wounds."))
-    enc["outcomes"] = [{"type": "healing", "total": _int_or_text(_arg(args, 2, "1d4"), "1d4")}]
+    def int_or_text(value, default="1d4"):
+        if value == None:
+            return default
+        try:
+            return int(value)
+        except:
+            return value
+
+    enc = {
+        "name": str(_args(args, 0, "Restorative spring")),
+        "description": str(_args(args, 1, "A restorative moment eases your wounds.")),
+    }
+    enc["outcomes"] = [{"type": "healing", "total": int_or_text(_args(args, 2, "1d4"), "1d4")}]
     return enc
 
 
 def healing_check(args):
     """Healing check. Args: name, description, check_name, dc, total"""
-    enc = _base(_arg(args, 0, "Field medicine"), _arg(args, 1, "Careful treatment helps the wounded recover."))
-    enc["rolls"] = [_roll(_arg(args, 2, "Medicine"), _arg(args, 3, "12"))]
-    enc["outcomes"] = [{"type": "healing", "total": _int_or_text(_arg(args, 4, "1d4"), "1d4")}]
+    def ability_for_check(check_name):
+        text = str(check_name).lower()
+        key = text.replace(" ", "").replace("_", "").replace("-", "")
+        ability_map = {
+            "strength": "str",
+            "athletics": "str",
+            "dexterity": "dex",
+            "initiative": "dex",
+            "acrobatics": "dex",
+            "sleightofhand": "dex",
+            "stealth": "dex",
+            "constitution": "con",
+            "intelligence": "int",
+            "arcana": "int",
+            "history": "int",
+            "investigation": "int",
+            "nature": "int",
+            "religion": "int",
+            "wisdom": "wis",
+            "animalhandling": "wis",
+            "insight": "wis",
+            "medicine": "wis",
+            "perception": "wis",
+            "survival": "wis",
+            "charisma": "cha",
+            "deception": "cha",
+            "intimidation": "cha",
+            "performance": "cha",
+            "persuasion": "cha",
+        }
+        if key in ability_map:
+            return ability_map[key]
+        return "wis"
+
+    def int_or_text(value, default="1d4"):
+        if value == None:
+            return default
+        try:
+            return int(value)
+        except:
+            return value
+
+    name = _args(args, 0, "Field medicine")
+    desc = _args(args, 1, "Careful treatment helps the wounded recover.")
+    check_name = _args(args, 2, "Medicine")
+    dc = _args(args, 3, "12")
+    enc = {"name": str(name), "description": str(desc)}
+    enc["rolls"] = [{"type": "check", "name": str(check_name), "ability": ability_for_check(check_name), "dc": str(dc)}]
+    enc["outcomes"] = [{"type": "healing", "total": int_or_text(_args(args, 4, "1d4"), "1d4")}]
     return enc
 
 
 def damage(args):
     """Simple damage encounter. Args: name, description, total"""
-    enc = _base(_arg(args, 0, "Hazard"), _arg(args, 1, "The area turns dangerous."))
-    enc["outcomes"] = [{"type": "damage", "total": _int_or_text(_arg(args, 2, "1d4"), "1d4")}]
+    def int_or_text(value, default="1d4"):
+        if value == None:
+            return default
+        try:
+            return int(value)
+        except:
+            return value
+
+    enc = {
+        "name": str(_args(args, 0, "Hazard")),
+        "description": str(_args(args, 1, "The area turns dangerous.")),
+    }
+    enc["outcomes"] = [{"type": "damage", "total": int_or_text(_args(args, 2, "1d4"), "1d4")}]
     return enc
 
 
 def raw(args):
     """Return a literal encounter dict. Args: encounter_dict"""
-    value = _arg(args, 0)
+    value = _args(args, 0)
     if value != None and dicts.is_dict(value):
         return value
     return None

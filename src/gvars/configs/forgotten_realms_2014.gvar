@@ -1,0 +1,139 @@
+"""Example config - Forgotten Realms, 2014 rules.
+
+Duplicate into your workshop; point !svar westmarch_config at your UUID.
+This preset keeps world details intentionally light and uses engine biome
+modules so owners can configure from a working baseline in the web editor.
+"""
+
+config_version = "1.0"
+rules_version = "2014"
+
+display = {
+    "name": "Forgotten Realms Westmarch",
+    "description": "A configurable Faerun frontier campaign using 2014 rules.",
+    "footer": "Forgotten Realms Westmarch",
+    "colour": "#2F6B4F",
+}
+
+subsystems = {
+    "exploration": {
+        "enabled": True,
+        "commands": {
+            "enc": True,
+            "forage": True,
+            "fish": True,
+            "mine": True,
+            "lumber": True,
+            "hunt": False,
+            "loot": False,
+        },
+        "config": {
+            "enc_biome_source": "auto",
+            "distribution_policy": "random",
+            "distribution": {"combat": 25, "quest": 20, "gather": 55},
+            "avoid_repeat_encounters": "off",
+            "repeat_exclude_window": 5,
+            "monster_images": {"hunt": "thumbnail", "loot": "thumbnail"},
+            "show_check_dcs": {"hunt": True, "loot": True},
+        },
+    },
+    "travel": {
+        "enabled": False,
+        "commands": {
+            "travel": False,
+            "location": False,
+            "time": False,
+            "weather": False,
+        },
+    },
+    "downtime": {"enabled": False, "commands": {"downtime": False}},
+    "crafting": {
+        "enabled": False,
+        "commands": {
+            "craft": False,
+            "brew": False,
+            "enchant": False,
+            "scribe": False,
+        },
+    },
+    "economy": {
+        "enabled": False,
+        "commands": {
+            "job": False,
+            "buy": False,
+            "sell": False,
+            "wallet": False,
+        },
+    },
+    "content": {
+        "enabled": False,
+        "commands": {
+            "library": False,
+            "read": False,
+        },
+    },
+    "misc": {
+        "enabled": False,
+        "commands": {
+            "quest": False,
+            "recipe": False,
+        },
+    },
+}
+
+world_data = {
+    "default_location": "frontier_camp",
+    "locations": {
+        "frontier_camp": {
+            "name": "Frontier Camp",
+            "description": "A small camp on the edge of settled roads and old wilderness.",
+            "biome": "forest",
+            "commands": {
+                "enc": ["forest", "road", "plains"],
+                "forage": ["forest", "plains"],
+                "fish": ["river"],
+                "mine": ["mountain", "cave"],
+                "lumber": ["forest"],
+            },
+        },
+    },
+    "paths": [],
+    "biomes": {
+        "astral": {"gvar_id": "engine:configs/biomes/astral", "name": "Astral"},
+        "beach": {"gvar_id": "engine:configs/biomes/beach", "name": "Beach"},
+        "cave": {"gvar_id": "engine:configs/biomes/cave", "name": "Cave"},
+        "deep_seas": {"gvar_id": "engine:configs/biomes/deep_seas", "name": "Deep Seas"},
+        "desert": {"gvar_id": "engine:configs/biomes/desert", "name": "Desert"},
+        "forest": {"gvar_id": "engine:configs/biomes/forest", "name": "Forest"},
+        "jungle": {"gvar_id": "engine:configs/biomes/jungle", "name": "Jungle"},
+        "mountain": {"gvar_id": "engine:configs/biomes/mountain", "name": "Mountain"},
+        "plains": {"gvar_id": "engine:configs/biomes/plains", "name": "Plains"},
+        "river": {"gvar_id": "engine:configs/biomes/river", "name": "River"},
+        "road": {"gvar_id": "engine:configs/biomes/road", "name": "Road"},
+        "ruins": {"gvar_id": "engine:configs/biomes/ruins", "name": "Ruins"},
+        "sea": {"gvar_id": "engine:configs/biomes/sea", "name": "Sea"},
+        "sky": {"gvar_id": "engine:configs/biomes/sky", "name": "Sky"},
+        "swamp": {"gvar_id": "engine:configs/biomes/swamp", "name": "Swamp"},
+        "tundra": {"gvar_id": "engine:configs/biomes/tundra", "name": "Tundra"},
+        "underdark": {"gvar_id": "engine:configs/biomes/underdark", "name": "Underdark"},
+        "urban": {"gvar_id": "engine:configs/biomes/urban", "name": "Urban"},
+        "volcanic": {"gvar_id": "engine:configs/biomes/volcanic", "name": "Volcanic"},
+    },
+}
+
+policies = {
+    "auth": {"require_character": True},
+    "exploration": {"enforce_cooldowns": True},
+    "display": {
+        "footer_behaviour": "balanced",
+        "command_thumbnail": "default",
+        "helpful_tips": [],
+        "credits": None,
+    },
+    "player_setup": {
+        "enabled": True,
+        "require_character": True,
+        "hud": {"enabled": True, "fields": ["coinpurse", "location"]},
+        "checks": [],
+    },
+}

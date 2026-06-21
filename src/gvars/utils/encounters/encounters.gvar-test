@@ -14,6 +14,14 @@ True
 ---
 name: process_encounter handles encounter without outcomes
 
+enc = {"name": "Fight", "description": "Steel flashes.", "combat_text": "> Combat Initiated!\nEnemies:\n* 1x Goblin"}
+result = encounters.process_encounter(enc, character())
+return "Steel flashes." in result["description"] and "Combat Initiated" in result["description"] and "Goblin" in result["description"]
+---
+True
+---
+name: process_encounter appends resolved combat text
+
 result = encounters.process_encounter(None, character())
 return result["name"] == "Encounter"
 ---

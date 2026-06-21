@@ -306,10 +306,11 @@ function PreviewInputsSection({
             : []),
           {
             id: 'template-function',
-            title: 'Template function',
+            title: template.custom ? 'Template function' : 'Engine template function',
             summary: String(template.functionName ?? template.id),
             children: (
               <section className="preview-data-block">
+                {!template.custom ? <h4>Read-only engine source</h4> : null}
                 <pre>{template.source?.trim() || callLabel}</pre>
               </section>
             ),

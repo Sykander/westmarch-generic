@@ -5,6 +5,25 @@ True
 ---
 name: skill_check supports ability check names
 
+return encounter_templates.display_roll({"full": "18", "name": "Survival", "dc": 12, "passed": True}, show_dc=True, show_result=True) == "18 **Survival** (DC 12, Passed)"
+---
+True
+---
+name: display_roll formats standard roll output
+
+return "Combat Initiated" in encounter_templates.display_combat(["Goblin"]) and "* 1x Goblin" in encounter_templates.display_combat(["Goblin"])
+---
+True
+---
+name: display_combat formats standard combat output
+
+enc = encounter_templates.expand_row([["enc.gather"], "gather_item", "Wild Herbs", "Damp hollow.", "Survival", 12, "Herbs", 2, "Forage"])
+return len(enc["outcomes"]({"rolls": [{"passed": False}]})) == 0 and enc["outcomes"]({"rolls": [{"passed": True}]})[0]["name"] == "Herbs"
+---
+True
+---
+name: gather_item gates item outcome on first roll success
+
 enc = encounter_templates.expand_row([["enc.gather"], "skill_check", "Quick hands", "A hidden latch resists clumsy fingers.", "Sleight of Hand", 12])
 return enc["rolls"][0]["ability"] == "dex"
 ---
@@ -32,6 +51,14 @@ return "kind" not in enc and enc["difficulty"] == "hard" and len(enc["rolls"]) =
 True
 ---
 name: ambush expands combat and ambush rolls
+
+enc = encounter_templates.expand_row([["enc.combat"], "ambush", "Forest ambush", "Shapes rush from the brush.", 1, "Wolf", "hard", 14])
+text = enc["combat_text"]({"rolls": [{"passed": False}], "character": character()})
+return "Combat Initiated" in text and "surprised" in text and "* 1x Wolf" in text
+---
+True
+---
+name: ambush combat text reports surprise from failed first roll
 
 enc = encounter_templates.expand_row([["enc.combat"], "damage_combat", "Thorn charge", "Thorns tear at you before the fight.", 1, "Needle blight", "medium", "1d6"])
 return "kind" not in enc and enc["outcomes"][0]["type"] == "damage" and enc["outcomes"][0]["total"] == "1d6"

@@ -58,7 +58,7 @@ test('EncounterPreviewPanel renders the shared preview inputs by default', () =>
   assert.match(html, /gather_item\(args\)/);
   assert.match(html, /Title/);
   assert.match(html, /Wild Herbs/);
-  assert.match(html, /Template function/);
+  assert.match(html, /Engine template function/);
   assert.doesNotMatch(html, /Input args/);
   assert.doesNotMatch(html, /JSON row/);
   assert.doesNotMatch(html, /Generate Encounter/);
@@ -113,7 +113,7 @@ test('EncounterPreview renders the Discord-style embed view', () => {
   assert.match(html, /Tiny Discord subtext/);
   assert.doesNotMatch(html, /-# Tiny Discord subtext/);
   assert.doesNotMatch(html, /Encounter preview output/);
-  assert.match(html, /<strong>Survival DC 12<\/strong>/);
+  assert.match(html, /<strong>Survival<\/strong> \(DC 12, Passed\)/);
 });
 
 test('EncounterPreviewPanel keeps idle custom previews behind the View tab', () => {
