@@ -20,7 +20,7 @@ if not ok:
 
 argslist = &ARGS&
 
-DEFAULT_HUD_FIELDS = ["coins", "wallet", "location"]
+DEFAULT_HUD_FIELDS = ["coinpurse", "wallet", "location"]
 
 
 def _read_field(obj, key):
@@ -551,13 +551,13 @@ def _weather_text(cfg, ch):
 
 def _builtin_hud_line(cfg, ch, key, label=None):
     hud_key = str(key).strip().lower()
-    if hud_key in ["coin", "coins", "coinpurse", "gp"]:
+    if hud_key == "coinpurse":
         if not _subsystem_enabled(cfg, "economy"):
             return None
         text = _coinpurse_text(ch)
         if not _is_nonempty(text):
             return None
-        return _line(label if label != None else "Coins", text)
+        return _line(label if label != None else "Coinpurse", text)
     if hud_key == "wallet":
         if not _command_enabled(cfg, "economy", "wallet"):
             return None
@@ -594,7 +594,7 @@ def _custom_hud_line(cfg, ch, field):
     if _is_nonempty(key):
         key_text = str(key).strip().lower()
         label = _field_label(field, key_text)
-        if kind in [None, "", "builtin", "field"] or key_text in ["coins", "coin", "coinpurse", "gp", "wallet", "location", "time", "weather"]:
+        if kind in [None, "", "builtin", "field"] or key_text in ["coinpurse", "wallet", "location", "time", "weather"]:
             built = _builtin_hud_line(cfg, ch, key_text, label)
             if built != None:
                 return built

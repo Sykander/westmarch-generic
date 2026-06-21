@@ -18,7 +18,7 @@ Single toggle — no per-command flags. Character workday tracking for crafting 
 
 Optional `DOWNTIME` block for labels and rates ([US-3.4](../../user-stories.md) house rules).
 
-**Policy:** `policies.downtime.mode` — `"tracked"` \| `"manual"` \| `"off"` ([data-shapes.md](../../data-shapes.md#server-policies)). Subsystem toggle enables the command; policy controls cvar enforcement.
+**Policy:** `subsystems.downtime.config.mode` — `"tracked"` \| `"manual"` \| `"off"` ([data-shapes.md](../../data-shapes.md#server-policies)). Subsystem toggle enables the command; policy controls cvar enforcement.
 
 ## Related
 

@@ -56,11 +56,9 @@ Scroll of Fireball (Lv. 5 | SB +3 | DC 11)
 - `subsystems.crafting.config.require_known_spell`
 - `subsystems.crafting.config.checks`
 - `subsystems.crafting.config.tool_policy`
+- `subsystems.crafting.config.resources`
 - `subsystems.crafting.config.item_handling`
 - `subsystems.crafting.command_config.<command>`
-- `policies.crafting.resources`
-- `policies.crafting.item_handling`
-- `policies.inventory.item_handling`
-- `policies.downtime`
+- `subsystems.downtime.config`
 
 See [data-shapes.md](../data-shapes.md#craftingconfig) and [aliases/crafting/README.md](../aliases/crafting/README.md).

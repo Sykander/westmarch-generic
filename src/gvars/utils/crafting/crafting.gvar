@@ -282,16 +282,6 @@ def _crafting_config(cfg):
     return _read_field(_subsystem(cfg), "config")
 
 
-def _crafting_policy(cfg):
-    policies = _read_field(cfg, "policies")
-    return _read_field(policies, "crafting")
-
-
-def _inventory_policy(cfg):
-    policies = _read_field(cfg, "policies")
-    return _read_field(policies, "inventory")
-
-
 def _command_config(cfg, command):
     subsystem = _subsystem(cfg)
     command_config = _read_field(subsystem, "command_config")
@@ -492,22 +482,14 @@ def output_policy(config_override, command, output_kind=None):
     cfg = _cfg(config_override)
     if output_kind == None:
         output_kind = _read_field(COMMAND_OUTPUT_KIND, command)
-    inv = _inventory_policy(cfg)
-    craft_pol = _crafting_policy(cfg)
     c_cfg = _crafting_config(cfg)
     cmd_cfg = _command_config(cfg, command)
 
-    base = _read_field(inv, "item_handling")
+    base = _read_field(c_cfg, "item_handling")
     if base == None:
         base = {"mode": "manual"}
     mode = _policy_mode(base, command, "manual")
 
-    craft_out = _read_field(craft_pol, "item_handling")
-    if craft_out != None:
-        mode = _policy_mode(craft_out, command, mode)
-    cfg_out = _read_field(c_cfg, "item_handling")
-    if cfg_out != None:
-        mode = _policy_mode(cfg_out, command, mode)
     cmd_out = _read_field(cmd_cfg, "item_handling")
     if cmd_out == None:
         cmd_out = _read_field(cmd_cfg, "output")
@@ -515,12 +497,6 @@ def output_policy(config_override, command, output_kind=None):
         mode = _policy_mode(cmd_out, command, mode)
 
     bag = _read_bag_name(base, output_kind, "Equipment")
-    bag_override = _read_bag_name(craft_out, output_kind, None)
-    if bag_override != None:
-        bag = bag_override
-    bag_override = _read_bag_name(cfg_out, output_kind, None)
-    if bag_override != None:
-        bag = bag_override
     bag_override = _read_bag_name(cmd_out, output_kind, None)
     if bag_override != None:
         bag = bag_override
@@ -562,8 +538,8 @@ def _read_bag_name(policy, output_kind, fallback):
 
 def resource_mode(config_override, command, resource):
     cfg = _cfg(config_override)
-    policy = _crafting_policy(cfg)
-    resources = _read_field(policy, "resources")
+    c_cfg = _crafting_config(cfg)
+    resources = _read_field(c_cfg, "resources")
     command_layer = _command_config(cfg, command)
     command_resources = _read_field(command_layer, "resources")
 
@@ -574,12 +550,6 @@ def resource_mode(config_override, command, resource):
     if raw != None:
         return _as_mode(raw, "manual")
 
-    if resource == "gold" and _read_field(policy, "auto_deduct_gold") == True:
-        return "deduct"
-    if resource in ["materials", "items"] and _read_field(policy, "auto_deduct_materials") == True:
-        return "deduct"
-    if resource == "downtime" and _read_field(policy, "require_downtime_before_roll") == True:
-        return "check"
     return "manual"
 
 
@@ -588,8 +558,7 @@ def _materials_bag(cfg, command):
     bag = _read_field(command_layer, "resource_bag")
     if bag != None and str(bag).strip() != "":
         return str(bag).strip()
-    inv = _inventory_policy(cfg)
-    item_handling = _read_field(inv, "item_handling")
+    item_handling = _read_field(_crafting_config(cfg), "item_handling")
     bags = _read_field(item_handling, "bags")
     bag = _read_field(item_handling, "materials_bag")
     if bag == None:
@@ -604,8 +573,7 @@ def _equipment_bag(cfg, command):
     bag = _read_field(command_layer, "equipment_bag")
     if bag != None and str(bag).strip() != "":
         return str(bag).strip()
-    inv = _inventory_policy(cfg)
-    item_handling = _read_field(inv, "item_handling")
+    item_handling = _read_field(_crafting_config(cfg), "item_handling")
     bag = _read_bag_name(item_handling, "magic_item", "Equipment")
     if bag == None:
         return "Equipment"

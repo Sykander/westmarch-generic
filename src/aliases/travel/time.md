@@ -1,7 +1,10 @@
-Shows the server's world time when the clock feature is implemented.
+Shows the server's configured in-world time.
 
-Status: planned for a later release.
+```text
+!time
+!time <calendar_id>
+```
 
-Server owners should keep `subsystems.travel.commands.time` disabled for now. If invoked, the runtime command explains that the feature is not active yet.
+Calendars are configured under `world_data.calendars`. The command uses the primary calendar by default, or the only configured calendar when there is just one.
 
-Configured under: `Travel -> time`
+Configured under: `subsystems.travel.commands.time`

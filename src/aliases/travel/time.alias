@@ -2,8 +2,9 @@
 using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(
     auth = env.gvars.auth,
-    display = env.gvars.display,
+    clock = env.gvars.clock,
     config = env.gvars.config,
+    display = env.gvars.display,
 )
 
 COMMAND = "time"
@@ -14,12 +15,32 @@ cmd_name = COMMAND
 if not ok:
     return get_embed(desc=msg)
 
-args = argparse(&ARGS&)
 argslist = &ARGS&
+cfg = config.get_config()
 
-planned = f"""`{ctx.prefix}{cmd_name}` is planned for a later release and is not active yet.
+help_text = f"""Show the current in-world time.
 
-Server owners should keep `subsystems.travel.commands.{cmd_name}` disabled for now. Use the web config editor Check page to catch this before publishing."""
+**Usage**
+`{ctx.prefix}{cmd_name}`
+`{ctx.prefix}{cmd_name} <calendar_id>`
 
-return get_embed(desc=planned)
+Calendars are configured under `world_data.calendars`."""
+
+if len(argslist) > 0 and argslist[0] in ["help", "?"]:
+    return get_embed(desc=help_text)
+
+calendar_id = None
+if len(argslist) > 0:
+    calendar_id = str(argslist[0]).strip()
+
+instant = clock.now(cfg, calendar_id)
+if instant == None:
+    return get_embed(desc="No world calendar is configured. Add `world_data.calendars` to use `!time`.")
+
+text = clock.format_instant(cfg, instant, calendar_id)
+if text == None or str(text).strip() == "":
+    return get_embed(desc="The configured calendar could not be formatted.")
+
+calendar_name = instant["calendar"]
+return get_embed(desc=f"**{calendar_name}**\n{text}")
 </drac2>

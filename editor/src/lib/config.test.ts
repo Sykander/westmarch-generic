@@ -251,8 +251,8 @@ subsystems = {
   );
 });
 
-test('time and weather toggles are blocking planned-feature errors', () => {
-  const issues = issuesFor(`
+test('time and weather toggles are implemented command toggles', () => {
+  const codes = issueCodes(`
 subsystems = {
     "travel": {
         "enabled": False,
@@ -261,8 +261,8 @@ subsystems = {
 }
 `);
 
-  assert.equal(issues.find((entry) => entry.code === 'travel.time_planned')?.severity, 'error');
-  assert.equal(issues.find((entry) => entry.code === 'travel.weather_planned')?.severity, 'error');
+  assert.equal(codes.includes('travel.time_planned'), false);
+  assert.equal(codes.includes('travel.weather_planned'), false);
 });
 
 test('unsupported raw cooldown config is reported without hiding supported cooldowns', () => {
@@ -300,11 +300,7 @@ test('tracked downtime requires downtime subsystem', () => {
   assert.ok(
     issueCodes(`
 subsystems = {
-    "downtime": {"enabled": False},
-}
-
-policies = {
-    "downtime": {"mode": "tracked", "max_workdays": None, "acquisition": "manual"},
+    "downtime": {"enabled": False, "config": {"mode": "tracked"}},
 }
 `).includes('downtime.tracked_requires_subsystem'),
   );
@@ -313,8 +309,8 @@ policies = {
 test('downtime cap must be positive when set', () => {
   assert.ok(
     issueCodes(`
-policies = {
-    "downtime": {"mode": "manual", "max_workdays": 0, "acquisition": "manual"},
+subsystems = {
+    "downtime": {"config": {"mode": "manual", "max_workdays": 0, "acquisition": "manual"}},
 }
 `).includes('downtime.max_workdays'),
   );
@@ -324,16 +320,12 @@ test('crafting warns when downtime is required but not tracked', () => {
   assert.ok(
     issueCodes(`
 subsystems = {
-    "downtime": {"enabled": True},
+    "downtime": {"enabled": True, "config": {"mode": "manual"}},
     "crafting": {
         "enabled": True,
         "commands": {"craft": True},
+        "config": {"resources": {"downtime": "check"}},
     },
-}
-
-policies = {
-    "downtime": {"mode": "manual", "max_workdays": None, "acquisition": "manual"},
-    "crafting": {"require_downtime_before_roll": True},
 }
 `).includes('crafting.downtime_not_tracked'),
   );
@@ -342,16 +334,12 @@ policies = {
 test('tracked downtime with enabled subsystem satisfies crafting dependency', () => {
   const codes = issueCodes(`
 subsystems = {
-    "downtime": {"enabled": True},
+    "downtime": {"enabled": True, "config": {"mode": "tracked"}},
     "crafting": {
         "enabled": True,
         "commands": {"craft": True},
+        "config": {"resources": {"downtime": "check"}},
     },
-}
-
-policies = {
-    "downtime": {"mode": "tracked", "max_workdays": None, "acquisition": "manual"},
-    "crafting": {"require_downtime_before_roll": True},
 }
 `);
 
@@ -426,8 +414,8 @@ subsystems = {
 test('crafting resource policies use manual check or deduct', () => {
   assert.ok(
     issueCodes(`
-policies = {
-    "crafting": {"resources": {"gold": "auto"}},
+subsystems = {
+    "crafting": {"config": {"resources": {"gold": "auto"}}},
 }
 `).includes('crafting.resource_mode'),
   );
@@ -487,8 +475,8 @@ subsystems = {
 test('item handling policy validates known output modes', () => {
   assert.ok(
     issueCodes(`
-policies = {
-    "inventory": {"item_handling": {"mode": "warehouse"}},
+subsystems = {
+    "crafting": {"config": {"item_handling": {"mode": "warehouse"}}},
 }
 `).includes('inventory.item_handling_mode'),
   );
@@ -534,7 +522,7 @@ policies = {
   assert.ok(codes.includes('economy.wallet_cap_invalid'));
 });
 
-test('economy commands validate required setup data', () => {
+test('economy commands do not require setup data', () => {
   const codes = issueCodes(`
 subsystems = {
     "economy": {
@@ -544,11 +532,11 @@ subsystems = {
 }
 `);
 
-  assert.ok(codes.includes('economy.currencies_missing'));
-  assert.ok(codes.includes('economy.shops_missing'));
+  assert.equal(codes.includes('economy.currencies_missing'), false);
+  assert.equal(codes.includes('economy.shops_missing'), false);
 });
 
-test('economy shop validation catches sell support and malformed stock', () => {
+test('economy shop validation catches malformed stock', () => {
   const codes = issueCodes(`
 subsystems = {
     "economy": {
@@ -569,7 +557,6 @@ shops = {
 }
 `);
 
-  assert.ok(codes.includes('economy.sell_without_accepting_shop'));
   assert.ok(codes.includes('economy.stock_item'));
   assert.ok(codes.includes('economy.stock_price_missing'));
   assert.ok(codes.includes('economy.stock_price_shape'));

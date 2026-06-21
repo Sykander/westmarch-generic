@@ -20,6 +20,7 @@ subsystems = {
                 "quest": 25,
                 "gather": 50
             },
+            "avoid_repeat_encounters": "off",
             "repeat_exclude_window": 5,
             "monster_images": {
                 "hunt": "thumbnail",
@@ -52,6 +53,11 @@ subsystems = {
         "enabled": False,
         "commands": {
             "downtime": False
+        },
+        "config": {
+            "mode": "off",
+            "max_workdays": None,
+            "acquisition": "manual"
         }
     },
     "crafting": {
@@ -135,7 +141,23 @@ subsystems = {
                     "require_kit": False
                 }
             },
-            "item_handling": None
+            "resources": {
+                "gold": "manual",
+                "materials": "manual",
+                "items": "manual",
+                "downtime": "manual",
+                "spell_slot": "manual"
+            },
+            "item_handling": {
+                "mode": "manual",
+                "default_bag": "Equipment",
+                "equipment_bag": "Equipment",
+                "crafted_bag": "Equipment",
+                "potions_bag": "Potions",
+                "scrolls_bag": "Scrolls",
+                "magic_items_bag": "Equipment",
+                "materials_bag": "Materials"
+            }
         },
         "command_config": {
             "craft": {},
@@ -209,30 +231,10 @@ policies = {
     "auth": {
         "require_character": True
     },
-    "time": {
-        "mode": "manual"
-    },
     "travel": {
         "apply_path_costs": False,
         "consume_rations": False,
         "rations_item": "Rations"
-    },
-    "downtime": {
-        "mode": "off",
-        "max_workdays": None,
-        "acquisition": "manual"
-    },
-    "crafting": {
-        "require_downtime_before_roll": True,
-        "auto_deduct_materials": False,
-        "auto_deduct_gold": False,
-        "resources": {
-            "gold": "manual",
-            "materials": "manual",
-            "items": "manual",
-            "downtime": "check",
-            "spell_slot": "manual"
-        }
     },
     "economy": {
         "enforce_cooldowns": True,
@@ -240,16 +242,6 @@ policies = {
         "starting_gold": None
     },
     "inventory": {
-        "item_handling": {
-            "mode": "manual",
-            "default_bag": "Equipment",
-            "equipment_bag": "Equipment",
-            "crafted_bag": "Equipment",
-            "potions_bag": "Potions",
-            "scrolls_bag": "Scrolls",
-            "magic_items_bag": "Equipment",
-            "materials_bag": "Materials"
-        },
         "track_encumbrance": False,
         "enforce_encumbrance": False,
         "attunement_limit": None,
@@ -258,8 +250,7 @@ policies = {
         "enforce_magic_item_limit": False
     },
     "exploration": {
-        "enforce_cooldowns": True,
-        "avoid_repeat_encounters": "off"
+        "enforce_cooldowns": True
     },
     "combat": {
         "scale_encounters_to_level": False,
@@ -291,7 +282,7 @@ policies = {
         "hud": {
             "enabled": True,
             "fields": [
-                "coins",
+                "coinpurse",
                 "wallet",
                 "location"
             ]

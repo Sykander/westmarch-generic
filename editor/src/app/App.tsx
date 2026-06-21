@@ -10,14 +10,15 @@ import {
   FileCode2,
   FileDown,
   FileText,
+  Plus,
   Radio,
   Save,
+  Trash2,
   UploadCloud,
   X,
 } from 'lucide-react';
 import {
   applyIssueFix,
-  commandIsPlanned,
   commandSupportsCooldown,
   createBlankConfig,
   parseConfig,
@@ -89,6 +90,16 @@ const WESTMARCH_VERSION = westmarchPackage.version;
 const CRAFTING_RESOURCE_MODES = ['manual', 'check', 'deduct'];
 const ITEM_HANDLING_MODES = ['manual', 'bags'];
 const CRAFTING_RECIPE_MODES = ['mixed', 'raw', 'recipes'];
+const ITEM_HANDLING_DEFAULTS = {
+  mode: 'manual',
+  default_bag: 'Equipment',
+  equipment_bag: 'Equipment',
+  crafted_bag: 'Equipment',
+  potions_bag: 'Potions',
+  scrolls_bag: 'Scrolls',
+  magic_items_bag: 'Equipment',
+  materials_bag: 'Materials',
+};
 const CRAFTING_CATALOGUE_DEFAULTS = {
   items: 'engine:catalogues/items',
   potions: 'engine:catalogues/potions',
@@ -118,16 +129,7 @@ const CRAFTING_TOOL_POLICY_DEFAULTS = {
     require_kit: false,
   },
 };
-const HUD_FIELD_OPTIONS = [
-  'coins',
-  'coin',
-  'coinpurse',
-  'gp',
-  'wallet',
-  'location',
-  'time',
-  'weather',
-];
+const HUD_FIELD_OPTIONS = ['coinpurse', 'wallet', 'location', 'time', 'weather'];
 const CRAFTING_TOOL_OPTIONS = [
   "Alchemist's Supplies",
   "Brewer's Supplies",
@@ -1230,7 +1232,6 @@ function SubsystemsView({
               ) : null}
               <div className="toggle-grid">
                 {commandEntries.map(([command, value]) => {
-                  const commandPlanned = commandIsPlanned(key, command);
                   const checked = value === true;
                   if (isPlanned) {
                     return (
@@ -1241,17 +1242,11 @@ function SubsystemsView({
                     );
                   }
                   return (
-                    <label
-                      className={commandPlanned ? 'check-chip disabled' : 'check-chip'}
-                      key={command}
-                      title={commandPlanned ? 'Planned for a later release' : undefined}
-                    >
+                    <label className="check-chip" key={command}>
                       <input
                         type="checkbox"
                         checked={checked}
-                        disabled={commandPlanned && !checked}
                         onChange={(event) => {
-                          if (commandPlanned && event.target.checked) return;
                           updateConfig(
                             `subsystems.${key}.commands.${command}`,
                             event.target.checked,
@@ -1259,7 +1254,6 @@ function SubsystemsView({
                         }}
                       />
                       <span>{command}</span>
-                      {commandPlanned ? <span className="badge neutral">Planned</span> : null}
                     </label>
                   );
                 })}
@@ -1433,6 +1427,15 @@ function SubsystemAdvancedEditor({
             }
             help="Controls whether exploration commands take biome args or infer from location."
           />
+          <SelectField
+            label="Repeat encounters"
+            value={String(config.avoid_repeat_encounters ?? 'off')}
+            values={['off', 'same_biome', 'global']}
+            onChange={(value) =>
+              updateConfig(`subsystems.${subsystemKey}.config.avoid_repeat_encounters`, value)
+            }
+            help="Controls whether recent encounters are excluded from future rolls."
+          />
           <TextField
             label="Repeat exclude window"
             value={String(config.repeat_exclude_window ?? '')}
@@ -1524,6 +1527,30 @@ function SubsystemAdvancedEditor({
       ) : null}
       {subsystemKey === 'downtime' ? (
         <div className="form-grid compact">
+          <SelectField
+            label="Downtime mode"
+            value={String(config.mode ?? 'off')}
+            values={['off', 'manual', 'tracked']}
+            onChange={(value) => updateConfig(`subsystems.${subsystemKey}.config.mode`, value)}
+            help="off disables the ledger; manual is player bookkeeping; tracked lets commands check or spend workdays."
+          />
+          <SelectField
+            label="Downtime acquisition"
+            value={String(config.acquisition ?? 'manual')}
+            values={['manual', 'world_clock', 'journey']}
+            onChange={(value) =>
+              updateConfig(`subsystems.${subsystemKey}.config.acquisition`, value)
+            }
+            help="How downtime is granted. Manual is implemented now; world_clock and journey are validation-only hooks."
+          />
+          <TextField
+            label="Max workdays"
+            value={String(config.max_workdays ?? '')}
+            onChange={(value) =>
+              updateConfig(`subsystems.${subsystemKey}.config.max_workdays`, numberOrNull(value))
+            }
+            help="Optional cap for the downtime ledger. Leave blank for unlimited."
+          />
           <TextField
             label="Workday hours"
             value={String(config.workday_hours ?? '')}
@@ -1617,6 +1644,16 @@ function SubsystemAdvancedEditor({
             value={asRecord(config.tool_policy ?? CRAFTING_TOOL_POLICY_DEFAULTS)}
             onChange={(value) =>
               updateConfig(`subsystems.${subsystemKey}.config.tool_policy`, value)
+            }
+          />
+          <CraftingResourcesEditor
+            value={asRecord(config.resources)}
+            onChange={(value) => updateConfig(`subsystems.${subsystemKey}.config.resources`, value)}
+          />
+          <ItemHandlingEditor
+            value={asRecord(config.item_handling ?? ITEM_HANDLING_DEFAULTS)}
+            onChange={(value) =>
+              updateConfig(`subsystems.${subsystemKey}.config.item_handling`, value)
             }
           />
           <CraftingCommandOverridesEditor
@@ -1734,16 +1771,6 @@ function PoliciesView({
   config: ConfigModel;
   updateConfig: (path: string, value: unknown) => void;
 }) {
-  function updateOptionalNumber(path: string, value: string) {
-    const trimmed = value.trim();
-    if (!trimmed) {
-      updateConfig(path, null);
-      return;
-    }
-    const numeric = Number(trimmed);
-    updateConfig(path, Number.isFinite(numeric) ? numeric : trimmed);
-  }
-
   return (
     <section className="section-panel">
       <SectionTitle
@@ -1752,123 +1779,6 @@ function PoliciesView({
         help="Policies tune command behavior without changing engine code."
       />
       <div className="form-grid">
-        <SelectField
-          label="Repeat encounters"
-          value={String(readPath(config, 'policies.exploration.avoid_repeat_encounters') ?? 'off')}
-          values={['off', 'same_biome', 'global']}
-          onChange={(value) => updateConfig('policies.exploration.avoid_repeat_encounters', value)}
-          help="Controls whether recent encounters are excluded from future rolls."
-        />
-        <SelectField
-          label="Downtime mode"
-          value={String(readPath(config, 'policies.downtime.mode') ?? 'off')}
-          values={['off', 'manual', 'tracked']}
-          onChange={(value) => updateConfig('policies.downtime.mode', value)}
-          help="off is the default; manual keeps a player ledger; tracked lets future systems enforce costs."
-        />
-        <SelectField
-          label="Downtime acquisition"
-          value={String(readPath(config, 'policies.downtime.acquisition') ?? 'manual')}
-          values={['manual', 'world_clock', 'journey']}
-          onChange={(value) => updateConfig('policies.downtime.acquisition', value)}
-          help="manual is implemented now; world_clock and journey are reserved for later automation."
-        />
-        <TextField
-          label="Max workdays"
-          value={String(readPath(config, 'policies.downtime.max_workdays') ?? '')}
-          onChange={(value) => updateOptionalNumber('policies.downtime.max_workdays', value)}
-          help="Optional cap for the downtime ledger. Leave blank for unlimited."
-        />
-        <SelectField
-          label="Crafting gold"
-          value={String(readPath(config, 'policies.crafting.resources.gold') ?? 'manual')}
-          values={CRAFTING_RESOURCE_MODES}
-          onChange={(value) => updateConfig('policies.crafting.resources.gold', value)}
-          help="manual prints the cost, check verifies it, deduct verifies and removes it."
-        />
-        <SelectField
-          label="Crafting materials"
-          value={String(readPath(config, 'policies.crafting.resources.materials') ?? 'manual')}
-          values={CRAFTING_RESOURCE_MODES}
-          onChange={(value) => updateConfig('policies.crafting.resources.materials', value)}
-          help="Controls configured material or component item requirements."
-        />
-        <SelectField
-          label="Crafting items"
-          value={String(readPath(config, 'policies.crafting.resources.items') ?? 'manual')}
-          values={CRAFTING_RESOURCE_MODES}
-          onChange={(value) => updateConfig('policies.crafting.resources.items', value)}
-          help="Controls required equipment or magic-item ingredients."
-        />
-        <SelectField
-          label="Crafting downtime"
-          value={String(readPath(config, 'policies.crafting.resources.downtime') ?? 'manual')}
-          values={CRAFTING_RESOURCE_MODES}
-          onChange={(value) => updateConfig('policies.crafting.resources.downtime', value)}
-          help="check and deduct require tracked downtime with the downtime subsystem enabled."
-        />
-        <SelectField
-          label="Crafting spell slots"
-          value={String(readPath(config, 'policies.crafting.resources.spell_slot') ?? 'manual')}
-          values={CRAFTING_RESOURCE_MODES}
-          onChange={(value) => updateConfig('policies.crafting.resources.spell_slot', value)}
-          help="Used by scribing when a scroll should consume a spell slot."
-        />
-        <SelectField
-          label="Global item output"
-          value={String(readPath(config, 'policies.inventory.item_handling.mode') ?? 'manual')}
-          values={ITEM_HANDLING_MODES}
-          onChange={(value) => updateConfig('policies.inventory.item_handling.mode', value)}
-          help="Global default: manual prints gained items; bags writes them into configured bag cvars."
-        />
-        <TextField
-          label="Global default item bag"
-          value={String(readPath(config, 'policies.inventory.item_handling.default_bag') ?? '')}
-          onChange={(value) =>
-            updateConfig('policies.inventory.item_handling.default_bag', value || undefined)
-          }
-          help="Fallback bag name when a command does not have a more specific bag."
-        />
-        <TextField
-          label="Global equipment bag"
-          value={String(readPath(config, 'policies.inventory.item_handling.equipment_bag') ?? '')}
-          onChange={(value) =>
-            updateConfig('policies.inventory.item_handling.equipment_bag', value || undefined)
-          }
-          help="Bag checked for required equipped or ingredient items."
-        />
-        <TextField
-          label="Global potions bag"
-          value={String(readPath(config, 'policies.inventory.item_handling.potions_bag') ?? '')}
-          onChange={(value) =>
-            updateConfig('policies.inventory.item_handling.potions_bag', value || undefined)
-          }
-          help="Bag used for brewed potions when output mode is bags."
-        />
-        <TextField
-          label="Global scrolls bag"
-          value={String(readPath(config, 'policies.inventory.item_handling.scrolls_bag') ?? '')}
-          onChange={(value) =>
-            updateConfig('policies.inventory.item_handling.scrolls_bag', value || undefined)
-          }
-          help="Bag used for spell scrolls when output mode is bags."
-        />
-        <TextField
-          label="Global magic items bag"
-          value={String(readPath(config, 'policies.inventory.item_handling.magic_items_bag') ?? '')}
-          onChange={(value) =>
-            updateConfig('policies.inventory.item_handling.magic_items_bag', value || undefined)
-          }
-          help="Bag used for enchanted items when output mode is bags."
-        />
-        <TextField
-          label="Global materials bag"
-          value={String(readPath(config, 'policies.inventory.item_handling.materials_bag') ?? '')}
-          onChange={(value) =>
-            updateConfig('policies.inventory.item_handling.materials_bag', value || undefined)
-          }
-          help="Bag checked for consumed ingredients when material or item policies are enforced."
-        />
         <FooterBehaviourField
           value={String(readPath(config, 'policies.display.footer_behaviour') ?? 'balanced')}
           onChange={(value) => updateConfig('policies.display.footer_behaviour', value)}
@@ -1878,7 +1788,7 @@ function PoliciesView({
             readPath(config, 'policies.player_setup') ?? {
               enabled: true,
               require_character: true,
-              hud: { enabled: true, fields: ['coins', 'wallet', 'location'] },
+              hud: { enabled: true, fields: ['coinpurse', 'wallet', 'location'] },
               checks: [],
             },
           )}
@@ -2202,6 +2112,117 @@ function CraftingToolPolicyEditor({
   );
 }
 
+function CraftingResourcesEditor({
+  value,
+  onChange,
+}: {
+  value: AnyRecord;
+  onChange: (value: AnyRecord) => void;
+}) {
+  const resourceDefaults = {
+    gold: 'manual',
+    materials: 'manual',
+    items: 'manual',
+    downtime: 'manual',
+    spell_slot: 'manual',
+  };
+
+  function updateResource(key: string, mode: string) {
+    onChange({ ...resourceDefaults, ...value, [key]: mode });
+  }
+
+  return (
+    <section className="field span-2 guided-editor">
+      <span>
+        Crafting resources
+        <HelpTip label="Crafting resources help">
+          Controls whether crafting costs are only printed, checked before crafting, or deducted
+          automatically.
+        </HelpTip>
+      </span>
+      <div className="form-grid compact">
+        {Object.keys(resourceDefaults).map((key) => (
+          <SelectField
+            label={key === 'spell_slot' ? 'Spell slots' : titleFromSlug(key)}
+            value={String(value[key] ?? resourceDefaults[key as keyof typeof resourceDefaults])}
+            values={CRAFTING_RESOURCE_MODES}
+            onChange={(mode) => updateResource(key, mode)}
+            key={key}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ItemHandlingEditor({
+  value,
+  onChange,
+}: {
+  value: AnyRecord;
+  onChange: (value: AnyRecord) => void;
+}) {
+  const current = { ...ITEM_HANDLING_DEFAULTS, ...value };
+
+  function updateField(key: string, next: unknown) {
+    onChange({ ...current, [key]: next });
+  }
+
+  return (
+    <section className="field span-2 guided-editor">
+      <span>
+        Item output
+        <HelpTip label="Item output help">
+          Controls where crafted items and consumed material checks look for Bags workshop data.
+        </HelpTip>
+      </span>
+      <div className="form-grid compact">
+        <SelectField
+          label="Output mode"
+          value={String(current.mode ?? 'manual')}
+          values={ITEM_HANDLING_MODES}
+          onChange={(mode) => updateField('mode', mode)}
+        />
+        <TextField
+          label="Default bag"
+          value={String(current.default_bag ?? '')}
+          onChange={(next) => updateField('default_bag', next || undefined)}
+        />
+        <TextField
+          label="Equipment bag"
+          value={String(current.equipment_bag ?? '')}
+          onChange={(next) => updateField('equipment_bag', next || undefined)}
+        />
+        <TextField
+          label="Crafted item bag"
+          value={String(current.crafted_bag ?? '')}
+          onChange={(next) => updateField('crafted_bag', next || undefined)}
+        />
+        <TextField
+          label="Potions bag"
+          value={String(current.potions_bag ?? '')}
+          onChange={(next) => updateField('potions_bag', next || undefined)}
+        />
+        <TextField
+          label="Scrolls bag"
+          value={String(current.scrolls_bag ?? '')}
+          onChange={(next) => updateField('scrolls_bag', next || undefined)}
+        />
+        <TextField
+          label="Magic items bag"
+          value={String(current.magic_items_bag ?? '')}
+          onChange={(next) => updateField('magic_items_bag', next || undefined)}
+        />
+        <TextField
+          label="Materials bag"
+          value={String(current.materials_bag ?? '')}
+          onChange={(next) => updateField('materials_bag', next || undefined)}
+        />
+      </div>
+    </section>
+  );
+}
+
 function CraftingCommandOverridesEditor({
   value,
   onChange,
@@ -2418,6 +2439,405 @@ function TransportIconsEditor({
   );
 }
 
+function EconomyDataEditor({
+  currencies,
+  shops,
+  locations,
+  updateConfig,
+}: {
+  currencies: AnyRecord;
+  shops: AnyRecord;
+  locations: AnyRecord;
+  updateConfig: (path: string, value: unknown) => void;
+}) {
+  const [currencyId, setCurrencyId] = useState('shards');
+  const [shopId, setShopId] = useState('general');
+
+  function addCurrency() {
+    const id = slugValue(currencyId);
+    if (!id) return;
+    updateConfig('currencies', {
+      ...currencies,
+      [id]: { name: titleFromSlug(id), plural: `${titleFromSlug(id)}s` },
+    });
+    setCurrencyId('');
+  }
+
+  function addShop() {
+    const id = slugValue(shopId);
+    if (!id) return;
+    updateConfig('shops', {
+      ...shops,
+      [id]: {
+        id,
+        name: titleFromSlug(id),
+        accepts_sells: false,
+        buyback: 0.5,
+        stock: [],
+      },
+    });
+    setShopId('');
+  }
+
+  return (
+    <section className="field span-2 guided-editor">
+      <span>
+        Economy data
+        <HelpTip label="Economy data help">
+          Optional wallet currencies and shops for economy commands.
+        </HelpTip>
+      </span>
+      <div className="collection-editor-head">
+        <h3>Currencies</h3>
+        <div className="inline-add-row">
+          <input
+            value={currencyId}
+            onChange={(event) => setCurrencyId(event.target.value)}
+            placeholder="currency id"
+            aria-label="New currency id"
+          />
+          <button type="button" onClick={addCurrency}>
+            <Plus size={16} aria-hidden="true" />
+            Add Currency
+          </button>
+        </div>
+      </div>
+      <div className="collection-list">
+        {Object.entries(currencies).map(([id, value]) => (
+          <CurrencyEditor
+            id={id}
+            currency={asRecord(value)}
+            updateConfig={updateConfig}
+            onRemove={() => updateConfig('currencies', omitRecordKey(currencies, id))}
+            key={id}
+          />
+        ))}
+        {Object.keys(currencies).length === 0 ? (
+          <p className="collection-empty">No wallet currencies configured.</p>
+        ) : null}
+      </div>
+
+      <div className="collection-editor-head">
+        <h3>Shops</h3>
+        <div className="inline-add-row">
+          <input
+            value={shopId}
+            onChange={(event) => setShopId(event.target.value)}
+            placeholder="shop id"
+            aria-label="New shop id"
+          />
+          <button type="button" onClick={addShop}>
+            <Plus size={16} aria-hidden="true" />
+            Add Shop
+          </button>
+        </div>
+      </div>
+      <div className="collection-list">
+        {Object.entries(shops).map(([id, value]) => (
+          <ShopEditor
+            id={id}
+            shop={asRecord(value)}
+            currencies={currencies}
+            locationIds={Object.keys(locations)}
+            updateConfig={updateConfig}
+            onRemove={() => updateConfig('shops', omitRecordKey(shops, id))}
+            key={id}
+          />
+        ))}
+        {Object.keys(shops).length === 0 ? (
+          <p className="collection-empty">No shops configured.</p>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+function CurrencyEditor({
+  id,
+  currency,
+  updateConfig,
+  onRemove,
+}: {
+  id: string;
+  currency: AnyRecord;
+  updateConfig: (path: string, value: unknown) => void;
+  onRemove: () => void;
+}) {
+  return (
+    <details className="collection-item" open>
+      <summary className="collection-item-head">
+        <div>
+          <strong>{String(currency.name ?? titleFromSlug(id))}</strong>
+          <span>{id}</span>
+        </div>
+        <button
+          type="button"
+          className="field-action-button"
+          onClick={(event) => {
+            event.preventDefault();
+            onRemove();
+          }}
+          aria-label={`Remove currency ${id}`}
+          title="Remove currency"
+        >
+          <Trash2 size={16} aria-hidden="true" />
+        </button>
+      </summary>
+      <div className="form-grid compact">
+        <TextField
+          label="Name"
+          value={String(currency.name ?? '')}
+          onChange={(value) => updateConfig(`currencies.${id}.name`, value || undefined)}
+        />
+        <TextField
+          label="Plural"
+          value={String(currency.plural ?? '')}
+          onChange={(value) => updateConfig(`currencies.${id}.plural`, value || undefined)}
+        />
+        <TextField
+          label="Symbol"
+          value={String(currency.symbol ?? '')}
+          onChange={(value) => updateConfig(`currencies.${id}.symbol`, value || undefined)}
+        />
+        <TextField
+          label="Max balance"
+          value={String(currency.max_balance ?? '')}
+          onChange={(value) =>
+            updateConfig(`currencies.${id}.max_balance`, numberOrUndefined(value))
+          }
+        />
+        <label className="field span-2">
+          <span>Description</span>
+          <textarea
+            value={String(currency.description ?? '')}
+            onChange={(event) =>
+              updateConfig(`currencies.${id}.description`, event.target.value || undefined)
+            }
+            rows={2}
+          />
+        </label>
+      </div>
+    </details>
+  );
+}
+
+function ShopEditor({
+  id,
+  shop,
+  currencies,
+  locationIds,
+  updateConfig,
+  onRemove,
+}: {
+  id: string;
+  shop: AnyRecord;
+  currencies: AnyRecord;
+  locationIds: string[];
+  updateConfig: (path: string, value: unknown) => void;
+  onRemove: () => void;
+}) {
+  const stock = Array.isArray(shop.stock) ? shop.stock.map((entry) => asRecord(entry)) : [];
+
+  function updateStock(index: number, next: AnyRecord) {
+    updateConfig(
+      `shops.${id}.stock`,
+      stock.map((entry, row) => (row === index ? next : entry)),
+    );
+  }
+
+  return (
+    <details className="collection-item" open>
+      <summary className="collection-item-head">
+        <div>
+          <strong>{String(shop.name ?? titleFromSlug(id))}</strong>
+          <span>{id}</span>
+        </div>
+        <button
+          type="button"
+          className="field-action-button"
+          onClick={(event) => {
+            event.preventDefault();
+            onRemove();
+          }}
+          aria-label={`Remove shop ${id}`}
+          title="Remove shop"
+        >
+          <Trash2 size={16} aria-hidden="true" />
+        </button>
+      </summary>
+      <div className="form-grid compact">
+        <TextField
+          label="Name"
+          value={String(shop.name ?? '')}
+          onChange={(value) => updateConfig(`shops.${id}.name`, value || undefined)}
+        />
+        <label className="field">
+          <span>Location</span>
+          <select
+            value={String(shop.location_id ?? '')}
+            onChange={(event) =>
+              updateConfig(`shops.${id}.location_id`, event.target.value || undefined)
+            }
+          >
+            <option value="">Global</option>
+            {optionsWithSelected(locationIds, [String(shop.location_id ?? '')].filter(Boolean)).map(
+              (locationId) => (
+                <option value={locationId} key={locationId}>
+                  {locationId}
+                </option>
+              ),
+            )}
+          </select>
+        </label>
+        <TextField
+          label="Buyback"
+          value={String(shop.buyback ?? '')}
+          onChange={(value) => updateConfig(`shops.${id}.buyback`, numberOrUndefined(value))}
+        />
+        <label className="switch-line">
+          <input
+            type="checkbox"
+            checked={shop.accepts_sells === true}
+            onChange={(event) => updateConfig(`shops.${id}.accepts_sells`, event.target.checked)}
+          />
+          <span>Accepts sells</span>
+        </label>
+      </div>
+      <div className="collection-editor-head">
+        <h4>Stock</h4>
+        <button
+          type="button"
+          onClick={() =>
+            updateConfig(`shops.${id}.stock`, [...stock, { item: '', price: { gold: 1 } }])
+          }
+        >
+          <Plus size={16} aria-hidden="true" />
+          Add Stock
+        </button>
+      </div>
+      <div className="collection-list">
+        {stock.map((entry, index) => (
+          <StockRowEditor
+            stock={entry}
+            currencies={currencies}
+            onChange={(next) => updateStock(index, next)}
+            onRemove={() =>
+              updateConfig(
+                `shops.${id}.stock`,
+                stock.filter((_, row) => row !== index),
+              )
+            }
+            key={index}
+          />
+        ))}
+        {stock.length === 0 ? <p className="collection-empty">No stock rows.</p> : null}
+      </div>
+    </details>
+  );
+}
+
+function StockRowEditor({
+  stock,
+  currencies,
+  onChange,
+  onRemove,
+}: {
+  stock: AnyRecord;
+  currencies: AnyRecord;
+  onChange: (value: AnyRecord) => void;
+  onRemove: () => void;
+}) {
+  return (
+    <div className="collection-item stock-row-editor">
+      <div className="form-grid compact">
+        <TextField
+          label="Item"
+          value={String(stock.item ?? '')}
+          onChange={(value) => onChange({ ...stock, item: value })}
+        />
+        <TextField
+          label="Quantity"
+          value={String(stock.qty ?? '')}
+          onChange={(value) => onChange({ ...stock, qty: numberOrUndefined(value) })}
+        />
+        <TextField
+          label="Catalogue"
+          value={String(stock.catalogue ?? '')}
+          onChange={(value) => onChange({ ...stock, catalogue: value || undefined })}
+        />
+        <PriceEditor
+          label="Buy price"
+          value={asRecord(stock.price)}
+          currencies={currencies}
+          onChange={(price) => onChange({ ...stock, price })}
+        />
+        <PriceEditor
+          label="Sell price"
+          value={asRecord(stock.sell_price)}
+          currencies={currencies}
+          onChange={(sell_price) => onChange({ ...stock, sell_price })}
+        />
+      </div>
+      <button
+        type="button"
+        className="field-action-button"
+        onClick={onRemove}
+        aria-label="Remove stock row"
+        title="Remove stock row"
+      >
+        <Trash2 size={16} aria-hidden="true" />
+      </button>
+    </div>
+  );
+}
+
+function PriceEditor({
+  label,
+  value,
+  currencies,
+  onChange,
+}: {
+  label: string;
+  value: AnyRecord;
+  currencies: AnyRecord;
+  onChange: (value: AnyRecord) => void;
+}) {
+  function updateAmount(key: string, next: string) {
+    const amount = numberOrUndefined(next);
+    const price = { ...value };
+    if (amount === undefined) {
+      delete price[key];
+    } else {
+      price[key] = amount;
+    }
+    onChange(price);
+  }
+
+  return (
+    <div className="field span-2">
+      <span>{label}</span>
+      <div className="price-grid">
+        <label className="field">
+          <span>GP</span>
+          <input
+            value={String(value.gold ?? '')}
+            onChange={(event) => updateAmount('gold', event.target.value)}
+          />
+        </label>
+        {Object.entries(currencies).map(([currencyId, currency]) => (
+          <label className="field" key={currencyId}>
+            <span>{String(asRecord(currency).name ?? currencyId)}</span>
+            <input
+              value={String(value[currencyId] ?? '')}
+              onChange={(event) => updateAmount(currencyId, event.target.value)}
+            />
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function WorldView({
   config,
   updateConfig,
@@ -2474,8 +2894,14 @@ function WorldView({
         biomeOptions={biomeOptions}
         updateConfig={updateConfig}
       />
+      <EconomyDataEditor
+        currencies={asRecord(config.currencies)}
+        shops={asRecord(config.shops)}
+        locations={locations}
+        updateConfig={updateConfig}
+      />
       <details className="advanced-json-details">
-        <summary>Economy data</summary>
+        <summary>Advanced economy JSON</summary>
         <div className="subsystem-json-grid">
           <JsonField
             label="Currencies JSON"
@@ -3365,6 +3791,11 @@ function asStringList(value: unknown) {
   return [];
 }
 
+function optionLabel(option: string) {
+  if (option === 'coinpurse') return 'Coinpurse';
+  return titleFromSlug(option);
+}
+
 function toggleStringListValue(current: string[], option: string, checked: boolean) {
   if (checked) return current.includes(option) ? current : [...current, option];
   return current.filter((item) => item !== option);
@@ -3379,6 +3810,12 @@ function arrayToCsv(value: unknown) {
   if (Array.isArray(value)) return value.map((item) => String(item)).join(', ');
   if (typeof value === 'string') return value;
   return '';
+}
+
+function omitRecordKey(record: AnyRecord, key: string) {
+  const next = { ...record };
+  delete next[key];
+  return next;
 }
 
 function numberOrUndefined(value: string) {
@@ -3424,7 +3861,7 @@ function CheckboxGroupField({
                 onChange(toggleStringListValue(value, option, event.target.checked))
               }
             />
-            <span>{option}</span>
+            <span>{optionLabel(option)}</span>
           </label>
         ))}
       </div>

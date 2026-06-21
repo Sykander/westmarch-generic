@@ -11,13 +11,11 @@ cfg_fixture = {
                     "magic_items": "engine:catalogues/magic_items",
                     "recipes": None,
                 },
+                "resources": {"downtime": "manual", "gold": "manual", "spell_slot": "manual"},
+                "item_handling": {"mode": "manual"},
             },
             "command_config": {"scribe": {"rules_version": "2024"}},
         },
-    },
-    "policies": {
-        "crafting": {"resources": {"downtime": "manual", "gold": "manual", "spell_slot": "manual"}},
-        "inventory": {"item_handling": {"mode": "manual"}},
     },
 }
 args = argparse("-l 5 -sb 3 -dc 11")
@@ -34,13 +32,13 @@ cfg_fixture = {
         "crafting": {
             "enabled": True,
             "commands": {"scribe": True},
-            "config": {"catalogues": {"spells": "engine:catalogues/spells"}},
+            "config": {
+                "catalogues": {"spells": "engine:catalogues/spells"},
+                "resources": {"downtime": "manual", "gold": "manual", "spell_slot": "manual"},
+                "item_handling": {"mode": "manual"},
+            },
             "command_config": {"scribe": {"rules_version": "2014"}},
         },
-    },
-    "policies": {
-        "crafting": {"resources": {"downtime": "manual", "gold": "manual", "spell_slot": "manual"}},
-        "inventory": {"item_handling": {"mode": "manual"}},
     },
 }
 args = argparse("-l 5 -sb 3 -dc 11")
@@ -62,12 +60,10 @@ cfg_fixture = {
                 "catalogues": {
                     "spells": {"entries": [{"name": "House Spark", "level": 1}]},
                 },
+                "resources": {"downtime": "manual", "gold": "manual", "spell_slot": "manual"},
+                "item_handling": {"mode": "manual"},
             },
         },
-    },
-    "policies": {
-        "crafting": {"resources": {"downtime": "manual", "gold": "manual", "spell_slot": "manual"}},
-        "inventory": {"item_handling": {"mode": "manual"}},
     },
 }
 plan = crafting.build_plan(cfg_fixture, "scribe", "House Spark", argparse(""), {"spellbook": {"spells": []}})
@@ -87,12 +83,10 @@ cfg_fixture = {
                 "catalogues": {
                     "spells": {"entries": [{"name": "House Spark", "level": 2}]},
                 },
+                "resources": {"downtime": "manual", "gold": "manual", "spell_slot": "check"},
+                "item_handling": {"mode": "manual"},
             },
         },
-    },
-    "policies": {
-        "crafting": {"resources": {"downtime": "manual", "gold": "manual", "spell_slot": "check"}},
-        "inventory": {"item_handling": {"mode": "manual"}},
     },
 }
 plan = crafting.build_plan(cfg_fixture, "scribe", "House Spark", argparse("-i"), {"spellbook": {"spells": [], "slots": {"2": 0}}})
@@ -112,13 +106,11 @@ cfg_fixture = {
                 "catalogues": {
                     "spells": {"entries": [{"name": "House Spark", "level": 1}]},
                 },
+                "resources": {"downtime": "manual", "gold": "manual", "spell_slot": "manual"},
+                "item_handling": {"mode": "manual"},
             },
             "command_config": {"scribe": {"require_known_spell": False}},
         },
-    },
-    "policies": {
-        "crafting": {"resources": {"downtime": "manual", "gold": "manual", "spell_slot": "manual"}},
-        "inventory": {"item_handling": {"mode": "manual"}},
     },
 }
 plan = crafting.build_plan(cfg_fixture, "scribe", "House Spark", argparse(""), {"spellbook": {"spells": []}})
@@ -149,13 +141,14 @@ cfg_fixture = {
         "crafting": {
             "enabled": True,
             "commands": {"craft": True},
-            "config": {"rules_version": "2014", "catalogues": {"items": "engine:catalogues/items"}},
+            "config": {
+                "rules_version": "2014",
+                "catalogues": {"items": "engine:catalogues/items"},
+                "resources": {"downtime": "manual", "gold": "manual"},
+                "item_handling": {"mode": "manual"},
+            },
             "command_config": {"craft": {"rules_version": "2024"}},
         },
-    },
-    "policies": {
-        "crafting": {"resources": {"downtime": "manual", "gold": "manual"}},
-        "inventory": {"item_handling": {"mode": "manual"}},
     },
 }
 return crafting.rules_edition(cfg_fixture, "craft") == "2024"
@@ -183,12 +176,10 @@ cfg_fixture = {
                         },
                     ],
                 },
+                "resources": {"downtime": "manual", "gold": "manual", "materials": "manual"},
+                "item_handling": {"mode": "manual"},
             },
         },
-    },
-    "policies": {
-        "crafting": {"resources": {"downtime": "manual", "gold": "manual", "materials": "manual"}},
-        "inventory": {"item_handling": {"mode": "manual"}},
     },
 }
 plan = crafting.build_plan(cfg_fixture, "brew", "Potion of Healing", None, character())
@@ -211,12 +202,10 @@ cfg_fixture = {
                         {"name": "Potion of Healing", "kind": "brew", "workdays": 9, "gold": 9},
                     ],
                 },
+                "resources": {"downtime": "manual", "gold": "manual", "materials": "manual"},
+                "item_handling": {"mode": "manual"},
             },
         },
-    },
-    "policies": {
-        "crafting": {"resources": {"downtime": "manual", "gold": "manual", "materials": "manual"}},
-        "inventory": {"item_handling": {"mode": "manual"}},
     },
 }
 plan = crafting.build_plan(cfg_fixture, "brew", "Potion of Healing", None, character())
@@ -234,12 +223,10 @@ cfg_fixture = {
             "config": {
                 "recipe_mode": "recipes",
                 "catalogues": {"potions": "engine:catalogues/potions", "recipes": []},
+                "resources": {"downtime": "manual", "gold": "manual", "materials": "manual"},
+                "item_handling": {"mode": "manual"},
             },
         },
-    },
-    "policies": {
-        "crafting": {"resources": {"downtime": "manual", "gold": "manual", "materials": "manual"}},
-        "inventory": {"item_handling": {"mode": "manual"}},
     },
 }
 plan = crafting.build_plan(cfg_fixture, "brew", "Potion of Healing", None, character())
@@ -250,11 +237,13 @@ True
 name: recipes recipe mode requires a matching recipe
 
 cfg_fixture = {
-    "policies": {
-        "inventory": {
-            "item_handling": {
-                "mode": "bags",
-                "potions_bag": "Satchel",
+    "subsystems": {
+        "crafting": {
+            "config": {
+                "item_handling": {
+                    "mode": "bags",
+                    "potions_bag": "Satchel",
+                },
             },
         },
     },
@@ -264,7 +253,7 @@ return policy["mode"] == "bags" and policy["bag"] == "Satchel"
 ---
 True
 ---
-name: output policy reads inventory bag config
+name: output policy reads crafting bag config
 
 cfg_fixture = {
     "subsystems": {

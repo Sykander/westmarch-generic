@@ -1,7 +1,10 @@
-Shows the server's weather when the weather feature is implemented.
+Shows configured regional weather.
 
-Status: planned for a later release.
+```text
+!weather
+!weather <area>
+```
 
-Server owners should keep `subsystems.travel.commands.weather` disabled for now. If invoked, the runtime command explains that the feature is not active yet.
+Weather areas are configured under `world_data.weather.by_area`. With no area argument, the command uses the selected character's current location when that location has `weather_area`, `area_code`, `biome`, or an `enc` activity area.
 
-Configured under: `Travel -> weather`
+Configured under: `subsystems.travel.commands.weather`

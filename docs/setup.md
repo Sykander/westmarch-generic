@@ -248,7 +248,7 @@ Players can run:
 ```
 
 Once `westmarch_config` is set, the bare command checks that the selected character meets the server’s configured player setup checks.
-It can also show a compact character HUD for enabled subsystems, such as coinpurse, configured wallet currencies, and location. Time and weather HUD fields are reserved for the planned clock/weather features and should stay out of the default field list for now.
+It can also show a compact character HUD for enabled subsystems, such as Coinpurse, configured wallet currencies, location, time, and weather.
 
 Configure those checks with `policies.player_setup`:
 
@@ -262,7 +262,7 @@ policies = {
         "require_character": True,
         "hud": {
             "enabled": True,
-            "fields": ["coins", "wallet", "location"],
+            "fields": ["coinpurse", "wallet", "location"],
         },
         "checks": [
             {"type": "cvar", "key": "vsheet", "label": "vSheet", "message": "Run `!vsheet setup`."},

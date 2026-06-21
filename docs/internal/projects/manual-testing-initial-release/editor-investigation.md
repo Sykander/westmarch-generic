@@ -37,13 +37,13 @@ Related places to check:
 
 ### Repeat Encounters
 
-Current storage: `policies.exploration.avoid_repeat_encounters`.
+Current storage: `subsystems.exploration.config.avoid_repeat_encounters`.
 
 Related subsystem config: `subsystems.exploration.config.repeat_exclude_window`.
 
 What went wrong: this one is not simply in the wrong path. The current docs intentionally split the repeat behavior into a policy gate (`avoid_repeat_encounters`) and a subsystem knob (`repeat_exclude_window`). The manual test expectation would move the whole repeat feature into `subsystems.exploration.config`.
 
-Best fix: decide the schema boundary explicitly.
+Best fix: keep repeat behavior with the exploration subsystem config.
 
 Recommended path: keep `avoid_repeat_encounters` under `policies.exploration` because it is a table-wide enforcement toggle, but display it next to the Exploration guided config so the owner experiences it as one exploration setup workflow. If the desired schema is instead `subsystems.exploration.config.avoid_repeat_encounters`, add compatibility readers and migration guidance.
 
@@ -57,7 +57,7 @@ Related places to check:
 
 ### Downtime Mode, Acquisition, And Max Workdays
 
-Current storage: `policies.downtime.mode`, `policies.downtime.acquisition`, `policies.downtime.max_workdays`.
+Current storage: `subsystems.downtime.config.mode`, `subsystems.downtime.config.acquisition`, `subsystems.downtime.config.max_workdays`.
 
 What went wrong: this conflicts with the manual expectation, but it matches the current documented schema. `subsystems.downtime.config` is currently reserved for labels and schedule-flavour fields like `workday_hours` and `workweek_days`.
 
@@ -101,9 +101,9 @@ Related places to check:
 
 Current storage:
 
-- `policies.crafting.resources.*`
-- `policies.inventory.item_handling.*`
-- Optional narrower overrides: `policies.crafting.item_handling`, `subsystems.crafting.config.item_handling`, `subsystems.crafting.command_config.<cmd>.item_handling`.
+- `subsystems.crafting.config.resources.*`
+- `subsystems.crafting.config.item_handling.*`
+- Optional narrower overrides: `subsystems.crafting.config.item_handling`, `subsystems.crafting.config.item_handling`, `subsystems.crafting.command_config.<cmd>.item_handling`.
 
 What went wrong: the editor currently edits the broad global inventory output policy for "Crafted item output". That can affect more than crafting and is easy to misunderstand from the label.
 
@@ -111,7 +111,7 @@ Best fix:
 
 - Rename the global controls to make their scope explicit, for example `Default item output` and `Inventory bag defaults`.
 - Add a crafting-specific output override control that writes to `subsystems.crafting.config.item_handling` when the owner wants crafting-only output behavior.
-- Keep `policies.crafting.resources` under policies unless the schema boundary is intentionally changed, because these are enforcement modes.
+- Keep `subsystems.crafting.config.resources` with the rest of the crafting subsystem config.
 
 Same issue elsewhere: command overrides already support per-command resources and item handling, but the UI hides that behind a dense matrix in the Policies tab.
 

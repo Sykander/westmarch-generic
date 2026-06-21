@@ -31,16 +31,21 @@ vars:
       subsystems = {
           "downtime": {
               "enabled": True,
-              "config": {"workday_hours": 8, "workweek_days": 5},
+              "config": {
+                  "mode": "tracked",
+                  "max_workdays": None,
+                  "acquisition": "manual",
+                  "workday_hours": 8,
+                  "workweek_days": 5,
+              },
           },
       }
-      policies = {"downtime": {"mode": "tracked", "max_workdays": None, "acquisition": "manual"}}
 
 !downtime
 ---
 re:Downtime tracking is off
 ---
-name: default downtime mode is off when policy omitted
+name: default downtime mode is off when config omitted
 vars:
   svars:
     westmarch_config: "dddd1005-1005-1005-1005-100000000005"
@@ -63,9 +68,11 @@ vars:
   gvars:
     dddd1002-1002-1002-1002-100000000002: |
       subsystems = {
-          "downtime": {"enabled": True},
+          "downtime": {
+              "enabled": True,
+              "config": {"mode": "manual", "max_workdays": None, "acquisition": "manual"},
+          },
       }
-      policies = {"downtime": {"mode": "manual", "max_workdays": None, "acquisition": "manual"}}
 
 !downtime 2
 ---
@@ -80,9 +87,11 @@ vars:
   gvars:
     dddd1003-1003-1003-1003-100000000003: |
       subsystems = {
-          "downtime": {"enabled": True},
+          "downtime": {
+              "enabled": True,
+              "config": {"mode": "tracked", "max_workdays": None, "acquisition": "manual"},
+          },
       }
-      policies = {"downtime": {"mode": "tracked", "max_workdays": None, "acquisition": "manual"}}
 
 !downtime spend 2
 ---
@@ -97,9 +106,11 @@ vars:
   gvars:
     dddd1003-1003-1003-1003-100000000003: |
       subsystems = {
-          "downtime": {"enabled": True},
+          "downtime": {
+              "enabled": True,
+              "config": {"mode": "tracked", "max_workdays": None, "acquisition": "manual"},
+          },
       }
-      policies = {"downtime": {"mode": "tracked", "max_workdays": None, "acquisition": "manual"}}
 
 !downtime reset
 ---
@@ -114,9 +125,11 @@ vars:
   gvars:
     dddd1003-1003-1003-1003-100000000003: |
       subsystems = {
-          "downtime": {"enabled": True},
+          "downtime": {
+              "enabled": True,
+              "config": {"mode": "tracked", "max_workdays": None, "acquisition": "manual"},
+          },
       }
-      policies = {"downtime": {"mode": "tracked", "max_workdays": None, "acquisition": "manual"}}
 
 !downtime reset yes
 ---
@@ -131,9 +144,11 @@ vars:
   gvars:
     dddd1003-1003-1003-1003-100000000003: |
       subsystems = {
-          "downtime": {"enabled": True},
+          "downtime": {
+              "enabled": True,
+              "config": {"mode": "tracked", "max_workdays": None, "acquisition": "manual"},
+          },
       }
-      policies = {"downtime": {"mode": "tracked", "max_workdays": None, "acquisition": "manual"}}
 
 !downtime
 ---
@@ -146,6 +161,8 @@ vars:
   gvars:
     dddd1004-1004-1004-1004-100000000004: |
       subsystems = {
-          "downtime": {"enabled": True},
+          "downtime": {
+              "enabled": True,
+              "config": {"mode": "off", "max_workdays": None, "acquisition": "manual"},
+          },
       }
-      policies = {"downtime": {"mode": "off", "max_workdays": None, "acquisition": "manual"}}

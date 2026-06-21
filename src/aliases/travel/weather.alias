@@ -2,8 +2,9 @@
 using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(
     auth = env.gvars.auth,
-    display = env.gvars.display,
     config = env.gvars.config,
+    display = env.gvars.display,
+    weather = env.gvars.weather,
 )
 
 COMMAND = "weather"
@@ -14,12 +15,44 @@ cmd_name = COMMAND
 if not ok:
     return get_embed(desc=msg)
 
-args = argparse(&ARGS&)
 argslist = &ARGS&
+cfg = config.get_config()
 
-planned = f"""`{ctx.prefix}{cmd_name}` is planned for a later release and is not active yet.
 
-Server owners should keep `subsystems.travel.commands.{cmd_name}` disabled for now. Use the web config editor Check page to catch this before publishing."""
+def _area_list():
+    codes = weather.list_area_codes(cfg)
+    if len(codes) == 0:
+        return "No weather areas are configured."
+    return "Weather areas: " + ", ".join([f"`{code}`" for code in codes]) + "."
 
-return get_embed(desc=planned)
+
+help_text = f"""Show the current regional weather.
+
+**Usage**
+`{ctx.prefix}{cmd_name}`
+`{ctx.prefix}{cmd_name} <area>`
+
+{_area_list()}"""
+
+if len(argslist) > 0 and argslist[0] in ["help", "?"]:
+    return get_embed(desc=help_text)
+
+ch = None
+try:
+    ch = character()
+except:
+    ch = None
+
+area = weather.resolve_area_code(cfg, ch, argslist)
+if area == None:
+    return get_embed(desc=f"Choose a configured weather area.\n\n{_area_list()}")
+
+season = weather.current_season(cfg)
+forecast = weather.pick_weather(cfg, area, season)
+if forecast == None:
+    return get_embed(desc=f"No weather entries are configured for **{area}**.")
+
+if season != None and str(season).strip() not in ["", "default"]:
+    return get_embed(desc=f"**{area}** — {season}\n{forecast}")
+return get_embed(desc=f"**{area}**\n{forecast}")
 </drac2>

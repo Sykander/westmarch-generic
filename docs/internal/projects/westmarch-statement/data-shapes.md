@@ -1272,7 +1272,7 @@ Future activity clones (**forage**, **fish**, …) share the same kind-first pic
 
 | Key | Type | Default | Meaning |
 |-----|------|---------|---------|
-| `repeat_exclude_window` | int | `5` | When **`policies.exploration.avoid_repeat_encounters`** is on — how many recent picks from **[stats.gvar](gvars/stats.md)** to consider when excluding duplicates |
+| `repeat_exclude_window` | int | `5` | When **`subsystems.exploration.config.avoid_repeat_encounters`** is on — how many recent picks from **[stats.gvar](gvars/stats.md)** to consider when excluding duplicates |
 
 #### Hunt / loot display
 
@@ -1300,7 +1300,7 @@ When **`False`**, the command still rolls against the same DC but prints generic
 
 ### `downtime.config`
 
-Optional labels and copy — not enforcement flags ([policies.downtime](#downtime)).
+Downtime tracking, acquisition, caps, labels, and schedule copy live here.
 
 ```py
 "downtime": {
@@ -1466,7 +1466,7 @@ Per-command **durations and costs** live under **`subsystems.<subsystem>.command
 
 **Cooldowns** — seconds between successful uses; read by **`pc.check_cooldown(ch, command, config)`** from **[stats.gvar](gvars/stats.md)** **`last_used_at`**. **`0`** = no cooldown for that command (even when **`policies.*.enforce_cooldowns`** is **`True`**).
 
-**Workday costs** — workdays spent on success when **`policies.downtime.mode == "tracked"`** and the command or recipe requires downtime.
+**Workday costs** — workdays spent on success when **`subsystems.downtime.config.mode == "tracked"`** and the command or recipe requires downtime.
 
 ```py
 "exploration": {
@@ -1520,7 +1520,7 @@ Per-command **durations and costs** live under **`subsystems.<subsystem>.command
 | **`cooldown_seconds`** | int | engine default per command | Seconds before the same command can run again; **`0`** = off |
 | **`workdays_cost`** | int | `0` | Legacy/simple workday cost for commands that use it; crafting commands now prefer recipe/baseline `workdays` + resource policy |
 | **`rules_version`** | `"2014"` \| `"2024"` | `None` | Crafting command override; default uses `config.get_rules_edition()` via crafting helper |
-| **`resources`** | dict | `{}` | Per-command resource modes overriding `policies.crafting.resources` |
+| **`resources`** | dict | `{}` | Per-command resource modes overriding `subsystems.crafting.config.resources` |
 | **`item_handling`** | str \| dict | `None` | Per-command output override: `"manual"`, `"bags"`, or object with `mode`/bag names |
 | **`consume_required_items`** | bool | command default | For crafting recipes, whether `required` items are consumed when item resources are `deduct` |
 | **`require_known_spell`** | bool | inherited | Scribe-only override for the RAW spellbook gate |
@@ -1555,12 +1555,12 @@ House rules and **what the engine enforces** vs what stays narrative/manual. Sto
 
 | Question | Where |
 |----------|--------|
-| Is **`!downtime`** tracked in cvars? | **`policies.downtime.mode`** |
-| Max workdays a PC can hold? | **`policies.downtime.max_workdays`** |
+| Is **`!downtime`** tracked in cvars? | **`subsystems.downtime.config.mode`** |
+| Max workdays a PC can hold? | **`subsystems.downtime.config.max_workdays`** |
 | Does **`!job`** use cooldown or workdays? | **`command_config.job`** — **`cooldown_seconds`** / **`workdays_cost`** |
 | How long between **`!enc`** rolls? | **`command_config.enc.cooldown_seconds`** |
 | Are cooldowns enforced at all for exploration? | **`policies.exploration.enforce_cooldowns`** |
-| Avoid same encounter twice in a row? | **`policies.exploration.avoid_repeat_encounters`** |
+| Avoid same encounter twice in a row? | **`subsystems.exploration.config.avoid_repeat_encounters`** |
 | Roll monster HP in combat blocks? | **`policies.combat.roll_monster_hp`** |
 | Must player have a character selected? | **`policies.auth.require_character`** |
 | What does bare **`!westmarch`** check for each player? | **`policies.player_setup`** |
@@ -1671,7 +1671,7 @@ policies = {
         "require_character": True,
         "hud": {
             "enabled": True,
-            "fields": ["coins", "wallet", "location"],
+            "fields": ["coinpurse", "wallet", "location"],
         },
         "checks": [],
     },
@@ -1724,7 +1724,7 @@ Default HUD:
 ```py
 "hud": {
     "enabled": True,
-    "fields": ["coins", "wallet", "location"],
+    "fields": ["coinpurse", "wallet", "location"],
 }
 ```
 
@@ -1732,11 +1732,11 @@ Built-in HUD fields only render when their subsystem or command is enabled:
 
 | Field | Requires | Value |
 |-------|----------|-------|
-| `coins` | `subsystems.economy.enabled` | Avrae character coinpurse |
+| `coinpurse` | `subsystems.economy.enabled` | Avrae character coinpurse |
 | `wallet` | `subsystems.economy.commands.wallet` | Configured `currencies` balances from `wg_wallet_<id>` cvars |
 | `location` | `subsystems.travel.commands.location` | Character `wg_location`, resolved through `world_data.locations` when possible |
-| `time` | `subsystems.travel.commands.time` | Reserved for the planned clock module; keep disabled for the initial release |
-| `weather` | `subsystems.travel.commands.weather` | Reserved for the planned weather module; keep disabled for the initial release |
+| `time` | `subsystems.travel.commands.time` | Configured world calendar time |
+| `weather` | `subsystems.travel.commands.weather` | Configured regional weather |
 
 Custom HUD fields use the same storage readers as setup checks:
 
@@ -1765,7 +1765,7 @@ policies = {
     "player_setup": {
         "enabled": True,
         "require_character": True,
-        "hud": {"enabled": True, "fields": ["coins", "wallet", "location"]},
+        "hud": {"enabled": True, "fields": ["coinpurse", "wallet", "location"]},
         "checks": [
             {"type": "cvar", "key": "vsheet", "label": "vSheet", "message": "Run `!vsheet setup`."},
             {"type": "cvar", "key": "wg_downtime", "label": "Downtime", "message": "Run `!downtime setup`.", "when_subsystem": "downtime"},
@@ -1862,7 +1862,7 @@ Controls what commands do with newly gained items.
 | `magic_items_bag` | str | `"Equipment"` | Enchant output |
 | `materials_bag` | str | `"Materials"` | Recipe consumed-material source |
 
-Crafting-specific `item_handling` overrides can appear at `policies.crafting.item_handling`, `subsystems.crafting.config.item_handling`, or `subsystems.crafting.command_config.<cmd>.item_handling`.
+Crafting-specific `item_handling` overrides can appear at `subsystems.crafting.config.item_handling`, `subsystems.crafting.config.item_handling`, or `subsystems.crafting.command_config.<cmd>.item_handling`.
 
 ### `economy`
 

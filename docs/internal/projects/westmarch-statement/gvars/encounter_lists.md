@@ -77,7 +77,7 @@ Pick one entry at random. Error if list empty.
 
 ## Repeat encounter avoidance
 
-When **`policies.exploration.avoid_repeat_encounters`** is not **`off`**:
+When **`subsystems.exploration.config.avoid_repeat_encounters`** is not **`off`**:
 
 1. Read recent **`encounter_id`** (or stable encounter name) from **[stats.gvar](stats.md)** log extras for the character — window **`exploration.config.repeat_exclude_window`** (default **5**).
 2. **`same_biome`** — exclude ids seen in this biome + activity only.

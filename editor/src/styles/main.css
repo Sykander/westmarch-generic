@@ -1669,11 +1669,34 @@ th {
   gap: 12px;
 }
 
+.inline-add-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.inline-add-row input {
+  min-width: 160px;
+}
+
 .collection-item {
   border: 1px solid #e1e5e0;
   border-radius: 8px;
   background: #fbfcfb;
   padding: 12px;
+}
+
+.stock-row-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+}
+
+.price-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
 }
 
 .collection-item-head {

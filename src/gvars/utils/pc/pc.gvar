@@ -49,6 +49,7 @@ def _read_field(obj, key):
         "economy": lambda o: o.economy,
         "content": lambda o: o.content,
         "downtime": lambda o: o.downtime,
+        "config": lambda o: o.config,
         "enforce_cooldowns": lambda o: o.enforce_cooldowns,
         "enforce_library_cooldowns": lambda o: o.enforce_library_cooldowns,
         "enforce_read_cooldowns": lambda o: o.enforce_read_cooldowns,
@@ -223,8 +224,9 @@ def _number_text(value):
 
 
 def _downtime_policy(cfg):
-    policies = _read_field(cfg, "policies")
-    return _read_field(policies, "downtime")
+    subsystems = _read_field(cfg, "subsystems")
+    downtime = _read_field(subsystems, "downtime")
+    return _read_field(downtime, "config")
 
 
 def downtime_mode(config_override=None):

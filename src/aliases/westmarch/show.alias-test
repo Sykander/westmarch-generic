@@ -181,24 +181,22 @@ vars:
               "config": {
                   "rules_version": "2024",
                   "catalogues": {"spells": "engine:catalogues/spells"},
+                  "item_handling": {"mode": "bags", "scrolls_bag": "Scroll Satchel"},
               },
           },
-      }
-      policies = {
-          "inventory": {"item_handling": {"mode": "bags", "scrolls_bag": "Scroll Satchel"}},
       }
 
 !show policies
 ---
-"re:```yaml[\\s\\S]*crafting.resources.gold: deduct[\\s\\S]*inventory.item_handling.mode: bags"
+"re:```yaml[\\s\\S]*travel.consume_rations: true[\\s\\S]*economy.enforce_wallet_caps: true"
 ---
-name: show section filter policies summarizes crafting resource and item policies
+name: show section filter policies summarizes remaining policy fields
 vars:
   svars:
     westmarch_config: "ffffaaaa-aaaa-aaaa-aaaa-ffffffffaaaa"
   gvars:
     ffffaaaa-aaaa-aaaa-aaaa-ffffffffaaaa: |
       policies = {
-          "crafting": {"resources": {"gold": "deduct"}},
-          "inventory": {"item_handling": {"mode": "bags"}},
+          "travel": {"consume_rations": True},
+          "economy": {"enforce_wallet_caps": True},
       }

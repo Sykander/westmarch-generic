@@ -46,6 +46,7 @@ subsystems = {
                 "quest": 25,
                 "gather": 50,
             },
+            "avoid_repeat_encounters": "off",
             "repeat_exclude_window": 5,
             # Optional — hunt/loot monster art: "thumbnail", "image", or "off"
             "monster_images": {
@@ -83,11 +84,15 @@ subsystems = {
     },
     "downtime": {
         "enabled": False,
-        # "config": {
-        #     "workday_hours": 8,
-        #     "workweek_days": 5,
-        #     "labels": {"singular": "workday", "plural": "workdays"},
-        # },
+        "commands": {"downtime": False},
+        "config": {
+            "mode": "off",
+            "max_workdays": None,
+            "acquisition": "manual",
+            # "workday_hours": 8,
+            # "workweek_days": 5,
+            # "labels": {"singular": "workday", "plural": "workdays"},
+        },
         # "command_config": {"downtime": {"cooldown_seconds": 0}},
     },
     "crafting": {
@@ -144,9 +149,26 @@ subsystems = {
                     "require_kit": False,
                 },
             },
-            # Optional command output override, e.g. {"scribe": "manual"} or
-            # {"mode": "bags", "scrolls_bag": "Scrolls"}.
-            "item_handling": None,
+            # Resource modes: "manual" (tell the player), "check" (block if missing),
+            # or "deduct" (check, then remove/spend).
+            "resources": {
+                "gold": "manual",
+                "materials": "manual",
+                "items": "manual",
+                "downtime": "manual",
+                "spell_slot": "manual",
+            },
+            # Item output policy. "manual" prints gained items; "bags" writes to Bags cvars.
+            "item_handling": {
+                "mode": "manual",
+                "default_bag": "Equipment",
+                "equipment_bag": "Equipment",
+                "crafted_bag": "Equipment",
+                "potions_bag": "Potions",
+                "scrolls_bag": "Scrolls",
+                "magic_items_bag": "Equipment",
+                "materials_bag": "Materials",
+            },
         },
         # Optional — per-command rules/resources/output overrides.
         # "command_config": {
@@ -271,32 +293,10 @@ subsystems = {
 # House rules — see docs/internal/projects/westmarch-statement/data-shapes.md § Server policies
 policies = {
     "auth": {"require_character": True},
-    "time": {"mode": "manual"},
     "travel": {
         "apply_path_costs": False,
         "consume_rations": False,
         "rations_item": "Rations",
-    },
-    "downtime": {
-        "mode": "off",
-        "max_workdays": None,
-        "acquisition": "manual",
-    },
-    "crafting": {
-        "require_downtime_before_roll": True,
-        "auto_deduct_materials": False,
-        "auto_deduct_gold": False,
-        # Resource modes: "manual" (tell the player), "check" (block if missing),
-        # or "deduct" (check, then remove/spend).
-        "resources": {
-            "gold": "manual",
-            "materials": "manual",
-            "items": "manual",
-            "downtime": "check",
-            "spell_slot": "manual",
-        },
-        # Optional subsystem-wide output override. Global inventory default is manual.
-        # "item_handling": {"mode": "bags"},
     },
     "economy": {
         "enforce_cooldowns": True,
@@ -304,18 +304,6 @@ policies = {
         "starting_gold": None,
     },
     "inventory": {
-        # Item output policy. "manual" prints "You gained one ..."; "bags" writes to the
-        # Bags cvar. Crafting command_config can override this per command.
-        "item_handling": {
-            "mode": "manual",
-            "default_bag": "Equipment",
-            "equipment_bag": "Equipment",
-            "crafted_bag": "Equipment",
-            "potions_bag": "Potions",
-            "scrolls_bag": "Scrolls",
-            "magic_items_bag": "Equipment",
-            "materials_bag": "Materials",
-        },
         "track_encumbrance": False,
         "enforce_encumbrance": False,
         "attunement_limit": None,
@@ -325,7 +313,6 @@ policies = {
     },
     "exploration": {
         "enforce_cooldowns": True,
-        "avoid_repeat_encounters": "off",
     },
     "combat": {
         "scale_encounters_to_level": False,
@@ -354,7 +341,7 @@ policies = {
         "require_character": True,
         "hud": {
             "enabled": True,
-            "fields": ["coins", "wallet", "location"],
+            "fields": ["coinpurse", "wallet", "location"],
         },
         "checks": [],
     },

@@ -1,6 +1,235 @@
-"""weather.gvar — placeholder.
+"""weather.gvar — config-backed regional weather helpers."""
 
-See docs/internal/projects/westmarch-statement/gvars/weather.md
-"""
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(
+    clock = env.gvars.clock,
+    config = env.gvars.config,
+    dicts = env.gvars.dicts,
+    journeys = env.gvars.journeys,
+    lists = env.gvars.lists,
+)
 
-# TODO: implement weather module
+
+def _read_field(obj, key):
+    if obj == None:
+        return None
+    if dicts.is_dict(obj):
+        if key in obj:
+            return obj[key]
+        return None
+    try:
+        return obj[key]
+    except:
+        pass
+    try:
+        return obj.get(key)
+    except:
+        pass
+    attrs = {
+        "world_data": lambda o: o.world_data,
+        "weather": lambda o: o.weather,
+        "by_area": lambda o: o.by_area,
+        "areas": lambda o: o.areas,
+        "name": lambda o: o.name,
+        "description": lambda o: o.description,
+        "area_code": lambda o: o.area_code,
+        "weather_area": lambda o: o.weather_area,
+        "biome": lambda o: o.biome,
+        "commands": lambda o: o.commands,
+        "activities": lambda o: o.activities,
+        "enc": lambda o: o.enc,
+        "default": lambda o: o.default,
+    }
+    if key in attrs:
+        try:
+            return attrs[key](obj)
+        except:
+            pass
+    return None
+
+
+def _cfg(config_override=None):
+    if config_override != None:
+        return config_override
+    return config.get_config()
+
+
+def _weather_root(cfg):
+    wd = _read_field(cfg, "world_data")
+    root = _read_field(wd, "weather")
+    if root == None:
+        return {}
+    return root
+
+
+def _area_map(cfg):
+    root = _weather_root(cfg)
+    by_area = _read_field(root, "by_area")
+    if dicts.is_dict(by_area):
+        return by_area
+    areas = _read_field(root, "areas")
+    if dicts.is_dict(areas):
+        return areas
+    if dicts.is_dict(root):
+        return root
+    return {}
+
+
+def list_area_codes(config_override=None):
+    areas = _area_map(_cfg(config_override))
+    codes = []
+    for key in areas:
+        codes.append(str(key))
+    codes.sort()
+    return codes
+
+
+def _normalize(value):
+    if value == None:
+        return None
+    text = str(value).strip().lower()
+    if text == "":
+        return None
+    return text
+
+
+def _area_exists(cfg, area):
+    if area == None:
+        return False
+    areas = _area_map(cfg)
+    return _read_field(areas, area) != None
+
+
+def _search_area(cfg, query):
+    text = str(query).strip() if query != None else ""
+    if text == "":
+        return None
+    areas = list_area_codes(cfg)
+    exact = _normalize(text)
+    for area in areas:
+        if _normalize(area) == exact:
+            return area
+    matches = lists.search_list(areas, text)
+    if len(matches) == 1:
+        return matches[0]
+    return None
+
+
+def _first_from_list(value):
+    if lists.is_list(value) and len(value) > 0:
+        return value[0]
+    if value != None and str(value).strip() != "":
+        return value
+    return None
+
+
+def _area_from_location(loc):
+    for key in ["weather_area", "area_code", "biome"]:
+        area = _read_field(loc, key)
+        if area != None and str(area).strip() != "":
+            return str(area).strip()
+    commands = _read_field(loc, "commands")
+    area = _first_from_list(_read_field(commands, "enc"))
+    if area != None:
+        return str(area).strip()
+    activities = _read_field(loc, "activities")
+    area = _first_from_list(_read_field(activities, "enc"))
+    if area != None:
+        return str(area).strip()
+    return None
+
+
+def resolve_area_code(config_override=None, character=None, args=None):
+    cfg = _cfg(config_override)
+    if lists.is_list(args) and len(args) > 0:
+        return _search_area(cfg, " ".join([str(arg) for arg in args]))
+    loc = None
+    try:
+        _loc_id, loc = journeys.get_location(character, cfg)
+    except:
+        loc = None
+    area = _area_from_location(loc)
+    if _area_exists(cfg, area):
+        return area
+    codes = list_area_codes(cfg)
+    if len(codes) == 1:
+        return codes[0]
+    return None
+
+
+def current_season(config_override=None):
+    try:
+        return clock.season(_cfg(config_override))
+    except:
+        return "default"
+
+
+def _entries_for_area(cfg, area_code, season="default"):
+    areas = _area_map(cfg)
+    area = _read_field(areas, area_code)
+    if area == None:
+        return []
+    if lists.is_list(area):
+        return area
+    if dicts.is_dict(area):
+        season_entries = _read_field(area, season)
+        if season_entries == None and season != "default":
+            season_entries = _read_field(area, "default")
+        if season_entries == None:
+            season_entries = _read_field(area, "entries")
+        if lists.is_list(season_entries):
+            return season_entries
+        if season_entries != None and str(season_entries).strip() != "":
+            return [str(season_entries)]
+        return []
+    if area != None and str(area).strip() != "":
+        return [str(area)]
+    return []
+
+
+def _entry_text(entry):
+    if entry == None:
+        return None
+    for key in ["description", "text", "name"]:
+        text = _read_field(entry, key)
+        if text != None and str(text).strip() != "":
+            return str(text).strip()
+    return str(entry)
+
+
+def _seed(area_code):
+    total = 0
+    for ch in str(area_code):
+        try:
+            total += ord(ch)
+        except:
+            total += 1
+    try:
+        instant = clock.now(config.get_config())
+        total += int(_read_field(instant, "day_index"))
+    except:
+        pass
+    return total
+
+
+def pick_weather(config_override=None, area_code=None, season="default"):
+    cfg = _cfg(config_override)
+    if area_code == None:
+        return None
+    entries = _entries_for_area(cfg, area_code, season)
+    if len(entries) == 0:
+        return None
+    idx = _seed(area_code) % len(entries)
+    return _entry_text(entries[idx])
+
+
+def format_weather(config_override=None, area_code=None, season=None):
+    cfg = _cfg(config_override)
+    if season == None:
+        season = current_season(cfg)
+    text = pick_weather(cfg, area_code, season)
+    if text == None:
+        return None
+    if season != None and str(season).strip() != "" and str(season).strip() != "default":
+        return f"**{area_code}** ({season}): {text}"
+    return f"**{area_code}**: {text}"

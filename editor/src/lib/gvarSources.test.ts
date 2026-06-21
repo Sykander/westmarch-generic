@@ -29,9 +29,13 @@ test('discoverGvarReferences finds config gvar ids with useful paths and kinds',
         },
       },
     },
-    policies: {
+    subsystems: {
       crafting: {
-        catalogue_gvar_id: CATALOGUE_ID,
+        config: {
+          catalogues: {
+            items: CATALOGUE_ID,
+          },
+        },
       },
     },
   });
@@ -45,7 +49,7 @@ test('discoverGvarReferences finds config gvar ids with useful paths and kinds',
   assert.equal(forest?.kind, 'json');
   assert.equal(location?.path, 'world_data.locations.town.encounters_gvar_id');
   assert.equal(location?.kind, 'gvar');
-  assert.equal(catalogue?.path, 'policies.crafting.catalogue_gvar_id');
+  assert.equal(catalogue?.path, 'subsystems.crafting.config.catalogues.items');
   assert.equal(catalogue?.kind, 'json');
   assert.equal(
     references.some((reference) => reference.path === 'world_data.engine_ref'),

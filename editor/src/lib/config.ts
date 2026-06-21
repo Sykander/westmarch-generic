@@ -44,14 +44,9 @@ export const DEFAULT_SUBSYSTEM_COMMANDS: Record<string, string[]> = {
 };
 
 const COOLDOWN_COMMANDS = new Set([...EXPLORATION_COMMANDS, 'job', 'library', 'read']);
-const PLANNED_COMMANDS = new Set(['travel.time', 'travel.weather']);
 
 export function commandSupportsCooldown(_subsystem: string, command: string): boolean {
   return COOLDOWN_COMMANDS.has(command);
-}
-
-export function commandIsPlanned(subsystem: string, command: string): boolean {
-  return PLANNED_COMMANDS.has(`${subsystem}.${command}`);
 }
 
 const SUBSYSTEMS = Object.keys(DEFAULT_SUBSYSTEM_COMMANDS);
@@ -72,16 +67,7 @@ const VALID_CRAFTING_RESOURCE_MODES = ['manual', 'check', 'deduct'];
 const VALID_ITEM_HANDLING_MODES = ['manual', 'bags'];
 const REQUIRED_TRANSPORT_ICONS = ['walk', 'fly', 'horse', 'boat'];
 const VALID_PLAYER_SETUP_CHECK_TYPES = ['cvar', 'uvar', 'svar', 'cc', 'counter', 'custom_counter'];
-const VALID_PLAYER_SETUP_HUD_FIELDS = [
-  'coins',
-  'coin',
-  'coinpurse',
-  'gp',
-  'wallet',
-  'location',
-  'time',
-  'weather',
-];
+const VALID_PLAYER_SETUP_HUD_FIELDS = ['coinpurse', 'wallet', 'location', 'time', 'weather'];
 const VALID_ENGINE_BIOMES = [
   'beach',
   'forest',
@@ -376,6 +362,7 @@ function createDefaultSubsystems(): Record<string, AnyRecord> {
         enc_biome_source: 'auto',
         distribution_policy: 'random',
         distribution: { combat: 25, quest: 25, gather: 50 },
+        avoid_repeat_encounters: 'off',
         repeat_exclude_window: 5,
         monster_images: { hunt: 'thumbnail', loot: 'thumbnail' },
         show_check_dcs: { hunt: true, loot: true },
@@ -396,6 +383,7 @@ function createDefaultSubsystems(): Record<string, AnyRecord> {
     downtime: {
       enabled: false,
       commands: defaultCommands(DEFAULT_SUBSYSTEM_COMMANDS.downtime),
+      config: { mode: 'off', max_workdays: null, acquisition: 'manual' },
     },
     crafting: {
       enabled: false,
@@ -439,7 +427,23 @@ function createDefaultSubsystems(): Record<string, AnyRecord> {
             require_kit: false,
           },
         },
-        item_handling: null,
+        resources: {
+          gold: 'manual',
+          materials: 'manual',
+          items: 'manual',
+          downtime: 'manual',
+          spell_slot: 'manual',
+        },
+        item_handling: {
+          mode: 'manual',
+          default_bag: 'Equipment',
+          equipment_bag: 'Equipment',
+          crafted_bag: 'Equipment',
+          potions_bag: 'Potions',
+          scrolls_bag: 'Scrolls',
+          magic_items_bag: 'Equipment',
+          materials_bag: 'Materials',
+        },
       },
       command_config: { craft: {}, brew: {}, enchant: {}, scribe: {} },
     },
@@ -1356,7 +1360,7 @@ function validatePlayerSetupHud(playerSetup: AnyRecord, issues: ConfigIssue[]) {
         'Policies',
         'policies.player_setup.hud',
         'Player setup HUD must be an object or list',
-        'Use {"enabled": True, "fields": ["coins", "location"]}.',
+        'Use {"enabled": True, "fields": ["coinpurse", "location"]}.',
       ),
     );
     return;
@@ -1389,7 +1393,7 @@ function validatePlayerSetupHud(playerSetup: AnyRecord, issues: ConfigIssue[]) {
             'Policies',
             path,
             'Unknown HUD field',
-            'Built-in HUD fields are coins, wallet, location, time, and weather.',
+            'Built-in HUD fields are coinpurse, wallet, location, time, and weather.',
           ),
         );
       }
@@ -1403,7 +1407,7 @@ function validatePlayerSetupHud(playerSetup: AnyRecord, issues: ConfigIssue[]) {
           'Policies',
           path,
           'HUD field must be text or an object',
-          'Use "coins" or {"type": "cvar", "key": "renown", "label": "Renown"}.',
+          'Use "coinpurse" or {"type": "cvar", "key": "renown", "label": "Renown"}.',
         ),
       );
       return;
@@ -1702,14 +1706,14 @@ function validateExploration(model: ConfigModel, issues: ConfigIssue[]) {
     }
   }
 
-  const repeat = asRecord(model.policies.exploration).avoid_repeat_encounters;
+  const repeat = config.avoid_repeat_encounters;
   if (typeof repeat === 'string' && !VALID_REPEAT.includes(repeat)) {
     issues.push(
       issue(
         'error',
-        'policies.exploration.repeat',
-        'Policies',
-        'policies.exploration.avoid_repeat_encounters',
+        'exploration.repeat',
+        'Subsystems',
+        'subsystems.exploration.config.avoid_repeat_encounters',
         'Invalid repeat encounter policy',
         '`avoid_repeat_encounters` must be off, same_biome, or global.',
       ),
@@ -1751,33 +1755,6 @@ function validateTravel(model: ConfigModel, issues: ConfigIssue[]) {
       );
     }
   }
-  if (commands.time === true) {
-    issues.push(
-      issue(
-        'error',
-        'travel.time_planned',
-        'Subsystems',
-        'subsystems.travel.commands.time',
-        'Time command is still planned',
-        '`!time` is not part of the current travel/location implementation slice.',
-        'Disable this command until the time feature lands.',
-      ),
-    );
-  }
-  if (commands.weather === true) {
-    issues.push(
-      issue(
-        'error',
-        'travel.weather_planned',
-        'Subsystems',
-        'subsystems.travel.commands.weather',
-        'Weather command is still planned',
-        '`!weather` is not part of the current travel/location implementation slice.',
-        'Disable this command until the weather feature lands.',
-      ),
-    );
-  }
-
   if (travel.enabled !== true) return;
   const locationCommandOn = commands.location === true;
   const travelCommandOn = commands.travel === true;
@@ -1932,17 +1909,17 @@ function validateTravel(model: ConfigModel, issues: ConfigIssue[]) {
 
 function validateDowntime(model: ConfigModel, issues: ConfigIssue[]) {
   const downtime = asRecord(model.subsystems.downtime);
-  const policy = asRecord(asRecord(model.policies).downtime);
-  const mode = policy.mode;
-  const acquisition = policy.acquisition;
+  const config = asRecord(downtime.config);
+  const mode = config.mode;
+  const acquisition = config.acquisition;
 
   if (typeof mode === 'string' && !VALID_DOWNTIME_MODES.includes(mode)) {
     issues.push(
       issue(
         'error',
         'downtime.mode',
-        'Policies',
-        'policies.downtime.mode',
+        'Subsystems',
+        'subsystems.downtime.config.mode',
         'Invalid downtime mode',
         '`mode` must be tracked, manual, or off.',
       ),
@@ -1957,20 +1934,20 @@ function validateDowntime(model: ConfigModel, issues: ConfigIssue[]) {
         'Subsystems',
         'subsystems.downtime.enabled',
         'Tracked downtime needs the subsystem enabled',
-        '`policies.downtime.mode: tracked` uses the downtime cvar ledger.',
+        '`subsystems.downtime.config.mode: tracked` uses the downtime cvar ledger.',
         'Enable the downtime subsystem, or switch downtime mode to off/manual.',
       ),
     );
   }
 
-  const maxWorkdays = policy.max_workdays;
+  const maxWorkdays = config.max_workdays;
   if (maxWorkdays != null && (!isNonNegativeInteger(maxWorkdays) || Number(maxWorkdays) < 1)) {
     issues.push(
       issue(
         'error',
         'downtime.max_workdays',
-        'Policies',
-        'policies.downtime.max_workdays',
+        'Subsystems',
+        'subsystems.downtime.config.max_workdays',
         'Downtime cap must be positive',
         '`max_workdays` must be a positive whole number, or None for unlimited.',
       ),
@@ -1982,22 +1959,22 @@ function validateDowntime(model: ConfigModel, issues: ConfigIssue[]) {
       issue(
         'error',
         'downtime.acquisition',
-        'Policies',
-        'policies.downtime.acquisition',
+        'Subsystems',
+        'subsystems.downtime.config.acquisition',
         'Invalid downtime acquisition mode',
         '`acquisition` must be manual, world_clock, or journey.',
       ),
     );
   }
-  if (acquisition === 'world_clock' && asRecord(model.policies.time).mode !== 'world_clock') {
+  if (acquisition === 'world_clock' && commandEnabled(model, 'travel', 'time') !== true) {
     issues.push(
       issue(
         'warning',
         'downtime.acquisition_world_clock',
-        'Policies',
-        'policies.downtime.acquisition',
+        'Subsystems',
+        'subsystems.downtime.config.acquisition',
         'World-clock downtime needs world-clock time',
-        'Downtime acquisition from time is deferred unless `policies.time.mode` is world_clock.',
+        'Downtime acquisition from time needs the travel time command.',
       ),
     );
   }
@@ -2006,15 +1983,14 @@ function validateDowntime(model: ConfigModel, issues: ConfigIssue[]) {
       issue(
         'warning',
         'downtime.acquisition_journey',
-        'Policies',
-        'policies.downtime.acquisition',
+        'Subsystems',
+        'subsystems.downtime.config.acquisition',
         'Journey downtime needs travel enabled',
         'Downtime acquisition from journeys needs the travel subsystem.',
       ),
     );
   }
 
-  const config = asRecord(downtime.config);
   for (const key of ['workday_hours', 'workweek_days']) {
     const value = config[key];
     if (value != null && (!isNonNegativeInteger(value) || Number(value) < 1)) {
@@ -2642,9 +2618,8 @@ function validateCrafting(model: ConfigModel, issues: ConfigIssue[]) {
     .map(([command]) => command);
   const craftingActive = crafting.enabled === true && enabledCommands.length > 0;
   const downtimeTracked =
-    asRecord(asRecord(model.policies).downtime).mode === 'tracked' &&
+    asRecord(asRecord(model.subsystems.downtime).config).mode === 'tracked' &&
     asRecord(model.subsystems.downtime).enabled === true;
-  const craftingPolicy = asRecord(asRecord(model.policies).crafting);
   const craftingConfig = asRecord(crafting.config);
   const catalogues = asRecord(craftingConfig.catalogues);
 
@@ -2694,29 +2669,23 @@ function validateCrafting(model: ConfigModel, issues: ConfigIssue[]) {
     issues,
   );
 
-  validateCraftingResourceModes(craftingPolicy.resources, 'policies.crafting.resources', issues);
-  validateItemHandling(craftingPolicy.item_handling, 'policies.crafting.item_handling', issues);
+  validateCraftingResourceModes(
+    craftingConfig.resources,
+    'subsystems.crafting.config.resources',
+    issues,
+  );
   validateItemHandling(
     craftingConfig.item_handling,
     'subsystems.crafting.config.item_handling',
     issues,
   );
-  validateItemHandling(
-    asRecord(asRecord(model.policies).inventory).item_handling,
-    'policies.inventory.item_handling',
-    issues,
-  );
 
-  const globalResources = asRecord(craftingPolicy.resources);
-  const legacyDowntimeCheck = craftingPolicy.require_downtime_before_roll === true;
+  const globalResources = asRecord(craftingConfig.resources);
   const activeNeedsDowntime = enabledCommands.some((command) => {
     const commandResources = asRecord(
       asRecord(asRecord(crafting.command_config)[command]).resources,
     );
-    const mode =
-      commandResources.downtime ??
-      globalResources.downtime ??
-      (legacyDowntimeCheck ? 'check' : 'manual');
+    const mode = commandResources.downtime ?? globalResources.downtime ?? 'manual';
     return mode === 'check' || mode === 'deduct';
   });
 
@@ -2725,10 +2694,8 @@ function validateCrafting(model: ConfigModel, issues: ConfigIssue[]) {
       issue(
         'warning',
         'crafting.downtime_not_tracked',
-        'Policies',
-        globalResources.downtime != null
-          ? 'policies.crafting.resources.downtime'
-          : 'policies.crafting.require_downtime_before_roll',
+        'Subsystems',
+        'subsystems.crafting.config.resources.downtime',
         'Crafting downtime is not tracked',
         'Crafting can check or deduct downtime only when downtime mode is tracked and the downtime subsystem is enabled.',
       ),
@@ -2869,42 +2836,8 @@ function validateShopPriceShape(value: unknown, path: string, issues: ConfigIssu
 }
 
 function validateEconomy(model: ConfigModel, issues: ConfigIssue[]) {
-  const walletOn = commandEnabled(model, 'economy', 'wallet');
-  const buyOn = commandEnabled(model, 'economy', 'buy');
-  const sellOn = commandEnabled(model, 'economy', 'sell');
-  const currencies = asRecord(model.currencies);
   const shops = configuredShops(model);
 
-  if (walletOn && Object.keys(currencies).length === 0) {
-    issues.push(
-      issue(
-        'error',
-        'economy.currencies_missing',
-        'World',
-        'currencies',
-        'Wallet has no currencies',
-        '`!wallet` needs top-level `currencies` entries to display owner-defined balances.',
-        'Add currencies, or disable the wallet command.',
-      ),
-    );
-  }
-
-  if ((buyOn || sellOn) && Object.keys(shops).length === 0) {
-    issues.push(
-      issue(
-        'error',
-        'economy.shops_missing',
-        'World',
-        'shops',
-        'Shop commands have no shops',
-        '`!buy` and `!sell` need top-level `shops` or `world_data.shops` entries.',
-        'Add shops with stock, or disable buy and sell.',
-      ),
-    );
-    return;
-  }
-
-  let acceptsSells = false;
   for (const [shopId, value] of Object.entries(shops)) {
     const path = `shops.${shopId}`;
     if (!isPlainRecord(value)) {
@@ -2921,7 +2854,6 @@ function validateEconomy(model: ConfigModel, issues: ConfigIssue[]) {
       continue;
     }
     const shop = asRecord(value);
-    if (shop.accepts_sells === true) acceptsSells = true;
     if (shop.stock == null) continue;
     if (!Array.isArray(shop.stock)) {
       issues.push(
@@ -2980,20 +2912,6 @@ function validateEconomy(model: ConfigModel, issues: ConfigIssue[]) {
       validateShopPriceShape(stock.price, `${stockPath}.price`, issues);
       validateShopPriceShape(stock.sell_price, `${stockPath}.sell_price`, issues);
     });
-  }
-
-  if (sellOn && !acceptsSells) {
-    issues.push(
-      issue(
-        'error',
-        'economy.sell_without_accepting_shop',
-        'World',
-        'shops',
-        'Sell has no buying shop',
-        '`!sell` needs at least one visible shop with `accepts_sells: True`.',
-        'Set accepts_sells on a shop, or disable sell.',
-      ),
-    );
   }
 }
 
@@ -3070,33 +2988,6 @@ export function createBlankConfig(): ConfigModel {
     shops: {},
     books: {},
     policies: {
-      exploration: { enforce_cooldowns: true, avoid_repeat_encounters: 'off' },
-      downtime: { mode: 'off', max_workdays: null, acquisition: 'manual' },
-      crafting: {
-        require_downtime_before_roll: true,
-        auto_deduct_materials: false,
-        auto_deduct_gold: false,
-        resources: {
-          gold: 'manual',
-          materials: 'manual',
-          items: 'manual',
-          downtime: 'check',
-          spell_slot: 'manual',
-        },
-        item_handling: null,
-      },
-      inventory: {
-        item_handling: {
-          mode: 'manual',
-          default_bag: 'Equipment',
-          equipment_bag: 'Equipment',
-          crafted_bag: 'Equipment',
-          potions_bag: 'Potions',
-          scrolls_bag: 'Scrolls',
-          magic_items_bag: 'Equipment',
-          materials_bag: 'Materials',
-        },
-      },
       display: {
         footer_behaviour: 'balanced',
         command_thumbnail: 'default',
@@ -3106,7 +2997,7 @@ export function createBlankConfig(): ConfigModel {
       player_setup: {
         enabled: true,
         require_character: true,
-        hud: { enabled: true, fields: ['coins', 'wallet', 'location'] },
+        hud: { enabled: true, fields: ['coinpurse', 'wallet', 'location'] },
         checks: [],
       },
     },

@@ -104,20 +104,18 @@ Per-command overrides live under `subsystems.crafting.command_config.<command>.r
 
 ## Item Output
 
-Global output handling lives under `policies.inventory.item_handling`:
+Global output handling lives under `subsystems.crafting.config.item_handling`:
 
 ```py
-"inventory": {
-    "item_handling": {
-        "mode": "manual",  # or "bags"
-        "default_bag": "Equipment",
-        "equipment_bag": "Equipment",
-        "crafted_bag": "Equipment",
-        "potions_bag": "Potions",
-        "scrolls_bag": "Scrolls",
-        "magic_items_bag": "Equipment",
-        "materials_bag": "Materials",
-    },
+"item_handling": {
+    "mode": "manual",  # or "bags"
+    "default_bag": "Equipment",
+    "equipment_bag": "Equipment",
+    "crafted_bag": "Equipment",
+    "potions_bag": "Potions",
+    "scrolls_bag": "Scrolls",
+    "magic_items_bag": "Equipment",
+    "materials_bag": "Materials",
 }
 ```
 

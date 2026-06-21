@@ -1,8 +1,8 @@
-!weather
+!weather forest
 ---
-re:planned for a later release[\s\S]*subsystems\.travel\.commands\.weather
+re:\*\*forest\*\*[\s\S]*Cool mist hangs beneath the trees\.
 ---
-name: weather reports planned feature copy
+name: weather shows configured area forecast
 vars:
   svars:
     westmarch_config: "ffff2020-2020-2020-2020-202020202020"
@@ -11,12 +11,19 @@ vars:
       subsystems = {
           "travel": {"enabled": True, "commands": {"weather": True}},
       }
+      world_data = {
+          "weather": {
+              "by_area": {
+                  "forest": {"default": ["Cool mist hangs beneath the trees."]},
+              },
+          },
+      }
 
 !weather help
 ---
-re:planned for a later release[\s\S]*subsystems\.travel\.commands\.weather
+re:Show the current regional weather[\s\S]*`forest`
 ---
-name: weather help reports planned feature copy
+name: weather help lists configured areas
 vars:
   svars:
     westmarch_config: "ffff2020-2020-2020-2020-202020202020"
@@ -24,4 +31,11 @@ vars:
     ffff2020-2020-2020-2020-202020202020: |
       subsystems = {
           "travel": {"enabled": True, "commands": {"weather": True}},
+      }
+      world_data = {
+          "weather": {
+              "by_area": {
+                  "forest": {"default": ["Cool mist hangs beneath the trees."]},
+              },
+          },
       }

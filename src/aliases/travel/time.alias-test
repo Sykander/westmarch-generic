@@ -1,8 +1,8 @@
 !time
 ---
-re:planned for a later release[\s\S]*subsystems\.travel\.commands\.time
+re:Faerûnian Calendar[\s\S]*Firstday, 1 Hammer 1492 DR 00:00
 ---
-name: time reports planned feature copy
+name: time shows configured world calendar
 vars:
   svars:
     westmarch_config: "ffff1010-1010-1010-1010-101010101010"
@@ -11,12 +11,27 @@ vars:
       subsystems = {
           "travel": {"enabled": True, "commands": {"time": True}},
       }
+      world_data = {
+          "calendars": {
+              "primary": {
+                  "id": "primary",
+                  "name": "Faerûnian Calendar",
+                  "epoch_unix": 0,
+                  "tick_rate": 0,
+                  "seconds_per_day": 86400,
+                  "start_year": 1492,
+                  "months": [{"name": "Hammer", "days": 30}],
+                  "weekdays": ["Firstday"],
+                  "display_format": "{weekday}, {day} {month} {year} DR {hour}:{minute}",
+              },
+          },
+      }
 
 !time help
 ---
-re:planned for a later release[\s\S]*subsystems\.travel\.commands\.time
+re:Show the current in-world time[\s\S]*world_data\.calendars
 ---
-name: time help reports planned feature copy
+name: time help explains calendar config
 vars:
   svars:
     westmarch_config: "ffff1010-1010-1010-1010-101010101010"

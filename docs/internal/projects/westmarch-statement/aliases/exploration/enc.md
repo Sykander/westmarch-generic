@@ -35,7 +35,7 @@ Manual biome input is matched with **`lists.search_list`** against registered bi
 | **`balanced`** | Engine tracks recent kinds via **[stats.gvar](../../gvars/stats.md)**; favours under-represented kinds. |
 
 - **Cooldown:** **`policies.exploration.enforce_cooldowns`**; **`command_config.enc.cooldown_seconds`** (default **120**); **`pc.check_cooldown`** reads **`stats`** **`last_used_at`**; skipped in Development env.
-- **Repeat avoidance:** **`policies.exploration.avoid_repeat_encounters`** — see [encounter_lists.md](../../gvars/encounter_lists.md).
+- **Repeat avoidance:** **`subsystems.exploration.config.avoid_repeat_encounters`** — see [encounter_lists.md](../../gvars/encounter_lists.md).
 - **Bonuses:** passed through to **`encounters.process_encounter`**.
 
 ## westmarch reference

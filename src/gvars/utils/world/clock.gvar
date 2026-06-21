@@ -1,6 +1,272 @@
-"""clock.gvar — placeholder.
+"""clock.gvar — in-world calendar and clock helpers."""
 
-See docs/internal/projects/westmarch-statement/gvars/clock.md
-"""
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(
+    config = env.gvars.config,
+    dicts = env.gvars.dicts,
+    lists = env.gvars.lists,
+)
 
-# TODO: implement clock module
+
+def _read_field(obj, key):
+    if obj == None:
+        return None
+    if dicts.is_dict(obj):
+        if key in obj:
+            return obj[key]
+        return None
+    try:
+        return obj[key]
+    except:
+        pass
+    try:
+        return obj.get(key)
+    except:
+        pass
+    attrs = {
+        "world_data": lambda o: o.world_data,
+        "calendars": lambda o: o.calendars,
+        "id": lambda o: o.id,
+        "name": lambda o: o.name,
+        "epoch_unix": lambda o: o.epoch_unix,
+        "tick_rate": lambda o: o.tick_rate,
+        "seconds_per_day": lambda o: o.seconds_per_day,
+        "days_per_year": lambda o: o.days_per_year,
+        "months": lambda o: o.months,
+        "weekdays": lambda o: o.weekdays,
+        "display_format": lambda o: o.display_format,
+        "seasons": lambda o: o.seasons,
+        "start_year": lambda o: o.start_year,
+        "year_offset": lambda o: o.year_offset,
+        "days": lambda o: o.days,
+        "start_day_of_year": lambda o: o.start_day_of_year,
+    }
+    if key in attrs:
+        try:
+            return attrs[key](obj)
+        except:
+            pass
+    return None
+
+
+def _cfg(config_override=None):
+    if config_override != None:
+        return config_override
+    return config.get_config()
+
+
+def _int_value(value, fallback=0):
+    if value == None or str(value).strip() == "":
+        return fallback
+    try:
+        return int(value)
+    except:
+        try:
+            return int(float(value))
+        except:
+            return fallback
+
+
+def _float_value(value, fallback=0):
+    if value == None or str(value).strip() == "":
+        return fallback
+    try:
+        return float(value)
+    except:
+        return fallback
+
+
+def _calendar_map(cfg):
+    wd = _read_field(cfg, "world_data")
+    calendars = _read_field(wd, "calendars")
+    if dicts.is_dict(calendars):
+        return calendars
+    return {}
+
+
+def list_calendar_ids(config_override=None):
+    calendars = _calendar_map(_cfg(config_override))
+    ids = []
+    for calendar_id in calendars:
+        ids.append(str(calendar_id))
+    ids.sort()
+    return ids
+
+
+def calendar(config_override=None, calendar_id=None):
+    calendars = _calendar_map(_cfg(config_override))
+    if len(calendars) == 0:
+        return None
+    if calendar_id != None and str(calendar_id).strip() != "":
+        key = str(calendar_id).strip()
+        cal = _read_field(calendars, key)
+        if cal != None:
+            return cal
+    primary = _read_field(calendars, "primary")
+    if primary != None:
+        return primary
+    for key in calendars:
+        return calendars[key]
+    return None
+
+
+def _calendar_name(cal):
+    name = _read_field(cal, "name")
+    if name != None and str(name).strip() != "":
+        return str(name).strip()
+    cal_id = _read_field(cal, "id")
+    if cal_id != None and str(cal_id).strip() != "":
+        return str(cal_id).strip()
+    return "World Calendar"
+
+
+def _months(cal, days_per_year):
+    months = _read_field(cal, "months")
+    if lists.is_list(months) and len(months) > 0:
+        return months
+    return [{"name": "Day", "days": days_per_year}]
+
+
+def _days_per_year(cal):
+    explicit = _read_field(cal, "days_per_year")
+    if explicit != None:
+        return max(1, _int_value(explicit, 365))
+    months = _read_field(cal, "months")
+    if lists.is_list(months) and len(months) > 0:
+        total = 0
+        for month in months:
+            total += max(0, _int_value(_read_field(month, "days"), 0))
+        if total > 0:
+            return total
+    return 365
+
+
+def _month_day(cal, day_of_year, days_per_year):
+    remaining = day_of_year
+    for month in _months(cal, days_per_year):
+        days = max(1, _int_value(_read_field(month, "days"), days_per_year))
+        if remaining < days:
+            name = _read_field(month, "name")
+            if name == None or str(name).strip() == "":
+                name = "Day"
+            return str(name), remaining + 1
+        remaining -= days
+    return "Day", day_of_year + 1
+
+
+def _weekday(cal, day_index):
+    weekdays = _read_field(cal, "weekdays")
+    if not lists.is_list(weekdays) or len(weekdays) == 0:
+        return ""
+    idx = day_index % len(weekdays)
+    return str(weekdays[idx])
+
+
+def _pad2(value):
+    num = _int_value(value, 0)
+    if num < 10:
+        return "0" + str(num)
+    return str(num)
+
+
+def world_instant_from_unix(config_override=None, unix_seconds=None, calendar_id=None):
+    cfg = _cfg(config_override)
+    cal = calendar(cfg, calendar_id)
+    if cal == None:
+        return None
+    if unix_seconds == None:
+        unix_seconds = int(time())
+
+    epoch = _float_value(_read_field(cal, "epoch_unix"), 0)
+    tick_rate = _float_value(_read_field(cal, "tick_rate"), 1)
+    seconds_per_day = max(1, _int_value(_read_field(cal, "seconds_per_day"), 86400))
+    in_world_seconds = (float(unix_seconds) - epoch) * tick_rate
+    day_index = int(in_world_seconds / seconds_per_day)
+    seconds_today = int(in_world_seconds - (day_index * seconds_per_day))
+    if seconds_today < 0:
+        seconds_today = 0
+
+    days_per_year = _days_per_year(cal)
+    year_offset = _int_value(_read_field(cal, "start_year"), None)
+    if year_offset == None:
+        year_offset = _int_value(_read_field(cal, "year_offset"), 0)
+    year = year_offset + int(day_index / days_per_year)
+    day_of_year = day_index % days_per_year
+    month, day = _month_day(cal, day_of_year, days_per_year)
+    hour = int((seconds_today % seconds_per_day) / 3600)
+    minute = int((seconds_today % 3600) / 60)
+
+    return {
+        "calendar": _calendar_name(cal),
+        "calendar_id": _read_field(cal, "id"),
+        "day_index": day_index,
+        "day_of_year": day_of_year + 1,
+        "year": year,
+        "month": month,
+        "day": day,
+        "hour": hour,
+        "minute": minute,
+        "weekday": _weekday(cal, day_index),
+    }
+
+
+def now(config_override=None, calendar_id=None):
+    return world_instant_from_unix(config_override, None, calendar_id)
+
+
+def season(config_override=None, instant=None, calendar_id=None):
+    cfg = _cfg(config_override)
+    cal = calendar(cfg, calendar_id)
+    if cal == None:
+        return "default"
+    if instant == None:
+        instant = now(cfg, calendar_id)
+    if instant == None:
+        return "default"
+    seasons = _read_field(cal, "seasons")
+    if not lists.is_list(seasons) or len(seasons) == 0:
+        return "default"
+    day = _int_value(_read_field(instant, "day_of_year"), 1)
+    chosen = None
+    chosen_start = -1
+    for entry in seasons:
+        start = _int_value(_read_field(entry, "start_day_of_year"), 1)
+        if start <= day and start >= chosen_start:
+            chosen = entry
+            chosen_start = start
+    if chosen == None:
+        chosen = seasons[len(seasons) - 1]
+    name = _read_field(chosen, "name")
+    if name == None or str(name).strip() == "":
+        return "default"
+    return str(name).strip()
+
+
+def format_instant(config_override=None, instant=None, calendar_id=None):
+    cfg = _cfg(config_override)
+    cal = calendar(cfg, calendar_id)
+    if cal == None:
+        return None
+    if instant == None:
+        instant = now(cfg, calendar_id)
+    if instant == None:
+        return None
+    fmt = _read_field(cal, "display_format")
+    if fmt == None or str(fmt).strip() == "":
+        fmt = "{weekday}, {day} {month} {year} {hour}:{minute}"
+    text = str(fmt)
+    replacements = {
+        "{calendar}": _read_field(instant, "calendar"),
+        "{year}": _read_field(instant, "year"),
+        "{month}": _read_field(instant, "month"),
+        "{day}": _read_field(instant, "day"),
+        "{day_of_year}": _read_field(instant, "day_of_year"),
+        "{hour}": _pad2(_read_field(instant, "hour")),
+        "{minute}": _pad2(_read_field(instant, "minute")),
+        "{weekday}": _read_field(instant, "weekday"),
+        "{season}": season(cfg, instant, calendar_id),
+    }
+    for key in replacements:
+        value = replacements[key]
+        text = text.replace(key, "" if value == None else str(value))
+    return text.strip()

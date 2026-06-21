@@ -29,10 +29,10 @@ vars:
           "crafting": {
               "enabled": True,
               "commands": {"enchant": True},
-              "config": {"catalogues": {"magic_items": "engine:catalogues/magic_items"}},
+              "config": {
+                  "catalogues": {"magic_items": "engine:catalogues/magic_items"},
+                  "resources": {"downtime": "manual", "gold": "manual", "items": "manual"},
+                  "item_handling": {"mode": "manual"},
+              },
           },
-      }
-      policies = {
-          "crafting": {"resources": {"downtime": "manual", "gold": "manual", "items": "manual"}},
-          "inventory": {"item_handling": {"mode": "manual"}},
       }

@@ -142,7 +142,7 @@ vars:
     aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1: |
       # owner body intentionally empty
 
-return config.cfg.policies.downtime.mode
+return config.cfg.subsystems.downtime.config.mode
 ---
 "off"
 ---
@@ -168,7 +168,7 @@ vars:
 
 return config.cfg.policies.player_setup.hud.fields[0]
 ---
-"coins"
+"coinpurse"
 ---
 name: empty owner defaults player setup HUD fields
 vars:
@@ -238,9 +238,9 @@ vars:
     aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1: |
       # owner body intentionally empty
 
-return config.cfg.policies.crafting.resources.downtime
+return config.cfg.subsystems.crafting.config.resources.downtime
 ---
-"check"
+"manual"
 ---
 name: empty owner defaults crafting downtime resource mode
 vars:
@@ -250,11 +250,11 @@ vars:
     aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1: |
       # owner body intentionally empty
 
-return config.cfg.policies.inventory.item_handling.scrolls_bag
+return config.cfg.subsystems.crafting.config.item_handling.scrolls_bag
 ---
 "Scrolls"
 ---
-name: empty owner defaults inventory scroll bag
+name: empty owner defaults crafting scroll bag
 vars:
   svars:
     westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"

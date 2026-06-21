@@ -52,7 +52,7 @@ ok, msg = pc.modify_wallet(ch, "shards", 2)
 | **`modify_wallet(ch, currency_id, delta)`** | Add/remove a config **wallet** currency. Validates **`currency_id`** against **`get_config().currencies`**. When **`policies.economy.enforce_wallet_caps`**, rejects grants above **`currencies[id].max_balance`**. |
 | **`modify_bag(ch, item, count, bag="Equipment")`** | Add/remove item stacks. Wraps **`core/bags`** **`modify_bag`**; same failure semantics when removal exceeds stock. |
 | **`modify_bag_items(ch, requirements, sign=-1, bag="Equipment")`** | Apply a list of `{item, qty}` bag mutations; used by crafting resource deduction. |
-| **`modify_downtime(ch, workdays)`** | Add (positive) or spend (negative) workdays when downtime mode is **`manual`** or **`tracked`**. Fails if mode is **`off`**, spend would go negative, or grant would exceed **`policies.downtime.max_workdays`**. |
+| **`modify_downtime(ch, workdays)`** | Add (positive) or spend (negative) workdays when downtime mode is **`manual`** or **`tracked`**. Fails if mode is **`off`**, spend would go negative, or grant would exceed **`subsystems.downtime.config.max_workdays`**. |
 | **`spend_spell_slot(ch, level)`** | Best-effort Avrae spell slot spend for crafting policies that set `spell_slot: "deduct"`. |
 | **`modify_hp(ch, delta)`** | Optional wrapper around **`ch.modify_hp`** for consistent messaging in encounter outcomes. |
 
@@ -143,7 +143,7 @@ if not ok:
 
 **`!wallet`** — read-only; uses **`get_wallet_balances`** + **`format_wallet_embed`**.  
 **`!downtime`** — **`get_downtime`** / **`modify_downtime`**.  
-Crafting success/resource paths — **`modify_bag`**, **`modify_bag_items`**, **`modify_gold`**, **`modify_downtime`**, and best-effort **`spend_spell_slot`** according to `policies.crafting.resources`.
+Crafting success/resource paths — **`modify_bag`**, **`modify_bag_items`**, **`modify_gold`**, **`modify_downtime`**, and best-effort **`spend_spell_slot`** according to `subsystems.crafting.config.resources`.
 
 ## Not in this module
 

@@ -373,7 +373,7 @@ policies = {{
         "require_character": True,
         "hud": {{
             "enabled": True,
-            "fields": ["coins", "wallet", "location"],
+            "fields": ["coinpurse", "wallet", "location"],
         }},
         "checks": [
             {{"type": "cvar", "key": "wg_downtime", "label": "Downtime", "message": "Run `{prefix}downtime setup`.", "when_subsystem": "downtime"}},

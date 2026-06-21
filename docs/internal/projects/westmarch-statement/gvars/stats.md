@@ -112,7 +112,7 @@ Skipped in Development env (same as westmarch).
 
 ## Repeat encounter history
 
-When **`policies.exploration.avoid_repeat_encounters`** is **`same_biome`** or **`global`**, **[encounter_lists.gvar](encounter_lists.md)** reads recent **`encounter_id`** values from log extras (window: **`exploration.config.repeat_exclude_window`**, default **5**).
+When **`subsystems.exploration.config.avoid_repeat_encounters`** is **`same_biome`** or **`global`**, **[encounter_lists.gvar](encounter_lists.md)** reads recent **`encounter_id`** values from log extras (window: **`exploration.config.repeat_exclude_window`**, default **5**).
 
 ## Balanced distribution history
 

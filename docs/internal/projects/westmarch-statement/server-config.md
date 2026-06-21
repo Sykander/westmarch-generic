@@ -388,7 +388,7 @@ The **Westmarch config editor** is the source of truth for config validation. It
 | Kind > 0% in **`distribution`** but no matching biome row tag **`activity.kind`** | Warning |
 | Legacy flat **`locations`** / **`encounter_pools`** without **`world_data`** | Warning |
 | Policy / subsystem mismatch (e.g. world_clock mode without **`world_data.calendars`**) | Warning |
-| **`policies.downtime.mode: tracked`** but **`subsystems.downtime.enabled`** false | Error |
+| **`subsystems.downtime.config.mode: tracked`** but **`subsystems.downtime.enabled`** false | Error |
 | Crafting downtime resource mode **`check`** / **`deduct`** with downtime not tracked | Warning |
 | Enabled crafting command with missing or malformed required catalogue source | Error |
 | Invalid crafting `recipe_mode`, `require_known_spell`, check mode/DC, or tool policy mode/list | Error |

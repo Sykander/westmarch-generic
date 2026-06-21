@@ -78,7 +78,7 @@ vars:
     wg_downtime_start: "10"
     wg_downtime_used: "3"
 
-cfg_fixture = {"policies": {"downtime": {"mode": "tracked", "max_workdays": None}}}
+cfg_fixture = {"subsystems": {"downtime": {"config": {"mode": "tracked", "max_workdays": None}}}}
 ok, msg = pc.modify_downtime(character(), 3, cfg_fixture)
 return ok and pc.get_downtime(character(), cfg_fixture) == 5 and "2** -> **5" in msg
 ---
@@ -89,7 +89,7 @@ vars:
   cvars:
     wg_downtime: "2"
 
-cfg_fixture = {"policies": {"downtime": {"mode": "tracked", "max_workdays": None}}}
+cfg_fixture = {"subsystems": {"downtime": {"config": {"mode": "tracked", "max_workdays": None}}}}
 ok, msg = pc.modify_downtime(character(), -2, cfg_fixture)
 return ok and pc.get_downtime(character(), cfg_fixture) == 3 and "spent **2**" in msg
 ---
@@ -100,7 +100,7 @@ vars:
   cvars:
     wg_downtime: "5"
 
-cfg_fixture = {"policies": {"downtime": {"mode": "tracked", "max_workdays": None}}}
+cfg_fixture = {"subsystems": {"downtime": {"config": {"mode": "tracked", "max_workdays": None}}}}
 ok, msg = pc.modify_downtime(character(), -2, cfg_fixture)
 return not ok and pc.get_downtime(character(), cfg_fixture) == 1 and "only has **1**" in msg
 ---
@@ -111,7 +111,7 @@ vars:
   cvars:
     wg_downtime: "1"
 
-cfg_fixture = {"policies": {"downtime": {"mode": "tracked", "max_workdays": 5}}}
+cfg_fixture = {"subsystems": {"downtime": {"config": {"mode": "tracked", "max_workdays": 5}}}}
 ok, msg = pc.modify_downtime(character(), 2, cfg_fixture)
 return not ok and pc.get_downtime(character(), cfg_fixture) == 4 and "capped" in msg
 ---
@@ -122,7 +122,7 @@ vars:
   cvars:
     wg_downtime: "4"
 
-cfg_fixture = {"policies": {"downtime": {"mode": "off", "max_workdays": None}}}
+cfg_fixture = {"subsystems": {"downtime": {"config": {"mode": "off", "max_workdays": None}}}}
 ok, msg = pc.modify_downtime(character(), 1, cfg_fixture)
 return not ok and "off" in msg
 ---

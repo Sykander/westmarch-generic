@@ -322,12 +322,12 @@ Fields to move out of Policies without schema migration:
 
 Fields to keep as policies unless a deliberate migration is chosen:
 
-- `policies.exploration.avoid_repeat_encounters`
-- `policies.downtime.mode`
-- `policies.downtime.acquisition`
-- `policies.downtime.max_workdays`
-- `policies.crafting.resources.*`
-- broad inventory output defaults under `policies.inventory.item_handling.*`
+- `subsystems.exploration.config.avoid_repeat_encounters`
+- `subsystems.downtime.config.mode`
+- `subsystems.downtime.config.acquisition`
+- `subsystems.downtime.config.max_workdays`
+- `subsystems.crafting.config.resources.*`
+- broad inventory output defaults under `subsystems.crafting.config.item_handling.*`
 
 Alternatives:
 

@@ -29,10 +29,10 @@ vars:
           "crafting": {
               "enabled": True,
               "commands": {"brew": True},
-              "config": {"catalogues": {"potions": "engine:catalogues/potions"}},
+              "config": {
+                  "catalogues": {"potions": "engine:catalogues/potions"},
+                  "resources": {"downtime": "manual", "gold": "manual", "materials": "manual"},
+                  "item_handling": {"mode": "manual"},
+              },
           },
-      }
-      policies = {
-          "crafting": {"resources": {"downtime": "manual", "gold": "manual", "materials": "manual"}},
-          "inventory": {"item_handling": {"mode": "manual"}},
       }

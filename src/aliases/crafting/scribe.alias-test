@@ -29,13 +29,13 @@ vars:
           "crafting": {
               "enabled": True,
               "commands": {"scribe": True},
-              "config": {"catalogues": {"spells": "engine:catalogues/spells"}},
+              "config": {
+                  "catalogues": {"spells": "engine:catalogues/spells"},
+                  "resources": {"downtime": "manual", "gold": "manual", "spell_slot": "manual"},
+                  "item_handling": {"mode": "manual"},
+              },
               "command_config": {"scribe": {"rules_version": "2014", "require_known_spell": False}},
           },
-      }
-      policies = {
-          "crafting": {"resources": {"downtime": "manual", "gold": "manual", "spell_slot": "manual"}},
-          "inventory": {"item_handling": {"mode": "manual"}},
       }
 
 !scribe House Spark
@@ -55,13 +55,11 @@ vars:
               "config": {
                   "rules_version": "2014",
                   "catalogues": {"spells": {"entries": [{"name": "House Spark", "level": 2}]}},
+                  "resources": {"downtime": "manual", "gold": "manual", "spell_slot": "check"},
+                  "item_handling": {"mode": "manual"},
               },
               "command_config": {"scribe": {"require_known_spell": False}},
           },
-      }
-      policies = {
-          "crafting": {"resources": {"downtime": "manual", "gold": "manual", "spell_slot": "check"}},
-          "inventory": {"item_handling": {"mode": "manual"}},
       }
 character:
   spellbook:
@@ -85,12 +83,10 @@ vars:
               "config": {
                   "rules_version": "2014",
                   "catalogues": {"spells": {"entries": [{"name": "House Spark", "level": 2}]}},
+                  "resources": {"downtime": "manual", "gold": "manual", "spell_slot": "check"},
+                  "item_handling": {"mode": "manual"},
               },
           },
-      }
-      policies = {
-          "crafting": {"resources": {"downtime": "manual", "gold": "manual", "spell_slot": "check"}},
-          "inventory": {"item_handling": {"mode": "manual"}},
       }
 character:
   spellbook:
@@ -111,13 +107,14 @@ vars:
           "crafting": {
               "enabled": True,
               "commands": {"scribe": True},
-              "config": {"catalogues": {"spells": "engine:catalogues/spells"}, "rules_version": "2024"},
+              "config": {
+                  "catalogues": {"spells": "engine:catalogues/spells"},
+                  "rules_version": "2024",
+                  "resources": {"downtime": "manual", "gold": "manual", "spell_slot": "manual"},
+                  "item_handling": {"mode": "manual"},
+              },
               "command_config": {"scribe": {"require_known_spell": False}},
           },
-      }
-      policies = {
-          "crafting": {"resources": {"downtime": "manual", "gold": "manual", "spell_slot": "manual"}},
-          "inventory": {"item_handling": {"mode": "manual"}},
       }
 
 !scribe House Spark
@@ -137,10 +134,8 @@ vars:
               "config": {
                   "rules_version": "2014",
                   "catalogues": {"spells": {"entries": [{"name": "House Spark", "level": 1}]}},
+                  "resources": {"downtime": "manual", "gold": "manual", "spell_slot": "manual"},
+                  "item_handling": {"mode": "manual"},
               },
           },
-      }
-      policies = {
-          "crafting": {"resources": {"downtime": "manual", "gold": "manual", "spell_slot": "manual"}},
-          "inventory": {"item_handling": {"mode": "manual"}},
       }
