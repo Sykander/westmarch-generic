@@ -35,14 +35,14 @@ Start with useful but safe command coverage.
 | Subsystem | Target | Notes |
 |-----------|--------|-------|
 | `exploration` | enabled | `enc`, `forage`, `fish`, `mine`, `lumber` on; keep `hunt` and `loot` off until combat/loot tuning is reviewed |
-| `travel` | enabled | `travel` and `location` on; `time` and `weather` off because runtime modules are still planned |
+| `travel` | enabled | `travel`, `location`, `time`, and `weather` on once calendar and weather-area data are seeded |
 | `economy` | enabled | `job`, `buy`, `sell` on when shops and services are seeded; `wallet` off unless custom currencies are added |
 | `content` | enabled | `library` and `read` on once book catalogue source ids are wired |
 | `crafting` | disabled by default | Seed location services now; enable commands after recipe/catalogue validation |
 | `downtime` | disabled by default | Keep until downtime acquisition policy is finalized |
 | `misc` | disabled by default | Quest/recipe commands can be enabled after content pass |
 
-For `subsystems.travel.config.transport_icons`, keep the existing required keys (`walk`, `fly`, `horse`, `boat`) and allow extra keys for richer modes. Current command parsing only exposes `horse` and `boat`; richer route modes need a follow-up command change.
+For `subsystems.travel.config.transport_icons`, keep the existing required keys (`walk`, `fly`, `horse`, `boat`) and allow extra keys for richer modes. `!travel` should accept any configured `world_data.transport` id as a route flag, resolve it consistently, store that selected transport on the active journey, and filter/display paths using that id.
 
 ## Map usage
 
@@ -68,12 +68,25 @@ Use these config placements:
 | Route graph | `world_data.paths` |
 | Transport modes | `world_data.transport` |
 | Biome registry | `world_data.biomes` |
+| Calendar data | `world_data.calendars` |
+| Weather areas | `world_data.weather.by_area` |
 | Shops/vendors/services | top-level `shops` |
 | Books/libraries | top-level `books`, `world_data.books`, or future book gvar ids |
 | Job tuning | `subsystems.economy.command_config.job` |
 | Location job availability | `world_data.locations.<id>.commands.job = True` |
 
 Current `!job` is skill-based, not named-job-based. The starter can list plausible local jobs in descriptions and location encounter prose, but it should not invent a new `jobs` schema until the economy command supports it.
+
+## Calendar and weather
+
+`!time` and `!weather` are implemented command surfaces. The Forgotten Realms starter should enable them only alongside the data they require:
+
+- seed at least one setting-appropriate calendar under `world_data.calendars`;
+- seed broad regional weather areas under `world_data.weather.by_area`;
+- assign `weather_area` to locations where a biome fallback would be too vague;
+- keep forecast text original and concise, like location descriptions.
+
+Editor Check should report missing calendar or weather data as a config issue, not as an unimplemented-command warning.
 
 ## Location seed list
 
@@ -323,7 +336,7 @@ Seed paths in batches so review stays possible.
 
 ## Transport catalogue
 
-Use `world_data.transport` as the owner-facing transport catalogue. Keep path requirements as transport ids.
+Use `world_data.transport` as the owner-facing transport catalogue. Keep path requirements as transport ids. The `!travel` command must treat those ids as valid transport flags, not as display-only metadata.
 
 ### Common land modes
 
@@ -431,6 +444,26 @@ Recommended policy:
 4. Use map crops only if the maintainer explicitly approves hosting those crops.
 5. Leave `image` absent on locations until a safe URL exists.
 
+## Travel command behavior
+
+`!travel` should accept any valid means of transport defined in `world_data.transport`.
+
+Required behavior:
+
+- exact transport id matches work, such as `!travel Neverwinter riding_horse`;
+- transport names or aliases may be resolved through the standard 0 / 1 / many lookup shape where practical;
+- invalid transport flags produce a clear "unknown transport" message;
+- ambiguous transport flags ask the user to be more specific;
+- active journeys store the selected transport id, not only `horse`/`boat` booleans;
+- path filtering uses `requirements.transport` against that selected id;
+- route and journey display use the selected id's configured icon/name when available.
+
+Backward compatibility:
+
+- `horse` may remain as a compatibility alias for `riding_horse` or another configured horse mode.
+- `boat` may remain as the generic small-boat mode.
+- Existing configs that use `requirements.transport: "horse"` should continue to work if they include `horse` as a transport id or compatibility alias.
+
 ## Validation and editor follow-ups
 
 When implementing the config, update:
@@ -441,9 +474,9 @@ When implementing the config, update:
 - editor validation only if `world_data.transport` or richer transport modes become structurally edited;
 - `.alias-test` coverage for at least one route, one location search, one shop, and one job-enabled location.
 
-Engine/editor follow-ups before fully using all transport ids:
+Engine/editor follow-ups for the transport contract:
 
-- teach `!travel` to accept arbitrary `world_data.transport` ids, not just `horse` and `boat`;
+- update `!travel` to accept any configured `world_data.transport` id as a route flag;
 - store active journey transport id instead of only `horse`/`boat` booleans;
 - show richer transport choices in the editor path builder;
 - optionally validate that every `requirements.transport` id exists in `world_data.transport`.
@@ -459,4 +492,3 @@ Engine/editor follow-ups before fully using all transport ids:
 7. Add transport catalogue and make route requirements refer to its ids.
 8. Run editor Check and `make build`, then `make test`.
 9. Add tests for route lookup, ambiguous location search, and visible shop behavior.
-

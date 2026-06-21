@@ -287,8 +287,12 @@ Implemented now:
 `subsystems.travel.config.transport_icons`: route display icons for walk, fly, horse, and boat.
 `monsters`: optional owner monster entries searched before the bundled engine catalogue.
 
-Planned or partial:
-`time`, `weather`, calendars, and travel cost/ration enforcement are planned. Keep `subsystems.travel.commands.time` and `weather` disabled until their runtime modules ship.
+Data-backed commands:
+`time` is implemented and requires `world_data.calendars`.
+`weather` is implemented and requires areas under `world_data.weather.by_area`.
+
+Partial:
+Travel cost/ration enforcement is reserved, but the current travel runtime does not deduct those values.
 
 Use `{prefix}westmarch setup -p "Biomes and Locations"` for biome/location detail.
 Use `{prefix}westmarch setup -p "Monster Data"` for monster override detail."""

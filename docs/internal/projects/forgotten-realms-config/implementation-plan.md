@@ -22,13 +22,17 @@ Inventory the current runtime and editor support before changing the config.
   - `src/aliases/economy/job.alias`
   - `src/aliases/economy/buy.alias`
   - `src/aliases/economy/sell.alias`
+- Confirm implemented time/weather helpers:
+  - `src/aliases/travel/time.alias`
+  - `src/aliases/travel/weather.alias`
+  - `src/gvars/utils/world/weather.gvar`
 - Confirm editor validation for locations, paths, shops, and transport icons in `editor/src/lib/config.ts`.
 - Check current `!travel` flag behavior in `src/aliases/travel/travel.alias`.
 
 Acceptance:
 
 - Document any runtime limits that affect config authoring.
-- Specifically capture that `!travel` currently accepts `horse` and `boat` flags only, while path helpers can display arbitrary transport ids.
+- Capture any current horse/boat-only behavior as a runtime gap: the required behavior is that `!travel` accepts any valid configured `world_data.transport` id as a transport flag.
 - Identify whether any new fields require editor validation before config data lands.
 
 ## Phase 1 - Starter identity and subsystem defaults
@@ -41,8 +45,8 @@ Update the preset's high-level identity and enabled command set.
   - `footer`: `Forgotten Realms`
   - `colour`: keep current green unless design review chooses another colour
 - Keep `rules_version = "2014"`.
-- Enable `travel.commands.travel` and `travel.commands.location`.
-- Keep `travel.commands.time` and `travel.commands.weather` disabled.
+- Enable `travel.commands.travel`, `travel.commands.location`, `travel.commands.time`, and `travel.commands.weather` in the final preset.
+- Seed calendar and weather-area data before or alongside enabling `travel.commands.time` and `travel.commands.weather`.
 - Enable `economy.commands.job`, `economy.commands.buy`, and `economy.commands.sell` only once shops are seeded.
 - Keep `economy.commands.wallet` disabled unless custom currencies are added.
 - Keep `crafting`, `downtime`, and `misc` disabled unless the implementation slice wires enough data to make them useful.
@@ -51,8 +55,23 @@ Update the preset's high-level identity and enabled command set.
 Acceptance:
 
 - `!westmarch show display` reports the Forgotten Realms identity.
-- Editor Check does not report planned `time` or `weather` commands as enabled.
+- Editor Check reports no `world.calendars.empty` or `world.weather.empty` issues once `time` and `weather` are enabled.
 - The config still parses in the editor after serialization.
+
+## Phase 1a - Calendar and weather baseline
+
+Seed the data required by the implemented `!time` and `!weather` commands.
+
+- Add at least one Forgotten Realms calendar under `world_data.calendars`.
+- Add broad weather areas under `world_data.weather.by_area`, such as coast, forest, mountain, plains, swamp, desert, tundra, ocean, and urban.
+- Assign `weather_area` on major locations when regional weather should differ from biome fallback.
+- Enable `subsystems.travel.commands.time` and `subsystems.travel.commands.weather` after this data exists.
+
+Acceptance:
+
+- `!time` can format the configured calendar.
+- `!weather` can choose a forecast for the current/default location and for a named configured area.
+- Editor Check does not emit `world.calendars.empty` or `world.weather.empty`.
 
 ## Phase 2 - Transport catalogue
 
@@ -80,11 +99,13 @@ Acceptance:
 
 - `world_data.transport.walk.default` or equivalent default behavior is clear.
 - Every transport id used by `world_data.paths.*.requirements.transport` exists in `world_data.transport`.
-- The solution doc's warning remains true until `!travel` accepts arbitrary transport ids.
+- `!travel` is planned to treat every `world_data.transport` id as a valid route flag.
 
-Engine follow-up:
+Runtime requirement:
 
-- Add a later command/runtime slice to make `!travel <destination> <transport-id>` work for all configured transport ids.
+- Make `!travel <destination> <transport-id>` work for all configured transport ids.
+- Preserve compatibility for `horse` and `boat` by keeping those ids or aliases available.
+- Store the selected transport id on active journeys and route previews.
 
 ## Phase 3 - Location atlas
 
@@ -181,9 +202,30 @@ Acceptance:
 - `!travel Neverwinter` from Waterdeep returns a route.
 - `!travel "Baldur's Gate"` from Waterdeep returns a route.
 - `!travel Phandalin` from Waterdeep can route through High Road/Triboar Trail nodes.
+- `!travel Neverwinter riding_horse` and another configured non-horse transport flag both resolve through the same transport selection path.
 - Boat/ship paths do not appear for ordinary walking unless their requirements allow it.
 - Route display never renders blank encounter commands such as `!enc `.
 - At least one route includes an explicit river crossing step.
+
+## Phase 5a - Generic travel transport selection
+
+Update the runtime so configured transport ids are first-class travel flags.
+
+- Add a transport lookup helper that reads `world_data.transport`.
+- Resolve transport flags by exact id first, then by configured name/alias where practical.
+- Use the standard 0 / 1 / many lookup shape for no match, one match, and ambiguous matches.
+- Update `!travel` route planning to pass the selected transport id into `journeys.find_journey`.
+- Update `journeys.build_journey`, `journeys.display_journey`, `journeys.next_step`, and `journeys.get_next_step` to persist/read a generic `transport` id.
+- Keep reading legacy journey `horse`/`boat` booleans during migration.
+- Keep `horse` and `boat` compatibility behavior available.
+- Add tests for `riding_horse`, `cart`, `rowboat`, `ship`, and an invalid/ambiguous transport flag.
+
+Acceptance:
+
+- Any id in `world_data.transport` can be used as a `!travel` flag.
+- Invalid transport ids fail before route planning with a clear message.
+- Ambiguous transport names ask the user to be more specific.
+- Existing `!travel Neverwinter horse` and `!travel Neverwinter boat` behavior still works.
 
 ## Phase 6 - Shops and service data
 
@@ -336,7 +378,7 @@ Acceptance:
 | Risk | Mitigation |
 |------|------------|
 | Starter scope balloons into all Faerun | Keep the first implementation map-scoped to Sword Coast/North and document future expansion regions |
-| Transport ids exceed current command support | Add data now, but keep route requirements compatible with `horse`/`boat` where player-facing commands need it; schedule generic transport command support |
+| Generic transport selection is not implemented before rich route data lands | Treat that as a runtime bug: implement generic `!travel` transport selection before relying on rich route requirements |
 | Config becomes too large for one gvar | Move large catalogues and future custom biome/location encounter bodies to separate gvars |
 | Shops stock names do not match catalogues | Prefer known generated item names and add tests for representative stock |
 | Images introduce licensing problems | Leave image fields empty until owned/generated/static assets exist |
@@ -349,4 +391,3 @@ Acceptance:
 - Editor Check can load and validate the preset without blocking errors.
 - Docs explain the map-scoped starter boundary and known follow-ups.
 - No Forgotten Realms data is hard-coded into generic aliases or utility gvars.
-

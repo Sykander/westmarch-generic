@@ -56,8 +56,8 @@ The first implementation should therefore be honest about scope:
 - Server-specific data must remain in config, not engine aliases.
 - Location lookup should keep using the standard `lists.search_list` 0 / 1 / many behavior through `locations.search_locations`.
 - Paths are directed route edges in `world_data.paths`; bidirectional travel needs two entries.
-- Current `!travel` command flags only select `horse` and `boat`, even though lower-level path helpers can display arbitrary transport ids. The config can define richer transport data, but command support for every mode is a follow-up.
-- `time` and `weather` commands are still planned/deferred in the runtime and should stay disabled until their modules ship.
+- `!travel` should accept a route flag for any valid configured `world_data.transport` id. If the current runtime only selects `horse` and `boat`, that is an implementation gap to fix, not the intended behavior.
+- `time` and `weather` commands are implemented, but enabling them requires matching `world_data.calendars` and `world_data.weather.by_area` data so Editor Check passes.
 - Location images must use redistributable, owned, generated, or user-provided URLs. Do not hotlink wiki art or copyrighted sourcebook art into runtime config.
 - Map assets are internal reference material unless the maintainer confirms hosting/licensing for runtime display.
 
@@ -74,6 +74,7 @@ The Forgotten Realms starter preset needs enough data to make these flows possib
 - Locations show command availability for exploration, jobs, shops, crafting services, and libraries.
 - Shops provide mundane supplies, stables, docks, and settlement-appropriate stock without pretending every village sells everything.
 - Transport modes cover normal 2014 mounts and vehicles plus rare Realms-appropriate special travel such as flying mounts, swimming mounts, portals, and ship passage.
+- `!time` and `!weather` work from the starter once its calendar and weather-area data are seeded.
 - Documentation names the source and map basis for the initial data.
 
 ## Non-goals
@@ -96,4 +97,3 @@ Useful starting references:
 - [Forgotten Realms Wiki: Trade Way](https://forgottenrealms.fandom.com/wiki/Trade_Way)
 - [Forgotten Realms Wiki: Long Road](https://forgottenrealms.fandom.com/wiki/Long_Road)
 - [Forgotten Realms Wiki: Triboar Trail](https://forgottenrealms.fandom.com/wiki/Triboar_Trail)
-
