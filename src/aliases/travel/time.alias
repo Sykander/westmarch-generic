@@ -17,16 +17,9 @@ if not ok:
 args = argparse(&ARGS&)
 argslist = &ARGS&
 
-if len(argslist) > 0 and argslist[0] in ["help", "?"]:
-    return get_embed(desc = f"{cmd_name} help is not implemented")
+planned = f"""`{ctx.prefix}{cmd_name}` is planned for a later release and is not active yet.
 
-try:
-    ch = character()
-except:
-    return get_embed(desc = f"{cmd_name} requires a character")
+Server owners should keep `subsystems.travel.commands.{cmd_name}` disabled for now. Use the web config editor Check page to catch this before publishing."""
 
-
-return get_embed(
-    desc=f"{cmd_name} is not implemented",
-)
+return get_embed(desc=planned)
 </drac2>

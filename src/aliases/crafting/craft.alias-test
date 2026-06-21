@@ -1,8 +1,8 @@
 !craft help
 ---
-re:Create an item
+"re:^(?![\\s\\S]*Potion of Healing)(?![\\s\\S]*Cloak of Protection)[\\s\\S]*Create an item[\\s\\S]*Rope, Hemp"
 ---
-name: craft help displays usage
+name: craft help displays mundane examples
 vars:
   svars:
     westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa41"

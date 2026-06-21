@@ -47,3 +47,28 @@ vars:
 character:
   cvars:
     bags: '[["Equipment", {"Rope, Hemp (50 ft)": 1}]]'
+
+!sell rope
+---
+re:No visible shops are buying[\s\S]*accepts_sells
+---
+name: sell explains missing accepting shop setup
+vars:
+  svars:
+    westmarch_config: "eeee1000-1000-1000-1000-100000000005"
+  gvars:
+    eeee1000-1000-1000-1000-100000000005: |
+      subsystems = {
+          "economy": {"enabled": True, "commands": {"sell": True}},
+      }
+      shops = {
+          "general": {
+              "id": "general",
+              "name": "General Store",
+              "accepts_sells": False,
+              "stock": [{"item": "Rope, Hemp (50 ft)", "price": {"gold": 0}}],
+          },
+      }
+character:
+  cvars:
+    bags: '[["Equipment", {"Rope, Hemp (50 ft)": 1}]]'

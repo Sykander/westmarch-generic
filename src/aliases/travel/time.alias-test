@@ -1,0 +1,27 @@
+!time
+---
+re:planned for a later release[\s\S]*subsystems\.travel\.commands\.time
+---
+name: time reports planned feature copy
+vars:
+  svars:
+    westmarch_config: "ffff1010-1010-1010-1010-101010101010"
+  gvars:
+    ffff1010-1010-1010-1010-101010101010: |
+      subsystems = {
+          "travel": {"enabled": True, "commands": {"time": True}},
+      }
+
+!time help
+---
+re:planned for a later release[\s\S]*subsystems\.travel\.commands\.time
+---
+name: time help reports planned feature copy
+vars:
+  svars:
+    westmarch_config: "ffff1010-1010-1010-1010-101010101010"
+  gvars:
+    ffff1010-1010-1010-1010-101010101010: |
+      subsystems = {
+          "travel": {"enabled": True, "commands": {"time": True}},
+      }

@@ -1,4 +1,9 @@
 :root {
+  --topbar-height: 65px;
+  --sticky-gap: 12px;
+  --sticky-offset: calc(var(--topbar-height) + var(--sticky-gap));
+  --sticky-nested-offset: calc(var(--sticky-offset) + 48px);
+  --cta-clearance: 112px;
   color-scheme: light;
   font-family:
     Inter,
@@ -224,6 +229,12 @@ th {
 }
 
 .sidebar {
+  position: sticky;
+  top: var(--sticky-offset);
+  align-self: start;
+  max-height: calc(100vh - var(--sticky-offset));
+  overflow-y: auto;
+  scrollbar-gutter: stable;
   border-right: 1px solid #d9ded9;
   padding: 12px;
   background: #fbfcf9;
@@ -256,7 +267,7 @@ th {
 
 .main-pane {
   min-width: 0;
-  padding: 16px 16px 112px;
+  padding: 16px 16px var(--cta-clearance);
 }
 
 .cta-bar {
@@ -336,6 +347,12 @@ th {
 }
 
 .right-pane {
+  position: sticky;
+  top: var(--sticky-offset);
+  align-self: start;
+  max-height: calc(100vh - var(--sticky-offset));
+  overflow-y: auto;
+  scrollbar-gutter: stable;
   border-left: 1px solid #d9ded9;
   padding: 12px;
   background: #fbfcf9;
@@ -891,13 +908,14 @@ th {
 
 .builder-row.open > .builder-row-head {
   position: sticky;
-  top: 0;
+  top: var(--sticky-offset);
   z-index: 8;
   border-radius: 8px 8px 0 0;
+  box-shadow: 0 8px 18px rgba(23, 32, 38, 0.08);
 }
 
 .preview-subrow-list .builder-row.open > .builder-row-head {
-  top: 48px;
+  top: var(--sticky-nested-offset);
   z-index: 7;
 }
 
@@ -993,7 +1011,7 @@ th {
 
 .preview-section-rows > .builder-row,
 .preview-subrow-list .builder-row {
-  scroll-margin-top: 12px;
+  scroll-margin-top: calc(var(--sticky-offset) + 12px);
 }
 
 .preview-subrow-list {
@@ -1795,6 +1813,15 @@ th {
   padding: 10px;
 }
 
+.gvar-source-row.open > .gvar-source-head {
+  position: sticky;
+  top: var(--sticky-offset);
+  z-index: 8;
+  border-radius: 8px 8px 0 0;
+  background: #fbfcfb;
+  box-shadow: 0 8px 18px rgba(23, 32, 38, 0.08);
+}
+
 .row-toggle {
   min-width: 0;
   justify-content: flex-start;
@@ -1891,6 +1918,7 @@ th {
 
 .command-cooldown-grid,
 .command-matrix,
+.transport-icon-grid,
 .distribution-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -1930,6 +1958,10 @@ th {
 
 .distribution-grid {
   align-items: end;
+}
+
+.transport-icon-grid {
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
 }
 
 .dependency-intro {
@@ -2184,6 +2216,31 @@ th {
   border-radius: 8px;
   background: #f4f8f5;
   padding-left: 36px;
+}
+
+.builder-row,
+.collection-item,
+.subsystem-details,
+.command-override,
+.advanced-json-details,
+.encounter-model-reference,
+.multi-select,
+.gvar-source-row {
+  scroll-margin-top: calc(var(--sticky-offset) + 12px);
+}
+
+article.collection-item > .collection-item-head,
+.collection-item[open] > summary,
+.subsystem-details[open] > summary,
+.command-override[open] > summary,
+.advanced-json-details[open] > summary,
+.encounter-model-reference[open] > summary,
+.multi-select[open] > summary {
+  position: sticky;
+  top: var(--sticky-offset);
+  z-index: 7;
+  background: #f4f8f5;
+  box-shadow: 0 8px 18px rgba(23, 32, 38, 0.08);
 }
 
 .collection-item > summary::-webkit-details-marker,
@@ -2568,6 +2625,12 @@ th {
 }
 
 @media (max-width: 760px) {
+  :root {
+    --sticky-offset: 0px;
+    --sticky-nested-offset: 0px;
+    --cta-clearance: 16px;
+  }
+
   .topbar {
     position: static;
     flex-direction: column;
@@ -2592,10 +2655,13 @@ th {
   }
 
   .sidebar {
+    position: static;
+    max-height: none;
     border-right: 0;
     border-bottom: 1px solid #d9ded9;
     display: flex;
     overflow-x: auto;
+    overflow-y: visible;
     gap: 8px;
   }
 
@@ -2628,6 +2694,19 @@ th {
 
   .preview-subrow-list .builder-row.open > .builder-row-head {
     top: 0;
+  }
+
+  .builder-row.open > .builder-row-head,
+  .gvar-source-row.open > .gvar-source-head,
+  article.collection-item > .collection-item-head,
+  .collection-item[open] > summary,
+  .subsystem-details[open] > summary,
+  .command-override[open] > summary,
+  .advanced-json-details[open] > summary,
+  .encounter-model-reference[open] > summary,
+  .multi-select[open] > summary {
+    position: static;
+    box-shadow: none;
   }
 
   .subsystem-json-grid {

@@ -1671,7 +1671,7 @@ policies = {
         "require_character": True,
         "hud": {
             "enabled": True,
-            "fields": ["coins", "wallet", "location", "time", "weather"],
+            "fields": ["coins", "wallet", "location"],
         },
         "checks": [],
     },
@@ -1724,7 +1724,7 @@ Default HUD:
 ```py
 "hud": {
     "enabled": True,
-    "fields": ["coins", "wallet", "location", "time", "weather"],
+    "fields": ["coins", "wallet", "location"],
 }
 ```
 
@@ -1735,8 +1735,8 @@ Built-in HUD fields only render when their subsystem or command is enabled:
 | `coins` | `subsystems.economy.enabled` | Avrae character coinpurse |
 | `wallet` | `subsystems.economy.commands.wallet` | Configured `currencies` balances from `wg_wallet_<id>` cvars |
 | `location` | `subsystems.travel.commands.location` | Character `wg_location`, resolved through `world_data.locations` when possible |
-| `time` | `subsystems.travel.commands.time` | Clock module output when implemented; otherwise configured/manual world time text |
-| `weather` | `subsystems.travel.commands.weather` | Weather module output when implemented; otherwise configured/manual weather text |
+| `time` | `subsystems.travel.commands.time` | Reserved for the planned clock module; keep disabled for the initial release |
+| `weather` | `subsystems.travel.commands.weather` | Reserved for the planned weather module; keep disabled for the initial release |
 
 Custom HUD fields use the same storage readers as setup checks:
 

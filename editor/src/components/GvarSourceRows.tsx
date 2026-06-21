@@ -42,7 +42,10 @@ export function GvarSourceRows({
         const dashboardUrl = makeGvarDashboardUrl(row.id);
 
         return (
-          <article className="gvar-source-row" key={`${row.id}:${row.path}`}>
+          <article
+            className={`gvar-source-row${expanded ? ' open' : ''}`}
+            key={`${row.id}:${row.path}`}
+          >
             <header className="gvar-source-head">
               <button
                 type="button"

@@ -232,3 +232,29 @@ vars:
   character:
     cvars:
       wg_location: "oakwood"
+
+!mine
+---
+re:No encounters configured for \*\*Oakwood\*\* / \*\*forest\*\* / \*\*mine\*\*
+---
+name: "inferred biome missing pool includes location"
+vars:
+  svars:
+    westmarch_config: "eeee3334-3334-3334-3334-333333333636"
+  gvars:
+    eeee3334-3334-3334-3334-333333333636: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"mine": True},
+              "config": {"enc_biome_source": "location"},
+          },
+          "travel": {"enabled": True, "commands": {"location": True}},
+      }
+      world_data = {
+          "default_location": "oakwood",
+          "biomes": {"forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555636"}},
+          "locations": {"oakwood": {"name": "Oakwood", "commands": {"mine": ["forest"]}}},
+      }
+    eeee5555-5555-5555-5555-555555555636: |
+      []

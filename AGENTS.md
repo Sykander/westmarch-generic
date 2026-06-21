@@ -30,8 +30,8 @@ Cached upstream Avrae / avrae-ls docs, refresh scripts, and perf probes live in 
 ## What to do when changing config
 
 1. Update the config implementation, fixtures, and validation gvars under `src/`.
-2. Update admin-facing config commands that validate or display the shape, especially **`westmarch check`** and **`westmarch show`**.
-3. Update the web editor under `editor/` so its model, validation, and UI match the new config shape.
+2. Update admin-facing config display commands, especially **`westmarch show`**.
+3. Update the web editor under `editor/` so its model, validation, Check page, and UI match the new config shape.
 4. Update **`docs/`** and relevant **`.alias-test`** / **`.gvar-test`** coverage for the new config behavior.
 
 ## Tooling

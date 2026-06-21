@@ -1,8 +1,8 @@
 !brew help
 ---
-re:Create a potion
+"re:^(?![\\s\\S]*Cloak of Protection)[\\s\\S]*Create a potion[\\s\\S]*Potion of Healing"
 ---
-name: brew help displays usage
+name: brew help displays potion examples
 vars:
   svars:
     westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa42"

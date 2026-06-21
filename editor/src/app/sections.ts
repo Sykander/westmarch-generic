@@ -22,8 +22,9 @@ export const SECTIONS: Array<{ id: Section; label: string }> = [
 export const SECTION_DESCRIPTIONS: Record<Section, string> = {
   setup: 'Load from Avrae, paste source, or start a new config.',
   display: 'Set world branding, rules edition, embed colour, footer, and description.',
-  subsystems: 'Choose command families, command toggles, and subsystem display overrides.',
-  policies: 'Tune encounter, crafting, downtime, item output, footer, and distribution behavior.',
+  subsystems: 'Choose command families, command toggles, subsystem config, and display overrides.',
+  policies:
+    'Tune table-wide repeat, downtime, resource, item output, footer, and player setup behavior.',
   world: 'Configure locations, paths, and world-level travel data.',
   biomes: 'Wire biome presets, custom biome gvars, encounter rows, and custom templates.',
   check: 'Review browser validation before exporting or publishing.',

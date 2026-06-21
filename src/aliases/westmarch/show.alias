@@ -349,24 +349,6 @@ def _policy_summary(cfg):
     command_thumb = _read_field(disp_pol, "command_thumbnail")
     if command_thumb != None:
         lines.append(f"display.command_thumbnail: {command_thumb}")
-    exp_block = _read_subsystem(cfg, "exploration")
-    exp_cfg = _read_field(exp_block, "config")
-    image_cfg = _read_field(exp_cfg, "monster_images")
-    dcs_cfg = _read_field(exp_cfg, "show_check_dcs")
-    if image_cfg != None:
-        lines.append(
-            f"exploration.monster_images.hunt: {_read_field(image_cfg, 'hunt')}"
-        )
-        lines.append(
-            f"exploration.monster_images.loot: {_read_field(image_cfg, 'loot')}"
-        )
-    if dcs_cfg != None:
-        lines.append(
-            f"exploration.show_check_dcs.hunt: {_bool_text(_read_field(dcs_cfg, 'hunt'))}"
-        )
-        lines.append(
-            f"exploration.show_check_dcs.loot: {_bool_text(_read_field(dcs_cfg, 'loot'))}"
-        )
     if len(lines) == 0:
         lines.append("notable: none")
     return _codeblock("yaml", lines)

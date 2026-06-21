@@ -46,7 +46,7 @@ Toggle:
 },
 ```
 
-**Editor validation:** economy + `wallet` enabled but empty `currencies` → warning; unknown currency id in shop/encounter config → error.
+**Editor validation:** economy + `wallet` enabled but empty `currencies` → error; unknown currency id in shop/encounter config → error.
 
 ## Generic architecture
 

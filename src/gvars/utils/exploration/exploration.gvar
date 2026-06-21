@@ -117,6 +117,14 @@ def embed_with_image(get_embed, desc, cfg, command, image_url):
     return get_embed(desc=desc, thumb=url)
 
 
+def _missing_pool_message(biome, activity, resolve_context):
+    if _field(resolve_context, "source") == "location":
+        loc_name = _field(resolve_context, "location_name")
+        if loc_name not in [None, ""]:
+            return f"No encounters configured for **{loc_name}** / **{biome}** / **{activity}** on this server."
+    return f"No encounters configured for **{biome}** / **{activity}** on this server."
+
+
 def run_activity(activity, argslist, get_embed):
     """End-to-end exploration activity handler."""
     cfg = config.get_config()
@@ -136,14 +144,16 @@ def run_activity(activity, argslist, get_embed):
             desc=f"On **cooldown** — wait **{remaining}** seconds before using `!{cmd}` again."
         )
 
-    biome, resolve_err = biomes.resolve_biome(activity, argslist, ch, cfg)
+    resolve_context = biomes.resolve_biome_context(activity, argslist, ch, cfg)
+    biome = _field(resolve_context, "biome")
+    resolve_err = _field(resolve_context, "error")
     if resolve_err != None:
         return get_embed(desc=resolve_err)
 
     pick = encounter_lists.get_encounter_pick(biome, activity, ch, cfg)
     if pick == None:
         return get_embed(
-            desc=f"No encounters configured for **{biome}** / **{activity}** on this server."
+            desc=_missing_pool_message(biome, activity, resolve_context)
         )
 
     kind = _field(pick, "kind")

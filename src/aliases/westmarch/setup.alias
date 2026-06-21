@@ -243,7 +243,7 @@ Most edits apply on the next command run; you do not need to redeploy the engine
 
 
 def _exploration_subsystem(prefix):
-    return f"""Only **exploration** is live as a player-facing subsystem right now.
+    return f"""**Exploration** is a good first subsystem to configure because it demonstrates command toggles, biome data, and lookup behaviour.
 
 Shape:
 ```py
@@ -268,7 +268,7 @@ subsystems = {{
 `distribution_policy`: `random` or `balanced`.
 `distribution`: percent mix for `combat`, `quest`, and `gather`; total must be 100.
 `repeat_exclude_window`: how many recent encounters to avoid when repeat protection is enabled.
-`command_config.<cmd>.cooldown_seconds`: optional per-command cooldown override.
+`command_config.<cmd>.cooldown_seconds`: optional cooldown override for exploration activity commands, `job`, `library`, and `read`.
 
 **Workshop dependency**
 Exploration rewards can add items to character bags. Subscribe your preferred **Bags** alias workshop when enabling gathering or loot workflows.
@@ -283,10 +283,12 @@ Implemented now:
 `biomes`: registry of biome codes to encounter-pool gvars. Exploration commands use this.
 `locations`: named places. Location mode can infer which biome to roll from.
 `default_location`: fallback location id when a character has not set one.
+`paths`: route legs used by `!travel`; encounter steps can omit biome only when location-inferred exploration can supply it.
+`subsystems.travel.config.transport_icons`: route display icons for walk, fly, horse, and boat.
 `monsters`: optional owner monster entries searched before the bundled engine catalogue.
 
 Planned or partial:
-`paths`, `transport`, and calendars are documented/validated in places, but player path travel is not live yet.
+`time`, `weather`, calendars, and travel cost/ration enforcement are planned. Keep `subsystems.travel.commands.time` and `weather` disabled until their runtime modules ship.
 
 Use `{prefix}westmarch setup -p "Biomes and Locations"` for biome/location detail.
 Use `{prefix}westmarch setup -p "Monster Data"` for monster override detail."""
@@ -371,7 +373,7 @@ policies = {{
         "require_character": True,
         "hud": {{
             "enabled": True,
-            "fields": ["coins", "wallet", "location", "time", "weather"],
+            "fields": ["coins", "wallet", "location"],
         }},
         "checks": [
             {{"type": "cvar", "key": "wg_downtime", "label": "Downtime", "message": "Run `{prefix}downtime setup`.", "when_subsystem": "downtime"}},

@@ -85,6 +85,31 @@ cfg_fixture = {
             "config": {
                 "rules_version": "2014",
                 "catalogues": {
+                    "spells": {"entries": [{"name": "House Spark", "level": 2}]},
+                },
+            },
+        },
+    },
+    "policies": {
+        "crafting": {"resources": {"downtime": "manual", "gold": "manual", "spell_slot": "check"}},
+        "inventory": {"item_handling": {"mode": "manual"}},
+    },
+}
+plan = crafting.build_plan(cfg_fixture, "scribe", "House Spark", argparse("-i"), {"spellbook": {"spells": [], "slots": {"2": 0}}})
+return plan["ok"] == True and plan["ignore_spell_checks"] == True and plan["spell_slot_level"] == None and plan["gold"] == 250 and plan["workdays"] == 3
+---
+True
+---
+name: scribe ignore bypasses known spell and slot plan only
+
+cfg_fixture = {
+    "subsystems": {
+        "crafting": {
+            "enabled": True,
+            "commands": {"scribe": True},
+            "config": {
+                "rules_version": "2014",
+                "catalogues": {
                     "spells": {"entries": [{"name": "House Spark", "level": 1}]},
                 },
             },
@@ -270,3 +295,9 @@ return crafting.subject_from_args(["Fireball", "-l", "5", "-ability", "cha", "-s
 True
 ---
 name: subject parser ignores scribe flags
+
+return crafting.subject_from_args(["Misty", "Step", "-i"]) == "Misty Step"
+---
+True
+---
+name: subject parser ignores scribe ignore flag

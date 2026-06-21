@@ -231,3 +231,29 @@ vars:
   character:
     cvars:
       wg_location: "oakwood"
+
+!lumber
+---
+re:No encounters configured for \*\*Oakwood\*\* / \*\*forest\*\* / \*\*lumber\*\*
+---
+name: "inferred biome missing pool includes location"
+vars:
+  svars:
+    westmarch_config: "eeee3334-3334-3334-3334-333333333736"
+  gvars:
+    eeee3334-3334-3334-3334-333333333736: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"lumber": True},
+              "config": {"enc_biome_source": "location"},
+          },
+          "travel": {"enabled": True, "commands": {"location": True}},
+      }
+      world_data = {
+          "default_location": "oakwood",
+          "biomes": {"forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555736"}},
+          "locations": {"oakwood": {"name": "Oakwood", "commands": {"lumber": ["forest"]}}},
+      }
+    eeee5555-5555-5555-5555-555555555736: |
+      []

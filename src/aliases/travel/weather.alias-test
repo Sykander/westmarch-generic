@@ -1,0 +1,27 @@
+!weather
+---
+re:planned for a later release[\s\S]*subsystems\.travel\.commands\.weather
+---
+name: weather reports planned feature copy
+vars:
+  svars:
+    westmarch_config: "ffff2020-2020-2020-2020-202020202020"
+  gvars:
+    ffff2020-2020-2020-2020-202020202020: |
+      subsystems = {
+          "travel": {"enabled": True, "commands": {"weather": True}},
+      }
+
+!weather help
+---
+re:planned for a later release[\s\S]*subsystems\.travel\.commands\.weather
+---
+name: weather help reports planned feature copy
+vars:
+  svars:
+    westmarch_config: "ffff2020-2020-2020-2020-202020202020"
+  gvars:
+    ffff2020-2020-2020-2020-202020202020: |
+      subsystems = {
+          "travel": {"enabled": True, "commands": {"weather": True}},
+      }

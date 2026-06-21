@@ -1,10 +1,10 @@
 # scribe
 
-`!scribe <spell> [-l level]` creates a spell scroll from the configured spell catalogue.
+`!scribe <spell> [-l level] [-i]` creates a spell scroll from the configured spell catalogue.
 
 The command validates the requested scroll level against the spell's base level. Costs follow `recipe_mode`: `raw` ignores recipes, `recipes` requires one, and `mixed` uses a unique `kind: "scribe"` recipe when present. RAW fallback uses the configured rules edition's scroll baseline.
 
-RAW spell eligibility is enforced by default: the resolved spell must appear in the character's Avrae spellbook. Servers can set `subsystems.crafting.config.require_known_spell` to `False`, or override `subsystems.crafting.command_config.scribe.require_known_spell`, when they track that outside Avrae.
+RAW spell eligibility is enforced by default: the resolved spell must appear in the character's Avrae spellbook. Servers can set `subsystems.crafting.config.require_known_spell` to `False`, or override `subsystems.crafting.command_config.scribe.require_known_spell`, when they track that outside Avrae. Players can pass `-i` to bypass only the known-spell and spell-slot checks for feature-granted spells. Gold, downtime, materials, tools, and crafting checks still apply.
 
 Scroll item names are edition-specific:
 

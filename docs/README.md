@@ -51,7 +51,7 @@ flowchart LR
 
 ## Workshop scaffold
 
-All MVP aliases and engine gvars are registered in **`utils/sourcemap.dev.json`** / **`sourcemap.prod.json`** with UUIDs from **`unused_gvars.md`**. Alias help docs are registered with `docs_file` and live beside their alias sources under **`src/aliases/`**. Placeholder bodies return “not implemented” embeds until each tier is ported. Regenerate env after sourcemap edits: **`make build`**.
+All MVP aliases and engine gvars are registered in **`utils/sourcemap.dev.json`** / **`sourcemap.prod.json`** with UUIDs from **`unused_gvars.md`**. Alias help docs are registered with `docs_file` and live beside their alias sources under **`src/aliases/`**. Commands that are still planned should say so clearly in runtime output and help docs. Regenerate env after sourcemap edits: **`make build`**.
 
 The **`westmarch`** hub uses admin sub-aliases (`setup`, `show`) plus a player-facing bare `!westmarch` setup-status check. Config validation lives in the web editor, not in a Discord `check` command.
 

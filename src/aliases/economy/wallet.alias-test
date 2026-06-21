@@ -35,3 +35,17 @@ vars:
       currencies = {
           "shards": {"name": "Arcane Shard", "plural": "Arcane Shards", "symbol": "◇"},
       }
+
+!wallet
+---
+re:No wallet currencies configured
+---
+name: wallet explains missing currencies succinctly
+vars:
+  svars:
+    westmarch_config: "eeee1000-1000-1000-1000-100000000002"
+  gvars:
+    eeee1000-1000-1000-1000-100000000002: |
+      subsystems = {
+          "economy": {"enabled": True, "commands": {"wallet": True}},
+      }

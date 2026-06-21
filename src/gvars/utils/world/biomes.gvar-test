@@ -186,3 +186,53 @@ return code == None and "biome" in resolve_err.lower()
 True
 ---
 name: argument mode requires biome code
+
+cfg_fixture = {
+    "subsystems": {
+        "exploration": {
+            "enabled": True,
+            "commands": {"enc": True},
+            "config": {"enc_biome_source": "location"},
+        },
+        "travel": {
+            "enabled": True,
+            "commands": {"location": True},
+        },
+    },
+    "world_data": {
+        "default_location": "oakwood",
+        "biomes": {
+            "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+        },
+        "locations": {
+            "oakwood": {"name": "Oakwood", "commands": {"enc": ["forest"]}},
+        },
+    },
+}
+biome_result = biomes.resolve_biome_context("enc", [], character(), cfg_fixture)
+return biome_result["biome"] == "forest" and biome_result["source"] == "location" and biome_result["location_name"] == "Oakwood"
+---
+True
+---
+name: resolve_biome_context includes inferred location details
+
+cfg_fixture = {
+    "subsystems": {
+        "exploration": {
+            "enabled": True,
+            "commands": {"enc": True},
+            "config": {"enc_biome_source": "argument"},
+        },
+    },
+    "world_data": {
+        "biomes": {
+            "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+        },
+    },
+}
+biome_result = biomes.resolve_biome_context("enc", ["forest"], character(), cfg_fixture)
+return biome_result["biome"] == "forest" and biome_result["source"] == "manual" and biome_result["location_name"] == None
+---
+True
+---
+name: resolve_biome_context marks manual biome arguments

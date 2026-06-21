@@ -11,6 +11,13 @@ using(
     locations = env.gvars.locations,
 )
 
+DEFAULT_TRANSPORT_ICONS = {
+    "walk": "🚶",
+    "fly": "🪽",
+    "horse": "🐎",
+    "boat": "⛵",
+}
+
 
 def _read_field(obj, key):
     if obj == None:
@@ -43,6 +50,12 @@ def _read_field(obj, key):
         "encs": lambda o: o.encs,
         "horse": lambda o: o.horse,
         "boat": lambda o: o.boat,
+        "subsystems": lambda o: o.subsystems,
+        "travel": lambda o: o.travel,
+        "config": lambda o: o.config,
+        "transport_icons": lambda o: o.transport_icons,
+        "exploration": lambda o: o.exploration,
+        "enc_biome_source": lambda o: o.enc_biome_source,
     }
     if key in attrs:
         try:
@@ -93,6 +106,30 @@ def _transport_id(transport_id="walk", horse=False, boat=False):
     if transport_id == None or str(transport_id).strip() == "":
         return "walk"
     return str(transport_id).strip().lower()
+
+
+def _transport_icons(cfg):
+    icons = {}
+    for key in DEFAULT_TRANSPORT_ICONS:
+        icons[key] = DEFAULT_TRANSPORT_ICONS[key]
+    subs = _read_field(cfg, "subsystems")
+    travel = _read_field(subs, "travel")
+    travel_config = _read_field(travel, "config")
+    configured = _read_field(travel_config, "transport_icons")
+    if dicts.is_dict(configured):
+        for key in configured:
+            value = _read_field(configured, key)
+            if value != None and str(value).strip() != "":
+                icons[str(key).strip().lower()] = str(value).strip()
+    return icons
+
+
+def _transport_icon(cfg, transport_id="walk"):
+    selected = _transport_id(transport_id)
+    icons = _transport_icons(cfg)
+    if selected in icons:
+        return icons[selected]
+    return ""
 
 
 def _copy_path(path):
@@ -280,7 +317,10 @@ def _step_text(step, path=None, prefix="!", completed=False):
             activity = _read_field(step, "activity")
             if activity == None or str(activity).strip() == "":
                 activity = "enc"
-            text = f"Run `{prefix}{activity} {biome}`"
+            command = f"{prefix}{activity}"
+            if biome != None and str(biome).strip() != "":
+                command += f" {str(biome).strip()}"
+            text = f"Run `{command}`"
         elif step_type == "cost" or _read_field(step, "gold") != None:
             parts = []
             gold = _read_field(step, "gold")
@@ -303,6 +343,32 @@ def _step_text(step, path=None, prefix="!", completed=False):
     return text
 
 
+def _biome_source(cfg):
+    subs = _read_field(cfg, "subsystems")
+    exploration = _read_field(subs, "exploration")
+    exploration_config = _read_field(exploration, "config")
+    source = _read_field(exploration_config, "enc_biome_source")
+    if source == None or str(source).strip() == "":
+        return "auto"
+    return str(source).strip().lower()
+
+
+def _missing_biome_warning(step, cfg):
+    if not dicts.is_dict(step):
+        return None
+    step_type = _read_field(step, "type")
+    biome = _read_field(step, "biome")
+    if biome == None:
+        biome = _read_field(step, "code")
+    if step_type != "encounter" and biome == None:
+        return None
+    if biome != None and str(biome).strip() != "":
+        return None
+    if _biome_source(cfg) == "location":
+        return None
+    return "Encounter step has no biome. Configure a biome, or set exploration biome source to location."
+
+
 def display_step(step, path=None, prefix="!", completed=False):
     return _step_text(step, path, prefix, completed)
 
@@ -323,6 +389,7 @@ def display_path(path, config_override=None, mode="short", transport_id="walk", 
     path_label = _read_field(path, "label")
     if path_label != None and str(path_label).strip() != "":
         lines.append(f"-# {str(path_label).strip()}")
+    icon = _transport_icon(cfg, transport_id)
     index = 0
     for step in steps:
         done = False
@@ -331,6 +398,10 @@ def display_path(path, config_override=None, mode="short", transport_id="walk", 
                 done = index < int(progress_step)
             except:
                 done = False
-        lines.append(f"* {display_step(step, path, prefix, done)}")
+        prefix_text = f"{icon} " if icon != "" else ""
+        lines.append(f"* {prefix_text}{display_step(step, path, prefix, done)}")
+        warning = _missing_biome_warning(step, cfg)
+        if warning != None:
+            lines.append(f"  -# {warning}")
         index += 1
     return "\n".join(lines)

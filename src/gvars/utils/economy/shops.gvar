@@ -101,6 +101,10 @@ def _shops_map(cfg):
     return {}
 
 
+def _shops_count(cfg):
+    return len(_shops_map(cfg))
+
+
 def _normalize(value):
     if value == None:
         return ""
@@ -145,6 +149,57 @@ def _accepts_sells(shop):
     return _read_field(shop, "accepts_sells") == True
 
 
+def _visible_shops(config_override=None, character_location_id=None):
+    return list_shops(config_override, character_location_id, False)
+
+
+def _selling_shops(config_override=None, character_location_id=None):
+    return list_shops(config_override, character_location_id, True)
+
+
+def _location_setup_text(character_location_id=None):
+    if character_location_id == None or str(character_location_id).strip() == "":
+        return "the current location"
+    return f"location **{str(character_location_id).strip()}**"
+
+
+def _has_stock(shop):
+    return len(_stock_entries(shop)) > 0
+
+
+def _any_stock(shops_list):
+    for shop in shops_list:
+        if _has_stock(shop):
+            return True
+    return False
+
+
+def shop_setup_message(config_override=None, character_location_id=None, require_sells=False):
+    cfg = _cfg(config_override)
+    if _shops_count(cfg) == 0:
+        return (
+            "No shops are configured. Add top-level `shops` entries with `name`, optional "
+            "`location_id`, and `stock` before enabling buy or sell."
+        )
+    visible = _visible_shops(cfg, character_location_id)
+    if len(visible) == 0:
+        return (
+            f"No shops are visible at {_location_setup_text(character_location_id)}. "
+            "Add a shop with a matching `location_id`, or leave `location_id` blank for a global shop."
+        )
+    if require_sells and len(_selling_shops(cfg, character_location_id)) == 0:
+        return (
+            "No visible shops are buying items here. Set `accepts_sells: True` on at least one "
+            "visible shop before enabling sell."
+        )
+    if not _any_stock(visible):
+        return (
+            "Visible shops have no stock configured. Add `stock` entries with an `item` and "
+            "`price` to at least one shop."
+        )
+    return None
+
+
 def list_shops(config_override=None, character_location_id=None, require_sells=False):
     cfg = _cfg(config_override)
     found = []
@@ -174,13 +229,14 @@ def format_shop_matches(matches, limit=5):
 
 def find_shop(config_override, query=None, character_location_id=None, require_sells=False):
     cfg = _cfg(config_override)
+    setup_msg = shop_setup_message(cfg, character_location_id, require_sells)
+    if setup_msg != None:
+        return None, [], setup_msg
     available = list_shops(cfg, character_location_id, require_sells)
     text = "" if query == None else str(query).strip()
     if text == "":
         if len(available) == 1:
             return available[0], available, None
-        if len(available) == 0:
-            return None, [], "No shops are configured here."
         return None, available, "Choose a shop: " + format_shop_matches(available) + "."
 
     labels = []
@@ -281,6 +337,12 @@ def find_stock_item(shop, item_query, config_override=None):
     text = "" if item_query == None else str(item_query).strip()
     if text == "":
         return None, [], "Choose an item."
+    if not _has_stock(shop):
+        return (
+            None,
+            [],
+            f"**{shop_name(shop)}** has no stock configured. Add `stock` entries with an `item` and `price`.",
+        )
     labels = []
     label_to_stock = {}
     for row in _stock_entries(shop):
@@ -302,7 +364,11 @@ def find_stock_item(shop, item_query, config_override=None):
             seen[key] = True
             rows.append(row)
     if len(rows) == 0:
-        return None, [], f"Found no stock matches for **{text}** at **{shop_name(shop)}**."
+        return (
+            None,
+            [],
+            f"Found no stock matches for **{text}** at **{shop_name(shop)}**. Add it to that shop's `stock` or choose another item.",
+        )
     if len(rows) > 1:
         names = []
         for row in rows:
@@ -490,7 +556,7 @@ def buy(ch, config_override, shop, item_query, qty=1):
 def sell(ch, config_override, shop, item_query, qty=1):
     cfg = _cfg(config_override)
     if not _accepts_sells(shop):
-        return False, f"**{shop_name(shop)}** is not buying items right now."
+        return False, f"**{shop_name(shop)}** is not buying items right now. Set `accepts_sells: True` on this shop to allow sells."
     try:
         amount = int(qty)
     except:
@@ -528,6 +594,9 @@ def character_location_id(ch, config_override=None):
 
 def find_shop_for_item(config_override, item_query, character_location_id=None, require_sells=False):
     cfg = _cfg(config_override)
+    setup_msg = shop_setup_message(cfg, character_location_id, require_sells)
+    if setup_msg != None:
+        return None, None, setup_msg
     shops = list_shops(cfg, character_location_id, require_sells)
     found = []
     last_error = None
@@ -542,7 +611,7 @@ def find_shop_for_item(config_override, item_query, character_location_id=None, 
     if len(found) == 0:
         if last_error != None:
             return None, None, last_error
-        return None, None, f"Found no shop stock matches for **{item_query}**."
+        return None, None, f"Found no shop stock matches for **{item_query}**. Add that item to a visible shop's `stock`, or ask the owner to check shop setup."
     names = []
     for pair in found:
         names.append(shop_name(pair[0]))

@@ -61,3 +61,76 @@ return len(shops.list_shops(cfg_fixture, "oakwood")) == 1 and shops.shop_name(sh
 True
 ---
 name: shops filters by character location when available
+
+shop, stock, error = shops.find_shop_for_item({"shops": {}}, "Dagger")
+return "No shops are configured" in error
+---
+True
+---
+name: shop diagnostics explain missing shops
+
+cfg_fixture = {
+    "shops": {
+        "general": {
+            "id": "general",
+            "name": "General Store",
+            "location_id": "oakwood",
+            "stock": [{"item": "Rope, Hemp (50 ft)", "price": {"gold": 1}}],
+        },
+    },
+}
+shop, stock, error = shops.find_shop_for_item(cfg_fixture, "rope", "harbor")
+return "No shops are visible" in error and "harbor" in error
+---
+True
+---
+name: shop diagnostics explain location mismatch
+
+cfg_fixture = {
+    "shops": {
+        "general": {
+            "id": "general",
+            "name": "General Store",
+            "accepts_sells": False,
+            "stock": [{"item": "Rope, Hemp (50 ft)", "price": {"gold": 1}}],
+        },
+    },
+}
+shop, stock, error = shops.find_shop_for_item(cfg_fixture, "rope", None, True)
+return "No visible shops are buying" in error
+---
+True
+---
+name: shop diagnostics explain sell support
+
+cfg_fixture = {
+    "shops": {
+        "general": {
+            "id": "general",
+            "name": "General Store",
+            "stock": [],
+        },
+    },
+}
+shop, stock, error = shops.find_shop_for_item(cfg_fixture, "rope")
+return "no stock configured" in error
+---
+True
+---
+name: shop diagnostics explain empty stock
+
+cfg_fixture = {
+    "shops": {
+        "general": {
+            "id": "general",
+            "name": "General Store",
+            "stock": [{"item": "Rope, Hemp (50 ft)", "price": {"gold": 1}}],
+        },
+    },
+}
+shop, stock, error = shops.find_shop_for_item(cfg_fixture, "Dagger")
+return "Found no stock matches" in error and "General Store" in error and "stock" in error
+---
+True
+---
+name: shop diagnostics explain stock query misses

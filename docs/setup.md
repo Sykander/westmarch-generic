@@ -171,7 +171,7 @@ policies = {
 }
 ```
 
-Recipe modes are `raw`, `recipes`, or `mixed`. RAW does not require crafting rolls; set a command check mode to `manual` or `roll` only if your server wants that gate. Scribing checks the character spellbook by default; set `require_known_spell` to `False` only when your server tracks scroll eligibility outside Avrae. Tool policy modes are `off`, `manual`, or `check`. Crafting resource modes are `manual`, `check`, or `deduct`. Item output modes are `manual` or `bags`.
+Recipe modes are `raw`, `recipes`, or `mixed`. RAW does not require crafting rolls; set a command check mode to `manual` or `roll` only if your server wants that gate. Scribing checks the character spellbook by default; set `require_known_spell` to `False` only when your server tracks scroll eligibility outside Avrae. Players can use `!scribe <spell> -i` for feature-granted spells that Avrae does not expose as known spells or usable slots; this bypasses only the known-spell and spell-slot checks. Tool policy modes are `off`, `manual`, or `check`. Crafting resource modes are `manual`, `check`, or `deduct`. Item output modes are `manual` or `bags`.
 
 Travel/location example:
 
@@ -180,6 +180,9 @@ subsystems = {
     "travel": {
         "enabled": True,
         "commands": {"travel": True, "location": True, "time": False, "weather": False},
+        "config": {
+            "transport_icons": {"walk": "🚶", "fly": "🪽", "horse": "🐎", "boat": "⛵"},
+        },
     },
 }
 
@@ -194,6 +197,31 @@ world_data = {
     ],
 }
 ```
+
+`time` and `weather` are planned commands. Keep them disabled until their runtime modules ship; the editor Check page reports an error if either is enabled.
+
+Economy setup needs top-level data before enabling player commands:
+
+```py
+currencies = {
+    "shards": {"name": "Arcane Shard", "plural": "Arcane Shards"},
+}
+
+shops = {
+    "general": {
+        "id": "general",
+        "name": "General Store",
+        "accepts_sells": True,
+        "stock": [
+            {"item": "Rope, Hemp (50 ft)", "price": {"gold": 1}},
+        ],
+    },
+}
+```
+
+`!wallet` needs `currencies`. `!buy` and `!sell` need `shops`, and `!sell` needs at least one shop with `accepts_sells: True`.
+
+Quest setup is mostly data-driven. To try quest-flavoured exploration, add quest-tagged encounter rows to a biome pool such as `enc.quest`; to use `policies.quest.self_assign`, also enable `subsystems.misc.commands.quest` so the quest journal command is available.
 
 Add world data (`locations`, encounter pools, shops, …) as you enable each vertical. Shapes: [data-shapes](internal/projects/westmarch-statement/data-shapes.md).
 
@@ -220,7 +248,7 @@ Players can run:
 ```
 
 Once `westmarch_config` is set, the bare command checks that the selected character meets the server’s configured player setup checks.
-It can also show a compact character HUD for enabled subsystems, such as coinpurse, configured wallet currencies, location, time, and weather.
+It can also show a compact character HUD for enabled subsystems, such as coinpurse, configured wallet currencies, and location. Time and weather HUD fields are reserved for the planned clock/weather features and should stay out of the default field list for now.
 
 Configure those checks with `policies.player_setup`:
 
@@ -234,7 +262,7 @@ policies = {
         "require_character": True,
         "hud": {
             "enabled": True,
-            "fields": ["coins", "wallet", "location", "time", "weather"],
+            "fields": ["coins", "wallet", "location"],
         },
         "checks": [
             {"type": "cvar", "key": "vsheet", "label": "vSheet", "message": "Run `!vsheet setup`."},

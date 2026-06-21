@@ -42,3 +42,34 @@ vars:
               "stock": [{"item": "Rope, Hemp (50 ft)", "price": {"gold": 0}}],
           },
       }
+
+!buy dagger
+---
+re:No shops are configured[\s\S]*top-level `shops`
+---
+name: buy explains missing shop setup
+vars:
+  svars:
+    westmarch_config: "eeee1000-1000-1000-1000-100000000005"
+  gvars:
+    eeee1000-1000-1000-1000-100000000005: |
+      subsystems = {
+          "economy": {"enabled": True, "commands": {"buy": True}},
+      }
+
+!buy dagger
+---
+re:Visible shops have no stock configured
+---
+name: buy explains empty visible stock
+vars:
+  svars:
+    westmarch_config: "eeee1000-1000-1000-1000-100000000006"
+  gvars:
+    eeee1000-1000-1000-1000-100000000006: |
+      subsystems = {
+          "economy": {"enabled": True, "commands": {"buy": True}},
+      }
+      shops = {
+          "general": {"id": "general", "name": "General Store", "stock": []},
+      }

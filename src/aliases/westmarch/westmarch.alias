@@ -20,7 +20,7 @@ if not ok:
 
 argslist = &ARGS&
 
-DEFAULT_HUD_FIELDS = ["coins", "wallet", "location", "time", "weather"]
+DEFAULT_HUD_FIELDS = ["coins", "wallet", "location"]
 
 
 def _read_field(obj, key):
@@ -517,11 +517,6 @@ def _time_text(cfg):
         text = _display_value(_read_field(wd, key))
         if _is_nonempty(text):
             return text
-    policies = _read_field(cfg, "policies")
-    time_pol = _read_field(policies, "time")
-    mode = _read_field(time_pol, "mode")
-    if _is_nonempty(mode):
-        return str(mode).strip()
     return None
 
 

@@ -1,12 +1,36 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { parseConfig, serializeConfig, validateConfig, type ConfigModel } from './config';
+import { STARTER_SNIPPET } from '../app/starterSnippet';
+
+function issuesFor(source: string) {
+  const parsed = parseConfig(source);
+  return validateConfig(parsed.model, parsed.issues);
+}
 
 function issueCodes(source: string): string[] {
-  const parsed = parseConfig(source);
-  const issues = validateConfig(parsed.model, parsed.issues);
-  return issues.map((entry) => entry.code);
+  return issuesFor(source).map((entry) => entry.code);
 }
+
+function normalizedConfigSource(source: string) {
+  const parsed = parseConfig(source);
+  const parseIssues = parsed.issues.filter((entry) => entry.code.startsWith('parse.'));
+
+  assert.deepEqual(parseIssues, []);
+  assert.ok(parsed.model);
+
+  return serializeConfig(parsed.model);
+}
+
+test('editor starter snippet matches canonical starter config', () => {
+  const canonicalStarter = readFileSync(
+    new URL('../../../src/gvars/configs/starter.gvar', import.meta.url),
+    'utf8',
+  );
+
+  assert.equal(normalizedConfigSource(STARTER_SNIPPET), normalizedConfigSource(canonicalStarter));
+});
 
 test('starter-style exploration config validates cleanly for phase 0 checks', () => {
   const codes = issueCodes(`
@@ -52,6 +76,40 @@ subsystems = {
 }
 `).includes('exploration.distribution_total'),
   );
+});
+
+test('subsystem config issues are reported under subsystem section', () => {
+  const issues = issuesFor(`
+subsystems = {
+    "exploration": {
+        "config": {
+            "distribution": {"combat": 10, "quest": 10, "gather": 10},
+            "monster_images": {"hunt": "banner"},
+        },
+    },
+    "crafting": {
+        "config": {
+            "recipe_mode": "formula",
+            "catalogues": {"spells": []},
+        },
+        "command_config": {"scribe": {"workdays_cost": "soon"}},
+    },
+}
+`);
+
+  for (const code of [
+    'exploration.distribution_total',
+    'exploration.monster_images_mode',
+    'crafting.recipe_mode',
+    'crafting.catalogue_source',
+    'crafting.workdays_cost',
+  ]) {
+    assert.equal(
+      issues.find((entry) => entry.code === code)?.section,
+      'Subsystems',
+      `${code} should point at the subsystem editor`,
+    );
+  }
 });
 
 test('location biome source requires travel to be enabled', () => {
@@ -129,6 +187,98 @@ world_data = {
 }
 `).includes('world.path.endpoint_unknown'),
   );
+});
+
+test('travel validation warns for empty encounter biome unless location inference is configured', () => {
+  const missingBiomeCodes = issueCodes(`
+subsystems = {
+    "travel": {
+        "enabled": True,
+        "commands": {"travel": True},
+    },
+    "exploration": {
+        "config": {"enc_biome_source": "argument"},
+    },
+}
+
+world_data = {
+    "default_location": "river_town",
+    "locations": {
+        "river_town": {"name": "River Town"},
+        "oakwood": {"name": "Oakwood"},
+    },
+    "paths": [
+        {"from": "river_town", "to": "oakwood", "steps": [{"type": "encounter", "biome": ""}]},
+    ],
+}
+`);
+  assert.ok(missingBiomeCodes.includes('world.path.encounter_biome_missing'));
+
+  const inferredCodes = issueCodes(`
+subsystems = {
+    "travel": {
+        "enabled": True,
+        "commands": {"travel": True},
+    },
+    "exploration": {
+        "config": {"enc_biome_source": "location"},
+    },
+}
+
+world_data = {
+    "default_location": "river_town",
+    "locations": {
+        "river_town": {"name": "River Town"},
+        "oakwood": {"name": "Oakwood"},
+    },
+    "paths": [
+        {"from": "river_town", "to": "oakwood", "steps": [{"type": "encounter", "biome": ""}]},
+    ],
+}
+`);
+  assert.equal(inferredCodes.includes('world.path.encounter_biome_missing'), false);
+});
+
+test('travel transport icons must be non-empty', () => {
+  assert.ok(
+    issueCodes(`
+subsystems = {
+    "travel": {
+        "config": {"transport_icons": {"walk": ""}},
+    },
+}
+`).includes('travel.transport_icon_missing'),
+  );
+});
+
+test('time and weather toggles are blocking planned-feature errors', () => {
+  const issues = issuesFor(`
+subsystems = {
+    "travel": {
+        "enabled": False,
+        "commands": {"time": True, "weather": True},
+    },
+}
+`);
+
+  assert.equal(issues.find((entry) => entry.code === 'travel.time_planned')?.severity, 'error');
+  assert.equal(issues.find((entry) => entry.code === 'travel.weather_planned')?.severity, 'error');
+});
+
+test('unsupported raw cooldown config is reported without hiding supported cooldowns', () => {
+  const codes = issueCodes(`
+subsystems = {
+    "crafting": {
+        "command_config": {"scribe": {"cooldown_seconds": 60}},
+    },
+    "economy": {
+        "command_config": {"job": {"cooldown_seconds": 120}},
+    },
+}
+`);
+
+  assert.ok(codes.includes('command.cooldown_unsupported'));
+  assert.equal(codes.filter((code) => code === 'command.cooldown_unsupported').length, 1);
 });
 
 test('location encounter gvar ids must be UUIDs', () => {
@@ -342,6 +492,87 @@ policies = {
 }
 `).includes('inventory.item_handling_mode'),
   );
+});
+
+test('deferred policy flags report validation issues when enabled', () => {
+  const codes = issueCodes(`
+policies = {
+    "travel": {"apply_path_costs": True, "consume_rations": True, "rations_item": ""},
+    "inventory": {"enforce_encumbrance": True},
+    "combat": {"scale_encounters_to_level": True},
+    "quest": {"self_assign": True},
+    "economy": {"starting_gold": -1},
+}
+`);
+
+  assert.ok(codes.includes('travel.apply_path_costs_deferred'));
+  assert.ok(codes.includes('travel.consume_rations_deferred'));
+  assert.ok(codes.includes('travel.rations_item_missing'));
+  assert.ok(codes.includes('inventory.enforce_encumbrance_deferred'));
+  assert.ok(codes.includes('combat.scaling_deferred'));
+  assert.ok(codes.includes('quest.self_assign_requires_command'));
+  assert.ok(codes.includes('economy.starting_gold'));
+});
+
+test('top-level currencies serialize round trip and wallet caps validate completeness', () => {
+  const source = `
+subsystems = {}
+currencies = {
+    "shards": {"name": "Shard"},
+    "marks": {"name": "Mark", "max_balance": "many"},
+}
+policies = {
+    "economy": {"enforce_wallet_caps": True},
+}
+`;
+  const parsed = parseConfig(source);
+  assert.deepEqual(parsed.model?.currencies?.shards, { name: 'Shard' });
+  assert.match(serializeConfig(parsed.model as ConfigModel), /currencies = /);
+
+  const codes = validateConfig(parsed.model, parsed.issues).map((entry) => entry.code);
+  assert.ok(codes.includes('economy.wallet_cap_missing'));
+  assert.ok(codes.includes('economy.wallet_cap_invalid'));
+});
+
+test('economy commands validate required setup data', () => {
+  const codes = issueCodes(`
+subsystems = {
+    "economy": {
+        "enabled": True,
+        "commands": {"wallet": True, "buy": True, "sell": True},
+    },
+}
+`);
+
+  assert.ok(codes.includes('economy.currencies_missing'));
+  assert.ok(codes.includes('economy.shops_missing'));
+});
+
+test('economy shop validation catches sell support and malformed stock', () => {
+  const codes = issueCodes(`
+subsystems = {
+    "economy": {
+        "enabled": True,
+        "commands": {"sell": True},
+    },
+}
+shops = {
+    "general": {
+        "name": "General Store",
+        "accepts_sells": False,
+        "stock": [
+            {"price": {"gold": 1}},
+            {"item": "Rope, Hemp (50 ft)"},
+            {"item": "Dagger", "price": []},
+        ],
+    },
+}
+`);
+
+  assert.ok(codes.includes('economy.sell_without_accepting_shop'));
+  assert.ok(codes.includes('economy.stock_item'));
+  assert.ok(codes.includes('economy.stock_price_missing'));
+  assert.ok(codes.includes('economy.stock_price_shape'));
 });
 
 test('crafting command rules override must be a supported edition', () => {

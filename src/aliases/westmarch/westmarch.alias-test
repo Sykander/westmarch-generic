@@ -55,9 +55,9 @@ vars:
 
 !westmarch
 ---
-re:Character HUD[\s\S]*Location:\*\* Oakwood[\s\S]*Time:\*\* Highsun[\s\S]*Weather:\*\* Clear skies
+"re:^(?![\\s\\S]*Time:\\*\\*)(?![\\s\\S]*Weather:\\*\\*)[\\s\\S]*Character HUD[\\s\\S]*Location:\\*\\* Oakwood"
 ---
-name: configured parent shows travel HUD fields when travel commands are enabled
+name: configured parent defaults travel HUD to location only when travel commands are enabled
 vars:
   svars:
     westmarch_config: "ffff3334-3334-3334-3334-333333333334"
@@ -71,6 +71,24 @@ vars:
           "current_time": "Highsun",
           "current_weather": "Clear skies",
           "locations": {"oakwood": {"name": "Oakwood"}},
+      }
+
+!westmarch
+---
+"re:^(?![\\s\\S]*Time:\\*\\* manual)[\\s\\S]*ready for this server"
+---
+name: configured parent does not show manual time policy as HUD text
+vars:
+  svars:
+    westmarch_config: "ffff3335-3335-3335-3335-333333333335"
+  gvars:
+    ffff3335-3335-3335-3335-333333333335: |
+      subsystems = {
+          "travel": {"enabled": True, "commands": {"time": True}},
+      }
+      policies = {
+          "time": {"mode": "manual"},
+          "player_setup": {"hud": {"enabled": True, "fields": ["time"]}},
       }
 
 !westmarch

@@ -1,8 +1,8 @@
 !scribe help
 ---
-re:Create a spell scroll
+"re:Create a spell scroll[\\s\\S]*-i[\\s\\S]*Misty Step"
 ---
-name: scribe help displays usage
+name: scribe help displays ignore option
 vars:
   svars:
     westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa44"
@@ -37,6 +37,65 @@ vars:
           "crafting": {"resources": {"downtime": "manual", "gold": "manual", "spell_slot": "manual"}},
           "inventory": {"item_handling": {"mode": "manual"}},
       }
+
+!scribe House Spark
+---
+re:No level 2 spell slots available\. Use -i to bypass this check\.
+---
+name: scribe slot failure mentions ignore flag
+vars:
+  svars:
+    westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa45"
+  gvars:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa45: |
+      subsystems = {
+          "crafting": {
+              "enabled": True,
+              "commands": {"scribe": True},
+              "config": {
+                  "rules_version": "2014",
+                  "catalogues": {"spells": {"entries": [{"name": "House Spark", "level": 2}]}},
+              },
+              "command_config": {"scribe": {"require_known_spell": False}},
+          },
+      }
+      policies = {
+          "crafting": {"resources": {"downtime": "manual", "gold": "manual", "spell_slot": "check"}},
+          "inventory": {"item_handling": {"mode": "manual"}},
+      }
+character:
+  spellbook:
+    slots:
+      2: 0
+
+!scribe House Spark -i
+---
+"re:Crafted \\*\\*Scroll of House Spark[\\s\\S]*Ignore mode used: known-spell and spell-slot checks were bypassed\\."
+---
+name: scribe ignore bypasses known spell and slot checks
+vars:
+  svars:
+    westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa46"
+  gvars:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa46: |
+      subsystems = {
+          "crafting": {
+              "enabled": True,
+              "commands": {"scribe": True},
+              "config": {
+                  "rules_version": "2014",
+                  "catalogues": {"spells": {"entries": [{"name": "House Spark", "level": 2}]}},
+              },
+          },
+      }
+      policies = {
+          "crafting": {"resources": {"downtime": "manual", "gold": "manual", "spell_slot": "check"}},
+          "inventory": {"item_handling": {"mode": "manual"}},
+      }
+character:
+  spellbook:
+    slots:
+      2: 0
 
 !scribe Fireball -l 5 -sb 3 -dc 11
 ---

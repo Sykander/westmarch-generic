@@ -75,7 +75,7 @@ if len(argslist) > 0 and argslist[0] in ["help", "?"]:
 
 ids = pc.list_currency_ids(cfg)
 if len(ids) == 0:
-    return get_embed(desc="No owner-defined wallet currencies are configured. Avrae gp remains on your sheet coinpurse.")
+    return get_embed(desc="No wallet currencies configured. Avrae gp remains on your sheet coinpurse.")
 
 if len(argslist) == 0:
     lines = pc.wallet_lines(ch, cfg)

@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import {
   applyIssueFix,
+  commandIsPlanned,
+  commandSupportsCooldown,
   createBlankConfig,
   parseConfig,
   readPath,
@@ -79,6 +81,7 @@ import {
   type LoadedGvarSource,
 } from '../lib/gvarSources';
 import { SECTIONS, sectionFor, type Section } from './sections';
+import { STARTER_SNIPPET } from './starterSnippet';
 import type { RunStep, SubsystemDefinition } from './types';
 
 const BRAND_LOGO_URL = `${import.meta.env.BASE_URL}westmarch-assets/brand/logo.png`;
@@ -156,89 +159,13 @@ const CRAFTING_CHECK_SKILL_OPTIONS = CHECK_OPTIONS.filter((option) => option.abi
   (option) => option.value,
 );
 const CRAFTING_CHECK_DC_OPTIONS = ['', '5', '10', '12', '13', '15', '17', '20', '25', '30'];
-
-const STARTER_SNIPPET = `subsystems = {
-    "exploration": {
-        "enabled": False,
-        "commands": {"enc": False, "forage": False, "fish": False, "mine": False, "lumber": False, "hunt": False, "loot": False},
-        "config": {
-            "enc_biome_source": "auto",
-            "distribution_policy": "random",
-            "distribution": {"combat": 25, "quest": 25, "gather": 50},
-            "repeat_exclude_window": 5,
-            "monster_images": {"hunt": "thumbnail", "loot": "thumbnail"},
-            "show_check_dcs": {"hunt": True, "loot": True},
-        },
-    },
-    "crafting": {
-        "enabled": False,
-        "commands": {"craft": False, "brew": False, "enchant": False, "scribe": False},
-            "config": {
-                "rules_version": None,
-                "recipe_mode": "mixed",
-                "require_known_spell": True,
-                "catalogues": {
-                "items": "engine:catalogues/items",
-                "potions": "engine:catalogues/potions",
-                "spells": "engine:catalogues/spells",
-                "magic_items": "engine:catalogues/magic_items",
-                "recipes": None,
-            },
-            "checks": {
-                "craft": {"mode": "none", "skill": None, "ability": None, "dc": None, "require_success": True},
-                "brew": {"mode": "none", "skill": "nature", "ability": None, "dc": None, "require_success": True},
-                "enchant": {"mode": "none", "skill": "arcana", "ability": None, "dc": None, "require_success": True},
-                "scribe": {"mode": "none", "skill": "arcana", "ability": None, "dc": None, "require_success": True},
-            },
-            "tool_policy": {
-                "craft": {"mode": "off", "tools": [], "require_proficiency": True, "require_kit": False},
-                "brew": {"mode": "off", "tools": ["Herbalism Kit", "Alchemist's Supplies", "Brewer's Supplies"], "require_proficiency": True, "require_kit": False},
-                "enchant": {"mode": "off", "tools": [], "require_proficiency": True, "require_kit": False},
-                "scribe": {"mode": "off", "tools": ["Calligrapher's Supplies"], "require_proficiency": True, "require_kit": False},
-            },
-            "item_handling": None,
-        },
-        "command_config": {"craft": {}, "brew": {}, "enchant": {}, "scribe": {}},
-    },
-}
-
-world_data = {
-    "biomes": {},
-    "locations": {},
-    "paths": [],
-}
-
-policies = {
-    "exploration": {"enforce_cooldowns": True, "avoid_repeat_encounters": "off"},
-    "downtime": {"mode": "off", "max_workdays": None, "acquisition": "manual"},
-    "crafting": {
-        "require_downtime_before_roll": True,
-        "auto_deduct_materials": False,
-        "auto_deduct_gold": False,
-        "resources": {"gold": "manual", "materials": "manual", "items": "manual", "downtime": "check", "spell_slot": "manual"},
-        "item_handling": None,
-    },
-    "inventory": {
-        "item_handling": {
-            "mode": "manual",
-            "default_bag": "Equipment",
-            "equipment_bag": "Equipment",
-            "crafted_bag": "Equipment",
-            "potions_bag": "Potions",
-            "scrolls_bag": "Scrolls",
-            "magic_items_bag": "Equipment",
-            "materials_bag": "Materials",
-        },
-    },
-    "display": {"footer_behaviour": "balanced", "command_thumbnail": "default", "helpful_tips": [], "credits": None},
-    "player_setup": {
-        "enabled": True,
-        "require_character": True,
-        "hud": {"enabled": True, "fields": ["coins", "wallet", "location", "time", "weather"]},
-        "checks": [],
-    },
-}
-`;
+const TRANSPORT_ICON_DEFAULTS = {
+  walk: '🚶',
+  fly: '🪽',
+  horse: '🐎',
+  boat: '⛵',
+};
+const TRANSPORT_ICON_OPTIONS = ['🚶', '🪽', '🐎', '⛵', '🛶', '🚤', '🛡️', '✨'];
 
 function downloadText(filename: string, text: string) {
   const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
@@ -1302,28 +1229,40 @@ function SubsystemsView({
                 </div>
               ) : null}
               <div className="toggle-grid">
-                {commandEntries.map(([command, value]) =>
-                  isPlanned ? (
-                    <span className="check-chip disabled" key={command}>
-                      <input type="checkbox" checked={value === true} disabled readOnly />
-                      <span>{command}</span>
-                    </span>
-                  ) : (
-                    <label className="check-chip" key={command}>
+                {commandEntries.map(([command, value]) => {
+                  const commandPlanned = commandIsPlanned(key, command);
+                  const checked = value === true;
+                  if (isPlanned) {
+                    return (
+                      <span className="check-chip disabled" key={command}>
+                        <input type="checkbox" checked={checked} disabled readOnly />
+                        <span>{command}</span>
+                      </span>
+                    );
+                  }
+                  return (
+                    <label
+                      className={commandPlanned ? 'check-chip disabled' : 'check-chip'}
+                      key={command}
+                      title={commandPlanned ? 'Planned for a later release' : undefined}
+                    >
                       <input
                         type="checkbox"
-                        checked={value === true}
-                        onChange={(event) =>
+                        checked={checked}
+                        disabled={commandPlanned && !checked}
+                        onChange={(event) => {
+                          if (commandPlanned && event.target.checked) return;
                           updateConfig(
                             `subsystems.${key}.commands.${command}`,
                             event.target.checked,
-                          )
-                        }
+                          );
+                        }}
                       />
                       <span>{command}</span>
+                      {commandPlanned ? <span className="badge neutral">Planned</span> : null}
                     </label>
-                  ),
-                )}
+                  );
+                })}
               </div>
               <details className="subsystem-details">
                 <summary>Display and advanced settings</summary>
@@ -1470,14 +1409,17 @@ function SubsystemAdvancedEditor({
 }) {
   const config = asRecord(record.config);
   const commandConfig = asRecord(record.command_config);
+  const cooldownCommands = commandEntries.filter((command) =>
+    commandSupportsCooldown(subsystemKey, command),
+  );
 
   return (
     <section className="guided-editor">
       <div className="display-override-head">
         <h3>Guided config</h3>
         <HelpTip label={`${subsystemKey} guided config help`}>
-          Common subsystem settings and command cooldowns. Use advanced JSON only for custom fields
-          not represented here.
+          Common subsystem settings and supported command options. Use advanced JSON only for custom
+          fields not represented here.
         </HelpTip>
       </div>
       {subsystemKey === 'exploration' ? (
@@ -1508,7 +1450,77 @@ function SubsystemAdvancedEditor({
               updateConfig(`subsystems.${subsystemKey}.config.distribution`, value)
             }
           />
+          <SelectField
+            label="Hunt monster art"
+            value={monsterArtSelectValue(asRecord(config.monster_images).hunt)}
+            values={['thumbnail', 'image', 'off']}
+            onChange={(value) =>
+              updateConfig(`subsystems.${subsystemKey}.config.monster_images.hunt`, value)
+            }
+            help="Controls where successful hunt embeds put a monster image when one exists."
+          />
+          <SelectField
+            label="Loot monster art"
+            value={monsterArtSelectValue(asRecord(config.monster_images).loot)}
+            values={['thumbnail', 'image', 'off']}
+            onChange={(value) =>
+              updateConfig(`subsystems.${subsystemKey}.config.monster_images.loot`, value)
+            }
+            help="Controls where loot session embeds put a monster image when one exists."
+          />
+          <div className="field">
+            <span>
+              Hunt DC visibility
+              <HelpTip label="Hunt DC visibility help">
+                Keep enabled to print the numeric Survival DC. Disable to roll against the same DC
+                while only showing generic check text.
+              </HelpTip>
+            </span>
+            <label className="switch-line">
+              <input
+                type="checkbox"
+                checked={asRecord(config.show_check_dcs).hunt !== false}
+                onChange={(event) =>
+                  updateConfig(
+                    `subsystems.${subsystemKey}.config.show_check_dcs.hunt`,
+                    event.target.checked,
+                  )
+                }
+              />
+              <span>Show hunt DC</span>
+            </label>
+          </div>
+          <div className="field">
+            <span>
+              Loot DC visibility
+              <HelpTip label="Loot DC visibility help">
+                Keep enabled to print numeric loot DCs in session and roll text. Disable to show
+                only generic check labels.
+              </HelpTip>
+            </span>
+            <label className="switch-line">
+              <input
+                type="checkbox"
+                checked={asRecord(config.show_check_dcs).loot !== false}
+                onChange={(event) =>
+                  updateConfig(
+                    `subsystems.${subsystemKey}.config.show_check_dcs.loot`,
+                    event.target.checked,
+                  )
+                }
+              />
+              <span>Show loot DCs</span>
+            </label>
+          </div>
         </div>
+      ) : null}
+      {subsystemKey === 'travel' ? (
+        <TransportIconsEditor
+          value={asRecord(config.transport_icons ?? TRANSPORT_ICON_DEFAULTS)}
+          onChange={(value) =>
+            updateConfig(`subsystems.${subsystemKey}.config.transport_icons`, value)
+          }
+        />
       ) : null}
       {subsystemKey === 'downtime' ? (
         <div className="form-grid compact">
@@ -1536,25 +1548,104 @@ function SubsystemAdvancedEditor({
           />
         </div>
       ) : null}
-      <div className="command-cooldown-grid">
-        {commandEntries.map((command) => {
-          const commandRecord = asRecord(commandConfig[command]);
-          return (
-            <TextField
-              label={`${command} cooldown`}
-              value={String(commandRecord.cooldown_seconds ?? '')}
-              onChange={(value) =>
+      {subsystemKey === 'crafting' ? (
+        <div className="form-grid compact">
+          <label className="field">
+            <span>
+              Rules override
+              <HelpTip label="Crafting rules override help">
+                Leave unset to follow the server rules edition. Set a value here when crafting
+                should use a different RAW edition.
+              </HelpTip>
+            </span>
+            <select
+              value={String(config.rules_version ?? '')}
+              onChange={(event) =>
                 updateConfig(
-                  `subsystems.${subsystemKey}.command_config.${command}.cooldown_seconds`,
-                  numberOrUndefined(value),
+                  `subsystems.${subsystemKey}.config.rules_version`,
+                  event.target.value || null,
                 )
               }
-              help="Optional cooldown in seconds."
-              key={command}
-            />
-          );
-        })}
-      </div>
+            >
+              <option value="">Server default</option>
+              <option value="2014">2014</option>
+              <option value="2024">2024</option>
+            </select>
+          </label>
+          <SelectField
+            label="Recipes"
+            value={String(config.recipe_mode ?? 'mixed')}
+            values={CRAFTING_RECIPE_MODES}
+            onChange={(value) =>
+              updateConfig(`subsystems.${subsystemKey}.config.recipe_mode`, value)
+            }
+            help="mixed uses a matching recipe when present, raw ignores recipes, recipes requires one."
+          />
+          <div className="field">
+            <span>
+              Scribe spell requirement
+              <HelpTip label="Scribe spell requirement help">
+                Keep enabled for RAW scroll scribing: the spell must appear in the character
+                spellbook. Disable only when your server tracks eligibility elsewhere.
+              </HelpTip>
+            </span>
+            <label className="switch-line">
+              <input
+                type="checkbox"
+                checked={config.require_known_spell !== false}
+                onChange={(event) =>
+                  updateConfig(
+                    `subsystems.${subsystemKey}.config.require_known_spell`,
+                    event.target.checked,
+                  )
+                }
+              />
+              <span>Require known spell</span>
+            </label>
+          </div>
+          <CraftingCataloguesEditor
+            value={asRecord(config.catalogues ?? CRAFTING_CATALOGUE_DEFAULTS)}
+            onChange={(value) =>
+              updateConfig(`subsystems.${subsystemKey}.config.catalogues`, value)
+            }
+          />
+          <CraftingChecksEditor
+            value={asRecord(config.checks ?? CRAFTING_CHECK_DEFAULTS)}
+            onChange={(value) => updateConfig(`subsystems.${subsystemKey}.config.checks`, value)}
+          />
+          <CraftingToolPolicyEditor
+            value={asRecord(config.tool_policy ?? CRAFTING_TOOL_POLICY_DEFAULTS)}
+            onChange={(value) =>
+              updateConfig(`subsystems.${subsystemKey}.config.tool_policy`, value)
+            }
+          />
+          <CraftingCommandOverridesEditor
+            value={commandConfig}
+            onChange={(value) => updateConfig(`subsystems.${subsystemKey}.command_config`, value)}
+          />
+        </div>
+      ) : null}
+      {cooldownCommands.length > 0 ? (
+        <div className="command-cooldown-grid">
+          {cooldownCommands.map((command) => {
+            const commandRecord = asRecord(commandConfig[command]);
+            return (
+              <TextField
+                label={`${command} cooldown`}
+                value={String(commandRecord.cooldown_seconds ?? '')}
+                onChange={(value) =>
+                  updateConfig(
+                    `subsystems.${subsystemKey}.command_config.${command}.cooldown_seconds`,
+                    numberOrUndefined(value),
+                  )
+                }
+                help="Optional cooldown in seconds."
+                key={command}
+              />
+            );
+          })}
+        </div>
+      ) : null}
     </section>
   );
 }
@@ -1662,17 +1753,6 @@ function PoliciesView({
       />
       <div className="form-grid">
         <SelectField
-          label="Encounter biome source"
-          value={String(
-            readPath(config, 'subsystems.exploration.config.enc_biome_source') ?? 'auto',
-          )}
-          values={['auto', 'argument', 'location']}
-          onChange={(value) =>
-            updateConfig('subsystems.exploration.config.enc_biome_source', value)
-          }
-          help="auto chooses a safe fallback; argument requires user input; location uses travel location."
-        />
-        <SelectField
           label="Repeat encounters"
           value={String(readPath(config, 'policies.exploration.avoid_repeat_encounters') ?? 'off')}
           values={['off', 'same_biome', 'global']}
@@ -1699,51 +1779,6 @@ function PoliciesView({
           onChange={(value) => updateOptionalNumber('policies.downtime.max_workdays', value)}
           help="Optional cap for the downtime ledger. Leave blank for unlimited."
         />
-        <label className="field">
-          <span>
-            Crafting rules override
-            <HelpTip label="Crafting rules override help">
-              Leave unset to follow the server rules edition. Set a value here when the crafting
-              subsystem should use a different RAW edition.
-            </HelpTip>
-          </span>
-          <select
-            value={String(readPath(config, 'subsystems.crafting.config.rules_version') ?? '')}
-            onChange={(event) =>
-              updateConfig('subsystems.crafting.config.rules_version', event.target.value || null)
-            }
-          >
-            <option value="">Server default</option>
-            <option value="2014">2014</option>
-            <option value="2024">2024</option>
-          </select>
-        </label>
-        <SelectField
-          label="Crafting recipes"
-          value={String(readPath(config, 'subsystems.crafting.config.recipe_mode') ?? 'mixed')}
-          values={CRAFTING_RECIPE_MODES}
-          onChange={(value) => updateConfig('subsystems.crafting.config.recipe_mode', value)}
-          help="mixed uses a matching recipe when present, raw ignores recipes, recipes requires one."
-        />
-        <div className="field">
-          <span>
-            Scribe spell requirement
-            <HelpTip label="Scribe spell requirement help">
-              Keep enabled for RAW scroll scribing: the spell must appear in the character
-              spellbook. Disable only when your server tracks eligibility elsewhere.
-            </HelpTip>
-          </span>
-          <label className="switch-line">
-            <input
-              type="checkbox"
-              checked={readPath(config, 'subsystems.crafting.config.require_known_spell') !== false}
-              onChange={(event) =>
-                updateConfig('subsystems.crafting.config.require_known_spell', event.target.checked)
-              }
-            />
-            <span>Require known spell</span>
-          </label>
-        </div>
         <SelectField
           label="Crafting gold"
           value={String(readPath(config, 'policies.crafting.resources.gold') ?? 'manual')}
@@ -1780,14 +1815,14 @@ function PoliciesView({
           help="Used by scribing when a scroll should consume a spell slot."
         />
         <SelectField
-          label="Crafted item output"
+          label="Global item output"
           value={String(readPath(config, 'policies.inventory.item_handling.mode') ?? 'manual')}
           values={ITEM_HANDLING_MODES}
           onChange={(value) => updateConfig('policies.inventory.item_handling.mode', value)}
-          help="manual prints gained items; bags writes them into the configured bag cvars."
+          help="Global default: manual prints gained items; bags writes them into configured bag cvars."
         />
         <TextField
-          label="Default item bag"
+          label="Global default item bag"
           value={String(readPath(config, 'policies.inventory.item_handling.default_bag') ?? '')}
           onChange={(value) =>
             updateConfig('policies.inventory.item_handling.default_bag', value || undefined)
@@ -1795,7 +1830,7 @@ function PoliciesView({
           help="Fallback bag name when a command does not have a more specific bag."
         />
         <TextField
-          label="Equipment bag"
+          label="Global equipment bag"
           value={String(readPath(config, 'policies.inventory.item_handling.equipment_bag') ?? '')}
           onChange={(value) =>
             updateConfig('policies.inventory.item_handling.equipment_bag', value || undefined)
@@ -1803,7 +1838,7 @@ function PoliciesView({
           help="Bag checked for required equipped or ingredient items."
         />
         <TextField
-          label="Potions bag"
+          label="Global potions bag"
           value={String(readPath(config, 'policies.inventory.item_handling.potions_bag') ?? '')}
           onChange={(value) =>
             updateConfig('policies.inventory.item_handling.potions_bag', value || undefined)
@@ -1811,7 +1846,7 @@ function PoliciesView({
           help="Bag used for brewed potions when output mode is bags."
         />
         <TextField
-          label="Scrolls bag"
+          label="Global scrolls bag"
           value={String(readPath(config, 'policies.inventory.item_handling.scrolls_bag') ?? '')}
           onChange={(value) =>
             updateConfig('policies.inventory.item_handling.scrolls_bag', value || undefined)
@@ -1819,7 +1854,7 @@ function PoliciesView({
           help="Bag used for spell scrolls when output mode is bags."
         />
         <TextField
-          label="Magic items bag"
+          label="Global magic items bag"
           value={String(readPath(config, 'policies.inventory.item_handling.magic_items_bag') ?? '')}
           onChange={(value) =>
             updateConfig('policies.inventory.item_handling.magic_items_bag', value || undefined)
@@ -1827,36 +1862,12 @@ function PoliciesView({
           help="Bag used for enchanted items when output mode is bags."
         />
         <TextField
-          label="Materials bag"
+          label="Global materials bag"
           value={String(readPath(config, 'policies.inventory.item_handling.materials_bag') ?? '')}
           onChange={(value) =>
             updateConfig('policies.inventory.item_handling.materials_bag', value || undefined)
           }
           help="Bag checked for consumed ingredients when material or item policies are enforced."
-        />
-        <CraftingCataloguesEditor
-          value={asRecord(
-            readPath(config, 'subsystems.crafting.config.catalogues') ??
-              CRAFTING_CATALOGUE_DEFAULTS,
-          )}
-          onChange={(value) => updateConfig('subsystems.crafting.config.catalogues', value)}
-        />
-        <CraftingChecksEditor
-          value={asRecord(
-            readPath(config, 'subsystems.crafting.config.checks') ?? CRAFTING_CHECK_DEFAULTS,
-          )}
-          onChange={(value) => updateConfig('subsystems.crafting.config.checks', value)}
-        />
-        <CraftingToolPolicyEditor
-          value={asRecord(
-            readPath(config, 'subsystems.crafting.config.tool_policy') ??
-              CRAFTING_TOOL_POLICY_DEFAULTS,
-          )}
-          onChange={(value) => updateConfig('subsystems.crafting.config.tool_policy', value)}
-        />
-        <CraftingCommandOverridesEditor
-          value={asRecord(readPath(config, 'subsystems.crafting.command_config') ?? {})}
-          onChange={(value) => updateConfig('subsystems.crafting.command_config', value)}
         />
         <FooterBehaviourField
           value={String(readPath(config, 'policies.display.footer_behaviour') ?? 'balanced')}
@@ -1867,86 +1878,12 @@ function PoliciesView({
             readPath(config, 'policies.player_setup') ?? {
               enabled: true,
               require_character: true,
-              hud: { enabled: true, fields: ['coins', 'wallet', 'location', 'time', 'weather'] },
+              hud: { enabled: true, fields: ['coins', 'wallet', 'location'] },
               checks: [],
             },
           )}
           onChange={(value) => updateConfig('policies.player_setup', value)}
         />
-        <DistributionEditor
-          value={asRecord(readPath(config, 'subsystems.exploration.config.distribution') ?? {})}
-          onChange={(value) => updateConfig('subsystems.exploration.config.distribution', value)}
-        />
-        <SelectField
-          label="Hunt monster art"
-          value={monsterArtSelectValue(
-            readPath(config, 'subsystems.exploration.config.monster_images.hunt'),
-          )}
-          values={['thumbnail', 'image', 'off']}
-          onChange={(value) =>
-            updateConfig('subsystems.exploration.config.monster_images.hunt', value)
-          }
-          help="Controls where successful hunt embeds put a monster image when one exists."
-        />
-        <SelectField
-          label="Loot monster art"
-          value={monsterArtSelectValue(
-            readPath(config, 'subsystems.exploration.config.monster_images.loot'),
-          )}
-          values={['thumbnail', 'image', 'off']}
-          onChange={(value) =>
-            updateConfig('subsystems.exploration.config.monster_images.loot', value)
-          }
-          help="Controls where loot session embeds put a monster image when one exists."
-        />
-        <div className="field">
-          <span>
-            Hunt DC visibility
-            <HelpTip label="Hunt DC visibility help">
-              Keep enabled to print the numeric Survival DC. Disable to roll against the same DC
-              while only showing generic check text.
-            </HelpTip>
-          </span>
-          <label className="switch-line">
-            <input
-              type="checkbox"
-              checked={
-                readPath(config, 'subsystems.exploration.config.show_check_dcs.hunt') !== false
-              }
-              onChange={(event) =>
-                updateConfig(
-                  'subsystems.exploration.config.show_check_dcs.hunt',
-                  event.target.checked,
-                )
-              }
-            />
-            <span>Show hunt DC</span>
-          </label>
-        </div>
-        <div className="field">
-          <span>
-            Loot DC visibility
-            <HelpTip label="Loot DC visibility help">
-              Keep enabled to print numeric loot DCs in session and roll text. Disable to show only
-              generic check labels.
-            </HelpTip>
-          </span>
-          <label className="switch-line">
-            <input
-              type="checkbox"
-              checked={
-                readPath(config, 'subsystems.exploration.config.show_check_dcs.loot') !== false
-              }
-              onChange={(event) =>
-                updateConfig(
-                  'subsystems.exploration.config.show_check_dcs.loot',
-                  event.target.checked,
-                )
-              }
-            />
-            <span>Show loot DCs</span>
-          </label>
-        </div>
       </div>
     </section>
   );
@@ -2024,9 +1961,10 @@ function CraftingCataloguesEditor({
   return (
     <section className="field span-2 guided-editor">
       <span>
-        Crafting catalogue sources
-        <HelpTip label="Crafting catalogue sources help">
-          Engine source slugs, custom gvar UUIDs, or blank when a catalogue is not used.
+        Crafting catalogues
+        <HelpTip label="Crafting catalogues help">
+          Crafting-only engine source slugs, custom gvar UUIDs, or blank when a catalogue is not
+          used.
         </HelpTip>
       </span>
       <div className="catalogue-grid">
@@ -2280,7 +2218,7 @@ function CraftingCommandOverridesEditor({
       <span>
         Crafting command overrides
         <HelpTip label="Crafting command overrides help">
-          Optional per-command cooldowns, resource policies, and output mode overrides.
+          Optional per-command resource policies and output mode overrides.
         </HelpTip>
       </span>
       <div className="command-override-matrix">
@@ -2291,14 +2229,6 @@ function CraftingCommandOverridesEditor({
             <details className="command-override" key={command}>
               <summary>{command}</summary>
               <div className="form-grid compact">
-                <TextField
-                  label="Cooldown seconds"
-                  value={String(record.cooldown_seconds ?? '')}
-                  onChange={(next) =>
-                    updateCommand(command, { cooldown_seconds: numberOrUndefined(next) })
-                  }
-                  help="Optional per-command cooldown."
-                />
                 <SelectField
                   label="Output mode"
                   value={String(record.item_handling ?? '')}
@@ -2343,7 +2273,8 @@ function PlayerSetupEditor({
       <span>
         Player setup and HUD
         <HelpTip label="Player setup help">
-          Controls preflight checks and compact HUD fields shown to players.
+          Controls auth preflight checks and compact HUD fields shown to players. Commands may still
+          require a character when they read sheet state.
         </HelpTip>
       </span>
       <div className="form-grid compact">
@@ -2361,7 +2292,7 @@ function PlayerSetupEditor({
             checked={value.require_character !== false}
             onChange={(event) => onChange({ ...value, require_character: event.target.checked })}
           />
-          <span>Require character</span>
+          <span>Require character preflight</span>
         </label>
         <label className="switch-line">
           <input
@@ -2436,6 +2367,57 @@ function DistributionEditor({
   );
 }
 
+function TransportIconsEditor({
+  value,
+  onChange,
+}: {
+  value: AnyRecord;
+  onChange: (value: AnyRecord) => void;
+}) {
+  function update(key: string, next: string) {
+    onChange({
+      ...value,
+      [key]: next || TRANSPORT_ICON_DEFAULTS[key as keyof typeof TRANSPORT_ICON_DEFAULTS],
+    });
+  }
+
+  return (
+    <section className="field span-2 guided-editor">
+      <span>
+        Transport icons
+        <HelpTip label="Transport icons help">
+          Display icons for route and journey steps. Owners can use the defaults or paste custom
+          Discord emoji text.
+        </HelpTip>
+      </span>
+      <div className="transport-icon-grid">
+        {Object.keys(TRANSPORT_ICON_DEFAULTS).map((key) => {
+          const current = String(
+            value[key] ?? TRANSPORT_ICON_DEFAULTS[key as keyof typeof TRANSPORT_ICON_DEFAULTS],
+          );
+          return (
+            <label className="field" key={key}>
+              <span>{key}</span>
+              <select value={current} onChange={(event) => update(key, event.target.value)}>
+                {optionsWithSelected(TRANSPORT_ICON_OPTIONS, [current]).map((option) => (
+                  <option value={option} key={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+              <input
+                value={current}
+                onChange={(event) => update(key, event.target.value)}
+                aria-label={`${key} transport icon`}
+              />
+            </label>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function WorldView({
   config,
   updateConfig,
@@ -2492,6 +2474,23 @@ function WorldView({
         biomeOptions={biomeOptions}
         updateConfig={updateConfig}
       />
+      <details className="advanced-json-details">
+        <summary>Economy data</summary>
+        <div className="subsystem-json-grid">
+          <JsonField
+            label="Currencies JSON"
+            value={config.currencies ?? {}}
+            onCommit={(value) => updateConfig('currencies', value)}
+            minRows={5}
+          />
+          <JsonField
+            label="Shops JSON"
+            value={config.shops ?? {}}
+            onCommit={(value) => updateConfig('shops', value)}
+            minRows={5}
+          />
+        </div>
+      </details>
       <details className="advanced-json-details">
         <summary>Advanced world JSON</summary>
         <JsonField

@@ -1,8 +1,8 @@
 !enchant help
 ---
-re:Create a magic item
+"re:^(?![\\s\\S]*Potion of Healing)[\\s\\S]*Create a magic item[\\s\\S]*Cloak of Protection"
 ---
-name: enchant help displays usage
+name: enchant help displays magic item examples
 vars:
   svars:
     westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa43"

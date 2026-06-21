@@ -85,6 +85,31 @@ vars:
           ],
       }
 
+!travel Oakwood
+---
+"re:Run `!enc`[\\s\\S]*Encounter step has no biome"
+---
+name: route preview omits blank biome argument and warns when manual mode needs one
+vars:
+  svars:
+    westmarch_config: "aaaa2002-2002-2002-2002-200000000012"
+  gvars:
+    aaaa2002-2002-2002-2002-200000000012: |
+      subsystems = {
+          "travel": {"enabled": True, "commands": {"travel": True, "location": True}},
+          "exploration": {"config": {"enc_biome_source": "argument"}},
+      }
+      world_data = {
+          "default_location": "river_town",
+          "locations": {
+              "river_town": {"name": "River Town"},
+              "oakwood": {"name": "Oakwood Forest"},
+          },
+          "paths": [
+              {"from": "river_town", "to": "oakwood", "steps": [{"type": "encounter", "biome": ""}]},
+          ],
+      }
+
 !travel Oak track
 ---
 re:Be more specific[\s\S]*Oakwood Forest[\s\S]*Oakwood East Trail

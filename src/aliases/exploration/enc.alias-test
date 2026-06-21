@@ -182,6 +182,61 @@ vars:
 
 !enc forest
 ---
+re:No encounters configured for \*\*forest\*\* / \*\*enc\*\*
+---
+name: "manual biome missing pool keeps biome-only text"
+vars:
+  svars:
+    westmarch_config: "eeee3333-3333-3333-3333-333333333336"
+  gvars:
+    eeee3333-3333-3333-3333-333333333336: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+              "config": {"enc_biome_source": "argument"},
+          },
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555556", "name": "Forest"},
+          },
+      }
+    eeee5555-5555-5555-5555-555555555556: |
+      []
+
+!enc
+---
+re:No encounters configured for \*\*Oakwood\*\* / \*\*forest\*\* / \*\*enc\*\*
+---
+name: "inferred biome missing pool includes location"
+vars:
+  svars:
+    westmarch_config: "eeee3333-3333-3333-3333-333333333337"
+  gvars:
+    eeee3333-3333-3333-3333-333333333337: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+              "config": {"enc_biome_source": "location"},
+          },
+          "travel": {"enabled": True, "commands": {"location": True}},
+      }
+      world_data = {
+          "default_location": "oakwood",
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555557", "name": "Forest"},
+          },
+          "locations": {
+              "oakwood": {"name": "Oakwood", "commands": {"enc": ["forest"]}},
+          },
+      }
+    eeee5555-5555-5555-5555-555555555557: |
+      []
+
+!enc forest
+---
 re:cooldown|wait|seconds
 ---
 name: "cooldown blocks repeat use"

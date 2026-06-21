@@ -72,6 +72,14 @@ subsystems = {
             "time": False,
             "weather": False,
         },
+        "config": {
+            "transport_icons": {
+                "walk": "🚶",
+                "fly": "🪽",
+                "horse": "🐎",
+                "boat": "⛵",
+            },
+        },
     },
     "downtime": {
         "enabled": False,
@@ -346,7 +354,7 @@ policies = {
         "require_character": True,
         "hud": {
             "enabled": True,
-            "fields": ["coins", "wallet", "location", "time", "weather"],
+            "fields": ["coins", "wallet", "location"],
         },
         "checks": [],
     },

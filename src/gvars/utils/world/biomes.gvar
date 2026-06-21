@@ -322,12 +322,31 @@ def _validate_code(code, cfg):
     return str(matches[0]).lower(), None
 
 
-def _biome_from_location(cfg, activity, ch):
+def _location_name(loc, loc_id):
+    name = _read_field(loc, "name")
+    if name != None and str(name).strip() != "":
+        return str(name).strip()
+    if loc_id != None:
+        return str(loc_id).strip()
+    return None
+
+
+def _resolve_result(code=None, error=None, source="manual", loc_id=None, loc=None):
+    return {
+        "biome": code,
+        "error": error,
+        "source": source,
+        "location_id": loc_id,
+        "location_name": _location_name(loc, loc_id),
+    }
+
+
+def _biome_from_location_context(cfg, activity, ch):
     loc_id, loc = journeys.get_location(ch, cfg)
     if loc_id == None:
-        return None, "Set your **location** first, or specify a **biome** code."
+        return _resolve_result(None, "Set your **location** first, or specify a **biome** code.", "location")
     if loc == None:
-        return None, f"Unknown location **{loc_id}**."
+        return _resolve_result(None, f"Unknown location **{loc_id}**.", "location", loc_id, loc)
     act_list = None
     cmds = _read_field(loc, "commands")
     if cmds != None:
@@ -337,23 +356,37 @@ def _biome_from_location(cfg, activity, ch):
         if acts != None:
             act_list = _read_field(acts, activity)
     if lists.is_list(act_list) and len(act_list) > 0:
-        return _validate_code(act_list[0], cfg)
+        code, error_msg = _validate_code(act_list[0], cfg)
+        return _resolve_result(code, error_msg, "location", loc_id, loc)
     biome = _read_field(loc, "biome")
     if biome != None and str(biome).strip() != "":
-        return _validate_code(biome, cfg)
-    return None, f"No **biome** configured for **{loc_id}**."
+        code, error_msg = _validate_code(biome, cfg)
+        return _resolve_result(code, error_msg, "location", loc_id, loc)
+    return _resolve_result(None, f"No **biome** configured for **{loc_id}**.", "location", loc_id, loc)
+
+
+def _biome_from_location(cfg, activity, ch):
+    result = _biome_from_location_context(cfg, activity, ch)
+    return _read_field(result, "biome"), _read_field(result, "error")
+
+
+def resolve_biome_context(activity, args, character, config=None):
+    """Return rich biome resolution context for exploration activity calls."""
+    cfg = _cfg(config)
+    if uses_location_mode(cfg):
+        return _biome_from_location_context(cfg, activity, character)
+    token = _parse_first_arg(args)
+    if token == "":
+        hint = _format_registry_hint(cfg)
+        return _resolve_result(None, f"Provide a **biome** code. Registered: {hint}", "manual")
+    code, error_msg = _validate_code(token, cfg)
+    return _resolve_result(code, error_msg, "manual")
 
 
 def resolve_biome(activity, args, character, config=None):
     """Return (biome_code, error_message). biome_code is None on failure."""
-    cfg = _cfg(config)
-    if uses_location_mode(cfg):
-        return _biome_from_location(cfg, activity, character)
-    token = _parse_first_arg(args)
-    if token == "":
-        hint = _format_registry_hint(cfg)
-        return None, f"Provide a **biome** code. Registered: {hint}"
-    return _validate_code(token, cfg)
+    result = resolve_biome_context(activity, args, character, config)
+    return _read_field(result, "biome"), _read_field(result, "error")
 
 
 def biome_display_name(code, config=None):

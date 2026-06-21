@@ -50,6 +50,7 @@ SUBJECT_BOOL_FLAGS = [
     "-int",
     "-wis",
     "-cha",
+    "-i",
 ]
 RECIPE_MODES = ["raw", "recipes", "mixed"]
 CHECK_MODES = ["none", "manual", "roll"]
@@ -929,6 +930,13 @@ def _spell_level_from_args(spell, args):
     return level, None
 
 
+def _scribe_ignore_spell_checks(args):
+    try:
+        return args.last("i", False, bool) == True
+    except:
+        return False
+
+
 def build_plan(config_override, command, query, args=None, ch=None):
     cfg = _cfg(config_override)
     if args == None:
@@ -956,14 +964,16 @@ def build_plan(config_override, command, query, args=None, ch=None):
     output_kind = _read_field(COMMAND_OUTPUT_KIND, cmd)
     spell_slot_level = None
     use_stats_note = None
+    ignore_spell_checks = cmd == "scribe" and _scribe_ignore_spell_checks(args)
 
     if cmd == "scribe":
         level, level_error = _spell_level_from_args(entry, args)
         if level_error != None:
             return {"ok": False, "message": level_error}
-        ok, known_error = _known_spell_check(ch, cfg, spells.spell_name(entry))
-        if not ok:
-            return {"ok": False, "message": known_error}
+        if not ignore_spell_checks:
+            ok, known_error = _known_spell_check(ch, cfg, spells.spell_name(entry))
+            if not ok:
+                return {"ok": False, "message": known_error}
         if workdays == None or gold == None:
             workdays, gold = _scroll_cost(edition, level)
         sb = None
@@ -975,7 +985,7 @@ def build_plan(config_override, command, query, args=None, ch=None):
             use_stats_note = f"2024 scroll use stats recorded: spell bonus **{_signed(sb)}**, save DC **{dc}**."
         name = format_scroll_name(spells.spell_name(entry), level, edition, sb, dc)
         spell_slot_level = level
-        if spell_slot_level == 0:
+        if spell_slot_level == 0 or ignore_spell_checks:
             spell_slot_level = None
     else:
         name = items.item_name(entry)
@@ -1008,6 +1018,7 @@ def build_plan(config_override, command, query, args=None, ch=None):
         "spell_reqs": spell_reqs,
         "spell_slot_level": spell_slot_level,
         "use_stats_note": use_stats_note,
+        "ignore_spell_checks": ignore_spell_checks,
     }
 
 
@@ -1043,7 +1054,7 @@ def _check_spell_slot(ch, level):
     if slots == None:
         return False, "Spell slot automation is not available for this character."
     if slots < 1:
-        return False, f"No level {level} spell slots available."
+        return False, f"No level {level} spell slots available. Use -i to bypass this check."
     return True, "Spell slot available."
 
 
@@ -1328,6 +1339,8 @@ def execute_plan(ch, config_override, plan, args=None):
     ]
     if plan["use_stats_note"] != None:
         lines.append(plan["use_stats_note"])
+    if plan["ignore_spell_checks"] == True:
+        lines.append("Ignore mode used: known-spell and spell-slot checks were bypassed.")
     if check_msg != "":
         lines.append(check_msg)
     if tool_msg != "":
@@ -1362,17 +1375,25 @@ def help_text(command, prefix="!", command_name=None):
         return f"""Create a spell scroll from the spell catalogue.
 
 **Usage**
-`{cmd} <spell> [-l level] [2024 scroll stats]`
+`{cmd} <spell> [-l level] [-i] [2024 scroll stats]`
 `spell` Spell name to scribe.
 `level` Optional scroll spell level for upcasting.
-By default, the spell must appear in your Avrae spellbook.
+`-i` Bypass only the known-spell and spell-slot checks.
+By default, the spell must appear in your Avrae spellbook and use the configured spell-slot resource policy.
 `2024 scroll stats` Uses Avrae spellbook stats when available. Use -sb/-dc for explicit final values, or -ability/-score/-pb as a fallback.
 
 **Examples**
 `{cmd} Fireball`
+`{cmd} "Misty Step" -i`
 `{cmd} Fireball -l 5 -ability cha -score 12 -pb 2`
 `{cmd} Fireball -l 5 -sb 3 -dc 11`
 """
+    examples = {
+        "craft": [f'{cmd} "Rope, Hemp (50 ft)"', f'{cmd} Pony'],
+        "brew": [f'{cmd} "Potion of Healing"', f'{cmd} Antitoxin'],
+        "enchant": [f'{cmd} "Cloak of Protection"', f'{cmd} "Goggles of Night"'],
+    }
+    example_lines = "\n".join([f"`{item}`" for item in _read_field(examples, command)])
     return f"""Create {article} {label} from the configured crafting catalogue.
 
 **Usage**
@@ -1380,6 +1401,5 @@ By default, the spell must appear in your Avrae spellbook.
 `{label}` Name to look up.
 
 **Examples**
-`{cmd} "Potion of Healing"`
-`{cmd} "Cloak of Protection"`
+{example_lines}
 """

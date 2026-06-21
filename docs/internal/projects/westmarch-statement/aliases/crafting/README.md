@@ -10,7 +10,7 @@ Slice 5 ports the crafting cluster with shared RAW-oriented behavior instead of 
 | --- | --- | --- | --- |
 | `!craft <item>` | `items` | item | Mundane item cost uses RAW baseline unless recipe mode provides a recipe. |
 | `!brew <potion>` | `potions` | potion | Potion/magic-item rarity baseline unless recipe mode provides a recipe. |
-| `!scribe <spell> [-l level]` | `spells` | scroll | 2014 and 2024 scroll names differ; 2024 stores spell bonus and DC. |
+| `!scribe <spell> [-l level] [-i]` | `spells` | scroll | 2014 and 2024 scroll names differ; 2024 stores spell bonus and DC. `-i` bypasses only known-spell and spell-slot checks. |
 | `!enchant <magic item>` | `magic_items` | magic item | Recipe `required` base items are consumed by default when item resources deduct. |
 
 ## Lookup Behavior
@@ -31,7 +31,7 @@ Recipes are not required for RAW crafting. `subsystems.crafting.config.recipe_mo
 
 When a recipe applies, its `workdays`, `gold`, `consumed`, `required`, `spells`, and optional `tools` fields drive the command.
 
-`scribe` also enforces RAW spell eligibility by default: the resolved spell name must appear in the character's Avrae spellbook. Set `subsystems.crafting.config.require_known_spell` to `False`, or override `subsystems.crafting.command_config.scribe.require_known_spell`, when the server tracks that eligibility elsewhere.
+`scribe` also enforces RAW spell eligibility by default: the resolved spell name must appear in the character's Avrae spellbook. Set `subsystems.crafting.config.require_known_spell` to `False`, or override `subsystems.crafting.command_config.scribe.require_known_spell`, when the server tracks that eligibility elsewhere. Players can pass `-i` for feature-granted spells that Avrae does not expose as known spells or usable slots; gold, downtime, materials, tools, and crafting checks still apply, and success output records that ignore mode was used.
 
 ## Rules Edition
 

@@ -108,6 +108,32 @@ vars:
     eeee5555-5555-5555-5555-555555555555: |
       [[["forage.gather"], "flavour", "Wild mushrooms", "", "gather"]]
 
+!forage
+---
+re:No encounters configured for \*\*Oakwood\*\* / \*\*forest\*\* / \*\*forage\*\*
+---
+name: "inferred biome missing pool includes location"
+vars:
+  svars:
+    westmarch_config: "eeee3334-3334-3334-3334-333333333436"
+  gvars:
+    eeee3334-3334-3334-3334-333333333436: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"forage": True},
+              "config": {"enc_biome_source": "location"},
+          },
+          "travel": {"enabled": True, "commands": {"location": True}},
+      }
+      world_data = {
+          "default_location": "oakwood",
+          "biomes": {"forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555436"}},
+          "locations": {"oakwood": {"name": "Oakwood", "commands": {"forage": ["forest"]}}},
+      }
+    eeee5555-5555-5555-5555-555555555436: |
+      []
+
 !forage desert
 ---
 re:registered|unknown|invalid
