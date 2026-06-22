@@ -82,6 +82,49 @@ name: specific transport aliases resolve to canonical journey categories
 
 cfg_fixture = {
     "world_data": {
+        "transport": {
+            "walk": {"name": "Walking", "default": True},
+            "horse": {"name": "Horse or mount"},
+            "ship": {"name": "Ship"},
+        },
+        "locations": {
+            "river_town": {"name": "River Town"},
+            "oakwood": {"name": "Oakwood Forest"},
+            "docks": {"name": "Docks"},
+        },
+        "paths": [
+            {
+                "from": "river_town",
+                "to": "oakwood",
+                "label": "Old Road",
+                "requirements": {"transport": ["walk", "horse"]},
+                "steps": [{"type": "encounter", "biome": "forest"}],
+            },
+            {
+                "from": "river_town",
+                "to": "docks",
+                "label": "Harbor lane",
+                "requirements": {"transport": "ship"},
+                "steps": [{"type": "proceed", "description": "Sail downriver."}],
+            },
+            {
+                "from": "river_town",
+                "to": "unlisted",
+                "steps": [{"type": "proceed", "description": "Nowhere."}],
+            },
+        ],
+    },
+}
+nearby = journeys.nearby_locations(cfg_fixture, "river_town")
+text = journeys.format_nearby_locations(cfg_fixture, "river_town", "!")
+return len(nearby) == 2 and nearby[0]["id"] == "oakwood" and len(nearby[0]["transports"]) == 2 and "Old Road" in text and "walk, horse" in text and '!travel "Oakwood Forest"' in text and '!travel "Docks" ship' in text
+---
+True
+---
+name: nearby locations group direct destinations and include travel commands
+
+cfg_fixture = {
+    "world_data": {
         "locations": {
             "river_town": {"name": "River Town"},
             "oakwood": {"name": "Oakwood Forest"},

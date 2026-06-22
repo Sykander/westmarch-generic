@@ -59,6 +59,37 @@ vars:
 
 !location
 ---
+re:River Town[\s\S]*Nearby[\s\S]*Oakwood Forest[\s\S]*Old Road[\s\S]*walk, horse[\s\S]*!travel "Oakwood Forest"[\s\S]*Docks[\s\S]*Harbor lane[\s\S]*ship[\s\S]*!travel "Docks" ship
+---
+name: shows nearby direct travel destinations
+vars:
+  svars:
+    westmarch_config: "aaaa1003-1003-1003-1003-100000000003"
+  gvars:
+    aaaa1003-1003-1003-1003-100000000003: |
+      subsystems = {
+          "travel": {"enabled": True, "commands": {"location": True}},
+      }
+      world_data = {
+          "default_location": "river_town",
+          "transport": {
+              "walk": {"name": "Walking", "default": True},
+              "horse": {"name": "Horse or mount"},
+              "ship": {"name": "Ship"},
+          },
+          "locations": {
+              "river_town": {"name": "River Town"},
+              "oakwood": {"name": "Oakwood Forest"},
+              "docks": {"name": "Docks"},
+          },
+          "paths": [
+              {"from": "river_town", "to": "oakwood", "label": "Old Road", "requirements": {"transport": ["walk", "horse"]}, "steps": [{"type": "encounter", "biome": "forest"}]},
+              {"from": "river_town", "to": "docks", "label": "Harbor lane", "requirements": {"transport": "ship"}, "steps": [{"type": "proceed", "description": "Sail downriver."}]},
+          ],
+      }
+
+!location
+---
 re:Oakwood Forest
 ---
 name: shows character cvar location over default

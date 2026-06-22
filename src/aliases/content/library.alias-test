@@ -73,7 +73,7 @@ vars:
 character:
   cvars:
     languages: '["common"]'
-    wg_book_comprehension: "{}"
+    wg_book_comprehension: '{"Oakwood Almanac|Mira":{"read_attempts":0,"last_read_at":0,"last_comprehension_score":100}}'
   skills:
     investigation:
       value: 12

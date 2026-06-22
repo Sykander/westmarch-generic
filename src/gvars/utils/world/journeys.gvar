@@ -268,6 +268,156 @@ def resolve_transport_id(config_override=None, transport_id=None, horse=False, b
     return requested
 
 
+def _transport_ids(cfg):
+    transports = _transport_map(cfg)
+    default_id = _transport_default_id(cfg)
+    out = []
+    seen = {}
+    if default_id != None:
+        out.append(default_id)
+        seen[default_id] = True
+    for key in transports:
+        trans_id = _normalize_id(key)
+        if trans_id == None or trans_id in seen:
+            continue
+        out.append(trans_id)
+        seen[trans_id] = True
+    return out
+
+
+def _add_unique_text(items, value):
+    if value == None:
+        return False
+    text = str(value).strip()
+    if text == "":
+        return False
+    key = text.lower()
+    for item in items:
+        if str(item).strip().lower() == key:
+            return False
+    items.append(text)
+    return True
+
+
+def _path_transport_requirement(path):
+    reqs = _read_field(path, "requirements")
+    transport = _read_field(reqs, "transport")
+    if transport != None:
+        return transport
+    return _read_field(path, "transport")
+
+
+def nearby_locations(config_override, from_id):
+    """Direct route destinations from one location, grouped by target id."""
+    cfg = _cfg(config_override)
+    origin = _normalize_id(from_id)
+    if origin == None:
+        return []
+    default_transport = _transport_default_id(cfg)
+    routes = {}
+    route_ids = []
+
+    for transport in _transport_ids(cfg):
+        for path in paths.get_edges_from(cfg, origin, transport):
+            if _path_transport_requirement(path) == None and transport != default_transport:
+                continue
+            dest_id = _normalize_id(_read_field(path, "to"))
+            if dest_id == None or dest_id == origin:
+                continue
+            loc = locations.get_location(cfg, dest_id)
+            if loc == None:
+                continue
+            if dest_id not in routes:
+                routes[dest_id] = {
+                    "id": dest_id,
+                    "location": loc,
+                    "labels": [],
+                    "transports": [],
+                    "step_count": None,
+                }
+                route_ids.append(dest_id)
+            route = routes[dest_id]
+            _add_unique_text(route["transports"], transport)
+            _add_unique_text(route["labels"], _read_field(path, "label"))
+            step_count = len(paths.get_path_steps(path, transport))
+            current_steps = _read_field(route, "step_count")
+            if current_steps == None or step_count < current_steps:
+                route["step_count"] = step_count
+
+    out = []
+    for route_id in route_ids:
+        out.append(routes[route_id])
+    return out
+
+
+def _travel_command_target(location, loc_id):
+    target = locations.location_name(location, loc_id)
+    if '"' in target:
+        target = str(loc_id)
+    return f'"{target}"'
+
+
+def _route_command_transport(cfg, route):
+    transports = _read_field(route, "transports")
+    if transports == None or not lists.is_list(transports) or len(transports) == 0:
+        return None
+    default_transport = _transport_default_id(cfg)
+    for transport in transports:
+        if _normalize_id(transport) == default_transport:
+            return None
+    return _normalize_id(transports[0])
+
+
+def nearby_travel_command(config_override, route, prefix="!"):
+    cfg = _cfg(config_override)
+    loc_id = _read_field(route, "id")
+    loc = _read_field(route, "location")
+    command = f"{prefix}travel {_travel_command_target(loc, loc_id)}"
+    transport = _route_command_transport(cfg, route)
+    if transport != None:
+        command += f" {transport}"
+    return command
+
+
+def _join_texts(items):
+    out = []
+    for item in items:
+        out.append(str(item))
+    return ", ".join(out)
+
+
+def format_nearby_locations(config_override, from_id, prefix="!", limit=8):
+    cfg = _cfg(config_override)
+    routes = nearby_locations(cfg, from_id)
+    if len(routes) == 0:
+        return ""
+    lines = ["## Nearby"]
+    count = 0
+    for route in routes:
+        if count >= limit:
+            break
+        loc = _read_field(route, "location")
+        labels = _read_field(route, "labels")
+        transports = _read_field(route, "transports")
+        details = []
+        if labels != None and lists.is_list(labels) and len(labels) > 0:
+            details.append(str(labels[0]))
+        if transports != None and lists.is_list(transports) and len(transports) > 0:
+            details.append(_join_texts(transports))
+        step_count = _read_field(route, "step_count")
+        if step_count != None:
+            label = "step" if int(step_count) == 1 else "steps"
+            details.append(f"{step_count} {label}")
+        detail_text = ""
+        if len(details) > 0:
+            detail_text = f" ({'; '.join(details)})"
+        lines.append(f"* {locations.linked_name(loc)}{detail_text} - `{nearby_travel_command(cfg, route, prefix)}`")
+        count += 1
+    if len(routes) > limit:
+        lines.append(f"-# {len(routes) - limit} more direct route(s).")
+    return "\n".join(lines)
+
+
 def _read_cvar(ch, key, fallback=None):
     if ch != None:
         try:

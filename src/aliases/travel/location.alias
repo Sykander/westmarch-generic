@@ -42,6 +42,9 @@ if loc == None:
 
 visits = journeys.get_visit_count(ch, loc_id)
 description = locations.display_location(loc, "full", ch, False, visits)
+nearby = journeys.format_nearby_locations(cfg, loc_id, ctx.prefix)
+if nearby != "":
+    description += "\n\n" + nearby
 
 if len(argslist) > 0 and str(argslist[0]).strip().lower() == "journey":
     journey_text = journeys.active_journey_text(cfg, ch, ctx.prefix)

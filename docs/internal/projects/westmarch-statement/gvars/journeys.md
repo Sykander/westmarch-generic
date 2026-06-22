@@ -18,6 +18,12 @@ def find_journey(config, from_id, to_id, horse=False, boat=False, transport_id=N
 def display_journey(config, legs, mode="detailed", horse=False, boat=False, prefix="!",
                     progress=None, transport_id=None):
     """Multi-leg route embed text; progress = { path_index, step_index } for strikethrough."""
+
+def nearby_locations(config, from_id):
+    """Direct route destinations from one location, grouped by target id."""
+
+def format_nearby_locations(config, from_id, prefix="!", limit=8):
+    """Markdown block for !location with nearby destinations and !travel commands."""
 ```
 
 ### Character cvars
@@ -67,6 +73,11 @@ found, legs = journeys.find_journey(cfg, "river_town", "oakwood", transport_id="
 ```
 
 Transport ids resolve through `world_data.transport` by exact id first, then configured name or alias where practical. New journeys store the selected canonical `transport` id, so aliases such as `riding_horse` can resolve to a broader category like `horse`.
+
+`nearby_locations` is intentionally one-leg only: it groups direct outgoing
+edges from the current location, records route labels, supported transport ids,
+and the cheapest step count per destination. `format_nearby_locations` uses that
+data for the `!location` Nearby block.
 
 ## Journey lifecycle
 

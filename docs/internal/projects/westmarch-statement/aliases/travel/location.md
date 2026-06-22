@@ -2,7 +2,7 @@
 
 **Subsystem:** travel · **Toggle:** `subsystems.travel.commands.location` · **Phase:** 1 (Tier C)
 
-**New command** — focused read-only view of the character’s current place. westmarch exposes similar information via bare `!travel` (no args); **location** avoids pulling in routing, journey planning, or GM set subcommands.
+**New command** — focused read-only view of the character’s current place. westmarch exposes similar information via bare `!travel` (no args); **location** avoids GM set subcommands while still showing nearby one-leg routes so players can discover where to go next.
 
 ## Player-facing behaviour
 
@@ -16,7 +16,7 @@ Optional extensions (finalize during implementation):
 
 | Form | Meaning |
 |------|---------|
-| `!location` | Current location name, visit count, optional one-line flavour from config |
+| `!location` | Current location name, visit count, optional one-line flavour from config, plus nearby direct routes |
 | `!location journey` | Include active journey title + next step hint (compact vs full `!travel`) |
 
 - **Help** (`!location`, `!location help`, `!location ?`): usage only.
@@ -71,6 +71,7 @@ flowchart TD
 1. `auth.is_allowed("location")`
 2. `journeys.get_location()` — default from config `default_location` when cvar empty
 3. `locations.get_location(cfg, id)` + `locations.display_location(...)`
+4. `journeys.format_nearby_locations(cfg, id, prefix)` — direct `paths` / `paths_gvar_id` exits with travel commands
 
 ## Prerequisites
 
@@ -84,7 +85,7 @@ flowchart TD
 
 - [x] Port **`journeys.gvar`** location helpers (config-aware defaults)
 - [x] **`locations.gvar`** — [gvars/locations.md](../../gvars/locations.md)
-- [x] **`location.alias`** — loader, toggle, help, default embed
+- [x] **`location.alias`** — loader, toggle, help, default embed, nearby route list
 - [x] Template config **`world_data.default_location`** + area display rows
 - [x] **`location.alias-test`** — help, no cvar (default), cvar set to fixture location
 - [x] Wire env + sourcemaps under `src/aliases/travel/`
@@ -102,6 +103,7 @@ flowchart TD
 | Character with no location cvar → config default | Alias-test |
 | Character with cvar → configured display name | Alias-test |
 | Toggle off / unset svar | Alias-test |
+| Nearby direct routes render with usable `!travel` commands | Alias-test |
 | Does not modify cvars on invoke | Alias-test / review |
 
 ## Related
