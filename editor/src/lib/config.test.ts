@@ -50,7 +50,7 @@ test('editor starter sources parse cleanly', () => {
   }
 });
 
-test('forgotten realms starter has slice 3 travel baseline', () => {
+test('forgotten realms starter has slice 5 travel baseline', () => {
   const starterSource = STARTER_SOURCES.find((source) => source.id === 'forgotten-realms-2014');
   assert.ok(starterSource);
 
@@ -87,6 +87,38 @@ test('forgotten realms starter has slice 3 travel baseline', () => {
   assert.ok((worldData.locations as Record<string, unknown>).high_forest);
   assert.ok((worldData.locations as Record<string, unknown>).sea_of_swords);
   assert.ok(Object.keys(worldData.locations as Record<string, unknown>).length > 70);
+
+  const paths = worldData.paths as Record<string, unknown>[];
+  function transportMatches(path: Record<string, unknown>, transport: string) {
+    const requirements = path.requirements as Record<string, unknown> | undefined;
+    const raw = requirements?.transport ?? path.transport;
+    return Array.isArray(raw) ? raw.includes(transport) : raw === transport;
+  }
+  function hasPath(from: string, to: string, transport: string) {
+    return paths.some(
+      (path) => path.from === from && path.to === to && transportMatches(path, transport),
+    );
+  }
+  function hasStepText(from: string, to: string, text: string) {
+    return paths.some((path) => {
+      if (path.from !== from || path.to !== to || !Array.isArray(path.steps)) return false;
+      return path.steps.some(
+        (step) =>
+          typeof step === 'object' &&
+          step !== null &&
+          String((step as Record<string, unknown>).description ?? '').includes(text),
+      );
+    });
+  }
+
+  assert.ok(paths.length > 120);
+  assert.ok(hasPath('waterdeep', 'high_road', 'walk'));
+  assert.ok(hasPath('high_road', 'triboar_trail', 'horse'));
+  assert.ok(hasPath('triboar_trail', 'phandalin', 'cart'));
+  assert.ok(hasPath('baldurs_gate', 'risen_road', 'cart'));
+  assert.ok(hasPath('waterdeep', 'sea_of_swords', 'ship'));
+  assert.ok(hasPath('baldurs_gate', 'river_chionthar', 'boat'));
+  assert.ok(hasStepText('baldurs_gate', 'risen_road', "Wyrm's Crossing"));
 
   const transport = worldData.transport as Record<string, Record<string, unknown>>;
   assert.equal(transport.walk.default, true);

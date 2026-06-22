@@ -1,6 +1,6 @@
 # Forgotten Realms config baseline audit
 
-Status: completed for slice 0; runtime notes updated through slices 2-3.
+Status: completed for slice 0; runtime notes updated through slice 5.
 
 ## Runtime support checked
 
@@ -15,7 +15,7 @@ Status: completed for slice 0; runtime notes updated through slices 2-3.
 ## Runtime limits
 
 - `!travel` accepts configured `world_data.transport` ids and aliases, preserving `horse` / `boat` compatibility through config aliases or ids.
-- The Forgotten Realms starter now has a transport catalogue and location atlas, but `world_data.paths` is still empty until the path graph slice lands.
+- The Forgotten Realms starter now has a transport catalogue, location atlas, biome registry, and directed route graph. `world_data.paths` includes land, river, and sea starter routes with explicit transport requirements.
 - The `job` command is skill/payout based; it does not consume a named job catalogue. Starter job flavor should live in location/shop text until a job schema exists.
 - Location images should not be added from wiki/sourcebook hotlinks. The checked-in Sword Coast map assets remain internal reference material unless a hosted/licensed runtime asset set is approved.
 
@@ -24,3 +24,5 @@ Status: completed for slice 0; runtime notes updated through slices 2-3.
 - Slice 1 added data to existing config paths only: `display`, `subsystems.travel.config.transport_icons`, `world_data.calendars`, `world_data.weather.by_area`, and location `calendar_id` / `weather_area`.
 - Slice 2 added `world_data.transport` and editor validation for `world_data.paths.*.requirements.transport`.
 - Slice 3 expanded `world_data.locations`; shops/services remain deferred, so no location references missing shop ids.
+- Slice 4 reused the existing engine biome registry through `world_data.biomes`.
+- Slice 5 seeded `world_data.paths` without adding new schema fields.

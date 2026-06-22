@@ -6,13 +6,15 @@ This plan follows the solution statement and keeps work split into reviewable sl
 
 ## Status
 
-Slices 0-3 are implemented.
+Slices 0-5 are implemented.
 
 - Slice 0 audit: [baseline-audit.md](baseline-audit.md)
 - Slice 1 preset identity/defaults: `src/gvars/configs/forgotten_realms_2014.gvar`
 - Slice 2 transport catalogue: `world_data.transport` plus generic `!travel <transport-id>` runtime support.
 - Slice 3 location atlas: Sword Coast/North locations with Waterdeep as the default.
-- Remaining work starts with the biome registry/path graph follow-up slices.
+- Slice 4 biome registry: existing engine preset biomes are wired through `world_data.biomes`.
+- Slice 5 path graph: directed land, river, and sea starter routes are seeded in `world_data.paths`.
+- Remaining work starts with shops and service data.
 
 ## Phase 0 - Baseline audit
 
