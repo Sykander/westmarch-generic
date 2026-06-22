@@ -18,7 +18,7 @@ Applies to **all** exploration activity commands; **`enc`** is the reference imp
 | **`argument`** | Manual | `!enc <biome> [bonuses]` | Biome codes from **`world_data.biomes`** |
 | **`location`** | Inferred | `!enc [bonuses]` — biome from character location | Locations; biome inferred |
 
-**Inferred** requires travel + **`world_data.locations`** + character location — [data-shapes.md § exploration.config](../../data-shapes.md#explorationconfig).
+**Inferred** requires travel + a location source + character location — [data-shapes.md § exploration.config](../../data-shapes.md#explorationconfig).
 
 Manual biome input is matched with **`lists.search_list`** against registered biome codes. One match is accepted; no matches or multiple matches return a player-facing error.
 

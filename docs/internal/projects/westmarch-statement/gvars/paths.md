@@ -2,7 +2,7 @@
 
 **Path:** `src/gvars/utils/world/paths.gvar` · **Phase:** 1 (Tier C)
 
-Look up [paths](../data-shapes.md#path) from **`world_data.paths`** and resolve **per-edge** costs and steps. Transport modes from **`world_data.transport`**. Edge helpers used by [journeys.md](journeys.md).
+Look up [paths](../data-shapes.md#path) from inline **`world_data.paths`** and optional external **`world_data.paths_gvar_id`** JSON, then resolve **per-edge** costs and steps. Transport modes from **`world_data.transport`**. Edge helpers used by [journeys.md](journeys.md).
 
 **Shortest-path search** lives in **`journeys.gvar`** — not here.
 
@@ -28,6 +28,8 @@ def get_path_steps(path):
 def display_path(path, config, mode="short", transport_id="walk", prefix="!"):
     """One leg — markdown string (linked names via [locations.md](locations.md))."""
 ```
+
+External path gvars are raw JSON arrays of path objects. A wrapper object with **`{"paths": [...]}`** is also accepted. Inline **`world_data.paths`** entries are appended after external entries so small owner additions can live directly on the config gvar.
 
 ## Edge cost (`get_path_cost`)
 
@@ -78,7 +80,7 @@ found, legs = journeys.find_journey(cfg, from_id, to_id, transport_id="horse")
 
 | westmarch | Generic |
 |-----------|---------|
-| `paths` list in engine gvar | Config **`paths`** |
+| `paths` list in engine gvar | Config **`world_data.paths`** or **`world_data.paths_gvar_id`** |
 | `get_path_cost` / `get_path_steps` | same names |
 | `path.horse` / `path.boat` on one edge | Separate path dicts per transport |
 | `get_shortest_path` | **`journeys.find_journey`** |

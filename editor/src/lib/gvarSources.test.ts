@@ -13,6 +13,8 @@ const LOCATION_ID = '22222222-2222-2222-2222-222222222222';
 const CATALOGUE_ID = '33333333-3333-3333-3333-333333333333';
 const NESTED_ID = '44444444-4444-4444-4444-444444444444';
 const SECOND_NESTED_ID = '55555555-5555-5555-5555-555555555555';
+const LOCATIONS_GVAR_ID = '66666666-6666-6666-6666-666666666666';
+const PATHS_GVAR_ID = '77777777-7777-7777-7777-777777777777';
 
 test('discoverGvarReferences finds config gvar ids with useful paths and kinds', () => {
   const references = discoverGvarReferences({
@@ -23,6 +25,8 @@ test('discoverGvarReferences finds config gvar ids with useful paths and kinds',
         },
       },
       engine_ref: `engine:${LOCATION_ID}`,
+      locations_gvar_id: LOCATIONS_GVAR_ID,
+      paths_gvar_id: PATHS_GVAR_ID,
       locations: {
         town: {
           encounters_gvar_id: LOCATION_ID,
@@ -43,6 +47,8 @@ test('discoverGvarReferences finds config gvar ids with useful paths and kinds',
   const forest = references.find((reference) => reference.id === FOREST_ID);
   const location = references.find((reference) => reference.id === LOCATION_ID);
   const catalogue = references.find((reference) => reference.id === CATALOGUE_ID);
+  const locationsGvar = references.find((reference) => reference.id === LOCATIONS_GVAR_ID);
+  const pathsGvar = references.find((reference) => reference.id === PATHS_GVAR_ID);
 
   assert.equal(forest?.path, 'world_data.biomes.forest.gvar_id');
   assert.equal(forest?.label, 'world data.biomes.forest.gvar id');
@@ -51,6 +57,10 @@ test('discoverGvarReferences finds config gvar ids with useful paths and kinds',
   assert.equal(location?.kind, 'json');
   assert.equal(catalogue?.path, 'subsystems.crafting.config.catalogues.items');
   assert.equal(catalogue?.kind, 'json');
+  assert.equal(locationsGvar?.path, 'world_data.locations_gvar_id');
+  assert.equal(locationsGvar?.kind, 'json');
+  assert.equal(pathsGvar?.path, 'world_data.paths_gvar_id');
+  assert.equal(pathsGvar?.kind, 'json');
   assert.equal(
     references.some((reference) => reference.path === 'world_data.engine_ref'),
     false,

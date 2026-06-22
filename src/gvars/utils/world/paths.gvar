@@ -22,6 +22,7 @@ DEFAULT_TRANSPORT_ICONS = {
     "portal": "🌀",
     "teleportation_circle": "🌀",
 }
+_paths_cache = {}
 
 
 def _read_field(obj, key):
@@ -38,6 +39,7 @@ def _read_field(obj, key):
     attrs = {
         "world_data": lambda o: o.world_data,
         "paths": lambda o: o.paths,
+        "paths_gvar_id": lambda o: o.paths_gvar_id,
         "aliases": lambda o: o.aliases,
         "from": lambda o: o["from"],
         "to": lambda o: o.to,
@@ -81,18 +83,67 @@ def _world_data(cfg):
     return _read_field(cfg, "world_data")
 
 
-def _path_list(cfg):
-    raw = _read_field(_world_data(cfg), "paths")
+def _coerce_path_list(raw):
     if raw == None:
         return []
     if lists.is_list(raw):
         return raw
     if dicts.is_dict(raw):
+        wrapped = _read_field(raw, "paths")
+        if wrapped != None and lists.is_list(wrapped):
+            return wrapped
         out = []
         for key in raw:
             out.append(raw[key])
         return out
     return []
+
+
+def _load_paths_gvar(cfg):
+    wd = _world_data(cfg)
+    gvar_id = _read_field(wd, "paths_gvar_id")
+    if gvar_id == None:
+        return []
+    addr = str(gvar_id).strip()
+    if addr == "":
+        return []
+    if addr in _paths_cache:
+        return _paths_cache[addr]
+    body = get_gvar(addr)
+    if body == None or str(body).strip() == "":
+        _paths_cache[addr] = []
+        return []
+    try:
+        payload = load_json(body)
+        path_list = _coerce_path_list(payload)
+        _paths_cache[addr] = path_list
+        return path_list
+    except:
+        pass
+    _paths_cache[addr] = []
+    return []
+
+
+def _path_list(cfg):
+    out = []
+    for path in _load_paths_gvar(cfg):
+        out.append(path)
+    for path in _coerce_path_list(_read_field(_world_data(cfg), "paths")):
+        out.append(path)
+    return out
+
+
+def has_path_source(config_override=None):
+    cfg = _cfg(config_override)
+    wd = _world_data(cfg)
+    raw = _read_field(wd, "paths")
+    if raw != None:
+        if lists.is_list(raw):
+            return len(raw) > 0
+        if dicts.is_dict(raw):
+            return len(raw) > 0
+    gvar_id = _read_field(wd, "paths_gvar_id")
+    return gvar_id != None and str(gvar_id).strip() != ""
 
 
 def _transport_map(cfg):

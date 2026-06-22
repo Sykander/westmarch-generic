@@ -9,6 +9,8 @@ Prefab **config gvar** bodies for tests and onboarding. Full spec: [docs/interna
 | **`books/`** | Library corpora from TSV — **`forgotten_realms_*`**, **`real_*`** (`npm run generate:books`) |
 | **`recipes/`** | Crafting catalogue — **`recipes_list.gvar.json`** (`npm run generate:recipes`) |
 | **`forgotten_realms_2014.gvar`** | Forgotten Realms · 2014 — Sword Coast starter baseline with travel, location, time, weather, and engine biome registry |
+| **`forgotten_realms_2014_locations.gvar.json`** | Location map referenced by **`forgotten_realms_2014.gvar`** via **`world_data.locations_gvar_id`** |
+| **`forgotten_realms_2014_paths.gvar.json`** | Path list referenced by **`forgotten_realms_2014.gvar`** via **`world_data.paths_gvar_id`** |
 | `forgotten_realms_2024.gvar` | Forgotten Realms · 2024 |
 | `generic_fantasy_2014.gvar` | Generic fantasy · 2014 |
 | `generic_fantasy_2024.gvar` | Generic fantasy · 2024 |

@@ -11,6 +11,7 @@ using(
 )
 
 ACTIVITY_COMMANDS = ["enc", "forage", "fish", "mine", "lumber", "hunt", "loot"]
+_locations_cache = {}
 
 
 def _read_field(obj, key):
@@ -28,6 +29,7 @@ def _read_field(obj, key):
         "world_data": lambda o: o.world_data,
         "default_location": lambda o: o.default_location,
         "locations": lambda o: o.locations,
+        "locations_gvar_id": lambda o: o.locations_gvar_id,
         "id": lambda o: o.id,
         "name": lambda o: o.name,
         "description": lambda o: o.description,
@@ -58,11 +60,64 @@ def _world_data(cfg):
     return _read_field(cfg, "world_data")
 
 
-def _locations_map(cfg):
-    locs = _read_field(_world_data(cfg), "locations")
-    if locs != None and dicts.is_dict(locs):
-        return locs
+def _load_locations_gvar(cfg):
+    wd = _world_data(cfg)
+    gvar_id = _read_field(wd, "locations_gvar_id")
+    if gvar_id == None:
+        return {}
+    addr = str(gvar_id).strip()
+    if addr == "":
+        return {}
+    if addr in _locations_cache:
+        return _locations_cache[addr]
+    body = get_gvar(addr)
+    if body == None or str(body).strip() == "":
+        _locations_cache[addr] = {}
+        return {}
+    try:
+        payload = load_json(body)
+        locations = _read_field(payload, "locations")
+        if locations != None and dicts.is_dict(locations):
+            payload = locations
+        if dicts.is_dict(payload):
+            _locations_cache[addr] = payload
+            return payload
+    except:
+        pass
+    _locations_cache[addr] = {}
     return {}
+
+
+def _locations_map(cfg):
+    wd = _world_data(cfg)
+    external = _load_locations_gvar(cfg)
+    inline = _read_field(wd, "locations")
+    if inline != None and dicts.is_dict(inline):
+        if dicts.is_dict(external) and len(external) > 0:
+            merged = {}
+            for key in external:
+                merged[key] = external[key]
+            for key in inline:
+                merged[key] = inline[key]
+            return merged
+        return inline
+    if dicts.is_dict(external):
+        return external
+    return {}
+
+
+def has_locations(config_override=None):
+    return len(_locations_map(_cfg(config_override))) > 0
+
+
+def has_location_source(config_override=None):
+    cfg = _cfg(config_override)
+    wd = _world_data(cfg)
+    locs = _read_field(wd, "locations")
+    if locs != None and dicts.is_dict(locs) and len(locs) > 0:
+        return True
+    gvar_id = _read_field(wd, "locations_gvar_id")
+    return gvar_id != None and str(gvar_id).strip() != ""
 
 
 def _normalize_id(value):

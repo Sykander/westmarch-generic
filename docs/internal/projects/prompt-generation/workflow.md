@@ -28,7 +28,7 @@ End-to-end process to build a **playable** example preset (e.g. `forgotten_realm
 |------|--------|-----------------|
 | 1 | [`locations.prompt.md`](../../../../src/prompts/forgotten-realms/locations.prompt.md) — `Mode: bootstrap`, then `expand` | `world_data_locations` (10, then 10–15 per batch) |
 
-- Integrate under `world_data.locations`.
+- Integrate under `world_data.locations` for small configs, or into the JSON gvar referenced by `world_data.locations_gvar_id` for large presets.
 - Set `world_data.default_location` from the `# default_location:` comment.
 - Keep a **master id list** (spreadsheet or text file) — paste into later prompts.
 - For 50+ locations, batch by **region** (e.g. “Dessarin Valley batch 2”, “Coast batch 1”).
@@ -55,7 +55,7 @@ End-to-end process to build a **playable** example preset (e.g. `forgotten_realm
 
 - Paste **location id list** and optional **hub id** into the prompt placeholders before sending.
 - Work **one region at a time** — connect hub to neighbors first, then wild loops.
-- Integrate as extend/merge into `world_data.paths` (list).
+- Integrate as extend/merge into `world_data.paths` for small configs, or into the JSON gvar referenced by `world_data.paths_gvar_id` for large presets.
 - Avoid duplicate `(from, to, requirements.transport)` triples.
 
 Optional: [`world-transport.prompt.md`](../../../../src/prompts/forgotten-realms/world-transport.prompt.md) if you need horse/boat modes beyond walk.

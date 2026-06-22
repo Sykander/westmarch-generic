@@ -106,6 +106,29 @@ cfg_fixture = {
         "exploration": {
             "enabled": True,
             "commands": {"enc": True},
+            "config": {"enc_biome_source": "auto"},
+        },
+        "travel": {
+            "enabled": True,
+            "commands": {"location": True},
+        },
+    },
+    "world_data": {
+        "biomes": {"forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"}},
+        "locations_gvar_id": "eeee7777-7777-7777-7777-777777777777",
+    },
+}
+return biomes.uses_location_mode(cfg_fixture)
+---
+True
+---
+name: auto mode treats locations_gvar_id as configured locations
+
+cfg_fixture = {
+    "subsystems": {
+        "exploration": {
+            "enabled": True,
+            "commands": {"enc": True},
             "config": {"enc_biome_source": "argument"},
         },
     },

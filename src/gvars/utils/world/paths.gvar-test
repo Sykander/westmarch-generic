@@ -145,3 +145,27 @@ return "* H Follow the road." in text
 True
 ---
 name: display_path uses configured transport icon
+
+cfg_fixture = {
+    "world_data": {
+        "paths_gvar_id": "eeee2222-2222-2222-2222-222222222222",
+        "paths": [
+            {
+                "from": "river_town",
+                "to": "inline_camp",
+                "steps": [{"type": "proceed", "description": "Take the side trail."}],
+            },
+        ],
+    },
+}
+external_edges = paths.get_edges_from(cfg_fixture, "river_town", "walk")
+inline_edge = paths.get_edge(cfg_fixture, "river_town", "inline_camp", "walk")
+return len(external_edges) == 2 and inline_edge["to"] == "inline_camp"
+---
+True
+---
+name: paths can load from world_data paths_gvar_id with inline additions
+vars:
+  gvars:
+    eeee2222-2222-2222-2222-222222222222: |
+      [{"from":"river_town","to":"oakwood","steps":[{"type":"proceed","description":"Follow the old road."}]}]

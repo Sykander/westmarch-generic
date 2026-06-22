@@ -102,7 +102,7 @@ Detailed steps: [workflow.md](workflow.md).
 
 After each validated batch, paste into Cursor with a concrete instruction, e.g.:
 
-> Merge this `world_data_paths` list into `forgotten_realms_2014.gvar` under `world_data.paths`. Do not duplicate edges with the same `from`, `to`, and `requirements.transport`.
+> Merge this `world_data_paths` list into `forgotten_realms_2014_paths.gvar.json`. Do not duplicate edges with the same `from`, `to`, and `requirements.transport`.
 
 Doc files under each prompt include copy-paste integration snippets.
 

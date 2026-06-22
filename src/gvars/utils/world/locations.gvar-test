@@ -65,3 +65,21 @@ return "Oakwood Forest" in text and "Tall trees." in text and "forage" in text a
 True
 ---
 name: display_location includes description activities and visits
+
+cfg_fixture = {
+    "world_data": {
+        "locations_gvar_id": "eeee1111-1111-1111-1111-111111111111",
+        "locations": {"inline_camp": {"name": "Inline Camp"}},
+    },
+}
+river = locations.get_location(cfg_fixture, "river_town")
+ids = locations.list_location_ids(cfg_fixture)
+return river["name"] == "River Town" and "river_town" in ids and "inline_camp" in ids
+---
+True
+---
+name: locations can load from world_data locations_gvar_id with inline additions
+vars:
+  gvars:
+    eeee1111-1111-1111-1111-111111111111: |
+      {"river_town":{"name":"River Town"}}

@@ -63,7 +63,7 @@ Shard files are **raw JSON arrays** — loaded at runtime with `load_json(get_gv
 2. **Shard rule** — letter, type, or separate file per corpus; document in [content-pipeline.md](../docs/internal/projects/westmarch-statement/content-pipeline.md).
 3. **Implement** `utils/generate-<name>.js` using **`utils/lib/read-tsv.js`** + **`write-json-gvar.js`**.
 4. **Output paths** under `src/gvars/utils/catalogues/` for engine catalogues, or `src/gvars/configs/` for setting-specific data (biomes, books, recipes).
-5. **Sourcemap** — engine catalogue generators call **`lib/sourcemap-shards.js`**. Engine biome presets are registered manually as id-less `biome_<code>` slots for `publish-avrae create-assets`; setting-specific books and recipes are not registered. Ensure enough UUIDs in **`unused_gvars.md`** before generated shard changes, then **`make build`**.
+5. **Sourcemap** — engine catalogue generators call **`lib/sourcemap-shards.js`**. Engine biome presets and deployable split preset JSON gvars are sourcemapped; setting-specific books and recipes are not registered. Ensure enough UUIDs in **`unused_gvars.md`** before generated shard changes, then **`make build`**.
 6. **Facade** — engine gvar with lazy cache; document API in `docs/internal/projects/westmarch-statement/gvars/`.
 7. **npm script** — add to `package.json`; add a matching target to the Makefile's Generates section.
 
@@ -84,7 +84,7 @@ Path layout:
 
 - `public/*.tsv` → **`assets/*.tsv`**
 - Engine modules → **`src/gvars/utils/`** (auth, catalogues, world, core, …)
-- Server presets → **`src/gvars/configs/`**; engine biome presets are sourcemapped as `biome_<code>`, while setting-specific books/recipes stay owner data
+- Server presets → **`src/gvars/configs/`**; engine biome presets are sourcemapped as `biome_<code>`, split preset data gvars may be sourcemapped by name, and setting-specific books/recipes stay owner data
 
 Runtime improvement: westmarch **`items.gvar`** loads all three lists at import — generic facades should **lazy-load** per type (see content-pipeline).
 

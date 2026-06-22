@@ -20,8 +20,8 @@ Shared **engine workshop** modules under `src/gvars/`. Aliases `using()` these v
 | **encounters** | [encounters.md](encounters.md) | 0–1 | Rolls, `ectx` callables, outcomes, `encounter_result` |
 | **biomes** | [biomes.md](biomes.md) | 0–1 | Lazy-load biome gvar bodies from **`world_data.biomes`** |
 | **location_encounters** | [location_encounters.md](location_encounters.md) | 1 | Lazy-load place-specific pools from **`encounters_gvar_id`** |
-| **locations** | [locations.md](locations.md) | 1 | **`world_data.locations`** lookup + `display_location` |
-| **paths** | [paths.md](paths.md) | 1 | **`world_data.paths`**, transport-aware steps |
+| **locations** | [locations.md](locations.md) | 1 | **`world_data.locations`** / **`locations_gvar_id`** lookup + `display_location` |
+| **paths** | [paths.md](paths.md) | 1 | **`world_data.paths`** / **`paths_gvar_id`**, transport-aware steps |
 | **journeys** | [journeys.md](journeys.md) | 1 | Shortest route, journey/location cvars, `next_step` |
 | **clock** | [clock.md](clock.md) | 1 | In-world calendar/clock for `!time` |
 | **weather** | [weather.md](weather.md) | 1 | Regional weather for `!weather` |

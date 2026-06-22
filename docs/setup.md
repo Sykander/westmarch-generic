@@ -198,6 +198,16 @@ world_data = {
 }
 ```
 
+Large maps can be split into JSON gvars and referenced from the config:
+
+```py
+world_data = {
+    "default_location": "waterdeep",
+    "locations_gvar_id": "<locations-json-gvar-uuid>",
+    "paths_gvar_id": "<paths-json-gvar-uuid>",
+}
+```
+
 `time` and `weather` are planned commands. Keep them disabled until their runtime modules ship; the editor Check page reports an error if either is enabled.
 
 Economy setup needs top-level data before enabling player commands:

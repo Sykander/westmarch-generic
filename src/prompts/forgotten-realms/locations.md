@@ -2,7 +2,7 @@
 
 **Prompt:** [`locations.prompt.md`](locations.prompt.md) — copy the **entire file** into ChatGPT.
 
-**Goal:** Author `world_data.locations` for **`forgotten_realms_2014.gvar`** — bootstrap (~10) or expand (10–15 per batch).
+**Goal:** Author location entries for **`forgotten_realms_2014_locations.gvar.json`** — bootstrap (~10) or expand (10–15 per batch).
 
 **Schema:** [Location](../../../docs/internal/projects/westmarch-statement/data-shapes.md#location)  
 **Guide:** [prompt-generation/workflow.md](../../../docs/internal/projects/prompt-generation/workflow.md)
@@ -33,11 +33,11 @@ Edit the **Configuration** section at the top of the prompt:
 
 **Bootstrap:**
 
-> Integrate `world_data_locations` into `forgotten_realms_2014.gvar` under `world_data.locations`, set `default_location` from the comment.
+> Integrate `world_data_locations` into `forgotten_realms_2014_locations.gvar.json`, set `world_data.default_location` in `forgotten_realms_2014.gvar` from the comment.
 
 **Expand:**
 
-> Merge into `world_data.locations`. Skip keys that already exist; report collisions.
+> Merge into `forgotten_realms_2014_locations.gvar.json`. Skip keys that already exist; report collisions.
 
 ## Follow-up
 

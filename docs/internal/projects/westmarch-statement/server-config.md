@@ -263,7 +263,7 @@ policies = {
 
 **Player flow:** `!travel oakwood` → `!location` shows Oakwood → `!enc` (no args) resolves biome **`forest`** from **`activities.enc`**.
 
-The web config editor reports an error if **`enc_biome_source`** is **`location`** but **`travel.commands.location`** is off or **`world_data.locations`** is missing. **`auto`** warns when location prerequisites are partial but does not error — runtime falls back to manual biome args.
+The web config editor reports an error if **`enc_biome_source`** is **`location`** but **`travel.commands.location`** is off or no inline/external location source exists. **`auto`** warns when location prerequisites are partial but does not error — runtime falls back to manual biome args.
 
 ---
 

@@ -78,17 +78,33 @@ test('forgotten realms starter has slice 5 travel baseline', () => {
 
   const worldData = model.world_data as Record<string, unknown>;
   assert.equal(worldData.default_location, 'waterdeep');
+  assert.equal(worldData.locations_gvar_id, '6c50e5a7-e36b-49fe-96e7-7e82e157bd31');
+  assert.equal(worldData.paths_gvar_id, '40403500-be2c-4b1a-8170-6176adf87aa5');
   assert.ok((worldData.calendars as Record<string, unknown>).primary);
   assert.ok(
     ((worldData.weather as Record<string, unknown>).by_area as Record<string, unknown>).coast,
   );
-  assert.ok((worldData.locations as Record<string, unknown>).neverwinter);
-  assert.ok((worldData.locations as Record<string, unknown>).long_road);
-  assert.ok((worldData.locations as Record<string, unknown>).high_forest);
-  assert.ok((worldData.locations as Record<string, unknown>).sea_of_swords);
-  assert.ok(Object.keys(worldData.locations as Record<string, unknown>).length > 70);
+  const locations = JSON.parse(
+    readFileSync(
+      new URL(
+        '../../../src/gvars/configs/forgotten_realms_2014_locations.gvar.json',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
+  ) as Record<string, unknown>;
+  assert.ok(locations.neverwinter);
+  assert.ok(locations.long_road);
+  assert.ok(locations.high_forest);
+  assert.ok(locations.sea_of_swords);
+  assert.ok(Object.keys(locations).length > 70);
 
-  const paths = worldData.paths as Record<string, unknown>[];
+  const paths = JSON.parse(
+    readFileSync(
+      new URL('../../../src/gvars/configs/forgotten_realms_2014_paths.gvar.json', import.meta.url),
+      'utf8',
+    ),
+  ) as Record<string, unknown>[];
   function transportMatches(path: Record<string, unknown>, transport: string) {
     const requirements = path.requirements as Record<string, unknown> | undefined;
     const raw = requirements?.transport ?? path.transport;
@@ -280,6 +296,39 @@ subsystems = {
 
   assert.ok(codes.includes('world.default_location'));
   assert.ok(codes.includes('world.locations.empty'));
+});
+
+test('travel accepts external world data gvar pointers', () => {
+  const codes = issueCodes(`
+subsystems = {
+    "travel": {
+        "enabled": True,
+        "commands": {"travel": True, "location": True},
+    },
+}
+
+world_data = {
+    "default_location": "river_town",
+    "locations_gvar_id": "11111111-1111-1111-1111-111111111111",
+    "paths_gvar_id": "22222222-2222-2222-2222-222222222222",
+}
+`);
+
+  assert.equal(codes.includes('world.locations.empty'), false);
+  assert.equal(codes.includes('world.locations_gvar_id.invalid'), false);
+  assert.equal(codes.includes('world.paths_gvar_id.invalid'), false);
+});
+
+test('world data gvar pointers must be valid uuids', () => {
+  const codes = issueCodes(`
+world_data = {
+    "locations_gvar_id": "locations",
+    "paths_gvar_id": "paths",
+}
+`);
+
+  assert.ok(codes.includes('world.locations_gvar_id.invalid'));
+  assert.ok(codes.includes('world.paths_gvar_id.invalid'));
 });
 
 test('travel paths must reference configured locations', () => {

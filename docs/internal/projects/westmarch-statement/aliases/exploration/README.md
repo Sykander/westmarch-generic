@@ -33,7 +33,7 @@ display.get_display(COMMAND)
 
 See [enc.md](enc.md) and [data-shapes.md](../../data-shapes.md).
 
-**Biome source** — **`exploration.config.enc_biome_source`** applies to **all** activity commands (not **`enc`** only). Default **`auto`**: inferred from location when travel + **`world_data.locations`** exist; otherwise player enters biome code manually.
+**Biome source** — **`exploration.config.enc_biome_source`** applies to **all** activity commands (not **`enc`** only). Default **`auto`**: inferred from location when travel + an inline or external location source exist; otherwise player enters biome code manually.
 
 Manual biome input resolves with **`lists.search_list`** over registered biome codes. Commands use one match, report no matches, or ask for more specificity with up to five matched codes.
 

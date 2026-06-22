@@ -20,7 +20,7 @@ Twenty-five top-level commands (twenty-four player-facing + **`westmarch`**), pl
 | **hunt** | exploration | `…commands.hunt` | Monster catalogue | westmarch |
 | **loot** | exploration | `…commands.loot` | Monster loot tables | westmarch |
 | **travel** | travel | `subsystems.travel.commands.travel` | Areas, paths, journeys | westmarch |
-| **location** | travel | `…commands.location` | **`world_data.locations`**, default location | **new** |
+| **location** | travel | `…commands.location` | location source, default location | **new** |
 | **time** | travel | `…commands.time` | **`world_data.calendars`**, epoch, tick rate | **new** |
 | **weather** | travel | `…commands.weather` | Weather by region/location, seasons | **new** |
 | **downtime** | downtime | `subsystems.downtime.enabled` | Labels, cooldowns, optional rates | westmarch |
@@ -42,7 +42,7 @@ Twenty-five top-level commands (twenty-four player-facing + **`westmarch`**), pl
 
 **Exploration** — **enc**, **forage**, **fish**, **mine**, and **lumber** share one encounter engine. Subsystem **`config`**: biome source (**`enc_biome_source`**), encounter-kind mix (**`distribution`**, **`distribution_policy`**) — [data-shapes.md § exploration.config](data-shapes.md#explorationconfig). **hunt** → **loot** is the combat/loot loop.
 
-**Travel** — **travel** handles movement, routes, and journeys. **location** reads **`world_data.locations`**. **time** uses **`world_data.calendars`** (unix-derived MVP). **transport** modes (horse, boat, …) gate paths via **`requirements.transport`**. Ship **location** with journeys engine; **time** / **weather** once **`world_data`** exists.
+**Travel** — **travel** handles movement, routes, and journeys. **location** reads the configured location source. **time** uses **`world_data.calendars`** (unix-derived MVP). **transport** modes (horse, boat, …) gate paths via **`requirements.transport`**. Ship **location** with journeys engine; **time** / **weather** once **`world_data`** exists.
 
 **Crafting** — **craft**, **brew**, **enchant** use **items** config and **downtime**; **scribe** uses **spells** config.
 

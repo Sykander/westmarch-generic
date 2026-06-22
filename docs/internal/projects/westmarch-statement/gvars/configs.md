@@ -36,7 +36,7 @@ Each file is one Draconic module (`.gvar`) — same shape as an owner config gva
 
 | File *(planned)* | Setting | Intended rules | Summary |
 |------------------|---------|----------------|---------|
-| **`forgotten_realms_2014.gvar`** | Forgotten Realms | **2014** | Sword Coast–style FR names, factions, and tone; catalogues and DC bands aligned to 2014 SRD-era tables |
+| **`forgotten_realms_2014.gvar`** | Forgotten Realms | **2014** | Sword Coast–style FR names, factions, and tone; catalogues and DC bands aligned to 2014 SRD-era tables. Large locations/paths live in sibling JSON gvars referenced by UUID. |
 | **`forgotten_realms_2024.gvar`** | Forgotten Realms | **2024** | Same FR identity as 2014 preset where lore allows; spells, skills, and item lists aligned to 2024 revised rules |
 | **`generic_fantasy_2014.gvar`** | Generic fantasy | **2014** | Setting-neutral placeholders — no FR-specific proper nouns; usable for homebrew worlds without retagging lore |
 | **`generic_fantasy_2024.gvar`** | Generic fantasy | **2024** | Same as generic 2014 structurally; 2024-aligned catalogues and mechanics |
@@ -76,6 +76,8 @@ src/gvars/configs/
     README.md
     biome_forest.gvar            # … (planned)
   forgotten_realms_2014.gvar
+  forgotten_realms_2014_locations.gvar.json
+  forgotten_realms_2014_paths.gvar.json
   forgotten_realms_2024.gvar
   generic_fantasy_2014.gvar
   generic_fantasy_2024.gvar
@@ -88,7 +90,7 @@ src/gvars/configs/
 
 ## Sourcemaps and deploy
 
-Example configs get **workshop gvar slots** in dev/prod sourcemaps when ready to publish (UUIDs from **`unused_gvars.md`**). They are **not** listed in engine **`env.gvars`** — the engine loader does not `using()` them.
+Example configs and split preset data get **workshop gvar slots** in dev/prod sourcemaps when ready to publish (UUIDs from **`unused_gvars.md`**). Split locations/paths JSON gvars are referenced by literal production UUID from the config body, not through **`env.gvars`**. The engine loader does not `using()` preset configs directly; server owners still point **`westmarch_config`** at their active config gvar.
 
 | Consumer | How preset is used |
 |----------|-------------------|

@@ -22,7 +22,7 @@ Paste **all location ids** (or the subgraph ids for this region). Optionally nam
 
 ## Integration
 
-> Append these entries to `world_data.paths` in `forgotten_realms_2014.gvar`. Skip duplicates matching same `from`, `to`, and `requirements.transport`.
+> Append these entries to `forgotten_realms_2014_paths.gvar.json`. Skip duplicates matching same `from`, `to`, and `requirements.transport`.
 
 ## Tips
 

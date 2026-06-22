@@ -315,6 +315,16 @@
       "id": "6b51c53f-3db9-49cd-8f24-e35866226fa2"
     },
     {
+      "name": "forgotten_realms_2014_locations",
+      "file": "src/gvars/configs/forgotten_realms_2014_locations.gvar.json",
+      "id": "6c50e5a7-e36b-49fe-96e7-7e82e157bd31"
+    },
+    {
+      "name": "forgotten_realms_2014_paths",
+      "file": "src/gvars/configs/forgotten_realms_2014_paths.gvar.json",
+      "id": "40403500-be2c-4b1a-8170-6176adf87aa5"
+    },
+    {
       "name": "items",
       "file": "src/gvars/utils/catalogues/items/items.gvar",
       "id": "573a61f9-8b12-40e2-b296-cb5445c61edd"

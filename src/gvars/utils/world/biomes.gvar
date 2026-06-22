@@ -30,6 +30,7 @@ def _read_field(obj, key):
         "world_data": lambda o: o.world_data,
         "biomes": lambda o: o.biomes,
         "locations": lambda o: o.locations,
+        "locations_gvar_id": lambda o: o.locations_gvar_id,
         "commands": lambda o: o.commands,
         "activities": lambda o: o.activities,
         "biome": lambda o: o.biome,
@@ -264,9 +265,10 @@ def _travel_ready(cfg):
         return False
     wd = _read_field(cfg, "world_data")
     locs = _read_field(wd, "locations")
-    if locs == None or not dicts.is_dict(locs):
-        return False
-    return len(locs) > 0
+    if locs != None and dicts.is_dict(locs) and len(locs) > 0:
+        return True
+    gvar_id = _read_field(wd, "locations_gvar_id")
+    return gvar_id != None and str(gvar_id).strip() != ""
 
 
 def uses_location_mode(cfg):

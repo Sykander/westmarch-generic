@@ -38,6 +38,7 @@ SUBSYSTEM_KEYS = [
     "content",
     "misc",
 ]
+_json_cache = {}
 
 
 def _read_field(obj, key):
@@ -78,7 +79,9 @@ def _read_field(obj, key):
         "fields": lambda o: o.fields,
         "world_data": lambda o: o.world_data,
         "locations": lambda o: o.locations,
+        "locations_gvar_id": lambda o: o.locations_gvar_id,
         "paths": lambda o: o.paths,
+        "paths_gvar_id": lambda o: o.paths_gvar_id,
         "transport": lambda o: o.transport,
         "biomes": lambda o: o.biomes,
         "currencies": lambda o: o.currencies,
@@ -200,6 +203,79 @@ def _path_count(wd):
     return _count_dict(paths)
 
 
+def _short_id(value):
+    if value == None or str(value).strip() == "":
+        return "none"
+    text = str(value).strip()
+    if len(text) > 32:
+        return text[0:29] + "..."
+    return text
+
+
+def _load_json_gvar(gvar_id):
+    if gvar_id == None:
+        return None
+    addr = str(gvar_id).strip()
+    if addr == "":
+        return None
+    if addr in _json_cache:
+        return _json_cache[addr]
+    body = get_gvar(addr)
+    if body == None or str(body).strip() == "":
+        _json_cache[addr] = None
+        return None
+    try:
+        payload = load_json(body)
+        _json_cache[addr] = payload
+        return payload
+    except:
+        _json_cache[addr] = None
+        return None
+
+
+def _locations_payload(wd):
+    payload = _load_json_gvar(_read_field(wd, "locations_gvar_id"))
+    locs = _read_field(payload, "locations")
+    if locs != None and _is_dict(locs):
+        return locs
+    if _is_dict(payload):
+        return payload
+    return {}
+
+
+def _location_count(wd):
+    if wd == None:
+        return 0
+    seen = {}
+    for source in [_locations_payload(wd), _read_field(wd, "locations")]:
+        if not _is_dict(source):
+            continue
+        for key in source:
+            seen[str(key)] = True
+    return len(seen)
+
+
+def _paths_payload(wd):
+    payload = _load_json_gvar(_read_field(wd, "paths_gvar_id"))
+    paths = _read_field(payload, "paths")
+    if paths != None:
+        payload = paths
+    if lists.is_list(payload):
+        return payload
+    if _is_dict(payload):
+        out = []
+        for key in payload:
+            out.append(payload[key])
+        return out
+    return []
+
+
+def _total_path_count(wd):
+    if wd == None:
+        return 0
+    return len(_paths_payload(wd)) + _path_count(wd)
+
+
 def _markdown_link(name, url):
     return f"[{name}]({url})"
 
@@ -261,8 +337,14 @@ def _world_summary(cfg):
     if wd == None:
         return _codeblock("yaml", ["world_data: none"])
     lines = []
-    lines.append(f"locations: {_count_dict(_read_field(wd, 'locations'))}")
-    lines.append(f"paths: {_path_count(wd)}")
+    lines.append(f"locations: {_location_count(wd)}")
+    lines.append(f"paths: {_total_path_count(wd)}")
+    loc_gvar_id = _read_field(wd, "locations_gvar_id")
+    if _nonempty_str(loc_gvar_id):
+        lines.append(f"locations_gvar_id: {_short_id(loc_gvar_id)}")
+    path_gvar_id = _read_field(wd, "paths_gvar_id")
+    if _nonempty_str(path_gvar_id):
+        lines.append(f"paths_gvar_id: {_short_id(path_gvar_id)}")
     lines.append(f"transport: {_count_dict(_read_field(wd, 'transport'))}")
     lines.append(f"biomes: {_count_dict(_read_field(wd, 'biomes'))}")
     lines.append(f"currencies: {_count_dict(_read_field(cfg, 'currencies'))}")

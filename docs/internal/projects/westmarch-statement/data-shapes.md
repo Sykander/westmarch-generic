@@ -436,8 +436,8 @@ westmarch reference: `process_encounters.gvar` lines 14–192 → one port file 
 
 | Subsystem / commands | Minimum **`world_data`** |
 |----------------------|---------------------------|
-| **`travel`**, **`location`** | **`locations`**, **`default_location`**, **`paths`** (for routing) |
-| Exploration activities with **`enc_biome_source: location`** or **`auto`** (inferred) | **`locations`** + **`biomes`** registry + **`journeys.gvar`** |
+| **`travel`**, **`location`** | **`locations`** or **`locations_gvar_id`**, **`default_location`**, **`paths`** or **`paths_gvar_id`** (for routing) |
+| Exploration activities with **`enc_biome_source: location`** or **`auto`** (inferred) | **`locations`** or **`locations_gvar_id`** + **`biomes`** registry + **`journeys.gvar`** |
 | Exploration activity commands | **`biomes`** registry with resolvable **`gvar_id`** per referenced code |
 | **`hunt`**, **`loot`** custom creatures | Optional **`monsters`** owner rows; bundled monster catalogue is available by default |
 | **`time`** with **`policies.time.mode: world_clock`** | **`calendars`** (at least one) |
@@ -447,7 +447,9 @@ Access after load:
 ```py
 cfg = config.get_config()
 cfg.world_data.locations
+cfg.world_data.locations_gvar_id
 cfg.world_data.paths
+cfg.world_data.paths_gvar_id
 cfg.world_data.transport
 cfg.world_data.calendars
 cfg.world_data.biomes.forest.gvar_id
@@ -461,7 +463,9 @@ cfg.world_data.monsters
 ```py
 world_data = {
     "default_location": "river_town",
+    "locations_gvar_id": "<uuid>",
     "locations": { "river_town": { … }, "oakwood": { … } },
+    "paths_gvar_id": "<uuid>",
     "paths": [ { "from": "river_town", "to": "oakwood", … }, … ],
     "transport": { "horse": { … }, "boat": { … } },
     "calendars": { "primary": { … } },
@@ -488,8 +492,10 @@ world_data = {
 | Key | Required | Notes |
 |-----|----------|-------|
 | **`default_location`** | when travel/location on | **`locations`** id slug |
-| **`locations`** | when travel/location on | Dict keyed by stable **`id`** — [Location](#location) |
-| **`paths`** | when **`travel`** routes journeys | List of [Path](#path) edges |
+| **`locations`** | when travel/location on and no **`locations_gvar_id`** | Dict keyed by stable **`id`** — [Location](#location). Inline entries override matching external ids. |
+| **`locations_gvar_id`** | no | UUID of a JSON gvar containing the large locations dict, optionally wrapped as **`{"locations": {...}}`** |
+| **`paths`** | when **`travel`** routes journeys and no **`paths_gvar_id`** | List of [Path](#path) edges. Inline entries are appended after external entries. |
+| **`paths_gvar_id`** | no | UUID of a JSON gvar containing the large paths list, optionally wrapped as **`{"paths": [...]}`** |
 | **`transport`** | no | [Transport](#transport) modes — horse, boat, ship, … |
 | **`calendars`** | when world clock on | [Calendar](#calendar) definitions |
 | **`biomes`** | when exploration on | Registry only — [Biome registry](#biome-registry); encounter bodies in separate gvars |
@@ -760,7 +766,7 @@ Preset bodies start minimal (MVP smoke entries per kind) and grow with vertical 
 
 ## Location
 
-An in-world place characters **travel to**, **view** via `!location`, and **run activities** at. Stored in **`world_data.locations`** — dict keyed by stable **`id`**. Lookup and display: [gvars/locations.md](gvars/locations.md).
+An in-world place characters **travel to**, **view** via `!location`, and **run activities** at. Stored inline in **`world_data.locations`** or in the JSON gvar pointed to by **`world_data.locations_gvar_id`** — dict keyed by stable **`id`**. Lookup and display: [gvars/locations.md](gvars/locations.md).
 
 ```py
 location = {
@@ -905,7 +911,7 @@ Loader: [location_encounters.gvar](gvars/location_encounters.md). Design rationa
 
 ## Path
 
-A **one-way route** from one location to another. Stored in **`world_data.paths`** — list of path dicts. Routing and display: [gvars/paths.md](gvars/paths.md).
+A **one-way route** from one location to another. Stored inline in **`world_data.paths`** or in the JSON gvar pointed to by **`world_data.paths_gvar_id`** — list of path dicts. Routing and display: [gvars/paths.md](gvars/paths.md).
 
 ```py
 path = {
@@ -1264,14 +1270,14 @@ Applies to **every** exploration activity command (**`enc`**, **`forage`**, **`m
 |--------------|------|--------------|--------------|
 | **`auto`** *(default)* | Adapts | Manual biome arg when location inference unavailable; inferred when travel + locations configured | **`world_data.biomes`** always; locations optional |
 | **`argument`** | Manual | `!<activity> <biome> [bonuses]` — e.g. `!enc forest`, `!forage forest` | **`world_data.biomes`** registry + resolvable gvars |
-| **`location`** | Inferred | `!<activity> [bonuses]` — biome from character location | **`subsystems.travel.enabled`**, **`travel.commands.location`**, **`world_data.locations`**, **`journeys.gvar`** |
+| **`location`** | Inferred | `!<activity> [bonuses]` — biome from character location | **`subsystems.travel.enabled`**, **`travel.commands.location`**, **`world_data.locations`** or **`locations_gvar_id`**, **`journeys.gvar`** |
 
 **`auto` effective mode:**
 
-- **Inferred** when travel subsystem on, **`location`** command on, **`world_data.locations`** non-empty, and character has a resolvable location.
+- **Inferred** when travel subsystem on, **`location`** command on, a location source exists, and character has a resolvable location.
 - **Manual** otherwise — first positional arg must be a registered biome code.
 
-**Location inference:** character location → **`world_data.locations[id]`** → first biome in **`activities[activity]`**, else **`location.biome`**. Error if location unset or no biome for that activity.
+**Location inference:** character location → resolved location entry → first biome in **`activities[activity]`**, else **`location.biome`**. Error if location unset or no biome for that activity.
 
 **Manual inference:** first token of alias args → validate against **`world_data.biomes`**; help text lists codes from **`biomes.list_biomes(config)`**.
 
@@ -1469,7 +1475,7 @@ Warnings when:
 
 ### `travel.config`
 
-No subsystem-specific `travel.config` keys are required for the first travel/location slice. Travel reads shared **`world_data.default_location`**, **`world_data.locations`**, and **`world_data.paths`**; enforcement toggles live under **`policies.travel`**.
+No subsystem-specific `travel.config` keys are required for the first travel/location slice. Travel reads shared **`world_data.default_location`**, the configured location source, and the configured path source; enforcement toggles live under **`policies.travel`**.
 
 | Key | Type | Default | Notes |
 |-----|------|---------|-------|
@@ -1761,7 +1767,7 @@ Built-in HUD fields only render when their subsystem or command is enabled:
 |-------|----------|-------|
 | `coinpurse` | `subsystems.economy.enabled` | Avrae character coinpurse |
 | `wallet` | `subsystems.economy.commands.wallet` | Configured `currencies` balances from `wg_wallet_<id>` cvars |
-| `location` | `subsystems.travel.commands.location` | Character `wg_location`, resolved through `world_data.locations` when possible |
+| `location` | `subsystems.travel.commands.location` | Character `wg_location`, resolved through the configured location source when possible |
 | `time` | `subsystems.travel.commands.time` | Configured world calendar time |
 | `weather` | `subsystems.travel.commands.weather` | Configured regional weather |
 

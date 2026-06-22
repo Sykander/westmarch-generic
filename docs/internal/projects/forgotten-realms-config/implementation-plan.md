@@ -13,7 +13,7 @@ Slices 0-5 are implemented.
 - Slice 2 transport catalogue: `world_data.transport` plus generic `!travel <transport-id>` runtime support.
 - Slice 3 location atlas: Sword Coast/North locations with Waterdeep as the default.
 - Slice 4 biome registry: existing engine preset biomes are wired through `world_data.biomes`.
-- Slice 5 path graph: directed land, river, and sea starter routes are seeded in `world_data.paths`.
+- Slice 5 path graph: directed land, river, and sea starter routes are seeded in the paths JSON gvar referenced by `world_data.paths_gvar_id`.
 - Remaining work starts with shops and service data.
 
 ## Phase 0 - Baseline audit
@@ -183,7 +183,7 @@ Acceptance:
 
 ## Phase 5 - Path graph
 
-Build `world_data.paths` as directed route edges.
+Build the paths JSON gvar as directed route edges.
 
 Implementation order:
 

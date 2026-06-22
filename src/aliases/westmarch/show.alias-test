@@ -59,6 +59,25 @@ vars:
           },
       }
 
+!show data
+---
+"re:```yaml[\\s\\S]*locations: 2[\\s\\S]*paths: 1[\\s\\S]*locations_gvar_id: ffff2424[\\s\\S]*paths_gvar_id: ffff2525"
+---
+name: show data counts external location and path gvars
+vars:
+  svars:
+    westmarch_config: "ffff2323-2323-2323-2323-232323232323"
+  gvars:
+    ffff2323-2323-2323-2323-232323232323: |
+      world_data = {
+          "locations_gvar_id": "ffff2424-2424-2424-2424-242424242424",
+          "paths_gvar_id": "ffff2525-2525-2525-2525-252525252525",
+      }
+    ffff2424-2424-2424-2424-242424242424: |
+      {"river_town":{"name":"River Town"},"oakwood":{"name":"Oakwood Forest"}}
+    ffff2525-2525-2525-2525-252525252525: |
+      [{"from":"river_town","to":"oakwood","steps":[{"type":"proceed","description":"Follow the road."}]}]
+
 !show wiring
 ---
 "re:ffff1111-1111-1111-1111-111111111111[\\s\\S]*\\[Westmarch config editor\\]\\(https://sykander.github.io/westmarch-generic/\\?westmarch_config=ffff1111-1111-1111-1111-111111111111\\)[\\s\\S]*\\[Avrae gvar dashboard\\]\\(https://avrae.io/dashboard/gvars\\?lookup=ffff1111-1111-1111-1111-111111111111\\)"

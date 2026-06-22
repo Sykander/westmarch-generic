@@ -2909,6 +2909,20 @@ function WorldView({
           onChange={(value) => updateConfig('world_data.default_location', value || undefined)}
           help="Used by travel/location commands when no character location is known."
         />
+        <TextField
+          label="Locations gvar id"
+          value={String(config.world_data.locations_gvar_id ?? '')}
+          onChange={(value) =>
+            updateConfig('world_data.locations_gvar_id', value.trim() || undefined)
+          }
+          help="Optional JSON gvar containing the large locations map."
+        />
+        <TextField
+          label="Paths gvar id"
+          value={String(config.world_data.paths_gvar_id ?? '')}
+          onChange={(value) => updateConfig('world_data.paths_gvar_id', value.trim() || undefined)}
+          help="Optional JSON gvar containing the large paths list."
+        />
       </div>
       <CalendarEditor calendars={calendars} updateConfig={updateConfig} />
       <WeatherAreaEditor

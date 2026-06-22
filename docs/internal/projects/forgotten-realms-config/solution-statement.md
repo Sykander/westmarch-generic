@@ -64,8 +64,8 @@ Use these config placements:
 
 | Data | Config path |
 |------|-------------|
-| Locations and named regions | `world_data.locations` |
-| Route graph | `world_data.paths` |
+| Locations and named regions | `world_data.locations_gvar_id` → `forgotten_realms_2014_locations.gvar.json` |
+| Route graph | `world_data.paths_gvar_id` → `forgotten_realms_2014_paths.gvar.json` |
 | Transport modes | `world_data.transport` |
 | Biome registry | `world_data.biomes` |
 | Calendar data | `world_data.calendars` |
@@ -73,7 +73,7 @@ Use these config placements:
 | Shops/vendors/services | top-level `shops` |
 | Books/libraries | top-level `books`, `world_data.books`, or future book gvar ids |
 | Job tuning | `subsystems.economy.command_config.job` |
-| Location job availability | `world_data.locations.<id>.commands.job = True` |
+| Location job availability | location entry `<id>.commands.job = True` |
 
 Current `!job` is skill-based, not named-job-based. The starter can list plausible local jobs in descriptions and location encounter prose, but it should not invent a new `jobs` schema until the economy command supports it.
 

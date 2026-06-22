@@ -1500,6 +1500,27 @@ function validateWorld(model: ConfigModel, issues: ConfigIssue[]) {
   const calendars = asRecord(model.world_data.calendars);
   const weatherAreas = weatherAreasFromWorldData(model.world_data);
 
+  for (const [key, label] of [
+    ['locations_gvar_id', 'Locations'],
+    ['paths_gvar_id', 'Paths'],
+  ] as const) {
+    const value = model.world_data[key];
+    if (value == null || String(value).trim() === '') continue;
+    if (!GVAR_ID_RE.test(String(value).trim())) {
+      issues.push(
+        issue(
+          'error',
+          `world.${key}.invalid`,
+          'World',
+          `world_data.${key}`,
+          `${label} gvar id is invalid`,
+          `${label} gvar ids must be Avrae workshop UUIDs.`,
+          'Paste a UUID from the Avrae gvar dashboard.',
+        ),
+      );
+    }
+  }
+
   for (const [code, value] of Object.entries(biomes)) {
     const biome = asRecord(value);
     const gvarId = biome.gvar_id;
@@ -1851,6 +1872,8 @@ function validateTravel(model: ConfigModel, issues: ConfigIssue[]) {
   const travelCommandOn = commands.travel === true;
   const implementedTravelOn = locationCommandOn || travelCommandOn;
   const locations = asRecord(model.world_data.locations);
+  const hasLocationGvar = String(model.world_data.locations_gvar_id ?? '').trim() !== '';
+  const hasLocationSource = Object.keys(locations).length > 0 || hasLocationGvar;
   const defaultLocation = model.world_data.default_location;
   const calendars = asRecord(model.world_data.calendars);
   const weatherAreas = weatherAreasFromWorldData(model.world_data);
@@ -1868,7 +1891,7 @@ function validateTravel(model: ConfigModel, issues: ConfigIssue[]) {
       ),
     );
   }
-  if (implementedTravelOn && Object.keys(locations).length === 0) {
+  if (implementedTravelOn && !hasLocationSource) {
     issues.push(
       issue(
         'error',

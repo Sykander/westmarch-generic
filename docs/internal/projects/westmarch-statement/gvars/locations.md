@@ -2,7 +2,7 @@
 
 **Path:** `src/gvars/utils/world/locations.gvar` · **Phase:** 1 (Tier C)
 
-Look up [locations](../data-shapes.md#location) from **`world_data.locations`**. Config owns **`world_data`**; this module owns resolution and display.
+Look up [locations](../data-shapes.md#location) from inline **`world_data.locations`** and optional external **`world_data.locations_gvar_id`** JSON. Config owns **`world_data`**; this module owns resolution, lazy loading, and display.
 
 ## API
 
@@ -18,6 +18,9 @@ def search_locations(config, query):
 
 def get_default_location(config):
     """Return location dict for world_data.default_location id, or None."""
+
+def list_location_ids(config):
+    """Sorted ids from inline locations plus the optional locations gvar."""
 
 def display_location(location, mode="full", character=None, include_activities=False):
     """
@@ -45,9 +48,11 @@ text = locations.display_location(loc, mode="full", character=character, include
 
 ## Lookup rules
 
-1. **`get_location(config, location_id)`** — `config.locations.get(location_id)` (after loader merge); inject **`id`** on the returned dict if missing.
+1. **`get_location(config, location_id)`** — read from **`world_data.locations_gvar_id`** first, merge inline **`world_data.locations`** over it, then inject **`id`** on the returned dict if missing.
 2. **`search_locations(config, query)`** — exact id match first; else filter `location.name` containing `query` (case-insensitive). Port `areas.search_for_area()` behaviour.
 3. **`get_default_location(config)`** — `get_location(config, config.world_data.default_location)`.
+
+External location gvars are raw JSON objects keyed by location id. A wrapper object with **`{"locations": {...}}`** is also accepted.
 
 Aliases pass **player input** through **`search_locations`**; engine internals use **ids** (paths, cvars keyed by id — TBD in journeys port).
 
@@ -62,7 +67,7 @@ Aliases pass **player input** through **`search_locations`**; engine internals u
 
 | westmarch | Generic |
 |-----------|---------|
-| `areas.gvar` data | Config `locations` |
+| `areas.gvar` data | Config **`world_data.locations`** or **`world_data.locations_gvar_id`** |
 | `areas.search_for_area(name)` | `search_locations(config, query)` |
 | `describe_location()` in alias | `display_location(...)` |
 

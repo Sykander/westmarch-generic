@@ -74,7 +74,7 @@ Effective mode comes from **`enc_biome_source`** ([data-shapes § exploration.co
 
 - **`subsystems.travel.enabled`**
 - **`travel.commands.location`** on
-- **`world_data.locations`** non-empty
+- **`world_data.locations`** non-empty or **`world_data.locations_gvar_id`** set
 - Character has resolvable location (via **`journeys.gvar`**)
 
 Otherwise use **manual** — first positional arg must be a registered biome code.
@@ -82,7 +82,7 @@ Otherwise use **manual** — first positional arg must be a registered biome cod
 **Inferred path:**
 
 1. Character location id → **`journeys.get_location(character)`** (or equivalent)
-2. **`world_data.locations[id]`** → **`activities[activity]`** first entry, else **`location.biome`**
+2. Resolved location entry → **`activities[activity]`** first entry, else **`location.biome`**
 3. Validate code exists in **`world_data.biomes`**
 
 **Manual path:**

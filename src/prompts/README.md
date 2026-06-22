@@ -40,7 +40,7 @@ Templates: [`_templates/`](_templates/) · Shared snippets: [`_shared/`](_shared
 1. Open the **`.prompt.md`** for the asset; fill `[PASTE …]` placeholders.
 2. Copy **whole file** → ChatGPT.
 3. Validate with matching **`.md`** checklist.
-4. Paste output → Cursor for integration into `forgotten_realms_2014.gvar` (or your preset).
+4. Paste output → Cursor for integration into the preset config or its split data gvars.
 5. **`expand-batch`** or **`revision`** templates for follow-ups.
 
 **One asset type per chat.** Do not ask for engine code or subsystem toggles in these prompts.
