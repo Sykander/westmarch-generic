@@ -28,6 +28,32 @@ True
 ---
 name: get_edges_from filters transport requirements
 
+cfg_fixture = {
+    "world_data": {
+        "transport": {
+            "riding_horse": {"name": "Riding horse", "aliases": ["horse"]},
+        },
+        "locations": {
+            "river_town": {"name": "River Town"},
+            "oakwood": {"name": "Oakwood Forest"},
+        },
+        "paths": [
+            {
+                "from": "river_town",
+                "to": "oakwood",
+                "steps": [{"type": "proceed", "description": "Follow the horse road."}],
+                "requirements": {"transport": "horse"},
+            },
+        ],
+    },
+}
+edges = paths.get_edges_from(cfg_fixture, "river_town", "riding_horse")
+return len(edges) == 1 and paths.get_path_steps(edges[0], "riding_horse")[0]["description"] == "Follow the horse road."
+---
+True
+---
+name: get_edges_from matches configured transport aliases
+
 path = {"from": "river_town", "to": "oakwood", "encs": ["forest", "forest"], "horse": ["road"]}
 walk_steps = paths.get_path_steps(path, "walk")
 horse_steps = paths.get_path_steps(path, "horse")

@@ -40,6 +40,25 @@ vars:
     ffff1111-1111-1111-1111-111111111111: |
       # empty owner body
 
+!show data
+---
+"re:```yaml[\\s\\S]*locations: 1[\\s\\S]*paths: 0[\\s\\S]*transport: 2"
+---
+name: show data includes transport count
+vars:
+  svars:
+    westmarch_config: "ffff1212-1212-1212-1212-121212121212"
+  gvars:
+    ffff1212-1212-1212-1212-121212121212: |
+      world_data = {
+          "locations": {"river_town": {"name": "River Town"}},
+          "paths": [],
+          "transport": {
+              "walk": {"name": "On foot", "default": True},
+              "riding_horse": {"name": "Riding horse", "aliases": ["horse"]},
+          },
+      }
+
 !show wiring
 ---
 "re:ffff1111-1111-1111-1111-111111111111[\\s\\S]*\\[Westmarch config editor\\]\\(https://sykander.github.io/westmarch-generic/\\?westmarch_config=ffff1111-1111-1111-1111-111111111111\\)[\\s\\S]*\\[Avrae gvar dashboard\\]\\(https://avrae.io/dashboard/gvars\\?lookup=ffff1111-1111-1111-1111-111111111111\\)"

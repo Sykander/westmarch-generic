@@ -79,6 +79,7 @@ def _read_field(obj, key):
         "world_data": lambda o: o.world_data,
         "locations": lambda o: o.locations,
         "paths": lambda o: o.paths,
+        "transport": lambda o: o.transport,
         "biomes": lambda o: o.biomes,
         "currencies": lambda o: o.currencies,
         "gvar_id": lambda o: o.gvar_id,
@@ -262,6 +263,7 @@ def _world_summary(cfg):
     lines = []
     lines.append(f"locations: {_count_dict(_read_field(wd, 'locations'))}")
     lines.append(f"paths: {_path_count(wd)}")
+    lines.append(f"transport: {_count_dict(_read_field(wd, 'transport'))}")
     lines.append(f"biomes: {_count_dict(_read_field(wd, 'biomes'))}")
     lines.append(f"currencies: {_count_dict(_read_field(cfg, 'currencies'))}")
     return _codeblock("yaml", lines)

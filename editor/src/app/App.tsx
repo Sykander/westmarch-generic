@@ -2879,6 +2879,7 @@ function WorldView({
 }) {
   const locations = asRecord(config.world_data.locations);
   const paths = Array.isArray(config.world_data.paths) ? config.world_data.paths : [];
+  const transport = asRecord(config.world_data.transport);
   const biomeOptions = Object.keys(asRecord(config.world_data.biomes)).sort();
   const calendars = asRecord(config.world_data.calendars);
   const calendarIds = Object.keys(calendars).sort();
@@ -2924,9 +2925,11 @@ function WorldView({
         relatedGvars={relatedGvars}
         updateRelatedGvarSource={updateRelatedGvarSource}
       />
+      <TransportEditor transport={transport} updateConfig={updateConfig} />
       <PathBuilder
         paths={paths}
         locations={locations}
+        transportIds={Object.keys(transport).sort()}
         biomeOptions={biomeOptions}
         updateConfig={updateConfig}
       />
@@ -2969,6 +2972,11 @@ function WorldView({
           label="Weather JSON"
           value={config.world_data.weather ?? {}}
           onCommit={(value) => updateConfig('world_data.weather', value)}
+        />
+        <JsonField
+          label="Transport JSON"
+          value={config.world_data.transport ?? {}}
+          onCommit={(value) => updateConfig('world_data.transport', value)}
         />
         <JsonField
           label="Paths JSON"
@@ -3934,14 +3942,172 @@ function WeatherAreaFields({
   );
 }
 
+function TransportEditor({
+  transport,
+  updateConfig,
+}: {
+  transport: AnyRecord;
+  updateConfig: (path: string, value: unknown) => void;
+}) {
+  const [newTransportId, setNewTransportId] = useState('riding_horse');
+
+  function addTransport() {
+    const id = slugValue(newTransportId);
+    if (!id) return;
+    updateConfig('world_data.transport', {
+      ...transport,
+      [id]: {
+        name: titleFromSlug(id),
+        category: 'land',
+        terrain: ['road'],
+      },
+    });
+  }
+
+  function updateTransport(id: string, value: AnyRecord) {
+    updateConfig('world_data.transport', { ...transport, [id]: value });
+  }
+
+  function removeTransport(id: string) {
+    updateConfig(
+      'world_data.transport',
+      Object.fromEntries(Object.entries(transport).filter(([key]) => key !== id)),
+    );
+  }
+
+  return (
+    <section className="world-editor">
+      <div className="collection-editor-head">
+        <h3>Transport</h3>
+        <div className="inline-add">
+          <input
+            value={newTransportId}
+            onChange={(event) => setNewTransportId(event.target.value)}
+            placeholder="riding_horse"
+            aria-label="New transport id"
+          />
+          <button type="button" onClick={addTransport}>
+            <Save size={16} aria-hidden="true" />
+            Add Transport
+          </button>
+        </div>
+      </div>
+      <div className="collection-list">
+        {Object.entries(transport).map(([id, value], index) => {
+          const entry = asRecord(value);
+          return (
+            <details className="collection-item" open={index === 0} key={id}>
+              <summary className="collection-item-head">
+                <div>
+                  <strong>{String(entry.name ?? titleFromSlug(id))}</strong>
+                  <span>{id}</span>
+                </div>
+                <button
+                  type="button"
+                  className="field-action-button"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    removeTransport(id);
+                  }}
+                  aria-label={`Remove ${id}`}
+                  title="Remove transport"
+                >
+                  <X size={16} aria-hidden="true" />
+                </button>
+              </summary>
+              <TransportFields
+                id={id}
+                transport={entry}
+                onChange={(next) => updateTransport(id, next)}
+              />
+            </details>
+          );
+        })}
+        {Object.keys(transport).length === 0 ? (
+          <p className="collection-empty">
+            No transport modes yet. Add one to use route transport requirements.
+          </p>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+function TransportFields({
+  id,
+  transport,
+  onChange,
+}: {
+  id: string;
+  transport: AnyRecord;
+  onChange: (transport: AnyRecord) => void;
+}) {
+  function updateField(key: string, value: unknown) {
+    const nextValue = Array.isArray(value) && value.length === 0 ? undefined : value;
+    onChange({ ...transport, [key]: nextValue === '' ? undefined : nextValue });
+  }
+
+  return (
+    <div className="form-grid compact">
+      <TextField
+        label="Name"
+        value={String(transport.name ?? titleFromSlug(id))}
+        onChange={(value) => updateField('name', value)}
+        help="Player-facing transport name."
+      />
+      <TextField
+        label="Category"
+        value={String(transport.category ?? '')}
+        onChange={(value) => updateField('category', value)}
+        help="Optional grouping such as land, mount, vehicle, water, or special."
+      />
+      <label className="switch-line">
+        <input
+          type="checkbox"
+          checked={transport.default === true}
+          onChange={(event) => updateField('default', event.target.checked || undefined)}
+        />
+        <span>Default transport</span>
+      </label>
+      <CsvTextField
+        label="Aliases"
+        value={transport.aliases}
+        onChange={(value) => updateField('aliases', value)}
+        help="Comma-separated ids or names accepted as route flags."
+      />
+      <CsvTextField
+        label="Terrain"
+        value={transport.terrain}
+        onChange={(value) => updateField('terrain', value)}
+        help="Comma-separated terrain notes for route authoring."
+      />
+      <label className="field span-2">
+        <span>
+          Description
+          <HelpTip label="Transport description help">
+            Optional owner-facing note for where this mode should be used.
+          </HelpTip>
+        </span>
+        <textarea
+          value={String(transport.description ?? '')}
+          onChange={(event) => updateField('description', event.target.value)}
+          rows={3}
+        />
+      </label>
+    </div>
+  );
+}
+
 function PathBuilder({
   paths,
   locations,
+  transportIds,
   biomeOptions,
   updateConfig,
 }: {
   paths: unknown[];
   locations: AnyRecord;
+  transportIds: string[];
   biomeOptions: string[];
   updateConfig: (path: string, value: unknown) => void;
 }) {
@@ -4010,6 +4176,7 @@ function PathBuilder({
               <PathFields
                 path={record}
                 locationIds={locationIds}
+                transportIds={transportIds}
                 biomeOptions={biomeOptions}
                 onChange={(next) => updatePathItem(index, next)}
               />
@@ -4027,11 +4194,13 @@ function PathBuilder({
 function PathFields({
   path,
   locationIds,
+  transportIds,
   biomeOptions,
   onChange,
 }: {
   path: AnyRecord;
   locationIds: string[];
+  transportIds: string[];
   biomeOptions: string[];
   onChange: (path: AnyRecord) => void;
 }) {
@@ -4079,7 +4248,11 @@ function PathFields({
             transport: csvToSingleOrArray(value),
           })
         }
-        help="Transport id or ids required for this path."
+        help={
+          transportIds.length > 0
+            ? `Configured transport ids: ${transportIds.join(', ')}.`
+            : 'Transport id or ids required for this path.'
+        }
       />
       <TextField
         label="Gold cost"

@@ -25,7 +25,7 @@ export const SECTION_DESCRIPTIONS: Record<Section, string> = {
   subsystems: 'Choose command families, command toggles, subsystem config, and display overrides.',
   policies:
     'Tune table-wide repeat, downtime, resource, item output, footer, and player setup behavior.',
-  world: 'Configure locations, paths, and world-level travel data.',
+  world: 'Configure locations, transport, paths, and world-level travel data.',
   biomes: 'Wire biome presets, custom biome gvars, encounter rows, and custom templates.',
   check: 'Review browser validation before exporting or publishing.',
   export: 'Copy, download, or publish the generated gvar contents.',

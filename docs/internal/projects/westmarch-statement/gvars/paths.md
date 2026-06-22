@@ -25,7 +25,7 @@ def get_path_cost(path, transport_id="walk"):
 def get_path_steps(path):
     """Step list for this path — always path.steps (see default proceed below)."""
 
-def display_path(path, config, mode="short", horse=False, boat=False, prefix="!"):
+def display_path(path, config, mode="short", transport_id="walk", prefix="!"):
     """One leg — markdown string (linked names via [locations.md](locations.md))."""
 ```
 
@@ -66,7 +66,7 @@ using(paths = env.gvars.paths, journeys = env.gvars.journeys)
 
 edge = paths.get_edge(cfg, "oakwood", "oakwood_east", transport_id="horse")
 steps = paths.get_path_steps(edge)
-found, legs = journeys.find_journey(cfg, from_id, to_id, horse=horse, boat=boat)
+found, legs = journeys.find_journey(cfg, from_id, to_id, transport_id="riding_horse")
 ```
 
 ## Not in this module

@@ -39,7 +39,7 @@ Clears your active journey.
 `{ctx.prefix}travel set <location> yes`
 Sets your current location and clears journey progress.
 
-Optional route flags: `horse`, `boat`.
+Optional route flags: any configured transport id, such as `riding_horse`, `boat`, or `ship`. Legacy `horse` still works when configured as an id or alias.
 """
 
 if len(argslist) > 0 and argslist[0] in ["help", "?"]:
@@ -51,6 +51,7 @@ except:
     return get_embed(desc="Select a character first.")
 
 cfg = config.get_config()
+CONTROL_TOKENS = ["track", "journey", "yes"]
 
 
 def has_token(token):
@@ -62,14 +63,57 @@ def has_token(token):
 
 
 def destination_text(start_index=0):
-    ignored = ["track", "journey", "horse", "boat", "yes"]
     parts = []
     for arg in argslist[start_index:]:
         text = str(arg).strip()
-        if text.lower() in ignored:
+        if text.lower() in CONTROL_TOKENS:
             continue
         parts.append(text)
     return " ".join(parts).strip()
+
+
+def transport_error(query, matches):
+    if len(matches) == 0:
+        return f"Unknown transport **{query}**."
+    return f"Be more specific: **{query}** matched transports {journeys.format_transport_matches(matches)}."
+
+
+def split_route_query(start_index=0):
+    parts = []
+    selected_transport = None
+    for arg in argslist[start_index:]:
+        text = str(arg).strip()
+        if text == "":
+            continue
+        if text.lower() in CONTROL_TOKENS:
+            continue
+        matches = journeys.search_transport_exact(cfg, text)
+        if len(matches) == 1:
+            selected_transport = journeys.get_transport_id(matches[0])
+            continue
+        if len(matches) > 1:
+            return "", None, transport_error(text, matches), []
+        parts.append(text)
+    return " ".join(parts).strip(), selected_transport, None, parts
+
+
+def resolve_route_destination(start_index=0):
+    query, selected_transport, err_msg, parts = split_route_query(start_index)
+    if err_msg != None:
+        return None, None, err_msg
+    dest, dest_err = resolve_destination(query)
+    if dest_err == None:
+        return dest, selected_transport, None
+    if selected_transport == None and len(parts) > 1:
+        maybe_transport = parts[len(parts) - 1]
+        prefix_query = " ".join(parts[:len(parts) - 1]).strip()
+        prefix_dest, prefix_err = resolve_destination(prefix_query)
+        if prefix_err == None:
+            matches = journeys.search_transport(cfg, maybe_transport)
+            if len(matches) != 1:
+                return None, None, transport_error(maybe_transport, matches)
+            return prefix_dest, journeys.get_transport_id(matches[0]), None
+    return None, None, dest_err
 
 
 def current_location_or_error():
@@ -147,8 +191,7 @@ current_id, current_loc, err_msg = current_location_or_error()
 if err_msg != None:
     return get_embed(desc=err_msg)
 
-query = destination_text(0)
-dest, err_msg = resolve_destination(query)
+dest, selected_transport, err_msg = resolve_route_destination(0)
 if err_msg != None:
     return get_embed(desc=err_msg, image=locations.location_image(current_loc))
 
@@ -156,26 +199,23 @@ dest_id = locations.location_id(dest)
 if current_id == dest_id:
     return get_embed(desc=f"You are already in **{locations.location_name(dest)}**.", image=locations.location_image(current_loc))
 
-using_horse = has_token("horse")
-using_boat = has_token("boat")
-found, route = journeys.find_journey(cfg, current_id, dest_id, using_horse, using_boat)
+found, route = journeys.find_journey(cfg, current_id, dest_id, transport_id=selected_transport)
 if not found:
     return get_embed(
         desc=f"Could not find a route from **{locations.location_name(current_loc)}** to **{locations.location_name(dest)}**.",
         image=locations.location_image(current_loc),
     )
 
-journey = journeys.build_journey(cfg, current_id, dest_id, route, using_horse, using_boat)
+journey = journeys.build_journey(cfg, current_id, dest_id, route, transport_id=selected_transport)
 messages = []
 if has_token("track") or has_token("journey"):
     journeys.set_journey(ch, journey)
     messages.append("The journey is now being tracked.")
 else:
     suffix = ""
-    if using_horse:
-        suffix += " horse"
-    if using_boat:
-        suffix += " boat"
+    default_transport = journeys.resolve_transport_id(cfg)
+    if selected_transport != None and selected_transport != default_transport:
+        suffix = f" {selected_transport}"
     messages.append(f"To track this journey, run `{ctx.prefix}travel \"{locations.location_name(dest)}\"{suffix} track`.")
 
 desc = location_description(current_id, current_loc, True)

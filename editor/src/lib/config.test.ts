@@ -50,7 +50,7 @@ test('editor starter sources parse cleanly', () => {
   }
 });
 
-test('forgotten realms starter has slice 1 travel baseline', () => {
+test('forgotten realms starter has slice 3 travel baseline', () => {
   const starterSource = STARTER_SOURCES.find((source) => source.id === 'forgotten-realms-2014');
   assert.ok(starterSource);
 
@@ -82,10 +82,23 @@ test('forgotten realms starter has slice 1 travel baseline', () => {
   assert.ok(
     ((worldData.weather as Record<string, unknown>).by_area as Record<string, unknown>).coast,
   );
+  assert.ok((worldData.locations as Record<string, unknown>).neverwinter);
+  assert.ok((worldData.locations as Record<string, unknown>).long_road);
+  assert.ok((worldData.locations as Record<string, unknown>).high_forest);
+  assert.ok((worldData.locations as Record<string, unknown>).sea_of_swords);
+  assert.ok(Object.keys(worldData.locations as Record<string, unknown>).length > 70);
+
+  const transport = worldData.transport as Record<string, Record<string, unknown>>;
+  assert.equal(transport.walk.default, true);
+  assert.ok(transport.riding_horse);
+  assert.ok((transport.riding_horse.aliases as string[]).includes('horse'));
+  assert.ok(transport.ship);
+  assert.ok(transport.teleport_circle);
 
   const codes = issues.map((entry) => entry.code);
   assert.equal(codes.includes('world.calendars.empty'), false);
   assert.equal(codes.includes('world.weather.empty'), false);
+  assert.equal(codes.includes('world.path.transport_unknown'), false);
 
   const serialized = serializeConfig(model);
   const serializedParsed = parseConfig(serialized);
@@ -257,6 +270,60 @@ world_data = {
 }
 `).includes('world.path.endpoint_unknown'),
   );
+});
+
+test('travel path transport requirements must match configured transport', () => {
+  const unknownCodes = issueCodes(`
+subsystems = {
+    "travel": {
+        "enabled": True,
+        "commands": {"travel": True, "location": True},
+    },
+}
+
+world_data = {
+    "default_location": "river_town",
+    "transport": {
+        "walk": {"name": "On foot", "default": True},
+        "riding_horse": {"name": "Riding horse", "aliases": ["horse"]},
+    },
+    "locations": {
+        "river_town": {"name": "River Town"},
+        "oakwood": {"name": "Oakwood Forest"},
+    },
+    "paths": [
+        {"from": "river_town", "to": "oakwood", "requirements": {"transport": "griffon"}, "steps": [{"type": "encounter", "biome": "forest"}]},
+    ],
+}
+`);
+
+  assert.ok(unknownCodes.includes('world.path.transport_unknown'));
+
+  const aliasCodes = issueCodes(`
+subsystems = {
+    "travel": {
+        "enabled": True,
+        "commands": {"travel": True, "location": True},
+    },
+}
+
+world_data = {
+    "default_location": "river_town",
+    "transport": {
+        "walk": {"name": "On foot", "default": True},
+        "riding_horse": {"name": "Riding horse", "aliases": ["horse"]},
+    },
+    "locations": {
+        "river_town": {"name": "River Town"},
+        "oakwood": {"name": "Oakwood Forest"},
+    },
+    "paths": [
+        {"from": "river_town", "to": "oakwood", "requirements": {"transport": "horse"}, "steps": [{"type": "encounter", "biome": "forest"}]},
+    ],
+}
+`);
+
+  assert.equal(aliasCodes.includes('world.path.transport_unknown'), false);
 });
 
 test('time and weather commands require configured world data', () => {

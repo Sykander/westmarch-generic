@@ -6,11 +6,13 @@ This plan follows the solution statement and keeps work split into reviewable sl
 
 ## Status
 
-Slices 0-1 are implemented.
+Slices 0-3 are implemented.
 
 - Slice 0 audit: [baseline-audit.md](baseline-audit.md)
 - Slice 1 preset identity/defaults: `src/gvars/configs/forgotten_realms_2014.gvar`
-- Remaining work starts with the transport catalogue and generic `!travel <transport-id>` runtime support.
+- Slice 2 transport catalogue: `world_data.transport` plus generic `!travel <transport-id>` runtime support.
+- Slice 3 location atlas: Sword Coast/North locations with Waterdeep as the default.
+- Remaining work starts with the biome registry/path graph follow-up slices.
 
 ## Phase 0 - Baseline audit
 
@@ -103,7 +105,7 @@ Acceptance:
 
 - `world_data.transport.walk.default` or equivalent default behavior is clear.
 - Every transport id used by `world_data.paths.*.requirements.transport` exists in `world_data.transport`.
-- `!travel` is planned to treat every `world_data.transport` id as a valid route flag.
+- `!travel` treats every configured `world_data.transport` id or alias as a valid route flag.
 
 Runtime requirement:
 

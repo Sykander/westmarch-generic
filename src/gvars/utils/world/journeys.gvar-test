@@ -53,6 +53,35 @@ name: find_journey chooses cheaper multi-leg path
 
 cfg_fixture = {
     "world_data": {
+        "transport": {
+            "walk": {"name": "On foot", "default": True},
+            "riding_horse": {"name": "Riding horse", "aliases": ["horse"]},
+        },
+        "locations": {
+            "river_town": {"name": "River Town"},
+            "oakwood": {"name": "Oakwood Forest"},
+        },
+        "paths": [
+            {
+                "from": "river_town",
+                "to": "oakwood",
+                "steps": [{"type": "proceed", "description": "Ride the old road."}],
+                "requirements": {"transport": "riding_horse"},
+            },
+        ],
+    },
+}
+matches = journeys.search_transport(cfg_fixture, "horse")
+found, legs = journeys.find_journey(cfg_fixture, "river_town", "oakwood", transport_id="horse")
+journey = journeys.build_journey(cfg_fixture, "river_town", "oakwood", legs, transport_id="horse")
+return len(matches) == 1 and journeys.get_transport_id(matches[0]) == "riding_horse" and found and journey["transport"] == "riding_horse"
+---
+True
+---
+name: generic transport aliases resolve to canonical journey transport
+
+cfg_fixture = {
+    "world_data": {
         "locations": {
             "river_town": {"name": "River Town"},
             "oakwood": {"name": "Oakwood Forest"},

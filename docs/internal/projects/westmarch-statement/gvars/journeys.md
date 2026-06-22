@@ -9,14 +9,14 @@ Character **travel state** (location, active journey, visit counts) and **route 
 ### Routing *(uses [paths.md](paths.md) for edge lookup and cost)*
 
 ```py
-def find_journey(config, from_id, to_id, horse=False, boat=False):
+def find_journey(config, from_id, to_id, horse=False, boat=False, transport_id=None):
     """
     Shortest route between location ids (Dijkstra over config paths).
     Returns (found: bool, legs: list[path_dict]).
     """
 
 def display_journey(config, legs, mode="detailed", horse=False, boat=False, prefix="!",
-                    progress=None):
+                    progress=None, transport_id=None):
     """Multi-leg route embed text; progress = { path_index, step_index } for strikethrough."""
 ```
 
@@ -30,7 +30,7 @@ def set_location(ch, location_dict):
     """Update current location cvar."""
 
 def get_journey(ch):
-    """Active journey — { from, to, paths, path_index, step_index, horse, boat, … } or empty."""
+    """Active journey — { from, to, transport, paths, path_index, step_index, … } or empty."""
 
 def set_journey(ch, journey_dict):
     """Persist journey cvar."""
@@ -63,8 +63,10 @@ Endpoints must be config **`locations`** ids — resolve display names with [loc
 ```py
 using(paths = env.gvars.paths, journeys = env.gvars.journeys)
 
-found, legs = journeys.find_journey(cfg, "river_town", "oakwood", horse=True)
+found, legs = journeys.find_journey(cfg, "river_town", "oakwood", transport_id="riding_horse")
 ```
+
+Transport ids resolve through `world_data.transport` by exact id first, then configured name or alias where practical. Legacy `horse` and `boat` flags remain supported for imported configs, but new journeys store the selected canonical `transport` id.
 
 ## Journey lifecycle
 

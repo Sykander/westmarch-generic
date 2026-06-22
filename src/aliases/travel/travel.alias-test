@@ -85,6 +85,64 @@ vars:
           ],
       }
 
+!travel Oakwood horse
+---
+re:Oakwood Forest[\s\S]*Ride the old road[\s\S]*riding_horse track
+---
+name: route preview accepts configured transport alias
+vars:
+  svars:
+    westmarch_config: "aaaa2002-2002-2002-2002-200000000022"
+  gvars:
+    aaaa2002-2002-2002-2002-200000000022: |
+      subsystems = {
+          "travel": {
+              "enabled": True,
+              "commands": {"travel": True, "location": True},
+              "config": {"transport_icons": {"walk": "W", "horse": "H", "riding_horse": "R", "fly": "F", "boat": "B"}},
+          },
+      }
+      world_data = {
+          "default_location": "river_town",
+          "transport": {
+              "walk": {"name": "On foot", "default": True},
+              "riding_horse": {"name": "Riding horse", "aliases": ["horse"]},
+          },
+          "locations": {
+              "river_town": {"name": "River Town"},
+              "oakwood": {"name": "Oakwood Forest"},
+          },
+          "paths": [
+              {"from": "river_town", "to": "oakwood", "requirements": {"transport": "riding_horse"}, "steps": [{"type": "proceed", "description": "Ride the old road."}]},
+          ],
+      }
+
+!travel Oakwood unicorn
+---
+re:Unknown transport \*\*unicorn\*\*
+---
+name: trailing unknown transport is reported clearly
+vars:
+  svars:
+    westmarch_config: "aaaa2002-2002-2002-2002-200000000023"
+  gvars:
+    aaaa2002-2002-2002-2002-200000000023: |
+      subsystems = {
+          "travel": {"enabled": True, "commands": {"travel": True, "location": True}},
+      }
+      world_data = {
+          "default_location": "river_town",
+          "transport": {
+              "walk": {"name": "On foot", "default": True},
+              "riding_horse": {"name": "Riding horse", "aliases": ["horse"]},
+          },
+          "locations": {
+              "river_town": {"name": "River Town"},
+              "oakwood": {"name": "Oakwood Forest"},
+          },
+          "paths": [],
+      }
+
 !travel Oakwood
 ---
 "re:Run `!enc`[\\s\\S]*Encounter step has no biome"

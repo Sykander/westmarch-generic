@@ -571,7 +571,7 @@ world_data = {
 | **list of strings** | Any listed mode satisfies the requirement |
 | **omitted** | Any transport mode may use the path (subject to **`transport.default`**) |
 
-**`journeys.gvar`** resolves active transport from character cvar (TBD in port) or journey start flags, then considers only paths whose **`requirements`** match.
+**`journeys.gvar`** resolves active transport from the active journey's canonical `transport` id or legacy journey flags, then considers only paths whose **`requirements`** match.
 
 westmarch **`path.horse`** / **`path.boat`** parallel lists → **separate path dicts** with **`requirements.transport`** and that mode’s **`steps`** — not nested variants on one path.
 

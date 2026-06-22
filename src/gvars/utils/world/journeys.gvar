@@ -31,12 +31,15 @@ def _read_field(obj, key):
         "locations": lambda o: o.locations,
         "id": lambda o: o.id,
         "name": lambda o: o.name,
+        "aliases": lambda o: o.aliases,
+        "default": lambda o: o.default,
         "from": lambda o: o["from"],
         "to": lambda o: o.to,
         "paths": lambda o: o.paths,
         "title": lambda o: o.title,
         "path_index": lambda o: o.path_index,
         "step_index": lambda o: o.step_index,
+        "transport": lambda o: o.transport,
         "horse": lambda o: o.horse,
         "boat": lambda o: o.boat,
         "type": lambda o: o.type,
@@ -76,12 +79,184 @@ def _normalize_token(value):
     return text
 
 
-def _transport_id(horse=False, boat=False):
+def _world_data(cfg):
+    return _read_field(cfg, "world_data")
+
+
+def _fallback_transport_map():
+    return {
+        "walk": {"id": "walk", "name": "On foot", "default": True},
+        "horse": {"id": "horse", "name": "Horse"},
+        "boat": {"id": "boat", "name": "Boat"},
+        "fly": {"id": "fly", "name": "Flight"},
+    }
+
+
+def _transport_map(cfg):
+    raw = _read_field(_world_data(cfg), "transport")
+    if raw != None and dicts.is_dict(raw) and len(raw) > 0:
+        return raw
+    return _fallback_transport_map()
+
+
+def _copy_transport(transport, transport_id):
+    out = {}
+    if transport != None and dicts.is_dict(transport):
+        for key in transport:
+            out[key] = transport[key]
+    if _read_field(out, "id") == None and transport_id != None:
+        out["id"] = str(transport_id)
+    return out
+
+
+def get_transport_id(transport):
+    return _normalize_id(_read_field(transport, "id"))
+
+
+def transport_name(transport, fallback=None):
+    name = _read_field(transport, "name")
+    if name != None and str(name).strip() != "":
+        return str(name).strip()
+    trans_id = _read_field(transport, "id")
+    if trans_id != None and str(trans_id).strip() != "":
+        return str(trans_id).strip()
+    if fallback != None:
+        return str(fallback)
+    return "Unknown transport"
+
+
+def _transport_labels(transport, transport_id):
+    labels = [str(transport_id)]
+    name = _read_field(transport, "name")
+    if name != None and str(name).strip() != "":
+        labels.append(str(name).strip())
+    aliases = _read_field(transport, "aliases")
+    if lists.is_list(aliases):
+        for alias in aliases:
+            if alias != None and str(alias).strip() != "":
+                labels.append(str(alias).strip())
+    return labels
+
+
+def _transport_default_id(cfg):
+    transports = _transport_map(cfg)
+    for key in transports:
+        entry = _read_field(transports, key)
+        if _read_field(entry, "default") == True:
+            default_id = _normalize_id(key)
+            if default_id != None:
+                return default_id
+    if "walk" in transports:
+        return "walk"
+    for key in transports:
+        default_id = _normalize_id(key)
+        if default_id != None:
+            return default_id
+    return "walk"
+
+
+def _transport_from_legacy_flags(horse=False, boat=False):
     if boat == True:
         return "boat"
     if horse == True:
         return "horse"
-    return "walk"
+    return None
+
+
+def search_transport(config_override, query):
+    """
+    Match transport by id, name, or alias with shared list search semantics.
+    Returns the standard 0 / 1 / many shape for aliases to handle.
+    """
+    cfg = _cfg(config_override)
+    search = str(query).strip() if query != None else ""
+    if search == "":
+        return []
+    transports = _transport_map(cfg)
+    exact_key = _normalize_id(search)
+    if exact_key != None:
+        for trans_id in transports:
+            if _normalize_id(trans_id) == exact_key:
+                return [_copy_transport(transports[trans_id], trans_id)]
+        for trans_id in transports:
+            entry = _read_field(transports, trans_id)
+            aliases = _read_field(entry, "aliases")
+            if lists.is_list(aliases):
+                for alias in aliases:
+                    if _normalize_id(alias) == exact_key:
+                        return [_copy_transport(entry, trans_id)]
+
+    labels = []
+    label_to_ids = {}
+    for trans_id in transports:
+        entry = _read_field(transports, trans_id)
+        for label in _transport_labels(entry, trans_id):
+            labels.append(label)
+            if label not in label_to_ids:
+                label_to_ids[label] = []
+            label_to_ids[label].append(str(trans_id))
+
+    matched_labels = lists.search_list(labels, search)
+    found = []
+    seen = {}
+    for label in matched_labels:
+        ids = label_to_ids[label]
+        for trans_id in ids:
+            norm = _normalize_id(trans_id)
+            if norm in seen:
+                continue
+            found.append(_copy_transport(transports[trans_id], trans_id))
+            seen[norm] = True
+    return found
+
+
+def search_transport_exact(config_override, query):
+    """Match transport by exact id, name, or alias only."""
+    cfg = _cfg(config_override)
+    exact_key = _normalize_id(query)
+    if exact_key == None:
+        return []
+    transports = _transport_map(cfg)
+    found = []
+    seen = {}
+    for trans_id in transports:
+        entry = _read_field(transports, trans_id)
+        for label in _transport_labels(entry, trans_id):
+            if _normalize_id(label) != exact_key:
+                continue
+            norm = _normalize_id(trans_id)
+            if norm in seen:
+                continue
+            found.append(_copy_transport(entry, trans_id))
+            seen[norm] = True
+    return found
+
+
+def format_transport_matches(matches, limit=5):
+    shown = []
+    count = 0
+    for transport in matches:
+        if count >= limit:
+            break
+        shown.append(f"**{transport_name(transport)}**")
+        count += 1
+    text = ", ".join(shown)
+    if len(matches) > limit:
+        text += ", ..."
+    return text
+
+
+def resolve_transport_id(config_override=None, transport_id=None, horse=False, boat=False):
+    cfg = _cfg(config_override)
+    requested = _normalize_id(transport_id)
+    if requested == None:
+        requested = _transport_from_legacy_flags(horse, boat)
+    if requested == None:
+        return _transport_default_id(cfg)
+    matches = search_transport(cfg, requested)
+    if len(matches) == 1:
+        return get_transport_id(matches[0])
+    return requested
 
 
 def _read_cvar(ch, key, fallback=None):
@@ -259,7 +434,7 @@ def _get_cheapest_unsearched(costs_table):
     return cheapest_id, cheapest
 
 
-def find_journey(config_override, from_id, to_id, horse=False, boat=False):
+def find_journey(config_override, from_id, to_id, horse=False, boat=False, transport_id=None):
     """Shortest route between location ids using Dijkstra over world_data.paths."""
     cfg = _cfg(config_override)
     start = _normalize_id(from_id)
@@ -271,7 +446,7 @@ def find_journey(config_override, from_id, to_id, horse=False, boat=False):
     if start == dest:
         return True, []
 
-    transport = _transport_id(horse, boat)
+    transport = resolve_transport_id(cfg, transport_id, horse, boat)
     costs_table = {start: {"cost": 0, "searched": False, "via": []}}
     cheapest_dest_cost = None
 
@@ -329,7 +504,8 @@ def journey_title(config_override, from_id, to_id):
     return f"{from_name} -> {to_name}"
 
 
-def build_journey(config_override, from_id, to_id, legs, horse=False, boat=False):
+def build_journey(config_override, from_id, to_id, legs, horse=False, boat=False, transport_id=None):
+    transport = resolve_transport_id(config_override, transport_id, horse, boat)
     return {
         "title": journey_title(config_override, from_id, to_id),
         "from": _normalize_id(from_id),
@@ -337,6 +513,7 @@ def build_journey(config_override, from_id, to_id, legs, horse=False, boat=False
         "paths": legs,
         "path_index": 0,
         "step_index": 0,
+        "transport": transport,
         "horse": horse == True,
         "boat": boat == True,
     }
@@ -351,15 +528,16 @@ def _journey_paths(journey_or_legs):
     return []
 
 
-def display_journey(config_override, journey_or_legs, mode="detailed", horse=False, boat=False, prefix="!", progress=None):
+def display_journey(config_override, journey_or_legs, mode="detailed", horse=False, boat=False, prefix="!", progress=None, transport_id=None):
     cfg = _cfg(config_override)
     legs = _journey_paths(journey_or_legs)
     if len(legs) == 0:
         return ""
     if dicts.is_dict(journey_or_legs):
+        transport_id = _read_field(journey_or_legs, "transport")
         horse = _read_field(journey_or_legs, "horse") == True
         boat = _read_field(journey_or_legs, "boat") == True
-    transport = _transport_id(horse, boat)
+    transport = resolve_transport_id(cfg, transport_id, horse, boat)
     title = None
     if dicts.is_dict(journey_or_legs):
         title = _read_field(journey_or_legs, "title")
@@ -407,7 +585,7 @@ def next_step(ch, config_override=None):
 
     horse = _read_field(journey, "horse") == True
     boat = _read_field(journey, "boat") == True
-    transport = _transport_id(horse, boat)
+    transport = resolve_transport_id(cfg, _read_field(journey, "transport"), horse, boat)
     path_index = _read_field(journey, "path_index")
     step_index = _read_field(journey, "step_index")
     if path_index == None:
@@ -465,7 +643,12 @@ def get_next_step(ch=None):
         step_index = 0
     if int(path_index) >= len(legs):
         return None
-    transport = _transport_id(_read_field(journey, "horse") == True, _read_field(journey, "boat") == True)
+    transport = resolve_transport_id(
+        _cfg(None),
+        _read_field(journey, "transport"),
+        _read_field(journey, "horse") == True,
+        _read_field(journey, "boat") == True,
+    )
     steps = paths.get_path_steps(legs[int(path_index)], transport)
     if int(step_index) >= len(steps):
         return None

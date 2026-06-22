@@ -719,6 +719,33 @@ function weatherAreasFromWorldData(worldData: AnyRecord): AnyRecord {
   return weather;
 }
 
+function normalizedLookupId(value: unknown): string {
+  return String(value ?? '')
+    .trim()
+    .toLowerCase();
+}
+
+function transportLabelsFromWorldData(worldData: AnyRecord): Set<string> {
+  const labels = new Set<string>();
+  const transport = asRecord(worldData.transport);
+  for (const [id, rawEntry] of Object.entries(transport)) {
+    const entry = asRecord(rawEntry);
+    labels.add(normalizedLookupId(id));
+    if (typeof entry.name === 'string' && entry.name.trim()) {
+      labels.add(normalizedLookupId(entry.name));
+    }
+    if (Array.isArray(entry.aliases)) {
+      for (const alias of entry.aliases) {
+        if (typeof alias === 'string' && alias.trim()) {
+          labels.add(normalizedLookupId(alias));
+        }
+      }
+    }
+  }
+  labels.delete('');
+  return labels;
+}
+
 function isHexColour(value: unknown): boolean {
   if (value == null || value === '') return true;
   const text = String(value).replace(/^#/, '');
@@ -1812,6 +1839,7 @@ function validateTravel(model: ConfigModel, issues: ConfigIssue[]) {
   const defaultLocation = model.world_data.default_location;
   const calendars = asRecord(model.world_data.calendars);
   const weatherAreas = weatherAreasFromWorldData(model.world_data);
+  const transportLabels = transportLabelsFromWorldData(model.world_data);
 
   if (implementedTravelOn && !defaultLocation) {
     issues.push(
@@ -1929,6 +1957,34 @@ function validateTravel(model: ConfigModel, issues: ConfigIssue[]) {
             '`from` and `to` must match keys in `world_data.locations`.',
           ),
         );
+      }
+      const requirements = asRecord(path.requirements);
+      const transportRequirement = requirements.transport ?? path.transport;
+      const transportRequirements =
+        transportRequirement == null
+          ? []
+          : Array.isArray(transportRequirement)
+            ? transportRequirement
+            : [transportRequirement];
+      if (transportLabels.size > 0) {
+        transportRequirements.forEach((requirement, requirementIndex) => {
+          const requirementId = normalizedLookupId(requirement);
+          if (!requirementId) return;
+          if (transportLabels.has(requirementId)) return;
+          issues.push(
+            issue(
+              'error',
+              'world.path.transport_unknown',
+              'World',
+              Array.isArray(transportRequirement)
+                ? `world_data.paths.${index}.requirements.transport.${requirementIndex}`
+                : `world_data.paths.${index}.requirements.transport`,
+              'Path references an unknown transport',
+              '`requirements.transport` must match a configured transport id or alias.',
+              'Add the transport under `world_data.transport`, or update the path requirement.',
+            ),
+          );
+        });
       }
       const rawSteps = path.steps;
       if (rawSteps != null && !Array.isArray(rawSteps)) {
