@@ -29,12 +29,17 @@ def _read_field(obj, key):
         "world_data": lambda o: o.world_data,
         "default_location": lambda o: o.default_location,
         "locations": lambda o: o.locations,
+        "subsystems": lambda o: o.subsystems,
+        "exploration": lambda o: o.exploration,
+        "config": lambda o: o.config,
+        "enc_biome_source": lambda o: o.enc_biome_source,
         "id": lambda o: o.id,
         "name": lambda o: o.name,
         "aliases": lambda o: o.aliases,
         "default": lambda o: o.default,
         "from": lambda o: o["from"],
         "to": lambda o: o.to,
+        "label": lambda o: o.label,
         "paths": lambda o: o.paths,
         "title": lambda o: o.title,
         "path_index": lambda o: o.path_index,
@@ -597,26 +602,18 @@ def find_journey(config_override, from_id, to_id, horse=False, boat=False, trans
     costs = {start: 0}
     searched = {}
     open_ids = [start]
-    open_seen = {start: True}
+    open_costs = [0]
     previous = {}
     via_path = {}
     cheapest_dest_cost = None
 
     while len(open_ids) > 0:
-        best_index = 0
-        next_id = open_ids[0]
-        next_cost = costs[next_id]
-        index = 1
-        while index < len(open_ids):
-            loc_id = open_ids[index]
-            loc_cost = costs[loc_id]
-            if loc_cost < next_cost:
-                best_index = index
-                next_id = loc_id
-                next_cost = loc_cost
-            index += 1
-        open_ids.pop(best_index)
-        open_seen[next_id] = False
+        next_id = open_ids.pop(0)
+        next_cost = open_costs.pop(0)
+        if next_id in searched:
+            continue
+        if next_cost != costs[next_id]:
+            continue
         if cheapest_dest_cost != None and cheapest_dest_cost <= next_cost:
             break
         searched[next_id] = True
@@ -632,9 +629,11 @@ def find_journey(config_override, from_id, to_id, horse=False, boat=False, trans
             costs[path_to] = new_cost
             previous[path_to] = next_id
             via_path[path_to] = path
-            if path_to not in open_seen or open_seen[path_to] != True:
-                open_ids.append(path_to)
-                open_seen[path_to] = True
+            index = 0
+            while index < len(open_costs) and open_costs[index] <= new_cost:
+                index += 1
+            open_ids.insert(index, path_to)
+            open_costs.insert(index, new_cost)
             if path_to == dest:
                 cheapest_dest_cost = new_cost
 
@@ -657,10 +656,8 @@ def find_journey(config_override, from_id, to_id, horse=False, boat=False, trans
 
 def journey_title(config_override, from_id, to_id):
     cfg = _cfg(config_override)
-    from_loc = locations.get_location(cfg, from_id)
-    to_loc = locations.get_location(cfg, to_id)
-    from_name = locations.linked_name(from_loc) if from_loc != None else str(from_id)
-    to_name = locations.linked_name(to_loc) if to_loc != None else str(to_id)
+    from_name = locations.linked_name_by_id(cfg, from_id)
+    to_name = locations.linked_name_by_id(cfg, to_id)
     return f"{from_name} -> {to_name}"
 
 
@@ -688,6 +685,45 @@ def _journey_paths(journey_or_legs):
     return []
 
 
+def _biome_source(cfg):
+    subs = _read_field(cfg, "subsystems")
+    exploration = _read_field(subs, "exploration")
+    exploration_config = _read_field(exploration, "config")
+    source = _read_field(exploration_config, "enc_biome_source")
+    if source == None or str(source).strip() == "":
+        return "auto"
+    return str(source).strip().lower()
+
+
+def _display_journey_path(path, cfg, transport, prefix, progress_step, icon, biome_source):
+    from_name = locations.linked_name_by_id(cfg, _read_field(path, "from"))
+    to_name = locations.linked_name_by_id(cfg, _read_field(path, "to"))
+    steps = paths.get_path_steps(path, transport)
+    lines = [f"### {from_name} -> {to_name}"]
+    path_label = _read_field(path, "label")
+    if path_label != None and str(path_label).strip() != "":
+        lines.append(f"-# {str(path_label).strip()}")
+    index = 0
+    prefix_text = f"{icon} " if icon != "" else ""
+    for step in steps:
+        done = False
+        if progress_step != None:
+            try:
+                done = index < int(progress_step)
+            except:
+                done = False
+        lines.append(f"* {prefix_text}{paths.display_step(step, path, prefix, done)}")
+        if dicts.is_dict(step):
+            step_type = _read_field(step, "type")
+            biome = _read_field(step, "biome")
+            if biome == None:
+                biome = _read_field(step, "code")
+            if (step_type == "encounter" or biome != None) and (biome == None or str(biome).strip() == "") and biome_source != "location":
+                lines.append("  -# Encounter step has no biome. Configure a biome, or set exploration biome source to location.")
+        index += 1
+    return "\n".join(lines)
+
+
 def display_journey(config_override, journey_or_legs, mode="detailed", horse=False, boat=False, prefix="!", progress=None, transport_id=None):
     cfg = _cfg(config_override)
     legs = _journey_paths(journey_or_legs)
@@ -712,6 +748,8 @@ def display_journey(config_override, journey_or_legs, mode="detailed", horse=Fal
     elif dicts.is_dict(journey_or_legs):
         path_index = _read_field(journey_or_legs, "path_index")
         step_index = _read_field(journey_or_legs, "step_index")
+    icon = paths.get_transport_icon(cfg, transport)
+    biome_source = _biome_source(cfg)
     i = 0
     for leg in legs:
         completed_leg = False
@@ -724,7 +762,10 @@ def display_journey(config_override, journey_or_legs, mode="detailed", horse=Fal
             completed_leg = False
         if completed_leg:
             active_progress = len(paths.get_path_steps(leg, transport))
-        lines.append(paths.display_path(leg, cfg, mode, transport, prefix, active_progress))
+        if mode == "detailed":
+            lines.append(_display_journey_path(leg, cfg, transport, prefix, active_progress, icon, biome_source))
+        else:
+            lines.append(paths.display_path(leg, cfg, mode, transport, prefix, active_progress))
         i += 1
     return "\n\n".join(lines)
 

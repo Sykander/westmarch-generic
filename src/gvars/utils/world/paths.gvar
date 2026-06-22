@@ -314,6 +314,10 @@ def get_transport_match_ids(config_override, transport_id="walk"):
     return _transport_match_ids(_cfg(config_override), transport_id)
 
 
+def get_transport_icon(config_override=None, transport_id="walk"):
+    return _transport_icon(_cfg(config_override), transport_id)
+
+
 def get_edges_from(config_override, from_id, transport_id="walk"):
     """All paths where from == from_id and transport requirements match."""
     cfg = _cfg(config_override)
@@ -350,10 +354,12 @@ def get_edge_entries_from(config_override, from_id, transport_id="walk", selecte
         dest = _normalize_id(_read_field(path, "to"))
         if dest == None:
             continue
+        raw_steps = _read_field(path, "steps")
+        cost = len(raw_steps) if raw_steps != None and lists.is_list(raw_steps) else get_path_cost(path, transport_id)
         out.append({
             "to": dest,
-            "cost": get_path_cost(path, transport_id),
-            "path": _copy_path(path),
+            "cost": cost,
+            "path": path,
         })
     return out
 
@@ -533,10 +539,8 @@ def display_path(path, config_override=None, mode="short", transport_id="walk", 
     cfg = _cfg(config_override)
     from_id = _read_field(path, "from")
     to_id = _read_field(path, "to")
-    from_loc = locations.get_location(cfg, from_id)
-    to_loc = locations.get_location(cfg, to_id)
-    from_name = locations.linked_name(from_loc) if from_loc != None else str(from_id)
-    to_name = locations.linked_name(to_loc) if to_loc != None else str(to_id)
+    from_name = locations.linked_name_by_id(cfg, from_id)
+    to_name = locations.linked_name_by_id(cfg, to_id)
     steps = get_path_steps(path, transport_id)
     if mode == "short":
         label = "step" if len(steps) == 1 else "steps"

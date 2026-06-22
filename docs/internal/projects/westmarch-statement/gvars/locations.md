@@ -16,6 +16,9 @@ def search_locations(config, query):
     Returns list — empty, one, or many (caller handles ambiguity).
     """
 
+def linked_name_by_id(config, location_id):
+    """Linked display name for a location id without copying the full location."""
+
 def get_default_location(config):
     """Return location dict for world_data.default_location id, or None."""
 
@@ -49,7 +52,7 @@ text = locations.display_location(loc, mode="full", character=character, include
 ## Lookup rules
 
 1. **`get_location(config, location_id)`** — read from **`world_data.locations_gvar_id`** first, merge inline **`world_data.locations`** over it, then inject **`id`** on the returned dict if missing.
-2. **`search_locations(config, query)`** — exact id match first; else filter `location.name` containing `query` (case-insensitive). Port `areas.search_for_area()` behaviour.
+2. **`search_locations(config, query)`** — exact id match first; exact display-name match next; else filter `location.name` containing `query` (case-insensitive). Port `areas.search_for_area()` behaviour.
 3. **`get_default_location(config)`** — `get_location(config, config.world_data.default_location)`.
 
 External location gvars are raw JSON objects keyed by location id. A wrapper object with **`{"locations": {...}}`** is also accepted.

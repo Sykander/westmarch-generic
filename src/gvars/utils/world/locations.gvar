@@ -12,6 +12,7 @@ using(
 
 ACTIVITY_COMMANDS = ["enc", "forage", "fish", "mine", "lumber", "hunt", "loot"]
 _locations_cache = {}
+_linked_name_cache = {}
 
 
 def _read_field(obj, key):
@@ -104,6 +105,15 @@ def _locations_map(cfg):
     if dicts.is_dict(external):
         return external
     return {}
+
+
+def _locations_cache_key(cfg):
+    wd = _world_data(cfg)
+    inline = _read_field(wd, "locations")
+    gvar_id = _read_field(wd, "locations_gvar_id")
+    if inline == None and gvar_id != None and str(gvar_id).strip() != "":
+        return str(gvar_id).strip()
+    return None
 
 
 def has_locations(config_override=None):
@@ -216,6 +226,41 @@ def linked_name(location):
     return f"[{name}]({link})"
 
 
+def linked_name_by_id(config_override, location_id):
+    cfg = _cfg(config_override)
+    loc_id = _normalize_id(location_id)
+    if loc_id == None:
+        return str(location_id)
+    cache_key = _locations_cache_key(cfg)
+    if cache_key != None:
+        if cache_key not in _linked_name_cache:
+            _linked_name_cache[cache_key] = {}
+        cached = _linked_name_cache[cache_key]
+        if loc_id in cached:
+            return cached[loc_id]
+    locs = _locations_map(cfg)
+    loc = _read_field(locs, loc_id)
+    if loc == None:
+        for existing_id in locs:
+            if str(existing_id).strip().lower() == loc_id:
+                loc = locs[existing_id]
+                loc_id = str(existing_id).strip().lower()
+                break
+    if loc == None:
+        return str(location_id)
+    name = _read_field(loc, "name")
+    if name == None or str(name).strip() == "":
+        name = loc_id
+    else:
+        name = str(name).strip()
+    link = _read_field(loc, "link")
+    if link != None and str(link).strip() != "":
+        name = f"[{name}]({str(link).strip()})"
+    if cache_key != None:
+        _linked_name_cache[cache_key][loc_id] = name
+    return name
+
+
 def list_location_ids(config_override=None):
     locs = _locations_map(_cfg(config_override))
     ids = []
@@ -243,18 +288,29 @@ def search_locations(config_override, query):
     locs = _locations_map(cfg)
     exact_key = _normalize_id(search)
     if exact_key != None:
-        direct = get_location(cfg, exact_key)
-        if direct != None:
-            return [direct]
+        if exact_key in locs:
+            return [_copy_location(locs[exact_key], exact_key)]
+        for loc_id in locs:
+            if str(loc_id).strip().lower() == exact_key:
+                return [_copy_location(locs[loc_id], loc_id)]
 
     labels = []
     label_to_ids = {}
+    exact_name_ids = []
     for loc_id in locs:
-        loc = get_location(cfg, loc_id)
+        loc = locs[loc_id]
         if loc == None:
             continue
         id_label = str(loc_id)
-        name_label = location_name(loc)
+        name_label = _read_field(loc, "name")
+        if name_label == None or str(name_label).strip() == "":
+            name_label = _read_field(loc, "id")
+        if name_label == None or str(name_label).strip() == "":
+            name_label = str(loc_id)
+        else:
+            name_label = str(name_label).strip()
+        if exact_key != None and name_label.lower() == exact_key:
+            exact_name_ids.append(str(loc_id))
         for label in [id_label, name_label]:
             if label == None or str(label).strip() == "":
                 continue
@@ -263,6 +319,17 @@ def search_locations(config_override, query):
             if text not in label_to_ids:
                 label_to_ids[text] = []
             label_to_ids[text].append(str(loc_id))
+
+    if len(exact_name_ids) > 0:
+        found = []
+        seen = {}
+        for loc_id in exact_name_ids:
+            norm = _normalize_id(loc_id)
+            if norm in seen:
+                continue
+            found.append(_copy_location(locs[loc_id], loc_id))
+            seen[norm] = True
+        return found
 
     matched_labels = lists.search_list(labels, search)
     found = []
