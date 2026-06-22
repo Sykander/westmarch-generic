@@ -315,7 +315,7 @@ world_data = {
         },
     ],
     "transport": {
-        "walk": {"name": "On foot", "default": True},
+        "walk": {"name": "Walking", "default": True, "aliases": ["walking"]},
         "horse": {"name": "Riding horse"},
     },
     "biomes": {

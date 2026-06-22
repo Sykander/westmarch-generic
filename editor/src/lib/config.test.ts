@@ -90,10 +90,11 @@ test('forgotten realms starter has slice 3 travel baseline', () => {
 
   const transport = worldData.transport as Record<string, Record<string, unknown>>;
   assert.equal(transport.walk.default, true);
-  assert.ok(transport.riding_horse);
-  assert.ok((transport.riding_horse.aliases as string[]).includes('horse'));
+  assert.ok((transport.walk.aliases as string[]).includes('walking'));
+  assert.ok(transport.horse);
+  assert.ok((transport.horse.aliases as string[]).includes('riding_horse'));
   assert.ok(transport.ship);
-  assert.ok(transport.teleport_circle);
+  assert.ok(transport.teleportation_circle);
 
   const codes = issues.map((entry) => entry.code);
   assert.equal(codes.includes('world.calendars.empty'), false);
@@ -284,8 +285,8 @@ subsystems = {
 world_data = {
     "default_location": "river_town",
     "transport": {
-        "walk": {"name": "On foot", "default": True},
-        "riding_horse": {"name": "Riding horse", "aliases": ["horse"]},
+        "walk": {"name": "Walking", "default": True, "aliases": ["walking"]},
+        "horse": {"name": "Horse or mount", "aliases": ["riding_horse", "warhorse", "pony"]},
     },
     "locations": {
         "river_town": {"name": "River Town"},
@@ -310,15 +311,15 @@ subsystems = {
 world_data = {
     "default_location": "river_town",
     "transport": {
-        "walk": {"name": "On foot", "default": True},
-        "riding_horse": {"name": "Riding horse", "aliases": ["horse"]},
+        "walk": {"name": "Walking", "default": True, "aliases": ["walking"]},
+        "horse": {"name": "Horse or mount", "aliases": ["riding_horse", "warhorse", "pony"]},
     },
     "locations": {
         "river_town": {"name": "River Town"},
         "oakwood": {"name": "Oakwood Forest"},
     },
     "paths": [
-        {"from": "river_town", "to": "oakwood", "requirements": {"transport": "horse"}, "steps": [{"type": "encounter", "biome": "forest"}]},
+        {"from": "river_town", "to": "oakwood", "requirements": {"transport": "riding_horse"}, "steps": [{"type": "encounter", "biome": "forest"}]},
     ],
 }
 `);

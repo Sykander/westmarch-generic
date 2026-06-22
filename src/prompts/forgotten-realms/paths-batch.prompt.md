@@ -42,7 +42,7 @@ world_data_paths = [
 |-------|----------|--------|
 | `from`, `to` | yes | Location id strings |
 | `steps` | yes* | Ordered list — at least one step (*or `cost`-only with engine default proceed) |
-| `requirements` | no | `{ "transport": "walk" }` or `"horse"` / `"boat"` — omit = any transport |
+| `requirements` | no | `{ "transport": "walk" }` or `"horse"` / `"boat"` / `"ship"` — omit = any transport |
 | `cost` | no | e.g. `{ "gold": 5, "rations": 1 }` — toll or ferry |
 | `label` | no | Player-facing gate hint |
 

@@ -83,28 +83,36 @@ Acceptance:
 
 Add `world_data.transport` as the owner-facing mode catalogue.
 
-Seed these groups:
+Seed broad route categories:
 
-- Common land modes: `walk`, `riding_horse`, `draft_horse`, `warhorse`, `pony`, `mule`, `camel`, `elephant`, `mastiff`.
-- Drawn vehicles: `cart`, `wagon`, `carriage`, `chariot`, `sled`.
-- Water modes: `boat`, `rowboat`, `keelboat`, `longship`, `sailing_ship`, `galley`, `warship`, `ship`.
-- Special modes: `fly`, `flying_mount`, `swim`, `swimming_mount`, `portal`, `teleport_circle`.
+- `walk`
+- `horse`
+- `cart`
+- `boat`
+- `ship`
+- `fly`
+- `swim`
+- `portal`
+- `teleportation_circle`
+
+Specific mounts, vehicles, and vessels should be aliases of these categories. For example, `riding_horse`, `warhorse`, `pony`, `mule`, `camel`, and `elephant` resolve to `horse`; `draft_horse`, `wagon`, `carriage`, `chariot`, and `sled` resolve to `cart`; `rowboat` and `keelboat` resolve to `boat`; `longship`, `sailing_ship`, `galley`, and `warship` resolve to `ship`.
 
 Recommended transport entry shape:
 
 ```py
-"riding_horse": {
-    "name": "Riding horse",
-    "description": "Common road mount for overland travel.",
+"horse": {
+    "name": "Horse or mount",
+    "description": "Mounted overland travel.",
     "category": "mount",
     "terrain": ["road", "plains"],
+    "aliases": ["riding_horse", "warhorse", "pony"],
 }
 ```
 
 Acceptance:
 
 - `world_data.transport.walk.default` or equivalent default behavior is clear.
-- Every transport id used by `world_data.paths.*.requirements.transport` exists in `world_data.transport`.
+- Every canonical transport id used by `world_data.paths.*.requirements.transport` exists in `world_data.transport`; configured aliases are accepted for compatibility.
 - `!travel` treats every configured `world_data.transport` id or alias as a valid route flag.
 
 Runtime requirement:
@@ -199,16 +207,16 @@ Path authoring rules:
 - Use `requirements.transport` when a route requires a mode.
 - Use one step list per path entry.
 - Add explicit bridge/ferry/crossing steps for rivers.
-- Open sea routes require `ship`, `sailing_ship`, `longship`, `galley`, or `warship`.
-- River/lake routes allow `boat`, `rowboat`, and `keelboat`.
-- If swimming is intended, require `swim` or `swimming_mount` and describe the danger.
+- Open sea routes require `ship`.
+- River/lake routes allow `boat`, or `ship` only when geography makes sense.
+- If swimming is intended, require `swim` and describe the danger.
 
 Acceptance:
 
 - `!travel Neverwinter` from Waterdeep returns a route.
 - `!travel "Baldur's Gate"` from Waterdeep returns a route.
 - `!travel Phandalin` from Waterdeep can route through High Road/Triboar Trail nodes.
-- `!travel Neverwinter riding_horse` and another configured non-horse transport flag both resolve through the same transport selection path.
+- `!travel Neverwinter riding_horse` resolves to the canonical `horse` category, and another configured non-horse transport flag uses the same transport selection path.
 - Boat/ship paths do not appear for ordinary walking unless their requirements allow it.
 - Route display never renders blank encounter commands such as `!enc `.
 - At least one route includes an explicit river crossing step.
@@ -224,7 +232,7 @@ Update the runtime so configured transport ids are first-class travel flags.
 - Update `journeys.build_journey`, `journeys.display_journey`, `journeys.next_step`, and `journeys.get_next_step` to persist/read a generic `transport` id.
 - Keep reading legacy journey `horse`/`boat` booleans during migration.
 - Keep `horse` and `boat` compatibility behavior available.
-- Add tests for `riding_horse`, `cart`, `rowboat`, `ship`, and an invalid/ambiguous transport flag.
+- Add tests for a specific alias such as `riding_horse` resolving to `horse`, plus `cart`, `boat`/`ship`, and an invalid/ambiguous transport flag.
 
 Acceptance:
 

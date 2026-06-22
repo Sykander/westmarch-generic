@@ -15,8 +15,8 @@ Route planning and character travel state for the travel subsystem.
 ```
 
 Optional route flags are configured transport ids or aliases from
-`world_data.transport`, such as `riding_horse`, `boat`, or `ship`. Legacy
-`horse` still works when the config keeps it as an id or alias.
+`world_data.transport`, such as `horse`, `cart`, `boat`, `ship`, `fly`, or
+`portal`.
 
 `!travel` shows the current location and active journey. Destinations are looked
 up through `locations.search_locations`, so player input follows the standard
@@ -48,7 +48,7 @@ shape:
 {
     "from": "river_town",
     "to": "oakwood",
-    "requirements": {"transport": "riding_horse"},
+    "requirements": {"transport": "horse"},
     "steps": [{"type": "encounter", "biome": "forest"}],
 }
 ```

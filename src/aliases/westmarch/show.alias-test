@@ -54,8 +54,8 @@ vars:
           "locations": {"river_town": {"name": "River Town"}},
           "paths": [],
           "transport": {
-              "walk": {"name": "On foot", "default": True},
-              "riding_horse": {"name": "Riding horse", "aliases": ["horse"]},
+              "walk": {"name": "Walking", "default": True, "aliases": ["walking"]},
+              "horse": {"name": "Horse or mount", "aliases": ["riding_horse"]},
           },
       }
 

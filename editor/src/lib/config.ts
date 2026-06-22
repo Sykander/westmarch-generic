@@ -65,7 +65,17 @@ const VALID_CRAFTING_CHECK_MODES = ['none', 'manual', 'roll', 'off'];
 const VALID_CRAFTING_TOOL_MODES = ['off', 'manual', 'check'];
 const VALID_CRAFTING_RESOURCE_MODES = ['manual', 'check', 'deduct'];
 const VALID_ITEM_HANDLING_MODES = ['manual', 'bags'];
-const REQUIRED_TRANSPORT_ICONS = ['walk', 'fly', 'horse', 'boat'];
+const REQUIRED_TRANSPORT_ICONS = [
+  'walk',
+  'horse',
+  'cart',
+  'boat',
+  'ship',
+  'fly',
+  'swim',
+  'portal',
+  'teleportation_circle',
+];
 const VALID_PLAYER_SETUP_CHECK_TYPES = ['cvar', 'uvar', 'svar', 'cc', 'counter', 'custom_counter'];
 const VALID_PLAYER_SETUP_HUD_FIELDS = ['coinpurse', 'wallet', 'location', 'time', 'weather'];
 const VALID_ENGINE_BIOMES = [
@@ -377,6 +387,11 @@ function createDefaultSubsystems(): Record<string, AnyRecord> {
           fly: '🪽',
           horse: '🐎',
           boat: '⛵',
+          cart: '🛞',
+          ship: '⛵',
+          swim: '🌊',
+          portal: '🌀',
+          teleportation_circle: '🌀',
         },
       },
     },

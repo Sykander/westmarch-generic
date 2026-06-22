@@ -12,11 +12,12 @@ Forgotten Realms Sword Coast — overland westmarch (walk + horse MVP).
 ```python
 world_data_transport = {
     "walk": {
-        "name": "On foot",
+        "name": "Walking",
         "default": True,
+        "aliases": ["walking"],
     },
     "horse": {
-        "name": "Riding horse",
+        "name": "Horse or mount",
         "description": "Short player-facing note.",
     },
 }
@@ -26,7 +27,7 @@ world_data_transport = {
 
 ### Rules
 
-- **`walk`** must exist with `"default": True`.
+- **`walk`** must exist with `"default": True`; `walking` may be an alias.
 - Include **`horse`** for frontier westmarch.
 - Add **`boat`** only if pasted brief includes river/coastal routes needing it:
 

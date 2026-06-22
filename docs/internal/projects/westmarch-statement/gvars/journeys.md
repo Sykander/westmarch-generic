@@ -63,10 +63,10 @@ Endpoints must be config **`locations`** ids — resolve display names with [loc
 ```py
 using(paths = env.gvars.paths, journeys = env.gvars.journeys)
 
-found, legs = journeys.find_journey(cfg, "river_town", "oakwood", transport_id="riding_horse")
+found, legs = journeys.find_journey(cfg, "river_town", "oakwood", transport_id="horse")
 ```
 
-Transport ids resolve through `world_data.transport` by exact id first, then configured name or alias where practical. Legacy `horse` and `boat` flags remain supported for imported configs, but new journeys store the selected canonical `transport` id.
+Transport ids resolve through `world_data.transport` by exact id first, then configured name or alias where practical. New journeys store the selected canonical `transport` id, so aliases such as `riding_horse` can resolve to a broader category like `horse`.
 
 ## Journey lifecycle
 

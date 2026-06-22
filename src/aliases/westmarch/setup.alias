@@ -284,7 +284,7 @@ Implemented now:
 `locations`: named places. Location mode can infer which biome to roll from.
 `default_location`: fallback location id when a character has not set one.
 `paths`: route legs used by `!travel`; encounter steps can omit biome only when location-inferred exploration can supply it.
-`subsystems.travel.config.transport_icons`: route display icons for walk, fly, horse, and boat.
+`subsystems.travel.config.transport_icons`: route display icons keyed by transport category, such as walk, horse, cart, boat, ship, fly, swim, portal, and teleportation_circle.
 `monsters`: optional owner monster entries searched before the bundled engine catalogue.
 
 Data-backed commands:

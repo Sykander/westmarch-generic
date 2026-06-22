@@ -166,6 +166,11 @@ const TRANSPORT_ICON_DEFAULTS = {
   fly: '🪽',
   horse: '🐎',
   boat: '⛵',
+  cart: '🛞',
+  ship: '⛵',
+  swim: '🌊',
+  portal: '🌀',
+  teleportation_circle: '🌀',
 };
 const TRANSPORT_ICON_OPTIONS = ['🚶', '🪽', '🐎', '⛵', '🛶', '🚤', '🛡️', '✨'];
 
@@ -3949,7 +3954,7 @@ function TransportEditor({
   transport: AnyRecord;
   updateConfig: (path: string, value: unknown) => void;
 }) {
-  const [newTransportId, setNewTransportId] = useState('riding_horse');
+  const [newTransportId, setNewTransportId] = useState('horse');
 
   function addTransport() {
     const id = slugValue(newTransportId);
@@ -3983,7 +3988,7 @@ function TransportEditor({
           <input
             value={newTransportId}
             onChange={(event) => setNewTransportId(event.target.value)}
-            placeholder="riding_horse"
+            placeholder="horse"
             aria-label="New transport id"
           />
           <button type="button" onClick={addTransport}>

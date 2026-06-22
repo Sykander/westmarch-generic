@@ -85,11 +85,11 @@ vars:
           ],
       }
 
-!travel Oakwood horse
+!travel Oakwood riding_horse
 ---
-re:Oakwood Forest[\s\S]*Ride the old road[\s\S]*riding_horse track
+re:Oakwood Forest[\s\S]*Ride the old road[\s\S]*horse track
 ---
-name: route preview accepts configured transport alias
+name: route preview resolves specific transport alias to category
 vars:
   svars:
     westmarch_config: "aaaa2002-2002-2002-2002-200000000022"
@@ -99,21 +99,21 @@ vars:
           "travel": {
               "enabled": True,
               "commands": {"travel": True, "location": True},
-              "config": {"transport_icons": {"walk": "W", "horse": "H", "riding_horse": "R", "fly": "F", "boat": "B"}},
+              "config": {"transport_icons": {"walk": "W", "horse": "H", "fly": "F", "boat": "B"}},
           },
       }
       world_data = {
           "default_location": "river_town",
           "transport": {
-              "walk": {"name": "On foot", "default": True},
-              "riding_horse": {"name": "Riding horse", "aliases": ["horse"]},
+              "walk": {"name": "Walking", "default": True, "aliases": ["walking"]},
+              "horse": {"name": "Horse or mount", "aliases": ["riding_horse", "warhorse", "pony"]},
           },
           "locations": {
               "river_town": {"name": "River Town"},
               "oakwood": {"name": "Oakwood Forest"},
           },
           "paths": [
-              {"from": "river_town", "to": "oakwood", "requirements": {"transport": "riding_horse"}, "steps": [{"type": "proceed", "description": "Ride the old road."}]},
+              {"from": "river_town", "to": "oakwood", "requirements": {"transport": "horse"}, "steps": [{"type": "proceed", "description": "Ride the old road."}]},
           ],
       }
 
@@ -133,8 +133,8 @@ vars:
       world_data = {
           "default_location": "river_town",
           "transport": {
-              "walk": {"name": "On foot", "default": True},
-              "riding_horse": {"name": "Riding horse", "aliases": ["horse"]},
+              "walk": {"name": "Walking", "default": True, "aliases": ["walking"]},
+              "horse": {"name": "Horse or mount", "aliases": ["riding_horse", "warhorse", "pony"]},
           },
           "locations": {
               "river_town": {"name": "River Town"},

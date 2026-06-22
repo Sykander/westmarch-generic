@@ -85,10 +85,19 @@ def _world_data(cfg):
 
 def _fallback_transport_map():
     return {
-        "walk": {"id": "walk", "name": "On foot", "default": True},
-        "horse": {"id": "horse", "name": "Horse"},
+        "walk": {"id": "walk", "name": "Walking", "default": True, "aliases": ["walking", "foot", "on_foot"]},
+        "horse": {"id": "horse", "name": "Horse or mount"},
+        "cart": {"id": "cart", "name": "Cart or wagon"},
         "boat": {"id": "boat", "name": "Boat"},
-        "fly": {"id": "fly", "name": "Flight"},
+        "ship": {"id": "ship", "name": "Ship"},
+        "fly": {"id": "fly", "name": "Flying", "aliases": ["flying", "flight"]},
+        "swim": {"id": "swim", "name": "Swimming", "aliases": ["swimming"]},
+        "portal": {"id": "portal", "name": "Portal", "aliases": ["gate"]},
+        "teleportation_circle": {
+            "id": "teleportation_circle",
+            "name": "Teleportation circle",
+            "aliases": ["teleport_circle", "teleport", "circle"],
+        },
     }
 
 

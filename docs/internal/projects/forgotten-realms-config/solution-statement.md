@@ -42,7 +42,7 @@ Start with useful but safe command coverage.
 | `downtime` | disabled by default | Keep until downtime acquisition policy is finalized |
 | `misc` | disabled by default | Quest/recipe commands can be enabled after content pass |
 
-For `subsystems.travel.config.transport_icons`, keep the existing required keys (`walk`, `fly`, `horse`, `boat`) and allow extra keys for richer modes. `!travel` should accept any configured `world_data.transport` id as a route flag, resolve it consistently, store that selected transport on the active journey, and filter/display paths using that id.
+For `subsystems.travel.config.transport_icons`, use the canonical transport category ids: `walk`, `horse`, `cart`, `boat`, `ship`, `fly`, `swim`, `portal`, and `teleportation_circle`. `!travel` should accept any configured `world_data.transport` id or alias as a route flag, resolve it consistently, store the canonical transport on the active journey, and filter/display paths using that id.
 
 ## Map usage
 
@@ -255,10 +255,10 @@ Path steps should be player-actionable:
 Follow these rules:
 
 - if a named bridge exists, use a proceed step that names the bridge;
-- if a ferry is the normal crossing, use `requirements.transport: ["boat", "rowboat", "keelboat"]` or a cost/proceed ferry step;
-- if the path expects swimming, use `requirements.transport: ["swim", "swimming_mount"]` and describe it as a dangerous crossing;
-- if the route crosses open sea, require `ship`, `sailing_ship`, `longship`, `galley`, or `warship`;
-- if the route follows a river or lake, allow `boat`, `rowboat`, `keelboat`, and selected `ship` modes only when geography makes sense.
+- if a ferry is the normal crossing, use `requirements.transport: "boat"` or a cost/proceed ferry step;
+- if the path expects swimming, use `requirements.transport: "swim"` and describe it as a dangerous crossing;
+- if the route crosses open sea, require `ship`;
+- if the route follows a river or lake, allow `boat`, or `ship` only when geography makes sense.
 
 Example road route:
 
@@ -267,7 +267,7 @@ Example road route:
     "from": "baldurs_gate",
     "to": "elturel",
     "label": "Risen Road",
-    "requirements": {"transport": ["walk", "riding_horse", "cart", "wagon"]},
+    "requirements": {"transport": ["walk", "horse", "cart"]},
     "steps": [
         {"type": "proceed", "description": "Leave Baldur's Gate by Wyrm's Crossing over the River Chionthar."},
         {"type": "encounter", "activity": "enc", "biome": "road"},
@@ -283,7 +283,7 @@ Example river route:
     "from": "baldurs_gate",
     "to": "elturel",
     "label": "River Chionthar passage",
-    "requirements": {"transport": ["boat", "rowboat", "keelboat"]},
+    "requirements": {"transport": "boat"},
     "steps": [
         {"type": "encounter", "activity": "fish", "biome": "river"},
         {"type": "proceed", "description": "Travel upriver along the Chionthar by boat."},
@@ -336,57 +336,21 @@ Seed paths in batches so review stays possible.
 
 ## Transport catalogue
 
-Use `world_data.transport` as the owner-facing transport catalogue. Keep path requirements as transport ids. The `!travel` command must treat those ids as valid transport flags, not as display-only metadata.
+Use `world_data.transport` as the owner-facing transport catalogue. Keep path requirements as broad transport category ids. The `!travel` command must treat those ids and their aliases as valid transport flags, not as display-only metadata.
 
-### Common land modes
+| id | Name | Use | Typical aliases |
+|----|------|-----|-----------------|
+| `walk` | Walking | Default for ordinary paths | `walking`, `foot`, `on_foot` |
+| `horse` | Horse or mount | Rideable land mounts | `riding_horse`, `warhorse`, `pony`, `mule`, `camel`, `elephant`, `mastiff` |
+| `cart` | Cart or wagon | Drawn land vehicles and draft animals | `draft_horse`, `wagon`, `carriage`, `chariot`, `sled` |
+| `boat` | Boat | Rivers, lakes, ferries, and short protected crossings | `rowboat`, `keelboat`, `small_boat` |
+| `ship` | Ship | Coastal, island, and open sea routes | `longship`, `sailing_ship`, `galley`, `warship` |
+| `fly` | Flying | Flight or flying mounts | `flying`, `flight`, `flying_mount`, `griffon`, `pegasus` |
+| `swim` | Swimming | Dangerous water crossings or aquatic mounts | `swimming`, `swimming_mount`, `aquatic_mount` |
+| `portal` | Portal | Fixed magical gate routes | `gate`, `magical_gate` |
+| `teleportation_circle` | Teleportation circle | High-magic city-to-city travel, gated by cost/story | `teleport_circle`, `teleport`, `circle` |
 
-| id | Name | Use |
-|----|------|-----|
-| `walk` | On foot | Default for all ordinary paths |
-| `riding_horse` | Riding horse | Faster road/field travel |
-| `draft_horse` | Draft horse | Pulls carts/wagons, slower riding |
-| `warhorse` | Warhorse | Expensive mounted travel and combat-ready routes |
-| `pony` | Pony | Small mount for roads and hills |
-| `mule` | Mule or donkey | Pack travel, mountain paths, rough roads |
-| `camel` | Camel | Desert and dryland paths, especially Anauroch/Calimshan expansion |
-| `elephant` | Elephant | Rare heavy land mount, usually southern or special access |
-| `mastiff` | Mastiff | Small rider/pack animal where appropriate |
-
-### Drawn vehicles
-
-| id | Name | Use |
-|----|------|-----|
-| `cart` | Cart | Local hauling and simple road routes |
-| `wagon` | Wagon | Caravan travel on maintained roads |
-| `carriage` | Carriage | Urban and high-road passenger travel |
-| `chariot` | Chariot | Rare sport/military road use |
-| `sled` | Sled | Icewind Dale, snow, and tundra routes |
-
-### Water modes
-
-| id | Name | Use |
-|----|------|-----|
-| `boat` | Small boat | Generic command-compatible boat mode |
-| `rowboat` | Rowboat | Rivers, lakes, short crossings |
-| `keelboat` | Keelboat | Rivers and lakes with cargo/passengers |
-| `longship` | Longship | Northern sea routes and island travel |
-| `sailing_ship` | Sailing ship | Sea of Swords and ocean passages |
-| `galley` | Galley | Large coastal/sea movement with heavy crew |
-| `warship` | Warship | Military sea routes, restricted |
-| `ship` | Ship passage | Generic command-facing ship mode for sea paths |
-
-### Special and rare modes
-
-| id | Name | Use |
-|----|------|-----|
-| `fly` | Flight | Generic command-compatible flying mode |
-| `flying_mount` | Flying mount | Rare griffon, hippogriff, pegasus, or similar mount access |
-| `swim` | Swimming | Dangerous unmounted water crossings |
-| `swimming_mount` | Swimming mount | Rare aquatic mount such as a giant sea horse |
-| `portal` | Portal | Fixed magical gate routes |
-| `teleport_circle` | Teleportation circle | High-magic city-to-city travel, gated by cost/story |
-
-The 2014 Basic Rules list common mounts and ordinary drawn/waterborne vehicles, and note that flying or aquatic mounts are rare and normally not simply purchased. Reflect that in shop availability: common stables can sell or rent horses, ponies, mules, carts, and wagons; flying/swimming mounts should be restricted services, quest rewards, or GM-controlled routes.
+The 2014 Basic Rules list common mounts and ordinary drawn/waterborne vehicles, but route requirements should not model every variant separately. Reflect specific availability in shops/services later; keep travel paths grouped by the broad categories above.
 
 ## Shops and services
 
@@ -450,7 +414,8 @@ Recommended policy:
 
 Required behavior:
 
-- exact transport id matches work, such as `!travel Neverwinter riding_horse`;
+- exact transport id matches work, such as `!travel Neverwinter horse`;
+- configured aliases resolve to their canonical category, such as `!travel Neverwinter riding_horse` storing `horse`;
 - transport names or aliases may be resolved through the standard 0 / 1 / many lookup shape where practical;
 - invalid transport flags produce a clear "unknown transport" message;
 - ambiguous transport flags ask the user to be more specific;
@@ -458,11 +423,10 @@ Required behavior:
 - path filtering uses `requirements.transport` against that selected id;
 - route and journey display use the selected id's configured icon/name when available.
 
-Backward compatibility:
+Alias compatibility:
 
-- `horse` may remain as a compatibility alias for `riding_horse` or another configured horse mode.
-- `boat` may remain as the generic small-boat mode.
-- Existing configs that use `requirements.transport: "horse"` should continue to work if they include `horse` as a transport id or compatibility alias.
+- Specific names such as `riding_horse`, `rowboat`, `sailing_ship`, `walk`, `fly`, `swim`, and `teleport_circle` should remain as aliases of the broad categories.
+- Configured path requirements should use canonical category ids, though aliases are accepted when validating and resolving routes.
 
 ## Validation and editor follow-ups
 

@@ -39,7 +39,7 @@ Clears your active journey.
 `{ctx.prefix}travel set <location> yes`
 Sets your current location and clears journey progress.
 
-Optional route flags: any configured transport id, such as `riding_horse`, `boat`, or `ship`. Legacy `horse` still works when configured as an id or alias.
+Optional route flags: any configured transport id or alias, such as `horse`, `cart`, `boat`, `ship`, `fly`, or `portal`.
 """
 
 if len(argslist) > 0 and argslist[0] in ["help", "?"]:

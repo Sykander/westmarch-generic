@@ -15,8 +15,8 @@ westmarch **travel** manages character location, journey planning, route display
 ```
 
 Optional flags are configured transport ids or aliases from `world_data.transport`
-such as `riding_horse`, `boat`, or `ship`. Legacy `horse` and `boat` remain
-compatible when the config keeps those values as ids or aliases.
+such as `horse`, `cart`, `boat`, `ship`, `fly`, or `portal`. Specific names
+like `riding_horse` can be aliases of those categories.
 
 ## westmarch reference
 

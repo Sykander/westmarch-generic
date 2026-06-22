@@ -16,6 +16,11 @@ DEFAULT_TRANSPORT_ICONS = {
     "fly": "🪽",
     "horse": "🐎",
     "boat": "⛵",
+    "cart": "🛞",
+    "ship": "⛵",
+    "swim": "🌊",
+    "portal": "🌀",
+    "teleportation_circle": "🌀",
 }
 
 

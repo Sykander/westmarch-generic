@@ -66,7 +66,7 @@ using(paths = env.gvars.paths, journeys = env.gvars.journeys)
 
 edge = paths.get_edge(cfg, "oakwood", "oakwood_east", transport_id="horse")
 steps = paths.get_path_steps(edge)
-found, legs = journeys.find_journey(cfg, from_id, to_id, transport_id="riding_horse")
+found, legs = journeys.find_journey(cfg, from_id, to_id, transport_id="horse")
 ```
 
 ## Not in this module

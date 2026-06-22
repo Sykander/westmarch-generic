@@ -502,25 +502,49 @@ Shops remain top-level **`shops`** because they are a service registry shared by
 
 ### Transport
 
-**`transport`** replaces westmarch’s implicit **horse** / **boat** flags with named **transport modes** — mounts, vehicles, vessels, and other special travel (spelljammer helm, skyship, teleport circle as narrative gate, …).
+**`transport`** replaces westmarch's implicit **horse** / **boat** flags with named transport categories. Keep route requirements broad enough that path authors do not need separate edges for every mount or vehicle variant.
 
 ```py
 transport = {
     "walk": {
-        "name": "On foot",
+        "name": "Walking",
         "default": True,
+        "aliases": ["walking", "foot", "on_foot"],
     },
     "horse": {
-        "name": "Riding horse",
-        "description": "Land mount — shorter overland legs.",
+        "name": "Horse or mount",
+        "description": "Rideable land mounts.",
+        "aliases": ["riding_horse", "warhorse", "pony", "mule", "camel"],
+    },
+    "cart": {
+        "name": "Cart or wagon",
+        "description": "Drawn land vehicles and draft animals.",
+        "aliases": ["draft_horse", "wagon", "carriage", "chariot", "sled"],
     },
     "boat": {
-        "name": "River boat",
-        "description": "Required for water routes.",
+        "name": "Boat",
+        "description": "Small craft for rivers, lakes, ferries, and short crossings.",
+        "aliases": ["rowboat", "keelboat"],
     },
-    "spelljammer": {
-        "name": "Spelljammer",
-        "description": "Wildspace vessel — see Spelljammer preset.",
+    "ship": {
+        "name": "Ship",
+        "description": "Seagoing vessel travel.",
+        "aliases": ["longship", "sailing_ship", "galley", "warship"],
+    },
+    "fly": {
+        "name": "Flying",
+        "aliases": ["flying", "flight", "flying_mount"],
+    },
+    "swim": {
+        "name": "Swimming",
+        "aliases": ["swimming", "swimming_mount"],
+    },
+    "portal": {
+        "name": "Portal",
+    },
+    "teleportation_circle": {
+        "name": "Teleportation circle",
+        "aliases": ["teleport_circle", "teleport", "circle"],
     },
 }
 ```
@@ -529,9 +553,10 @@ transport = {
 |-------|----------|-------|
 | `name` | yes | Player-facing label |
 | `description` | no | Help / journey embed copy |
+| `aliases` | no | Specific names that resolve to this broad category |
 | `default` | no | **`walk`** (or first mode) when player has no active transport |
 
-**Path requirements** reference transport **ids** (not booleans). Each path has **one** `steps` list — no alternate step lists on the same edge. Riding vs walking the same corridor → **two path entries** (same `from`/`to`, different `requirements.transport` and `steps`):
+**Path requirements** should reference canonical transport **ids** (not booleans). Configured aliases are accepted for compatibility, but categories such as `horse` and `cart` keep the route graph small. Each path has **one** `steps` list — no alternate step lists on the same edge. Riding vs walking the same corridor → **two path entries** (same `from`/`to`, different `requirements.transport` and `steps`):
 
 ```py
 world_data = {
@@ -571,7 +596,7 @@ world_data = {
 | **list of strings** | Any listed mode satisfies the requirement |
 | **omitted** | Any transport mode may use the path (subject to **`transport.default`**) |
 
-**`journeys.gvar`** resolves active transport from the active journey's canonical `transport` id or legacy journey flags, then considers only paths whose **`requirements`** match.
+**`journeys.gvar`** resolves active transport from the active journey's canonical `transport` id, then considers only paths whose **`requirements`** match.
 
 westmarch **`path.horse`** / **`path.boat`** parallel lists → **separate path dicts** with **`requirements.transport`** and that mode’s **`steps`** — not nested variants on one path.
 
@@ -928,7 +953,7 @@ One entry in **`path["steps"]`** — what the player does before advancing (`!tr
 
 ### Requirements and parallel paths
 
-**`requirements.transport`** gates **whether this path dict applies** for the traveller’s active mode. Different step sequences for horse vs walk between the same locations → **two path entries** (duplicate `from`/`to`, different `requirements` and `steps`) — see [Transport](#transport).
+**`requirements.transport`** gates **whether this path dict applies** for the traveller's active mode. Different step sequences for `horse` vs `walk` between the same locations → **two path entries** (duplicate `from`/`to`, different `requirements` and `steps`) — see [Transport](#transport).
 
 **`requirements`** may also gate faction, item, or narrative access (item gates deferred). Display **`label`** when access is narrative-only (not yet enforced).
 
