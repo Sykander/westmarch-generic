@@ -123,6 +123,55 @@ True
 ---
 name: nearby locations group direct destinations and include travel commands
 
+realms_cfg = {
+    "world_data": {
+        "locations_gvar_id": "fde0dbeb-d2e3-42fd-8f56-2d94bdf3ac58",
+        "paths_gvar_id": "19623e1a-3a23-49a0-9d40-986fdd26d7e7",
+        "transport": {
+            "walk": {"name": "Walking", "default": True, "aliases": ["walking", "foot", "on_foot"]},
+            "horse": {"name": "Horse or mount", "aliases": ["riding_horse", "warhorse", "pony"]},
+            "cart": {"name": "Cart or wagon", "aliases": ["wagon", "carriage"]},
+            "boat": {"name": "Boat", "aliases": ["rowboat", "keelboat"]},
+            "ship": {"name": "Ship", "aliases": ["passage", "sailing_ship"]},
+            "fly": {"name": "Flying", "aliases": ["flying", "flight"]},
+            "swim": {"name": "Swimming", "aliases": ["swimming"]},
+            "portal": {"name": "Portal", "aliases": ["gate"]},
+            "teleportation_circle": {"name": "Teleportation circle", "aliases": ["teleport", "circle"]},
+        },
+    },
+}
+nearby = journeys.format_nearby_locations(realms_cfg, "waterdeep", "!")
+found, legs = journeys.find_journey(realms_cfg, "waterdeep", "phandalin")
+return "High Road" in nearby and "Trade Way" in nearby and found and len(legs) == 3 and legs[len(legs) - 1]["to"] == "phandalin"
+---
+True
+---
+name: Realms graph lists nearby Waterdeep routes and finds Phandalin under statement budget
+
+realms_cfg = {
+    "world_data": {
+        "locations_gvar_id": "fde0dbeb-d2e3-42fd-8f56-2d94bdf3ac58",
+        "paths_gvar_id": "19623e1a-3a23-49a0-9d40-986fdd26d7e7",
+        "transport": {
+            "walk": {"name": "Walking", "default": True},
+            "horse": {"name": "Horse or mount"},
+            "cart": {"name": "Cart or wagon"},
+            "boat": {"name": "Boat"},
+            "ship": {"name": "Ship"},
+            "fly": {"name": "Flying"},
+            "swim": {"name": "Swimming"},
+            "portal": {"name": "Portal"},
+            "teleportation_circle": {"name": "Teleportation circle"},
+        },
+    },
+}
+found, legs = journeys.find_journey(realms_cfg, "waterdeep", "forest_of_tethir")
+return not found and len(legs) == 0
+---
+True
+---
+name: Realms graph exhausts an unreachable destination under statement budget
+
 cfg_fixture = {
     "world_data": {
         "locations": {

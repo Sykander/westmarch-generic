@@ -19,6 +19,12 @@ def get_edge(config, from_id, to_id, transport_id="walk"):
 def get_edges_from(config, from_id, transport_id="walk"):
     """All path dicts where path.from == from_id and requirements match transport."""
 
+def get_transport_match_ids(config, transport_id="walk"):
+    """Pre-resolved transport ids/aliases for repeated matching in route planners."""
+
+def get_edge_entries_from(config, from_id, transport_id="walk", selected_ids=None):
+    """Route-planning edge entries: normalized `to`, numeric `cost`, and copied `path`."""
+
 def get_path_cost(path, transport_id="walk"):
     """Numeric cost for one edge — used by journeys.find_journey (lower = cheaper)."""
 

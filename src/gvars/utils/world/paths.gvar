@@ -23,6 +23,7 @@ DEFAULT_TRANSPORT_ICONS = {
     "teleportation_circle": "🌀",
 }
 _paths_cache = {}
+_path_index_cache = {}
 
 
 def _read_field(obj, key):
@@ -131,6 +132,32 @@ def _path_list(cfg):
     for path in _coerce_path_list(_read_field(_world_data(cfg), "paths")):
         out.append(path)
     return out
+
+
+def _path_index_cache_key(cfg):
+    wd = _world_data(cfg)
+    inline_paths = _coerce_path_list(_read_field(wd, "paths"))
+    gvar_id = _read_field(wd, "paths_gvar_id")
+    if len(inline_paths) == 0 and gvar_id != None and str(gvar_id).strip() != "":
+        return str(gvar_id).strip()
+    return None
+
+
+def _path_index(cfg):
+    cache_key = _path_index_cache_key(cfg)
+    if cache_key != None and cache_key in _path_index_cache:
+        return _path_index_cache[cache_key]
+    index = {}
+    for path in _path_list(cfg):
+        path_from = _normalize_id(_read_field(path, "from"))
+        if path_from == None:
+            continue
+        if path_from not in index:
+            index[path_from] = []
+        index[path_from].append(path)
+    if cache_key != None:
+        _path_index_cache[cache_key] = index
+    return index
 
 
 def has_path_source(config_override=None):
@@ -267,9 +294,7 @@ def _transport_matches(requirement, selected_ids):
     return text in selected_ids
 
 
-def path_matches_transport(path, transport_id="walk", config_override=None):
-    cfg = _cfg(config_override)
-    selected_ids = _transport_match_ids(cfg, transport_id)
+def _path_matches_transport_ids(path, selected_ids):
     reqs = _read_field(path, "requirements")
     req_transport = _read_field(reqs, "transport")
     if req_transport != None:
@@ -280,6 +305,15 @@ def path_matches_transport(path, transport_id="walk", config_override=None):
     return True
 
 
+def path_matches_transport(path, transport_id="walk", config_override=None):
+    cfg = _cfg(config_override)
+    return _path_matches_transport_ids(path, _transport_match_ids(cfg, transport_id))
+
+
+def get_transport_match_ids(config_override, transport_id="walk"):
+    return _transport_match_ids(_cfg(config_override), transport_id)
+
+
 def get_edges_from(config_override, from_id, transport_id="walk"):
     """All paths where from == from_id and transport requirements match."""
     cfg = _cfg(config_override)
@@ -287,13 +321,40 @@ def get_edges_from(config_override, from_id, transport_id="walk"):
     out = []
     if origin == None:
         return out
-    for path in _path_list(cfg):
-        path_from = _normalize_id(_read_field(path, "from"))
-        if path_from != origin:
-            continue
-        if not path_matches_transport(path, transport_id, cfg):
+    index = _path_index(cfg)
+    if origin not in index:
+        return out
+    selected_ids = _transport_match_ids(cfg, transport_id)
+    for path in index[origin]:
+        if not _path_matches_transport_ids(path, selected_ids):
             continue
         out.append(_copy_path(path))
+    return out
+
+
+def get_edge_entries_from(config_override, from_id, transport_id="walk", selected_ids=None):
+    """Route-planning edge entries from one origin with normalized dest and cost."""
+    cfg = _cfg(config_override)
+    origin = _normalize_id(from_id)
+    out = []
+    if origin == None:
+        return out
+    index = _path_index(cfg)
+    if origin not in index:
+        return out
+    if selected_ids == None:
+        selected_ids = _transport_match_ids(cfg, transport_id)
+    for path in index[origin]:
+        if not _path_matches_transport_ids(path, selected_ids):
+            continue
+        dest = _normalize_id(_read_field(path, "to"))
+        if dest == None:
+            continue
+        out.append({
+            "to": dest,
+            "cost": get_path_cost(path, transport_id),
+            "path": _copy_path(path),
+        })
     return out
 
 

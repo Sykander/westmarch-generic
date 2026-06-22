@@ -580,19 +580,6 @@ def clear_journey(ch):
     return set_journey(ch, {})
 
 
-def _get_cheapest_unsearched(costs_table):
-    cheapest_id = None
-    cheapest = None
-    for loc_id in costs_table:
-        entry = costs_table[loc_id]
-        if _read_field(entry, "searched") == True:
-            continue
-        if cheapest == None or _read_field(entry, "cost") < _read_field(cheapest, "cost"):
-            cheapest_id = loc_id
-            cheapest = entry
-    return cheapest_id, cheapest
-
-
 def find_journey(config_override, from_id, to_id, horse=False, boat=False, transport_id=None):
     """Shortest route between location ids using Dijkstra over world_data.paths."""
     cfg = _cfg(config_override)
@@ -606,52 +593,66 @@ def find_journey(config_override, from_id, to_id, horse=False, boat=False, trans
         return True, []
 
     transport = resolve_transport_id(cfg, transport_id, horse, boat)
-    costs_table = {start: {"cost": 0, "searched": False, "via": []}}
+    selected_ids = paths.get_transport_match_ids(cfg, transport)
+    costs = {start: 0}
+    searched = {}
+    open_ids = [start]
+    open_seen = {start: True}
+    previous = {}
+    via_path = {}
     cheapest_dest_cost = None
 
-    while True:
-        open_costs = []
-        for loc_id in costs_table:
-            entry = costs_table[loc_id]
-            if _read_field(entry, "searched") != True:
-                open_costs.append(_read_field(entry, "cost"))
-        if len(open_costs) == 0:
+    while len(open_ids) > 0:
+        best_index = 0
+        next_id = open_ids[0]
+        next_cost = costs[next_id]
+        index = 1
+        while index < len(open_ids):
+            loc_id = open_ids[index]
+            loc_cost = costs[loc_id]
+            if loc_cost < next_cost:
+                best_index = index
+                next_id = loc_id
+                next_cost = loc_cost
+            index += 1
+        open_ids.pop(best_index)
+        open_seen[next_id] = False
+        if cheapest_dest_cost != None and cheapest_dest_cost <= next_cost:
             break
-        min_open = min(open_costs)
-        if cheapest_dest_cost != None and cheapest_dest_cost <= min_open:
-            break
+        searched[next_id] = True
 
-        next_id, next_entry = _get_cheapest_unsearched(costs_table)
-        if next_id == None:
-            break
-        costs_table[next_id]["searched"] = True
-
-        for path in paths.get_edges_from(cfg, next_id, transport):
-            path_to = _normalize_id(_read_field(path, "to"))
-            if path_to == None:
+        for edge in paths.get_edge_entries_from(cfg, next_id, transport, selected_ids):
+            path_to = edge["to"]
+            path = edge["path"]
+            new_cost = next_cost + edge["cost"]
+            if path_to in searched:
                 continue
-            new_cost = _read_field(next_entry, "cost") + paths.get_path_cost(path, transport)
-            if path_to in costs_table:
-                existing = costs_table[path_to]
-                if new_cost >= _read_field(existing, "cost"):
-                    continue
-                costs_table[path_to] = {
-                    "cost": new_cost,
-                    "searched": _read_field(existing, "searched") == True,
-                    "via": _read_field(next_entry, "via") + [path],
-                }
-            else:
-                costs_table[path_to] = {
-                    "cost": new_cost,
-                    "searched": False,
-                    "via": _read_field(next_entry, "via") + [path],
-                }
+            if path_to in costs and new_cost >= costs[path_to]:
+                continue
+            costs[path_to] = new_cost
+            previous[path_to] = next_id
+            via_path[path_to] = path
+            if path_to not in open_seen or open_seen[path_to] != True:
+                open_ids.append(path_to)
+                open_seen[path_to] = True
             if path_to == dest:
                 cheapest_dest_cost = new_cost
 
-    if dest not in costs_table:
+    if dest not in costs:
         return False, []
-    return True, _read_field(costs_table[dest], "via")
+    reverse = []
+    cursor = dest
+    while cursor != start:
+        if cursor not in via_path:
+            return False, []
+        reverse.append(via_path[cursor])
+        cursor = previous[cursor]
+    route = []
+    index = len(reverse) - 1
+    while index >= 0:
+        route.append(reverse[index])
+        index -= 1
+    return True, route
 
 
 def journey_title(config_override, from_id, to_id):
