@@ -334,6 +334,91 @@ vars:
     cvars:
       wg_location: "oakwood"
 
+!enc road
+---
+re:Dust on the Road
+---
+name: "location mode allows exact biome arg override"
+vars:
+  svars:
+    westmarch_config: "eeee3334-3334-3334-3334-333333333338"
+  gvars:
+    eeee3334-3334-3334-3334-333333333338: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+              "config": {
+                  "enc_biome_source": "location",
+                  "distribution": {"combat": 0, "quest": 0, "gather": 100},
+              },
+          },
+          "travel": {
+              "enabled": True,
+              "commands": {"location": True},
+          },
+      }
+      world_data = {
+          "default_location": "oakwood",
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+              "road": {"gvar_id": "eeee5555-5555-5555-5555-555555555558"},
+          },
+          "locations": {
+              "oakwood": {
+                  "name": "Oakwood",
+                  "commands": {"enc": ["forest"]},
+              },
+          },
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      [[["enc.gather"], "flavour", "Berries in the Wild", "", "gather"]]
+    eeee5555-5555-5555-5555-555555555558: |
+      [[["enc.gather"], "flavour", "Dust on the Road", "", "gather"]]
+
+!enc road
+---
+re:Berries in the Wild
+---
+name: "location biome arg override can be disabled"
+vars:
+  svars:
+    westmarch_config: "eeee3334-3334-3334-3334-333333333339"
+  gvars:
+    eeee3334-3334-3334-3334-333333333339: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+              "config": {
+                  "enc_biome_source": "location",
+                  "distribution": {"combat": 0, "quest": 0, "gather": 100},
+              },
+          },
+          "travel": {
+              "enabled": True,
+              "commands": {"location": True},
+              "config": {"location_biome_override": False},
+          },
+      }
+      world_data = {
+          "default_location": "oakwood",
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555555"},
+              "road": {"gvar_id": "eeee5555-5555-5555-5555-555555555558"},
+          },
+          "locations": {
+              "oakwood": {
+                  "name": "Oakwood",
+                  "commands": {"enc": ["forest"]},
+              },
+          },
+      }
+    eeee5555-5555-5555-5555-555555555555: |
+      [[["enc.gather"], "flavour", "Berries in the Wild", "", "gather"]]
+    eeee5555-5555-5555-5555-555555555558: |
+      [[["enc.gather"], "flavour", "Dust on the Road", "", "gather"]]
+
 !enc forest
 ---
 re:Berries in the Wild[\s\S]*Arrived in[\s\S]*Oakwood Forest[\s\S]*Completed

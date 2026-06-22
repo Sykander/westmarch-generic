@@ -560,9 +560,9 @@ transport = {
 | `name` | yes | Player-facing label |
 | `description` | no | Help / journey embed copy |
 | `aliases` | no | Specific names that resolve to this broad category |
-| `default` | no | **`walk`** (or first mode) when player has no active transport |
+| `default` | no | **`walk`** (or first mode) when player has no configured/default transport availability |
 
-**Path requirements** should reference canonical transport **ids** (not booleans). Configured aliases are accepted for compatibility, but categories such as `horse` and `cart` keep the route graph small. Each path has **one** `steps` list — no alternate step lists on the same edge. Riding vs walking the same corridor → **two path entries** (same `from`/`to`, different `requirements.transport` and `steps`):
+**Path requirements** should reference canonical transport **ids** (not booleans). Configured aliases are accepted for compatibility, but categories such as `horse` and `cart` keep the route graph small. Each path has **one** `steps` list — no alternate step lists on the same edge. If a corridor has genuinely different actions for walking, riding, or boating, use separate path entries (same `from`/`to`, different `requirements.transport` and `steps`):
 
 ```py
 world_data = {
@@ -598,11 +598,11 @@ world_data = {
 
 | `requirements.transport` | Meaning |
 |--------------------------|---------|
-| **string** | Traveller must be using that mode to use **this path** |
-| **list of strings** | Any listed mode satisfies the requirement |
-| **omitted** | Any transport mode may use the path (subject to **`transport.default`**) |
+| **string** | Traveller must have that transport available |
+| **list of strings** | Traveller must have every listed transport available |
+| **omitted** | No transport requirement |
 
-**`journeys.gvar`** resolves active transport from the active journey's canonical `transport` id, then considers only paths whose **`requirements`** match.
+**`journeys.gvar`** combines the default transport, character cvar **`westmarch_travel_transport`**, and explicit travel args, then considers only paths whose **`requirements`** match that available set.
 
 westmarch **`path.horse`** / **`path.boat`** parallel lists → **separate path dicts** with **`requirements.transport`** and that mode’s **`steps`** — not nested variants on one path.
 
@@ -943,7 +943,7 @@ One entry in **`path["steps"]`** — what the player does before advancing (`!tr
 
 ```py
 # Run an exploration encounter using a biome pool code
-{ "type": "encounter", "biome": "forest" }
+{ "type": "encounter", "biome": "forest", "description": "Follow the old trail." }
 
 # Run a specific exploration activity using a biome pool code
 { "type": "encounter", "activity": "forage", "biome": "forest" }
@@ -955,11 +955,11 @@ One entry in **`path["steps"]`** — what the player does before advancing (`!tr
 { "type": "proceed", "description": "Follow the forest trail" }
 ```
 
-**Encounter steps** map to `!enc <biome>` by default, or to `!<activity> <biome>` when `activity` is set. **Cost steps** represent a payment/resource requirement; the first travel/location slice displays them, and a later enforcement slice will deduct them when policy allows. **Proceed** steps auto-complete on `!travel next`.
+**Encounter steps** map to `!enc <biome>` by default, or to `!<activity> <biome>` when `activity` is set. **Cost steps** represent a payment/resource requirement; the first travel/location slice displays them, and a later enforcement slice will deduct them when policy allows. Steps may include **`description`**; travel displays it beside the action. **Proceed** steps are for narrative-only legs and are compacted into adjacent actionable steps when possible.
 
 ### Requirements and parallel paths
 
-**`requirements.transport`** gates **whether this path dict applies** for the traveller's active mode. Different step sequences for `horse` vs `walk` between the same locations → **two path entries** (duplicate `from`/`to`, different `requirements` and `steps`) — see [Transport](#transport).
+**`requirements.transport`** gates **whether this path dict applies** for the traveller's available transport set. The default transport (usually `walk`), character cvar **`westmarch_travel_transport`** (JSON list), and explicit `!travel <destination> <transport...>` args combine into that set. A string requirement needs that one transport. A list requirement means **all listed transports are required**; use separate path entries when alternatives should be valid.
 
 **`requirements`** may also gate faction, item, or narrative access (item gates deferred). Display **`label`** when access is narrative-only (not yet enforced).
 
@@ -1277,7 +1277,7 @@ Applies to **every** exploration activity command (**`enc`**, **`forage`**, **`m
 - **Inferred** when travel subsystem on, **`location`** command on, a location source exists, and character has a resolvable location.
 - **Manual** otherwise — first positional arg must be a registered biome code.
 
-**Location inference:** character location → resolved location entry → first biome in **`activities[activity]`**, else **`location.biome`**. Error if location unset or no biome for that activity.
+**Location inference:** character location → resolved location entry → first biome in **`activities[activity]`**, else **`location.biome`**. Error if location unset or no biome for that activity. When **`subsystems.travel.config.location_biome_override`** is enabled, an exact registered biome code as the first arg (for example `!enc road`) overrides the inferred location biome.
 
 **Manual inference:** first token of alias args → validate against **`world_data.biomes`**; help text lists codes from **`biomes.list_biomes(config)`**.
 
@@ -1475,11 +1475,13 @@ Warnings when:
 
 ### `travel.config`
 
-No subsystem-specific `travel.config` keys are required for the first travel/location slice. Travel reads shared **`world_data.default_location`**, the configured location source, and the configured path source; enforcement toggles live under **`policies.travel`**.
+Travel reads shared **`world_data.default_location`**, the configured location source, and the configured path source; these keys tune route display and biome/location behavior.
 
 | Key | Type | Default | Notes |
 |-----|------|---------|-------|
-| — | — | — | Add keys here only when route display or journey behavior needs owner tuning |
+| `location_biome_override` | `bool` | `True` | In location-inferred exploration mode, an exact registered biome code as the first arg overrides the location biome. |
+| `path_biome_policy` | `"from_location"` \| `"off"` | `"from_location"` | When enabled, path encounter step biomes should be listed on the path's origin location for that activity. |
+| `transport_icons` | `{ transport_id: emoji }` | engine defaults | Icons shown once per path beside the route label when that path has transport requirements. |
 
 ### Other subsystems
 

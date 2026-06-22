@@ -8,15 +8,16 @@ westmarch **travel** manages character location, journey planning, route display
 
 ```
 !travel                          # current location + active journey progress
-!travel <location> [journey|track]  # route to nearby area; optional set journey
+!travel <location> [transport...] [journey|track]  # route to area; optional set journey
 !travel next                     # advance journey step manually
 !travel reset                    # clear journey progress
 !travel set <location>           # GM-style set location (reset journey)
 ```
 
-Optional flags are configured transport ids or aliases from `world_data.transport`
-such as `horse`, `cart`, `boat`, `ship`, `fly`, or `portal`. Specific names
-like `riding_horse` can be aliases of those categories.
+Optional transport flags are configured ids or aliases from `world_data.transport`
+such as `horse`, `cart`, `boat`, `ship`, `fly`, or `portal`. They add to the
+default transport, and players can set persistent defaults with
+`!cvar westmarch_travel_transport ["fly", "walk", "swim"]`.
 
 ## westmarch reference
 
@@ -76,7 +77,8 @@ flowchart TD
 
 - Shipped cvars use generic names: **`wg_location`**, **`wg_journey`**, **`wg_locations_data`**.
 - Runtime accepts generic path shape plus westmarch import shorthand (**`encs`**, **`horse`**, **`boat`**, **`gold`**) to ease migration.
-- Runtime accepts generic transport ids from **`world_data.transport`** and stores the selected canonical id on the active journey.
+- Runtime accepts multiple generic transport ids from **`world_data.transport`**, combines them with default/cvar transport availability, and stores the available set on the active journey.
+- Path transport icons render once per path from **`requirements.transport`**, not on every step.
 - Automated path costs / rations remain deferred; cost steps are displayed but not deducted.
 - Successful `!enc <biome>` completes the active journey step when the next step is a matching encounter step.
 

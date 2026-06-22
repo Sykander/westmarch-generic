@@ -7,7 +7,7 @@ Route planning and character travel state for the travel subsystem.
 ```text
 !travel
 !travel <location>
-!travel <location> <transport-id>
+!travel <location> [transport-id...]
 !travel <location> track
 !travel next
 !travel reset yes
@@ -16,7 +16,8 @@ Route planning and character travel state for the travel subsystem.
 
 Optional route flags are configured transport ids or aliases from
 `world_data.transport`, such as `horse`, `cart`, `boat`, `ship`, `fly`, or
-`portal`.
+`portal`. They add to the default transport. Players can set persistent
+availability with `!cvar westmarch_travel_transport ["fly", "walk", "swim"]`.
 
 `!travel` shows the current location and active journey. Destinations are looked
 up through `locations.search_locations`, so player input follows the standard
@@ -55,3 +56,6 @@ shape:
 
 The engine also accepts westmarch import shorthand (`encs`, `horse`, `boat`,
 `gold`) for parity during migration.
+
+When `requirements.transport` is a list, every listed transport is required.
+Use separate path entries for alternatives.

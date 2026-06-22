@@ -76,7 +76,7 @@ vars:
 
 ## avrae-ls
 
-- Run **`avrae-ls --run-tests src`** from repo root (see **`DEVELOPMENT.md`**, **`.github/workflows/test.yaml`**).
+- Run **`avrae-ls --run-tests src`** from repo root (see **`DEVELOPMENT.md`**, **`.github/workflows/test.yaml`**). To run multiple focused paths in one invocation, repeat the flag: **`avrae-ls --run-tests src/aliases/travel --run-tests src/gvars/utils/world`**.
 - **`.avraels.json`** + **`.varfile.json`** — mock context and local gvar bodies for tests.
 - **Workshop gvars** — `avrae-ls` resolves remote gvars via **`AVRAE_TOKEN`** or local **`varFiles`** entries; see **`.cursor/avrae-ls-reference/upstream/docs/configuration.md`**.
 

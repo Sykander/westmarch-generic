@@ -12,6 +12,7 @@ using(
 CVAR_LOCATION = "wg_location"
 CVAR_JOURNEY = "wg_journey"
 CVAR_LOCATIONS_DATA = "wg_locations_data"
+CVAR_TRANSPORT = "westmarch_travel_transport"
 
 
 def _read_field(obj, key):
@@ -51,6 +52,9 @@ def _read_field(obj, key):
         "biome": lambda o: o.biome,
         "code": lambda o: o.code,
         "activity": lambda o: o.activity,
+        "description": lambda o: o.description,
+        "travel_description": lambda o: o.travel_description,
+        "travel_desc": lambda o: o.travel_desc,
     }
     if key in attrs:
         try:
@@ -304,12 +308,33 @@ def _add_unique_text(items, value):
     return True
 
 
+def _add_unique_id(items, value):
+    token = _normalize_id(value)
+    if token == None:
+        return False
+    for item in items:
+        if _normalize_id(item) == token:
+            return False
+    items.append(token)
+    return True
+
+
 def _path_transport_requirement(path):
     reqs = _read_field(path, "requirements")
     transport = _read_field(reqs, "transport")
     if transport != None:
         return transport
     return _read_field(path, "transport")
+
+
+def _requirement_transport_ids(cfg, requirement):
+    out = []
+    if requirement == None:
+        return out
+    values = requirement if lists.is_list(requirement) else [requirement]
+    for value in values:
+        _add_unique_id(out, resolve_transport_id(cfg, value))
+    return out
 
 
 def nearby_locations(config_override, from_id):
@@ -319,35 +344,39 @@ def nearby_locations(config_override, from_id):
     if origin == None:
         return []
     default_transport = _transport_default_id(cfg)
+    all_transport_ids = _transport_ids(cfg)
+    all_match_ids = paths.get_available_transport_match_ids(cfg, all_transport_ids)
     routes = {}
     route_ids = []
 
-    for transport in _transport_ids(cfg):
-        for path in paths.get_edges_from(cfg, origin, transport):
-            if _path_transport_requirement(path) == None and transport != default_transport:
-                continue
-            dest_id = _normalize_id(_read_field(path, "to"))
-            if dest_id == None or dest_id == origin:
-                continue
-            loc = locations.get_location(cfg, dest_id)
-            if loc == None:
-                continue
-            if dest_id not in routes:
-                routes[dest_id] = {
-                    "id": dest_id,
-                    "location": loc,
-                    "labels": [],
-                    "transports": [],
-                    "step_count": None,
-                }
-                route_ids.append(dest_id)
-            route = routes[dest_id]
+    for edge in paths.get_edge_entries_from(cfg, origin, default_transport, all_match_ids):
+        path = _read_field(edge, "path")
+        dest_id = _normalize_id(_read_field(path, "to"))
+        if dest_id == None or dest_id == origin:
+            continue
+        loc = locations.get_location(cfg, dest_id)
+        if loc == None:
+            continue
+        if dest_id not in routes:
+            routes[dest_id] = {
+                "id": dest_id,
+                "location": loc,
+                "labels": [],
+                "transports": [],
+                "step_count": None,
+            }
+            route_ids.append(dest_id)
+        route = routes[dest_id]
+        req_ids = _requirement_transport_ids(cfg, _path_transport_requirement(path))
+        if len(req_ids) == 0:
+            req_ids = [default_transport]
+        for transport in req_ids:
             _add_unique_text(route["transports"], transport)
-            _add_unique_text(route["labels"], _read_field(path, "label"))
-            step_count = len(paths.get_path_steps(path, transport))
-            current_steps = _read_field(route, "step_count")
-            if current_steps == None or step_count < current_steps:
-                route["step_count"] = step_count
+        _add_unique_text(route["labels"], _read_field(path, "label"))
+        step_count = len(paths.get_path_steps(path, default_transport))
+        current_steps = _read_field(route, "step_count")
+        if current_steps == None or step_count < current_steps:
+            route["step_count"] = step_count
 
     out = []
     for route_id in route_ids:
@@ -368,9 +397,10 @@ def _route_command_transport(cfg, route):
         return None
     default_transport = _transport_default_id(cfg)
     for transport in transports:
-        if _normalize_id(transport) == default_transport:
-            return None
-    return _normalize_id(transports[0])
+        normalized = _normalize_id(transport)
+        if normalized != None and normalized != default_transport:
+            return normalized
+    return None
 
 
 def nearby_travel_command(config_override, route, prefix="!"):
@@ -391,6 +421,21 @@ def _join_texts(items):
     return ", ".join(out)
 
 
+def _brief_location_description(location):
+    desc = _read_field(location, "travel_description")
+    if desc == None:
+        desc = _read_field(location, "travel_desc")
+    if desc == None:
+        desc = _read_field(location, "description")
+    if desc == None or str(desc).strip() == "":
+        return ""
+    text = str(desc).strip()
+    stop = text.find(".")
+    if stop >= 0 and stop < len(text) - 1:
+        return text[: stop + 1]
+    return text
+
+
 def format_nearby_locations(config_override, from_id, prefix="!", limit=8):
     cfg = _cfg(config_override)
     routes = nearby_locations(cfg, from_id)
@@ -402,21 +447,11 @@ def format_nearby_locations(config_override, from_id, prefix="!", limit=8):
         if count >= limit:
             break
         loc = _read_field(route, "location")
-        labels = _read_field(route, "labels")
-        transports = _read_field(route, "transports")
-        details = []
-        if labels != None and lists.is_list(labels) and len(labels) > 0:
-            details.append(str(labels[0]))
-        if transports != None and lists.is_list(transports) and len(transports) > 0:
-            details.append(_join_texts(transports))
-        step_count = _read_field(route, "step_count")
-        if step_count != None:
-            label = "step" if int(step_count) == 1 else "steps"
-            details.append(f"{step_count} {label}")
-        detail_text = ""
-        if len(details) > 0:
-            detail_text = f" ({'; '.join(details)})"
-        lines.append(f"* {locations.linked_name(loc)}{detail_text} - `{nearby_travel_command(cfg, route, prefix)}`")
+        brief = _brief_location_description(loc)
+        line = f"* {locations.linked_name(loc)}"
+        if brief != "":
+            line += f" - {brief}"
+        lines.append(line)
         count += 1
     if len(routes) > limit:
         lines.append(f"-# {len(routes) - limit} more direct route(s).")
@@ -465,6 +500,70 @@ def _load_json_or(value, fallback):
         return load_json(value)
     except:
         return fallback
+
+
+def _read_transport_values(value):
+    if value == None:
+        return []
+    if lists.is_list(value):
+        return value
+    text = str(value).strip()
+    if text == "":
+        return []
+    parsed = _load_json_or(text, None)
+    if parsed != None:
+        if lists.is_list(parsed):
+            return parsed
+        return [parsed]
+    cleaned = text.replace(",", " ")
+    return cleaned.split()
+
+
+def _append_transport_id(cfg, out, value):
+    trans_id = resolve_transport_id(cfg, value)
+    return _add_unique_id(out, trans_id)
+
+
+def _explicit_transport_values(transport_ids=None, transport_id=None, horse=False, boat=False):
+    values = []
+    legacy = _transport_from_legacy_flags(horse, boat)
+    if legacy != None:
+        values.append(legacy)
+    if transport_id != None:
+        values.append(transport_id)
+    if transport_ids != None:
+        if lists.is_list(transport_ids):
+            for value in transport_ids:
+                values.append(value)
+        else:
+            values.append(transport_ids)
+    return values
+
+
+def _available_transport_ids(cfg, transport_ids=None, transport_id=None, horse=False, boat=False):
+    out = []
+    _append_transport_id(cfg, out, _transport_default_id(cfg))
+    for value in _explicit_transport_values(transport_ids, transport_id, horse, boat):
+        _append_transport_id(cfg, out, value)
+    return out
+
+
+def _primary_transport_id(cfg, transport_ids=None, transport_id=None, horse=False, boat=False):
+    values = _explicit_transport_values(transport_ids, transport_id, horse, boat)
+    if len(values) > 0:
+        return resolve_transport_id(cfg, values[0])
+    return _transport_default_id(cfg)
+
+
+def get_available_transport_ids(config_override=None, ch=None, explicit_transport_ids=None):
+    cfg = _cfg(config_override)
+    out = []
+    _append_transport_id(cfg, out, _transport_default_id(cfg))
+    for value in _read_transport_values(_read_cvar(ch, CVAR_TRANSPORT, None)):
+        _append_transport_id(cfg, out, value)
+    for value in _read_transport_values(explicit_transport_ids):
+        _append_transport_id(cfg, out, value)
+    return out
 
 
 def _default_location_id(cfg):
@@ -585,7 +684,7 @@ def clear_journey(ch):
     return set_journey(ch, {})
 
 
-def find_journey(config_override, from_id, to_id, horse=False, boat=False, transport_id=None):
+def find_journey(config_override, from_id, to_id, horse=False, boat=False, transport_id=None, transport_ids=None):
     """Shortest route between location ids using Dijkstra over world_data.paths."""
     cfg = _cfg(config_override)
     start = _normalize_id(from_id)
@@ -597,8 +696,11 @@ def find_journey(config_override, from_id, to_id, horse=False, boat=False, trans
     if start == dest:
         return True, []
 
-    transport = resolve_transport_id(cfg, transport_id, horse, boat)
-    selected_ids = paths.get_transport_match_ids(cfg, transport)
+    available_transports = _available_transport_ids(cfg, transport_ids, transport_id, horse, boat)
+    transport = _primary_transport_id(cfg, transport_ids, transport_id, horse, boat)
+    selected_ids = paths.get_available_transport_match_ids(cfg, available_transports)
+    if not paths.has_edge_to(cfg, dest, transport, selected_ids):
+        return False, []
     costs = {start: 0}
     searched = {}
     open_ids = [start]
@@ -661,8 +763,10 @@ def journey_title(config_override, from_id, to_id):
     return f"{from_name} -> {to_name}"
 
 
-def build_journey(config_override, from_id, to_id, legs, horse=False, boat=False, transport_id=None):
-    transport = resolve_transport_id(config_override, transport_id, horse, boat)
+def build_journey(config_override, from_id, to_id, legs, horse=False, boat=False, transport_id=None, transport_ids=None):
+    cfg = _cfg(config_override)
+    transport = _primary_transport_id(cfg, transport_ids, transport_id, horse, boat)
+    available_transports = _available_transport_ids(cfg, transport_ids, transport_id, horse, boat)
     return {
         "title": journey_title(config_override, from_id, to_id),
         "from": _normalize_id(from_id),
@@ -671,6 +775,7 @@ def build_journey(config_override, from_id, to_id, legs, horse=False, boat=False
         "path_index": 0,
         "step_index": 0,
         "transport": transport,
+        "transports": available_transports,
         "horse": horse == True,
         "boat": boat == True,
     }
@@ -733,7 +838,7 @@ def display_journey(config_override, journey_or_legs, mode="detailed", horse=Fal
         transport_id = _read_field(journey_or_legs, "transport")
         horse = _read_field(journey_or_legs, "horse") == True
         boat = _read_field(journey_or_legs, "boat") == True
-    transport = resolve_transport_id(cfg, transport_id, horse, boat)
+    transport = _primary_transport_id(cfg, _read_field(journey_or_legs, "transports"), transport_id, horse, boat)
     title = None
     if dicts.is_dict(journey_or_legs):
         title = _read_field(journey_or_legs, "title")
@@ -748,8 +853,6 @@ def display_journey(config_override, journey_or_legs, mode="detailed", horse=Fal
     elif dicts.is_dict(journey_or_legs):
         path_index = _read_field(journey_or_legs, "path_index")
         step_index = _read_field(journey_or_legs, "step_index")
-    icon = paths.get_transport_icon(cfg, transport)
-    biome_source = _biome_source(cfg)
     i = 0
     for leg in legs:
         completed_leg = False
@@ -762,10 +865,7 @@ def display_journey(config_override, journey_or_legs, mode="detailed", horse=Fal
             completed_leg = False
         if completed_leg:
             active_progress = len(paths.get_path_steps(leg, transport))
-        if mode == "detailed":
-            lines.append(_display_journey_path(leg, cfg, transport, prefix, active_progress, icon, biome_source))
-        else:
-            lines.append(paths.display_path(leg, cfg, mode, transport, prefix, active_progress))
+        lines.append(paths.display_path(leg, cfg, mode, transport, prefix, active_progress))
         i += 1
     return "\n\n".join(lines)
 
@@ -786,7 +886,7 @@ def next_step(ch, config_override=None):
 
     horse = _read_field(journey, "horse") == True
     boat = _read_field(journey, "boat") == True
-    transport = resolve_transport_id(cfg, _read_field(journey, "transport"), horse, boat)
+    transport = _primary_transport_id(cfg, _read_field(journey, "transports"), _read_field(journey, "transport"), horse, boat)
     path_index = _read_field(journey, "path_index")
     step_index = _read_field(journey, "step_index")
     if path_index == None:
@@ -844,8 +944,9 @@ def get_next_step(ch=None):
         step_index = 0
     if int(path_index) >= len(legs):
         return None
-    transport = resolve_transport_id(
+    transport = _primary_transport_id(
         _cfg(None),
+        _read_field(journey, "transports"),
         _read_field(journey, "transport"),
         _read_field(journey, "horse") == True,
         _read_field(journey, "boat") == True,

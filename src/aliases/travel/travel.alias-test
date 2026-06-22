@@ -143,6 +143,92 @@ vars:
           "paths": [],
       }
 
+!travel Island
+---
+re:Could not find a route
+---
+name: route without required extra transport fails
+vars:
+  svars:
+    westmarch_config: "aaaa2002-2002-2002-2002-200000000024"
+  gvars:
+    aaaa2002-2002-2002-2002-200000000024: |
+      subsystems = {
+          "travel": {"enabled": True, "commands": {"travel": True, "location": True}},
+      }
+      world_data = {
+          "default_location": "river_town",
+          "transport": {
+              "walk": {"name": "Walking", "default": True},
+              "boat": {"name": "Boat"},
+          },
+          "locations": {
+              "river_town": {"name": "River Town"},
+              "island": {"name": "Island"},
+          },
+          "paths": [
+              {"from": "river_town", "to": "island", "requirements": {"transport": ["walk", "boat"]}, "steps": [{"type": "encounter", "biome": "river"}]},
+          ],
+      }
+
+!travel Island boat
+---
+re:Island[\s\S]*!enc river[\s\S]*Island" boat track
+---
+name: route combines default and explicit transport availability
+vars:
+  svars:
+    westmarch_config: "aaaa2002-2002-2002-2002-200000000024"
+  gvars:
+    aaaa2002-2002-2002-2002-200000000024: |
+      subsystems = {
+          "travel": {"enabled": True, "commands": {"travel": True, "location": True}},
+      }
+      world_data = {
+          "default_location": "river_town",
+          "transport": {
+              "walk": {"name": "Walking", "default": True},
+              "boat": {"name": "Boat"},
+          },
+          "locations": {
+              "river_town": {"name": "River Town"},
+              "island": {"name": "Island"},
+          },
+          "paths": [
+              {"from": "river_town", "to": "island", "requirements": {"transport": ["walk", "boat"]}, "steps": [{"type": "encounter", "biome": "river"}]},
+          ],
+      }
+
+!travel Island
+---
+re:Island[\s\S]*!enc river
+---
+name: route uses westmarch_travel_transport cvar availability
+vars:
+  cvars:
+    westmarch_travel_transport: '["boat"]'
+  svars:
+    westmarch_config: "aaaa2002-2002-2002-2002-200000000024"
+  gvars:
+    aaaa2002-2002-2002-2002-200000000024: |
+      subsystems = {
+          "travel": {"enabled": True, "commands": {"travel": True, "location": True}},
+      }
+      world_data = {
+          "default_location": "river_town",
+          "transport": {
+              "walk": {"name": "Walking", "default": True},
+              "boat": {"name": "Boat"},
+          },
+          "locations": {
+              "river_town": {"name": "River Town"},
+              "island": {"name": "Island"},
+          },
+          "paths": [
+              {"from": "river_town", "to": "island", "requirements": {"transport": ["walk", "boat"]}, "steps": [{"type": "encounter", "biome": "river"}]},
+          ],
+      }
+
 !travel Oakwood
 ---
 "re:Run `!enc`[\\s\\S]*Encounter step has no biome"

@@ -39,7 +39,7 @@ Clears your active journey.
 `{ctx.prefix}travel set <location> yes`
 Sets your current location and clears journey progress.
 
-Optional route flags: any configured transport id or alias, such as `horse`, `cart`, `boat`, `ship`, `fly`, or `portal`.
+Optional route flags: any configured transport id or alias, such as `horse`, `cart`, `boat`, `ship`, `fly`, or `portal`. These add to your default transport. You can also set `westmarch_travel_transport` as a JSON cvar list for character defaults.
 """
 
 if len(argslist) > 0 and argslist[0] in ["help", "?"]:
@@ -78,9 +78,19 @@ def transport_error(query, matches):
     return f"Be more specific: **{query}** matched transports {journeys.format_transport_matches(matches)}."
 
 
+def add_transport_id(items, transport_id):
+    text = str(transport_id).strip().lower()
+    if text == "":
+        return
+    for item in items:
+        if str(item).strip().lower() == text:
+            return
+    items.append(text)
+
+
 def split_route_query(start_index=0):
     parts = []
-    selected_transport = None
+    selected_transports = []
     for arg in argslist[start_index:]:
         text = str(arg).strip()
         if text == "":
@@ -89,22 +99,22 @@ def split_route_query(start_index=0):
             continue
         matches = journeys.search_transport_exact(cfg, text)
         if len(matches) == 1:
-            selected_transport = journeys.get_transport_id(matches[0])
+            add_transport_id(selected_transports, journeys.get_transport_id(matches[0]))
             continue
         if len(matches) > 1:
             return "", None, transport_error(text, matches), []
         parts.append(text)
-    return " ".join(parts).strip(), selected_transport, None, parts
+    return " ".join(parts).strip(), selected_transports, None, parts
 
 
 def resolve_route_destination(start_index=0):
-    query, selected_transport, err_msg, parts = split_route_query(start_index)
+    query, selected_transports, err_msg, parts = split_route_query(start_index)
     if err_msg != None:
         return None, None, err_msg
     dest, dest_err = resolve_destination(query)
     if dest_err == None:
-        return dest, selected_transport, None
-    if selected_transport == None and len(parts) > 1:
+        return dest, selected_transports, None
+    if len(selected_transports) == 0 and len(parts) > 1:
         maybe_transport = parts[len(parts) - 1]
         prefix_query = " ".join(parts[:len(parts) - 1]).strip()
         prefix_dest, prefix_err = resolve_destination(prefix_query)
@@ -112,7 +122,8 @@ def resolve_route_destination(start_index=0):
             matches = journeys.search_transport(cfg, maybe_transport)
             if len(matches) != 1:
                 return None, None, transport_error(maybe_transport, matches)
-            return prefix_dest, journeys.get_transport_id(matches[0]), None
+            add_transport_id(selected_transports, journeys.get_transport_id(matches[0]))
+            return prefix_dest, selected_transports, None
     return None, None, dest_err
 
 
@@ -155,6 +166,27 @@ def resolve_destination(query):
     return matches[0], None
 
 
+def primary_transport(transport_ids):
+    if transport_ids != None and len(transport_ids) > 0:
+        return transport_ids[0]
+    return None
+
+
+def transport_suffix(transport_ids):
+    if transport_ids == None or len(transport_ids) == 0:
+        return ""
+    default_transport = journeys.resolve_transport_id(cfg)
+    parts = []
+    for transport_id in transport_ids:
+        text = str(transport_id).strip().lower()
+        if text == "" or text == default_transport:
+            continue
+        parts.append(text)
+    if len(parts) == 0:
+        return ""
+    return " " + " ".join(parts)
+
+
 if len(argslist) == 0:
     return response_for_current()
 
@@ -191,7 +223,7 @@ current_id, current_loc, err_msg = current_location_or_error()
 if err_msg != None:
     return get_embed(desc=err_msg)
 
-dest, selected_transport, err_msg = resolve_route_destination(0)
+dest, selected_transports, err_msg = resolve_route_destination(0)
 if err_msg != None:
     return get_embed(desc=err_msg, image=locations.location_image(current_loc))
 
@@ -199,23 +231,35 @@ dest_id = locations.location_id(dest)
 if current_id == dest_id:
     return get_embed(desc=f"You are already in **{locations.location_name(dest)}**.", image=locations.location_image(current_loc))
 
-found, route = journeys.find_journey(cfg, current_id, dest_id, transport_id=selected_transport)
+available_transports = journeys.get_available_transport_ids(cfg, ch, selected_transports)
+selected_transport = primary_transport(selected_transports)
+found, route = journeys.find_journey(
+    cfg,
+    current_id,
+    dest_id,
+    transport_id=selected_transport,
+    transport_ids=available_transports,
+)
 if not found:
     return get_embed(
         desc=f"Could not find a route from **{locations.location_name(current_loc)}** to **{locations.location_name(dest)}**.",
         image=locations.location_image(current_loc),
     )
 
-journey = journeys.build_journey(cfg, current_id, dest_id, route, transport_id=selected_transport)
+journey = journeys.build_journey(
+    cfg,
+    current_id,
+    dest_id,
+    route,
+    transport_id=selected_transport,
+    transport_ids=available_transports,
+)
 messages = []
 if has_token("track") or has_token("journey"):
     journeys.set_journey(ch, journey)
     messages.append("The journey is now being tracked.")
 else:
-    suffix = ""
-    default_transport = journeys.resolve_transport_id(cfg)
-    if selected_transport != None and selected_transport != default_transport:
-        suffix = f" {selected_transport}"
+    suffix = transport_suffix(selected_transports)
     messages.append(f"To track this journey, run `{ctx.prefix}travel \"{locations.location_name(dest)}\"{suffix} track`.")
 
 desc = location_description(current_id, current_loc, True)

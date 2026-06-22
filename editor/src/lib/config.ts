@@ -52,6 +52,7 @@ export function commandSupportsCooldown(_subsystem: string, command: string): bo
 const SUBSYSTEMS = Object.keys(DEFAULT_SUBSYSTEM_COMMANDS);
 
 const VALID_ENC_BIOME = ['auto', 'argument', 'location'];
+const VALID_PATH_BIOME_POLICY = ['from_location', 'off'];
 const VALID_RULES_VERSION = ['2014', '2024'];
 const VALID_FOOTER = ['helpful_tips', 'string', 'help', 'credits', 'balanced'];
 const VALID_COMMAND_THUMBNAIL = ['default', 'character', 'pc', 'current_character', 'current_pc'];
@@ -382,6 +383,8 @@ function createDefaultSubsystems(): Record<string, AnyRecord> {
       enabled: false,
       commands: defaultCommands(DEFAULT_SUBSYSTEM_COMMANDS.travel),
       config: {
+        location_biome_override: true,
+        path_biome_policy: 'from_location',
         transport_icons: {
           walk: '🚶',
           fly: '🪽',
@@ -759,6 +762,25 @@ function transportLabelsFromWorldData(worldData: AnyRecord): Set<string> {
   }
   labels.delete('');
   return labels;
+}
+
+function normalizedStringList(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.map((item) => normalizedLookupId(item)).filter(Boolean);
+}
+
+function locationAllowedBiomes(location: AnyRecord, command: string): string[] {
+  const commands = asRecord(location.commands);
+  const activities = asRecord(location.activities);
+  const encs = asRecord(location.encs);
+  const raw = commands[command] ?? activities[command] ?? encs[command];
+  const listed = normalizedStringList(raw);
+  if (listed.length > 0) return listed;
+  if (command === 'enc') {
+    const biome = normalizedLookupId(location.biome);
+    if (biome) return [biome];
+  }
+  return [];
 }
 
 function isHexColour(value: unknown): boolean {
@@ -1850,6 +1872,34 @@ function validateTravel(model: ConfigModel, issues: ConfigIssue[]) {
   const travel = asRecord(model.subsystems.travel);
   const commands = asRecord(travel.commands);
   const travelConfig = asRecord(travel.config);
+  const locationBiomeOverride = travelConfig.location_biome_override;
+  if (locationBiomeOverride != null && typeof locationBiomeOverride !== 'boolean') {
+    issues.push(
+      issue(
+        'error',
+        'travel.location_biome_override',
+        'Subsystems',
+        'subsystems.travel.config.location_biome_override',
+        'Location biome override must be true or false',
+        '`location_biome_override` controls whether exact biome args override location inference.',
+      ),
+    );
+  }
+  const pathBiomePolicy = String(travelConfig.path_biome_policy ?? 'from_location')
+    .trim()
+    .toLowerCase();
+  if (!VALID_PATH_BIOME_POLICY.includes(pathBiomePolicy)) {
+    issues.push(
+      issue(
+        'error',
+        'travel.path_biome_policy',
+        'Subsystems',
+        'subsystems.travel.config.path_biome_policy',
+        'Invalid path biome policy',
+        '`path_biome_policy` must be from_location or off.',
+      ),
+    );
+  }
   const transportIcons = asRecord(travelConfig.transport_icons);
   for (const key of REQUIRED_TRANSPORT_ICONS) {
     const icon = transportIcons[key];
@@ -2058,8 +2108,8 @@ function validateTravel(model: ConfigModel, issues: ConfigIssue[]) {
           const stepType = String(step.type ?? (step.biome != null ? 'encounter' : 'proceed'))
             .trim()
             .toLowerCase();
+          const biome = String(step.biome ?? step.code ?? '').trim();
           if (stepType === 'encounter' && biomeSource !== 'location') {
-            const biome = String(step.biome ?? step.code ?? '').trim();
             if (!biome) {
               issues.push(
                 issue(
@@ -2070,6 +2120,31 @@ function validateTravel(model: ConfigModel, issues: ConfigIssue[]) {
                   'Encounter step has no biome',
                   'Empty-biome encounter steps rely on location-inferred exploration.',
                   'Set a biome on the step, or set exploration biome source to location.',
+                ),
+              );
+            }
+          }
+          if (pathBiomePolicy === 'from_location' && stepType === 'encounter' && biome) {
+            const fromLocation = asRecord(locations[from]);
+            const command = String(step.activity ?? 'enc')
+              .trim()
+              .toLowerCase();
+            const allowedBiomes = locationAllowedBiomes(fromLocation, command);
+            const biomeId = normalizedLookupId(biome);
+            if (
+              Object.keys(fromLocation).length > 0 &&
+              allowedBiomes.length > 0 &&
+              !allowedBiomes.includes(biomeId)
+            ) {
+              issues.push(
+                issue(
+                  'error',
+                  'world.path.biome_not_allowed',
+                  'World',
+                  `${stepPath}.biome`,
+                  'Path step biome is not allowed at the origin',
+                  `The ${command} biome ${biomeId} is not listed on ${from}.`,
+                  'Add the biome to the origin location command list, change the step biome, or set travel path_biome_policy to off.',
                 ),
               );
             }

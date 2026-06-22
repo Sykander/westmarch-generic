@@ -59,9 +59,9 @@ vars:
 
 !location
 ---
-re:River Town[\s\S]*Nearby[\s\S]*Oakwood Forest[\s\S]*Old Road[\s\S]*walk, horse[\s\S]*!travel "Oakwood Forest"[\s\S]*Docks[\s\S]*Harbor lane[\s\S]*ship[\s\S]*!travel "Docks" ship
+re:River Town[\s\S]*Nearby[\s\S]*Oakwood Forest(?![\s\S]*Old Road)[\s\S]*Docks(?![\s\S]*Harbor lane)
 ---
-name: shows nearby direct travel destinations
+name: shows concise nearby direct travel destinations
 vars:
   svars:
     westmarch_config: "aaaa1003-1003-1003-1003-100000000003"
@@ -79,13 +79,33 @@ vars:
           },
           "locations": {
               "river_town": {"name": "River Town"},
-              "oakwood": {"name": "Oakwood Forest"},
-              "docks": {"name": "Docks"},
+              "oakwood": {"name": "Oakwood Forest", "description": "A nearby forest road."},
+              "docks": {"name": "Docks", "description": "River landings and boats."},
           },
           "paths": [
               {"from": "river_town", "to": "oakwood", "label": "Old Road", "requirements": {"transport": ["walk", "horse"]}, "steps": [{"type": "encounter", "biome": "forest"}]},
               {"from": "river_town", "to": "docks", "label": "Harbor lane", "requirements": {"transport": "ship"}, "steps": [{"type": "proceed", "description": "Sail downriver."}]},
           ],
+      }
+
+!location
+---
+re:Activities
+---
+name: shows activities for current location
+vars:
+  svars:
+    westmarch_config: "aaaa1004-1004-1004-1004-100000000004"
+  gvars:
+    aaaa1004-1004-1004-1004-100000000004: |
+      subsystems = {
+          "travel": {"enabled": True, "commands": {"location": True}},
+      }
+      world_data = {
+          "default_location": "river_town",
+          "locations": {
+              "river_town": {"name": "River Town", "commands": {"enc": ["road"]}},
+          },
       }
 
 !location

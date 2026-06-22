@@ -129,9 +129,9 @@ test('forgotten realms starter has slice 5 travel baseline', () => {
 
   assert.ok(paths.length > 120);
   assert.ok(hasPath('waterdeep', 'high_road', 'walk'));
-  assert.ok(hasPath('high_road', 'triboar_trail', 'horse'));
-  assert.ok(hasPath('triboar_trail', 'phandalin', 'cart'));
-  assert.ok(hasPath('baldurs_gate', 'risen_road', 'cart'));
+  assert.ok(hasPath('high_road', 'triboar_trail', 'walk'));
+  assert.ok(hasPath('triboar_trail', 'phandalin', 'walk'));
+  assert.ok(hasPath('baldurs_gate', 'risen_road', 'walk'));
   assert.ok(hasPath('waterdeep', 'sea_of_swords', 'ship'));
   assert.ok(hasPath('baldurs_gate', 'river_chionthar', 'boat'));
   assert.ok(hasStepText('baldurs_gate', 'risen_road', "Wyrm's Crossing"));
@@ -406,6 +406,88 @@ world_data = {
 `);
 
   assert.equal(aliasCodes.includes('world.path.transport_unknown'), false);
+});
+
+test('travel config validates biome policy fields', () => {
+  const codes = issueCodes(`
+subsystems = {
+    "travel": {
+        "config": {
+            "location_biome_override": "yes",
+            "path_biome_policy": "strict",
+        },
+    },
+}
+`);
+
+  assert.ok(codes.includes('travel.location_biome_override'));
+  assert.ok(codes.includes('travel.path_biome_policy'));
+});
+
+test('travel path biomes must be allowed by the origin location when policy is on', () => {
+  const blockedCodes = issueCodes(`
+subsystems = {
+    "travel": {
+        "enabled": True,
+        "commands": {"travel": True, "location": True},
+    },
+}
+
+world_data = {
+    "default_location": "river_town",
+    "locations": {
+        "river_town": {"name": "River Town", "commands": {"enc": ["road"]}},
+        "oakwood": {"name": "Oakwood Forest"},
+    },
+    "paths": [
+        {"from": "river_town", "to": "oakwood", "steps": [{"type": "encounter", "biome": "forest"}]},
+    ],
+}
+`);
+  assert.ok(blockedCodes.includes('world.path.biome_not_allowed'));
+
+  const allowedCodes = issueCodes(`
+subsystems = {
+    "travel": {
+        "enabled": True,
+        "commands": {"travel": True, "location": True},
+    },
+}
+
+world_data = {
+    "default_location": "river_town",
+    "locations": {
+        "river_town": {"name": "River Town", "commands": {"enc": ["forest"]}},
+        "oakwood": {"name": "Oakwood Forest"},
+    },
+    "paths": [
+        {"from": "river_town", "to": "oakwood", "steps": [{"type": "encounter", "biome": "forest"}]},
+    ],
+}
+`);
+  assert.equal(allowedCodes.includes('world.path.biome_not_allowed'), false);
+
+  const offCodes = issueCodes(`
+subsystems = {
+    "travel": {
+        "enabled": True,
+        "commands": {"travel": True, "location": True},
+        "config": {"path_biome_policy": "off"},
+    },
+}
+
+world_data = {
+    "default_location": "river_town",
+    "locations": {
+        "river_town": {"name": "River Town", "commands": {"enc": ["road"]}},
+        "oakwood": {"name": "Oakwood Forest"},
+    },
+    "paths": [
+        {"from": "river_town", "to": "oakwood", "steps": [{"type": "encounter", "biome": "forest"}]},
+    ],
+}
+`);
+  assert.equal(offCodes.includes('world.path.biome_not_allowed'), false);
 });
 
 test('time and weather commands require configured world data', () => {

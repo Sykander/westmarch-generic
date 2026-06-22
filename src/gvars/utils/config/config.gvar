@@ -53,6 +53,8 @@ DEFAULTS = {
                 "weather": False,
             },
             "config": {
+                "location_biome_override": True,
+                "path_biome_policy": "from_location",
                 "transport_icons": {
                     "walk": "🚶",
                     "fly": "🪽",

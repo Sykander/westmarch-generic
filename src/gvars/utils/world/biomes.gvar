@@ -54,6 +54,7 @@ def _read_field(obj, key):
         "travel": lambda o: o.travel,
         "enabled": lambda o: o.enabled,
         "enc_biome_source": lambda o: o.enc_biome_source,
+        "location_biome_override": lambda o: o.location_biome_override,
     }
     if key in attrs:
         try:
@@ -244,6 +245,12 @@ def _exploration_config(cfg):
     return _read_field(exp, "config")
 
 
+def _travel_config(cfg):
+    sub = _read_field(cfg, "subsystems")
+    travel = _read_field(sub, "travel")
+    return _read_field(travel, "config")
+
+
 def _enc_biome_source(cfg):
     exp_cfg = _exploration_config(cfg)
     source = _read_field(exp_cfg, "enc_biome_source")
@@ -279,6 +286,12 @@ def uses_location_mode(cfg):
     if source == "argument":
         return False
     return _travel_ready(cfg)
+
+
+def _location_biome_override_enabled(cfg):
+    travel_cfg = _travel_config(cfg)
+    raw = _read_field(travel_cfg, "location_biome_override")
+    return raw != False
 
 
 def _parse_first_arg(args):
@@ -322,6 +335,17 @@ def _validate_code(code, cfg):
     if len(matches) > 1:
         return None, f"Be more specific: **{key}** matched {_format_matches(matches)}."
     return str(matches[0]).lower(), None
+
+
+def _exact_code(code, cfg):
+    key = str(code).strip().lower()
+    if key == "":
+        return None
+    reg = _registry(cfg)
+    for registered in reg:
+        if str(registered).strip().lower() == key:
+            return str(registered).strip().lower()
+    return None
 
 
 def _location_name(loc, loc_id):
@@ -376,6 +400,11 @@ def resolve_biome_context(activity, args, character, config=None):
     """Return rich biome resolution context for exploration activity calls."""
     cfg = _cfg(config)
     if uses_location_mode(cfg):
+        token = _parse_first_arg(args)
+        if _location_biome_override_enabled(cfg) and token != "":
+            exact = _exact_code(token, cfg)
+            if exact != None:
+                return _resolve_result(exact, None, "manual")
         return _biome_from_location_context(cfg, activity, character)
     token = _parse_first_arg(args)
     if token == "":

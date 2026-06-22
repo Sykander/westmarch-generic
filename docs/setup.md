@@ -181,6 +181,8 @@ subsystems = {
         "enabled": True,
         "commands": {"travel": True, "location": True, "time": False, "weather": False},
         "config": {
+            "location_biome_override": True,
+            "path_biome_policy": "from_location",
             "transport_icons": {"walk": "🚶", "fly": "🪽", "horse": "🐎", "boat": "⛵"},
         },
     },
@@ -197,6 +199,8 @@ world_data = {
     ],
 }
 ```
+
+Travel combines the default transport with any transport args on `!travel <destination> ...`. Players can set persistent availability with a JSON cvar, for example `!cvar westmarch_travel_transport ["fly", "walk", "swim"]`.
 
 Large maps can be split into JSON gvars and referenced from the config:
 

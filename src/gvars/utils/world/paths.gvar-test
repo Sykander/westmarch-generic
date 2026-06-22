@@ -31,6 +31,36 @@ name: get_edges_from filters transport requirements
 cfg_fixture = {
     "world_data": {
         "transport": {
+            "walk": {"name": "Walking", "default": True},
+            "boat": {"name": "Boat"},
+        },
+        "locations": {
+            "river_town": {"name": "River Town"},
+            "island": {"name": "Island"},
+        },
+        "paths": [
+            {
+                "from": "river_town",
+                "to": "island",
+                "requirements": {"transport": ["walk", "boat"]},
+                "steps": [{"type": "encounter", "biome": "river"}],
+            },
+        ],
+    },
+}
+walk_edges = paths.get_edges_from(cfg_fixture, "river_town", "walk")
+boat_edges = paths.get_edges_from(cfg_fixture, "river_town", "boat")
+available_ids = paths.get_available_transport_match_ids(cfg_fixture, ["walk", "boat"])
+available_edges = paths.get_edge_entries_from(cfg_fixture, "river_town", "walk", available_ids)
+return len(walk_edges) == 0 and len(boat_edges) == 0 and len(available_edges) == 1
+---
+True
+---
+name: transport requirement lists require every listed transport
+
+cfg_fixture = {
+    "world_data": {
+        "transport": {
             "horse": {"name": "Horse or mount", "aliases": ["riding_horse", "warhorse", "pony"]},
         },
         "locations": {
@@ -138,13 +168,29 @@ cfg_fixture = {
         },
     },
 }
-path = {"from": "river_town", "to": "oakwood", "steps": [{"type": "proceed", "description": "Follow the road."}]}
+path = {"from": "river_town", "to": "oakwood", "requirements": {"transport": "horse"}, "steps": [{"type": "proceed", "description": "Follow the road."}]}
 text = paths.display_path(path, cfg_fixture, "detailed", "horse", "!")
-return "* H Follow the road." in text
+return "-# H" in text and "* H Follow the road." not in text and "* Follow the road." in text
 ---
 True
 ---
-name: display_path uses configured transport icon
+name: display_path shows configured transport icon once in the subheading
+
+path = {
+    "from": "river_town",
+    "to": "oakwood",
+    "steps": [
+        {"type": "proceed", "description": "Follow the road."},
+        {"type": "encounter", "biome": "forest"},
+    ],
+}
+steps = paths.get_path_steps(path)
+text = paths.display_path(path, {}, "detailed", "walk", "!")
+return len(steps) == 1 and steps[0]["description"] == "Follow the road." and "Follow the road. Run `!enc forest`" in text
+---
+True
+---
+name: proceed descriptions compact into adjacent action steps
 
 cfg_fixture = {
     "world_data": {

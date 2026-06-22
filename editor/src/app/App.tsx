@@ -1543,12 +1543,47 @@ function SubsystemAdvancedEditor({
         </div>
       ) : null}
       {subsystemKey === 'travel' ? (
-        <TransportIconsEditor
-          value={asRecord(config.transport_icons ?? TRANSPORT_ICON_DEFAULTS)}
-          onChange={(value) =>
-            updateConfig(`subsystems.${subsystemKey}.config.transport_icons`, value)
-          }
-        />
+        <>
+          <div className="form-grid compact">
+            <div className="field">
+              <span>
+                Location biome override
+                <HelpTip label="Location biome override help">
+                  Keep enabled to let an exact biome code at the start of an exploration command
+                  override location inference.
+                </HelpTip>
+              </span>
+              <label className="switch-line">
+                <input
+                  type="checkbox"
+                  checked={config.location_biome_override !== false}
+                  onChange={(event) =>
+                    updateConfig(
+                      `subsystems.${subsystemKey}.config.location_biome_override`,
+                      event.target.checked,
+                    )
+                  }
+                />
+                <span>Allow exact biome args</span>
+              </label>
+            </div>
+            <SelectField
+              label="Path biome policy"
+              value={String(config.path_biome_policy ?? 'from_location')}
+              values={['from_location', 'off']}
+              onChange={(value) =>
+                updateConfig(`subsystems.${subsystemKey}.config.path_biome_policy`, value)
+              }
+              help="Checks whether path encounter biomes are listed on the origin location."
+            />
+          </div>
+          <TransportIconsEditor
+            value={asRecord(config.transport_icons ?? TRANSPORT_ICON_DEFAULTS)}
+            onChange={(value) =>
+              updateConfig(`subsystems.${subsystemKey}.config.transport_icons`, value)
+            }
+          />
+        </>
       ) : null}
       {subsystemKey === 'downtime' ? (
         <div className="form-grid compact">

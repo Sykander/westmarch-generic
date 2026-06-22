@@ -59,7 +59,7 @@ Return **`min(...)`** across paths that match the traveller’s transport; use a
 
 Transport selection happens when **choosing which path dict** applies — not by swapping step lists on one path.
 
-Encounter display defaults to `!enc <biome>`. When a step sets `activity`, display uses that command instead, e.g. `{ "type": "encounter", "activity": "forage", "biome": "forest" }` renders `!forage forest`.
+Encounter display defaults to `!enc <biome>`. When a step sets `activity`, display uses that command instead, e.g. `{ "type": "encounter", "activity": "forage", "biome": "forest" }` renders `!forage forest`. Action steps can carry `description`; travel displays that text beside the command. Narrative-only `proceed` steps are compacted into adjacent action steps when possible.
 
 ## Display (`display_path`)
 
@@ -69,6 +69,8 @@ Encounter display defaults to `!enc <biome>`. When a step sets `activity`, displ
 | **`detailed`** | Linked from/to headers, optional `label`, bullet list of steps |
 
 Multi-leg routes and progress strikethrough → **`journeys.display_journey`**.
+
+Transport icons are shown once in the path subheading from **`requirements.transport`**. A list requirement means every listed transport is required; route planning matches it against the traveller's available transport set.
 
 ## Usage
 

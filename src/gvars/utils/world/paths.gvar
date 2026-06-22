@@ -225,8 +225,52 @@ def _transport_match_ids(cfg, transport_id="walk"):
                 alias_id = _transport_id(alias)
                 if alias_id not in seen:
                     ids.append(alias_id)
-                    seen[alias_id] = True
+                seen[alias_id] = True
     return ids
+
+
+def _add_unique(items, value):
+    if value == None:
+        return
+    text = str(value).strip().lower()
+    if text == "":
+        return
+    if text in items:
+        return
+    items.append(text)
+
+
+def _canonical_transport_id(cfg, transport_id="walk"):
+    selected = _transport_id(transport_id)
+    transports = _transport_map(cfg)
+    for key in transports:
+        key_id = _transport_id(key)
+        if key_id == selected:
+            return key_id
+        entry = _read_field(transports, key)
+        aliases = _read_field(entry, "aliases")
+        if lists.is_list(aliases):
+            for alias in aliases:
+                if _transport_id(alias) == selected:
+                    return key_id
+    return selected
+
+
+def _transport_match_ids_for_values(cfg, transport_ids):
+    ids = []
+    if transport_ids == None:
+        transport_ids = [_transport_id()]
+    if not lists.is_list(transport_ids):
+        transport_ids = [transport_ids]
+    for transport_id in transport_ids:
+        canonical = _canonical_transport_id(cfg, transport_id)
+        for match_id in _transport_match_ids(cfg, canonical):
+            _add_unique(ids, match_id)
+    return ids
+
+
+def get_available_transport_match_ids(config_override, transport_ids):
+    return _transport_match_ids_for_values(_cfg(config_override), transport_ids)
 
 
 def _transport_icons(cfg):
@@ -285,9 +329,12 @@ def _transport_matches(requirement, selected_ids):
         return True
     if lists.is_list(requirement):
         for item in requirement:
-            if str(item).strip().lower() in selected_ids:
-                return True
-        return False
+            text = str(item).strip().lower()
+            if text == "":
+                continue
+            if text not in selected_ids:
+                return False
+        return True
     text = str(requirement).strip().lower()
     if text == "":
         return True
@@ -354,8 +401,7 @@ def get_edge_entries_from(config_override, from_id, transport_id="walk", selecte
         dest = _normalize_id(_read_field(path, "to"))
         if dest == None:
             continue
-        raw_steps = _read_field(path, "steps")
-        cost = len(raw_steps) if raw_steps != None and lists.is_list(raw_steps) else get_path_cost(path, transport_id)
+        cost = get_path_cost(path, transport_id)
         out.append({
             "to": dest,
             "cost": cost,
@@ -380,6 +426,23 @@ def get_edge(config_override, from_id, to_id, transport_id="walk"):
     return best
 
 
+def has_edge_to(config_override, to_id, transport_id="walk", selected_ids=None):
+    """True when any path can enter to_id under the supplied transport availability."""
+    cfg = _cfg(config_override)
+    dest = _normalize_id(to_id)
+    if dest == None:
+        return False
+    if selected_ids == None:
+        selected_ids = _transport_match_ids(cfg, transport_id)
+    for path in _path_list(cfg):
+        path_to = _normalize_id(_read_field(path, "to"))
+        if path_to != dest:
+            continue
+        if _path_matches_transport_ids(path, selected_ids):
+            return True
+    return False
+
+
 def _legacy_encounter_steps(encs):
     out = []
     if not lists.is_list(encs):
@@ -402,12 +465,105 @@ def _cost_steps(path):
     return []
 
 
+def _copy_step(step):
+    if not dicts.is_dict(step):
+        return step
+    out = {}
+    for key in step:
+        out[key] = step[key]
+    return out
+
+
+def _step_description(step):
+    desc = _read_field(step, "description")
+    if desc != None and str(desc).strip() != "":
+        return str(desc).strip()
+    return None
+
+
+def _merge_descriptions(left, right):
+    parts = []
+    for value in [left, right]:
+        if value != None and str(value).strip() != "":
+            parts.append(str(value).strip())
+    return " ".join(parts)
+
+
+def _set_step_description(step, description, prepend=True):
+    if description == None or str(description).strip() == "":
+        return step
+    if not dicts.is_dict(step):
+        return step
+    out = _copy_step(step)
+    current = _step_description(out)
+    if prepend:
+        out["description"] = _merge_descriptions(description, current)
+    else:
+        out["description"] = _merge_descriptions(current, description)
+    return out
+
+
+def _is_action_step(step):
+    if not dicts.is_dict(step):
+        return True
+    step_type = _read_field(step, "type")
+    if step_type != None:
+        step_type = str(step_type).strip().lower()
+    biome = _read_field(step, "biome")
+    if biome == None:
+        biome = _read_field(step, "code")
+    if step_type == "encounter" or biome != None:
+        return True
+    if step_type == "cost" or _read_field(step, "gold") != None or _read_field(step, "rations") != None:
+        return True
+    return False
+
+
+def _compact_steps(raw_steps):
+    if raw_steps == None or not lists.is_list(raw_steps):
+        return []
+    out = []
+    pending_desc = None
+    for raw_step in raw_steps:
+        if _is_action_step(raw_step):
+            step = _set_step_description(_copy_step(raw_step), pending_desc, True)
+            out.append(step)
+            pending_desc = None
+            continue
+        desc = _step_description(raw_step)
+        if desc != None:
+            pending_desc = _merge_descriptions(pending_desc, desc)
+    if pending_desc != None:
+        if len(out) > 0:
+            out[len(out) - 1] = _set_step_description(out[len(out) - 1], pending_desc, False)
+        else:
+            out.append({"type": "proceed", "description": pending_desc})
+    return out
+
+
+def _compact_step_count(raw_steps):
+    if raw_steps == None or not lists.is_list(raw_steps):
+        return 0
+    count = 0
+    has_pending_desc = False
+    for raw_step in raw_steps:
+        if _is_action_step(raw_step):
+            count += 1
+            has_pending_desc = False
+            continue
+        if _step_description(raw_step) != None:
+            has_pending_desc = True
+    if count == 0 and has_pending_desc:
+        return 1
+    return count
+
+
 def get_path_steps(path, transport_id="walk", horse=False, boat=False):
     """Step list for one edge, accepting generic and westmarch shorthand paths."""
     selected = _transport_id(transport_id, horse, boat)
     raw = _read_field(path, "steps")
     if raw != None and lists.is_list(raw):
-        return raw
+        return _compact_steps(raw)
     if selected == "horse":
         horse_steps = _legacy_encounter_steps(_read_field(path, "horse"))
         if len(horse_steps) > 0:
@@ -443,7 +599,7 @@ def get_path_cost(path, transport_id="walk", horse=False, boat=False):
     candidates = []
     raw_steps = _read_field(path, "steps")
     if raw_steps != None and lists.is_list(raw_steps):
-        candidates.append(len(raw_steps))
+        candidates.append(_compact_step_count(raw_steps))
     elif selected == "horse" and lists.is_list(_read_field(path, "horse")):
         candidates.append(len(_read_field(path, "horse")))
     elif selected == "boat" and lists.is_list(_read_field(path, "boat")):
@@ -470,7 +626,9 @@ def get_path_cost(path, transport_id="walk", horse=False, boat=False):
 
 def _step_text(step, path=None, prefix="!", completed=False):
     text = None
+    desc = None
     if dicts.is_dict(step):
+        desc = _step_description(step)
         step_type = _read_field(step, "type")
         biome = _read_field(step, "biome")
         if step_type == "encounter" or biome != None:
@@ -500,6 +658,13 @@ def _step_text(step, path=None, prefix="!", completed=False):
                 text = str(desc).strip()
     if text == None:
         text = str(step)
+    elif desc != None and dicts.is_dict(step):
+        step_type = _read_field(step, "type")
+        biome = _read_field(step, "biome")
+        if biome == None:
+            biome = _read_field(step, "code")
+        if step_type == "encounter" or biome != None or step_type == "cost" or _read_field(step, "gold") != None:
+            text = f"{desc} {text}"
     if completed:
         return f"~~{text}~~"
     return text
@@ -535,6 +700,37 @@ def display_step(step, path=None, prefix="!", completed=False):
     return _step_text(step, path, prefix, completed)
 
 
+def _path_transport_requirement(path):
+    reqs = _read_field(path, "requirements")
+    req_transport = _read_field(reqs, "transport")
+    if req_transport != None:
+        return req_transport
+    return _read_field(path, "transport")
+
+
+def _transport_requirement_ids(cfg, requirement):
+    out = []
+    if requirement == None:
+        return out
+    values = requirement if lists.is_list(requirement) else [requirement]
+    for value in values:
+        text = _normalize_id(value)
+        if text == None:
+            continue
+        _add_unique(out, _canonical_transport_id(cfg, text))
+    return out
+
+
+def get_path_transport_icons(config_override, path):
+    cfg = _cfg(config_override)
+    icons = []
+    for transport_id in _transport_requirement_ids(cfg, _path_transport_requirement(path)):
+        icon = _transport_icon(cfg, transport_id)
+        if icon != "":
+            icons.append(icon)
+    return "".join(icons)
+
+
 def display_path(path, config_override=None, mode="short", transport_id="walk", prefix="!", progress_step=None):
     cfg = _cfg(config_override)
     from_id = _read_field(path, "from")
@@ -547,9 +743,14 @@ def display_path(path, config_override=None, mode="short", transport_id="walk", 
         return f"{from_name} -> {to_name} ({len(steps)} {label})"
     lines = [f"### {from_name} -> {to_name}"]
     path_label = _read_field(path, "label")
+    subheading = []
     if path_label != None and str(path_label).strip() != "":
-        lines.append(f"-# {str(path_label).strip()}")
-    icon = _transport_icon(cfg, transport_id)
+        subheading.append(str(path_label).strip())
+    path_icons = get_path_transport_icons(cfg, path)
+    if path_icons != "":
+        subheading.append(path_icons)
+    if len(subheading) > 0:
+        lines.append(f"-# {' '.join(subheading)}")
     index = 0
     for step in steps:
         done = False
@@ -558,8 +759,7 @@ def display_path(path, config_override=None, mode="short", transport_id="walk", 
                 done = index < int(progress_step)
             except:
                 done = False
-        prefix_text = f"{icon} " if icon != "" else ""
-        lines.append(f"* {prefix_text}{display_step(step, path, prefix, done)}")
+        lines.append(f"* {display_step(step, path, prefix, done)}")
         warning = _missing_biome_warning(step, cfg)
         if warning != None:
             lines.append(f"  -# {warning}")

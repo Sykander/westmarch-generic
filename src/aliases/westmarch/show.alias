@@ -325,6 +325,17 @@ def _enabled_commands_summary(cfg):
         for cmd in _dict_keys(commands):
             command_on = _read_field(commands, cmd) == True
             lines.append(f"    {cmd}: {_bool_text(command_on)}")
+        if key == "travel":
+            cfg_block = _read_field(block, "config")
+            if _is_dict(cfg_block):
+                override = _read_field(cfg_block, "location_biome_override")
+                path_policy = _read_field(cfg_block, "path_biome_policy")
+                if override != None or path_policy != None:
+                    lines.append("  config:")
+                    if override != None:
+                        lines.append(f"    location_biome_override: {_bool_text(override == True)}")
+                    if path_policy != None:
+                        lines.append(f"    path_biome_policy: {path_policy}")
     return _codeblock("yaml", lines)
 
 
