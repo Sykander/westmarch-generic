@@ -1,1 +1,23 @@
-[]
+[
+  [["enc.combat"], "ambush", "White wolf drift", "White shapes move with the blowing snow, visible only when they cross dark stone. The wolves circle wide before rushing from three sides.", 0.25, "Wolf", "medium", 14],
+  [["enc.combat"], "combat", "Bear at the seal hole", "A polar bear stands over a cracked breathing hole, hungry and unwilling to yield the ice. It roars when anyone approaches the water.", 2, "Polar Bear", "hard"],
+  [["enc.combat"], "combat", "Ice mephit squall", "A playful squall twists into sharp little faces that spit sleet and laughter. The mephits dart between snow gusts until chased off.", 0.5, "Ice Mephit", "medium"],
+  [["enc.gather"], "skill_check", "Snowblind bearing", "White ground and white sky blur together until every direction feels the same. Reading wind crust and shadow keeps the party from walking in circles.", "Wisdom (Survival)", 14],
+  [["enc.gather"], "damage", "Hidden ice crack", "A sheet of snow hides a blue crack in the ice. It gives with a brittle pop under the first careless step.", "1d6"],
+  [["enc.gather"], "healing", "Warm spring vent", "Steam rises from a small spring where mineral water keeps the snow melted. Resting in the warmth brings feeling back to stiff fingers.", "1d4"],
+  [["enc.quest"], "quest", "Buried sled runner", "The curved runner of a sled juts from a drift beside scattered harness bells. Digging deeper may reveal cargo, survivors, or why they left the trail.", "Recovered supplies"],
+  [["enc.quest"], "quest", "Blue fire cairn", "A cairn burns with blue fire that gives no heat. The flame leans toward a distant landmark whenever the wind dies.", "Ancient omen"],
+  [["enc.quest"], "quest", "Missing hunter's spear", "A hunter's spear stands upright in the snow with no tracks around it. The shaft hums faintly when pointed toward the north.", "Hunter favor"],
+  [["forage.gather"], "gather_item", "Lichen under snow", "Green-black lichen grows on stones beneath shallow snow. It is bitter but nourishing when scraped clean.", "Wisdom (Survival)", 12, "Lichen", 2, "Forage"],
+  [["forage.gather"], "gather_item", "Crowberry patch", "Crowberries cling to low shrubs in a sheltered hollow. The dark fruit freezes hard but keeps well.", "Wisdom (Survival)", 13, "Crowberries", 2, "Forage"],
+  [["forage.gather"], "gather_item", "Arctic herb tuft", "A tuft of gray-green herbs grows where a warm rock melts the frost. The leaves must be clipped before they freeze again.", "Wisdom (Nature)", 14, "Herbs", 1, "Forage"],
+  [["fish.gather"], "gather_item", "Ice-hole char", "Dark char circle beneath a hole cut through clear ice. Keeping the hole open is as important as setting the line.", "Wisdom (Survival)", 13, "Char", 2, "Fish"],
+  [["fish.gather"], "gather_item", "Snowmelt trout", "A meltwater stream runs just long enough for trout to gather in a gravel pool. The chance ends when night freezes the surface.", "Dexterity (Sleight of Hand)", 13, "Trout", 2, "Fish"],
+  [["fish.gather"], "gather_item", "Cold crab crack", "Small crabs cling under sea ice where the tide breathes through a crack. A hook can bring them up before fingers go numb.", "Constitution", 12, "Cold crab", 2, "Fish"],
+  [["mine.gather"], "gather_item", "Ironstone moraine", "A glacier has dropped iron-dark stones in a moraine ridge. Useful pieces must be sorted from frost-cracked rock.", "Strength (Athletics)", 13, "Iron ore", 2, "Mine"],
+  [["mine.gather"], "gather_item", "Blue ice crystal", "Blue crystals grow in a sheltered ice cave where light enters from below. They shatter under sudden warmth or force.", "Dexterity (Sleight of Hand)", 15, "Ice crystal", 1, "Mine"],
+  [["mine.gather"], "gather_item", "Soapstone outcrop", "A smooth soapstone outcrop rises from frozen ground, soft enough to carve but brittle in deep cold. Cutting blocks takes patience.", "Strength (Athletics)", 12, "Soapstone", 2, "Mine"],
+  [["lumber.gather"], "gather_item", "Dwarf birch bundle", "Dwarf birch grows low under snow crust, twisted but dry enough for fuel. Gathering it means finding the buried stems first.", "Wisdom (Survival)", 12, "Kindling", 3, "Lumber"],
+  [["lumber.gather"], "gather_item", "Driftwood on the ice", "Sea ice has pushed driftwood high onto the shore. The salt-dried logs are heavy but valuable where trees are rare.", "Strength (Athletics)", 13, "Driftwood", 2, "Lumber"],
+  [["lumber.gather"], "gather_item", "Frozen sled wreck", "A broken sled lies half frozen into a drift, its runners cracked but its boards usable. Freeing them without splintering takes careful wedges.", "Intelligence (Investigation)", 13, "Salvage timber", 2, "Lumber"]
+]

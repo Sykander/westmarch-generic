@@ -20,3 +20,7 @@ The map assets are reference inputs for the config authoring pass, not runtime A
 | `assets/Sword-Coast-Map_LowRes.jpg` | Fast broad-route reference |
 
 The map covers the Sword Coast and nearby northwest Faerun. It is a strong starter scope, but it is not the full Forgotten Realms world.
+
+## Reference resources
+
+- [Realms Helps: Faerunian Random Encounters by Region and Locale](https://www.realmshelps.net/adventuring/faerun_encounters.shtml) - used as broad inspiration for engine biome baseline coverage. Save this for a later location encounter pass because it is organized by named Forgotten Realms regions and locales as well as generic aquatic, dungeon, frostfell, wastes, and Underdark pages.

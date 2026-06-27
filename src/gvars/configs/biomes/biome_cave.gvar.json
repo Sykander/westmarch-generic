@@ -1,1 +1,23 @@
-[]
+[
+  [["enc.combat"], "ambush", "Darkmantle drop", "The ceiling looks like folded stone until one patch peels loose and falls. More shapes stir above as the first darkmantle smothers the nearest light.", 0.5, "Darkmantle", "medium", 14],
+  [["enc.combat"], "combat", "Webbed side passage", "Old webbing narrows a side passage where husks hang between stalagmites. The spider waits beyond the bend, using every vibration in the stone.", 1, "Giant Spider", "medium"],
+  [["enc.combat"], "combat", "Gray ooze seep", "A wet shine creeps down the wall beside a mineral vein. By the time the smell of acid reaches the party, the ooze is already sliding across the floor.", 0.5, "Gray Ooze", "medium"],
+  [["enc.gather"], "skill_check", "Echo map", "A dropped stone returns three different echoes from the dark ahead. Reading the timing reveals a safer passage through the branching chamber.", "Wisdom (Survival)", 13],
+  [["enc.gather"], "damage", "Loose scree chute", "Pebbles rattle away underfoot and the whole slope begins to move. The slide is short, but jagged enough to punish anyone caught off balance.", "1d6"],
+  [["enc.gather"], "healing", "Clean drip pool", "Cold water drips into a basin of pale stone, filtered through layers of mineral and root. Washing wounds there stings sharply, then leaves them cleaner.", "1d4"],
+  [["enc.quest"], "quest", "Trapped miner's tap", "A faint tapping answers from behind a collapsed wall. The pattern is deliberate, and the air on the other side will not last forever.", "Ore share"],
+  [["enc.quest"], "quest", "Missing lantern", "A lantern still burns blue beside bootprints that end at a blank wall. Someone has vanished through a passage that only opens in certain echoes.", "Rescue favor"],
+  [["enc.quest"], "quest", "Singing fissure", "A thin crack in the stone sings whenever wind moves through it. Locals want the sound silenced before it draws something from deeper caverns.", "Local goodwill"],
+  [["forage.gather"], "gather_item", "Pale cap cluster", "Pale mushrooms grow where old wood has rotted into the cave floor. Several are edible, but a bruised cap turns black if handled roughly.", "Wisdom (Survival)", 13, "Mushrooms", 2, "Forage"],
+  [["forage.gather"], "gather_item", "Glowlichen shelf", "Blue lichen lights a damp ledge just beyond easy reach. Scraping it cleanly preserves enough glow for later use.", "Dexterity (Acrobatics)", 14, "Glowlichen", 2, "Forage"],
+  [["forage.gather"], "gather_item", "Bat guano pocket", "A dry pocket beneath an old roost holds sharp-smelling guano useful to gardeners and alchemists. Stirring it too hard fills the tunnel with choking dust.", "Constitution", 12, "Guano", 3, "Forage"],
+  [["fish.gather"], "gather_item", "Blind cave fish", "Small white fish drift through a clear pool, sensing ripples more than light. A quiet hand can net them before the whole school dives under stone.", "Dexterity (Sleight of Hand)", 13, "Cave fish", 2, "Fish"],
+  [["fish.gather"], "gather_item", "Crayfish under black stones", "Flat black stones hide pale crayfish with oversized claws. The catch is good if the water is not muddied too quickly.", "Wisdom (Survival)", 12, "Crayfish", 2, "Fish"],
+  [["fish.gather"], "gather_item", "Underground eel run", "A narrow current carries slick eels from one dark pool to another. Blocking the run for too long risks flooding the passage behind it.", "Strength (Athletics)", 14, "Eel", 1, "Fish"],
+  [["mine.gather"], "gather_item", "Iron vein in the wall", "A red-brown vein cuts across the cave wall where the stone is already cracked. Careful strikes free ore without waking the ceiling.", "Strength (Athletics)", 13, "Iron ore", 2, "Mine"],
+  [["mine.gather"], "gather_item", "Quartz pocket", "A pocket of clear quartz sparkles behind a thin sheet of limestone. The best crystals can be teased out before the pocket collapses.", "Dexterity (Sleight of Hand)", 14, "Quartz", 2, "Mine"],
+  [["mine.gather"], "gather_item", "Salt nodules", "White nodules bead along a dry tunnel where bitter air leaks from below. Breaking them loose fills the mouth with mineral dust.", "Wisdom (Survival)", 12, "Salt", 2, "Mine"],
+  [["lumber.gather"], "gather_item", "Old shoring timbers", "Abandoned shoring still props up a side shaft, but some beams can be salvaged without weakening the passage. Choosing the wrong one invites trouble.", "Intelligence (Investigation)", 14, "Salvage timber", 2, "Lumber"],
+  [["lumber.gather"], "gather_item", "Fungal stalk poles", "Tall, woody fungi grow in a damp chamber where no trees could live. Their hollow stalks make light poles if cut above the root mat.", "Wisdom (Nature)", 13, "Fungal poles", 3, "Lumber"],
+  [["lumber.gather"], "gather_item", "Root curtain", "Tree roots hang through a ceiling crack in thick braided cords. Dead sections can be cut into usable lashings without harming the living roots.", "Dexterity (Sleight of Hand)", 12, "Root cord", 2, "Lumber"]
+]

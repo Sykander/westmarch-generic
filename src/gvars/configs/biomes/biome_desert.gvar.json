@@ -1,1 +1,23 @@
-[]
+[
+  [["enc.combat"], "ambush", "Scorpion under the salt crust", "The white crust ahead is split by hairline cracks that do not match the wind. When the party crosses, a giant scorpion erupts from the hardpan with claws already raised.", 3, "Giant Scorpion", "hard", 13],
+  [["enc.combat"], "ambush", "Bandits in the heat shimmer", "Shapes waver beside a line of ruined stones, vanishing whenever the wind rises. The bandits wait until the glare hides their drawstrings.", 0.125, "Bandit", "medium", 14],
+  [["enc.combat"], "combat", "Vultures at the dry wash", "Giant vultures hop along the rim of a dry wash, bold from hunger and carrion. They take wing only long enough to dive at anything that looks weak.", 1, "Giant Vulture", "medium"],
+  [["enc.gather"], "skill_check", "Dune-star bearing", "The dunes have erased every trail except a line of wind-carved ridges. Reading their shadows points toward water before the sun moves too far.", "Wisdom (Survival)", 14],
+  [["enc.gather"], "damage", "Glass-hot ridge", "A black ridge of sun-baked stone radiates heat through boots and gloves. Crossing it quickly hurts less than stopping halfway.", "1d4"],
+  [["enc.gather"], "flavour", "Mirage of green towers", "A city of green towers trembles on the horizon, perfect and unreachable. It fades into ordinary dust when approached, leaving only a cooler breath of wind."],
+  [["enc.quest"], "quest", "Buried waymarker", "Only the top of a carved route marker shows above a dune. Digging it free reveals an old warning and the direction of a road the desert swallowed.", "Route knowledge"],
+  [["enc.quest"], "quest", "Lost caravan bells", "Faint camel bells ring from beyond a ridge where no caravan can be seen. The sound follows the party until someone chooses to answer it.", "Trade favor"],
+  [["enc.quest"], "quest", "Cracked warding obelisk", "A sun-black obelisk has split down the middle, and the shadow inside points the wrong way. Locals want it sealed before nightfall.", "Protective charm"],
+  [["forage.gather"], "gather_item", "Cactus fruit crown", "Red fruit grows high on a many-spined cactus, sweet enough to be worth the trouble. The ripest pieces sit where the spines are densest.", "Wisdom (Survival)", 13, "Cactus fruit", 2, "Forage"],
+  [["forage.gather"], "gather_item", "Bitter aloe fan", "A fan of bitter aloe hides in the shade of a cracked boulder. Clean cuts preserve the gel before the leaves dry in the wind.", "Wisdom (Nature)", 12, "Aloe", 2, "Forage"],
+  [["forage.gather"], "gather_item", "Dune seed pods", "Dry pods rattle beneath low scrub where the sand holds a trace of moisture. The seeds are small, filling, and easily lost to the wind.", "Dexterity (Sleight of Hand)", 12, "Seeds", 3, "Forage"],
+  [["fish.gather"], "gather_item", "Oasis tilapia", "Small fish hide under reeds in a shaded oasis pool. Nets must be worked gently so the mud does not foul the only clean water nearby.", "Wisdom (Survival)", 13, "Tilapia", 2, "Fish"],
+  [["fish.gather"], "gather_item", "Wadi catfish pocket", "A rain-cut wadi still holds a deep pocket of brown water beneath overhanging stone. Catfish wait at the bottom where the pool is coolest.", "Strength (Athletics)", 14, "Catfish", 1, "Fish"],
+  [["fish.gather"], "gather_item", "Salt-flat brine shrimp", "A shallow salt pool flickers with tiny brine shrimp after rare rain. The harvest is quick work before the sun thickens the water again.", "Wisdom (Survival)", 11, "Brine shrimp", 3, "Fish"],
+  [["mine.gather"], "gather_item", "Copper-green outcrop", "Green stains mark a copper seam exposed along a dry cliff face. The rock is brittle, so controlled strikes matter more than force.", "Strength (Athletics)", 13, "Copper ore", 2, "Mine"],
+  [["mine.gather"], "gather_item", "Salt pan slabs", "Wind has scraped a salt pan into clean geometric plates. The best slabs lift whole if separated before the edge crumbles.", "Dexterity (Sleight of Hand)", 12, "Salt", 3, "Mine"],
+  [["mine.gather"], "gather_item", "Sunstone gravel", "Golden pebbles glitter in the bed of a vanished stream. Sorting true sunstone from common quartz takes patience in the glare.", "Intelligence (Investigation)", 15, "Sunstone", 1, "Mine"],
+  [["lumber.gather"], "gather_item", "Dry acacia limb", "A dead acacia limb has seasoned hard in the open air. Its thorns make the work slow, but the heartwood burns hot and clean.", "Strength (Athletics)", 12, "Hardwood", 2, "Lumber"],
+  [["lumber.gather"], "gather_item", "Fallen oasis palm", "A palm has fallen beside the oasis with its trunk still mostly sound. Cutting it without fouling the water requires careful staging.", "Strength (Athletics)", 13, "Timber", 2, "Lumber"],
+  [["lumber.gather"], "gather_item", "Caravan crate salvage", "A half-buried cargo crate creaks beneath the sand, its owner long gone. The planks can be salvaged if the shifting dune is braced first.", "Intelligence (Investigation)", 12, "Salvage timber", 3, "Lumber"]
+]

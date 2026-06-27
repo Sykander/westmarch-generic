@@ -1,1 +1,23 @@
-[]
+[
+  [["enc.combat"], "ambush", "Harpy on the switchback", "A song threads down from a cliff ledge where loose stones cover the switchback. The harpy waits until the melody turns footsteps toward the edge.", 1, "Harpy", "medium", 13],
+  [["enc.combat"], "combat", "Orc cairn challenge", "A fresh cairn blocks the trail, each stone painted with a black handprint. The warriors guarding it demand tribute before anyone climbs higher.", 0.5, "Orc", "medium"],
+  [["enc.combat"], "combat", "Griffon shadow", "A winged shadow passes over the scree, then circles back with a hunting cry. The griffon is protecting a nest somewhere above the ridge.", 2, "Griffon", "hard"],
+  [["enc.gather"], "skill_check", "Old goat path", "A thread of trail crosses a cliff face where goats have polished the stone. Reading the hoof marks reveals which ledges can hold weight.", "Wisdom (Survival)", 14],
+  [["enc.gather"], "damage", "Falling scree", "A fist-sized stone bounces once, then the slope lets go in a rattling sheet. The slide catches anyone who hesitates on the open path.", "1d6"],
+  [["enc.gather"], "healing", "High spring", "Cold water spills from a crack in the cliff and gathers in a basin of clean stone. Drinking there restores strength before the next climb.", "1d4"],
+  [["enc.quest"], "quest", "Smoke from the high pass", "A thin smoke trail rises from a ledge above the marked route. Reaching it means climbing off path to learn who is stranded there.", "Mountain guide"],
+  [["enc.quest"], "quest", "Broken signal mirror", "A polished metal mirror lies shattered beside a cairn, aimed at a distant tower. Replacing it could restore an old warning chain.", "Beacon favor"],
+  [["enc.quest"], "quest", "Avalanche-buried pack", "A torn pack strap protrudes from fresh avalanche snow. Digging it free may reveal a survivor's trail before weather covers it again.", "Recovered supplies"],
+  [["forage.gather"], "gather_item", "Alpine berry mat", "Tiny berries grow close to the ground where snowmelt feeds a patch of moss. The fruit is easy to miss and easier to crush.", "Wisdom (Survival)", 13, "Berries", 2, "Forage"],
+  [["forage.gather"], "gather_item", "Bitterroot cleft", "Bitter roots grip the soil in a narrow cleft sheltered from the wind. Pulling them whole requires loosening stone without ruining the patch.", "Strength (Athletics)", 12, "Roots", 2, "Forage"],
+  [["forage.gather"], "gather_item", "Edelweiss herbs", "Pale flowers cling to a sunny ledge used by mountain goats. The herbs are useful, but the ledge crumbles at the outer edge.", "Dexterity (Acrobatics)", 14, "Herbs", 2, "Forage"],
+  [["fish.gather"], "gather_item", "Cold tarn trout", "A clear mountain tarn holds trout under the shadow of overhanging stone. The water is so clear that careless movement sends every fish deep.", "Wisdom (Survival)", 13, "Trout", 2, "Fish"],
+  [["fish.gather"], "gather_item", "Snowmelt minnows", "Minnows gather where snowmelt enters a rocky pool. A small net works better than a hook in the fast, cold water.", "Dexterity (Sleight of Hand)", 12, "Minnows", 3, "Fish"],
+  [["fish.gather"], "gather_item", "Cave-mouth char", "Dark char hover near a cave mouth where warmer water seeps into the stream. They bite only before shadows shift across the pool.", "Wisdom (Survival)", 14, "Char", 2, "Fish"],
+  [["mine.gather"], "gather_item", "Iron-streaked cliff", "Rust-red streaks run down a cliff where a vein has weathered open. The ore is good, but every hammer strike echoes across the valley.", "Strength (Athletics)", 13, "Iron ore", 2, "Mine"],
+  [["mine.gather"], "gather_item", "Silver thread seam", "A thin silver seam shines between layers of dark rock. Extracting it without losing flakes into the scree takes careful chiseling.", "Dexterity (Sleight of Hand)", 15, "Silver ore", 1, "Mine"],
+  [["mine.gather"], "gather_item", "Granite split", "A frost-split outcrop offers clean slabs of granite already parted by winter. Moving them safely requires ropes and patience.", "Strength (Athletics)", 14, "Stone", 3, "Mine"],
+  [["lumber.gather"], "gather_item", "Wind-twisted pine", "A pine twisted by years of high wind has fallen across the trail. Its dense knots make sturdy fuel and tool handles.", "Strength (Athletics)", 13, "Pine timber", 2, "Lumber"],
+  [["lumber.gather"], "gather_item", "Avalanche spruce", "Several spruce trunks lie snapped clean by an old avalanche. The best pieces are buried under snow and branches.", "Strength (Athletics)", 14, "Timber", 3, "Lumber"],
+  [["lumber.gather"], "gather_item", "Juniper deadfall", "Dry juniper deadfall gathers in a sheltered gully, fragrant and ready to burn. The brittle branches hide sharp splinters under gray bark.", "Wisdom (Survival)", 12, "Kindling", 3, "Lumber"]
+]

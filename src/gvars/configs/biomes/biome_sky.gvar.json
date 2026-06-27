@@ -1,1 +1,23 @@
-[]
+[
+  [["enc.combat"], "ambush", "Harpy above the cloud shelf", "A sweet song drifts from a cloud shelf where nothing should be standing. The harpy waits for one distracted step before diving through the mist.", 1, "Harpy", "medium", 14],
+  [["enc.combat"], "combat", "Giant eagle territorial pass", "A giant eagle stoops from the high blue with a warning scream. Its nest is hidden nearby, and it will drive intruders away from the thermal.", 1, "Giant Eagle", "medium"],
+  [["enc.combat"], "combat", "Mephits in the hailcloud", "Tiny shapes tumble inside a dirty hailcloud, laughing as ice rattles around them. They spill out with claws and breath like winter spite.", 0.5, "Ice Mephit", "medium"],
+  [["enc.gather"], "skill_check", "Thermal ladder", "Warm air rises in invisible steps along a cliff or cloudbank. Reading the lift correctly turns a dangerous climb or flight into an easy glide.", "Wisdom (Survival)", 13],
+  [["enc.gather"], "saving_throw", "Sudden downdraft", "The air drops away without warning, taking loose gear and stomachs with it. Fast reactions keep the fall from becoming a tumble.", "Dexterity", 13],
+  [["enc.gather"], "flavour", "Halo around the sun", "A bright ring circles the sun through high ice crystals. The whole sky seems briefly marked by a silent omen."],
+  [["enc.quest"], "quest", "Kite caught in a storm line", "A signal kite whips at the edge of a storm line, its message tube still attached. Recovering it means braving wind before the line snaps.", "Message favor"],
+  [["enc.quest"], "quest", "Fallen feather token", "A huge feather marked with blue paint spins in a pocket of calm air. Someone sent it as a warning or an invitation from above.", "Aerial guide"],
+  [["enc.quest"], "quest", "Beacon on the high crag", "A beacon fire on a high crag gutters in the wind, too weak to be seen from the valley. Rekindling it could warn settlements below.", "Valley goodwill"],
+  [["forage.gather"], "gather_item", "Cloudberry ledge", "Cloudberries cling to a windswept ledge just below the cloud line. The fruit bruises easily, and the ledge offers little room for knees.", "Dexterity (Acrobatics)", 14, "Cloudberries", 2, "Forage"],
+  [["forage.gather"], "gather_item", "Sky lichen", "Pale lichen grows on stones scoured by constant wind. Scraping it loose without losing it to the gusts takes careful hands.", "Dexterity (Sleight of Hand)", 13, "Sky lichen", 2, "Forage"],
+  [["forage.gather"], "gather_item", "High nest herbs", "A raptor's abandoned nest is woven with fragrant herbs that repel parasites. The useful sprigs can be gathered if the nest is truly empty.", "Wisdom (Nature)", 14, "Herbs", 2, "Forage"],
+  [["fish.gather"], "gather_item", "Cloudpool minnows", "A rain-fed pool on a high shelf holds tiny silver minnows stranded after a storm. They vanish beneath stone at the first shadow.", "Dexterity (Sleight of Hand)", 12, "Minnows", 2, "Fish"],
+  [["fish.gather"], "gather_item", "Fallspray trout", "Trout gather in a plunge pool below a high waterfall where spray turns the air white. Casting through the mist is the hard part.", "Wisdom (Survival)", 14, "Trout", 2, "Fish"],
+  [["fish.gather"], "gather_item", "Sky eel ribbon", "A ribbon-like eel glides through a floating pocket of stormwater. It snaps at hooks and vanishes when thunder rolls.", "Intelligence (Arcana)", 15, "Sky eel", 1, "Fish"],
+  [["mine.gather"], "gather_item", "Lightning glass", "A lightning strike has fused sand and grit into branching glass on a high ridge. The fragile pieces must be lifted whole.", "Dexterity (Sleight of Hand)", 14, "Lightning glass", 1, "Mine"],
+  [["mine.gather"], "gather_item", "Cloudstone pebble fall", "Porous pale stones lie where a floating rock shed its outer crust. They are light but crumble under careless grip.", "Intelligence (Arcana)", 13, "Cloudstone", 2, "Mine"],
+  [["mine.gather"], "gather_item", "Iron-rich red ridge", "A red ridge shows iron where wind has stripped the soil clean. Mining it means anchoring tools against sudden gusts.", "Strength (Athletics)", 13, "Iron ore", 2, "Mine"],
+  [["lumber.gather"], "gather_item", "Lightning-split pine", "A lone high pine has split cleanly under lightning, leaving dry lengths raised above the rain. Cutting them loose is a balancing act.", "Strength (Athletics)", 13, "Timber", 2, "Lumber"],
+  [["lumber.gather"], "gather_item", "Driftwood in the aerie", "An abandoned aerie holds bleached branches and old nest beams carried from far below. The larger pieces are tangled into the stone.", "Strength (Athletics)", 12, "Driftwood", 2, "Lumber"],
+  [["lumber.gather"], "gather_item", "Windfall spruce below the ridge", "A spruce has fallen just below the ridge where wind keeps the ground dry. Its straight trunk can be cut before weather rolls in.", "Strength (Athletics)", 14, "Timber", 3, "Lumber"]
+]

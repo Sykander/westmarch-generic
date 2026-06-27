@@ -46,7 +46,7 @@ Not to be confused with **`src/gvars/utils/config/`** — the engine **`config.g
 
 Each `.gvar.json` body is a raw **JSON row list**. Rows are `[pool_tags_or_null, "template_name", ...args]`, where pool tags look like `enc.gather` or `forage.gather`. See [data-shapes.md § Biome gvar body](../../../../docs/internal/projects/westmarch-statement/data-shapes.md#biome-gvar-body-separate-workshop-module).
 
-MVP presets include at least one **`gather`** entry per enabled activity for alias-test smoke; combat/quest entries grow with Tier B.
+Baseline presets include three entries per pool for each enabled exploration activity: **`enc.combat`**, **`enc.gather`**, **`enc.quest`**, **`forage.gather`**, **`fish.gather`**, **`mine.gather`**, and **`lumber.gather`**. Forest is the richer reference preset and may contain more.
 
 ## westmarch port notes
 
@@ -56,6 +56,10 @@ Reference westmarch `src/gvars/utils/encounters/biomes/*.gvar` for flavour and e
 - Route **generic wilderness** beats to biome rows; **named-place** hints (merchants, libraries, jobs) to **location encounter gvars** — see [biome-data-shape-investigation.md §4–5](../../../../docs/internal/projects/westmarch-statement/biome-data-shape-investigation.md)
 - Drop d100 list-builder weights — kind mix comes from **`subsystems.exploration.config.distribution`**
 - **`enc_encounters`** in westmarch is often empty; **`encounters`** was the real pool — do not copy that structure literally
+
+## Forgotten Realms source notes
+
+The non-forest baseline rows use the [Realms Helps Faerunian Random Encounters by Region and Locale](https://www.realmshelps.net/adventuring/faerun_encounters.shtml) index as broad inspiration for terrain coverage only. Keep copied prose, table weights, and location-specific rows out of these biome presets. The same index is useful later for location encounter modules because it breaks Forgotten Realms encounters out by named regions, roads, marshes, mountains, caves, aquatic zones, frostfell, wastes, and Underdark locales.
 
 ## Related
 
