@@ -1,6 +1,6 @@
 # Forgotten Realms area image selections
 
-Docs-only selection pass for future `world_data.locations.*.image` enrichment. Do not copy these into the runtime config until the hosted asset/usage review is done.
+Selection pass used to populate `world_data.locations.*.image` in `src/gvars/configs/forgotten_realms_2014_locations.gvar.json`.
 
 Selection priority: exact artistic representation of the area first, then direct map if that is all we have, then people or encounters visibly in a fitting place, then regional or biome fallback art. User review notes in [dndbeyond-image-catalog.md](dndbeyond-image-catalog.md) are treated as the main signal.
 

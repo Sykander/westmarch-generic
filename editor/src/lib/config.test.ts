@@ -98,6 +98,16 @@ test('forgotten realms starter has slice 5 travel baseline', () => {
   assert.ok(locations.high_forest);
   assert.ok(locations.sea_of_swords);
   assert.ok(Object.keys(locations).length > 70);
+  const locationImages = new Set<unknown>();
+  for (const [id, location] of Object.entries(locations)) {
+    assert.equal(typeof location, 'object', `${id} should be an object`);
+    assert.notEqual(location, null, `${id} should not be null`);
+    const image = (location as Record<string, unknown>).image;
+    locationImages.add(image);
+    assert.equal(typeof image, 'string', `${id} should have an image URL`);
+    assert.match(image, /^https:\/\/www\.dndbeyond\.com\/attachments\//);
+  }
+  assert.ok(locationImages.size > 30);
 
   const paths = JSON.parse(
     readFileSync(

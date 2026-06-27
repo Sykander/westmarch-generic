@@ -1,8 +1,8 @@
 # Forgotten Realms location art resources
 
-Candidate D&D Beyond-hosted images for future `world_data.locations` image enrichment.
+Candidate and selected D&D Beyond-hosted images for `world_data.locations` image enrichment.
 
-These are research notes only. Do not add image URLs to the runtime config until the hosted asset set and usage policy are reviewed.
+The selected per-area images are now implemented in `src/gvars/configs/forgotten_realms_2014_locations.gvar.json`. Keep these notes as the comparison pool for future replacements and provenance checks.
 
 Full archive companion: [dndbeyond-image-catalog.md](dndbeyond-image-catalog.md) contains all 491 distinct image URLs extracted from the Forgotten Realms/location candidate pass, categorized as locations, maps, monsters, NPCs/player options, items, products, UI/tooling, encounter art, and review-needed images.
 
@@ -91,9 +91,13 @@ Candidate for: Waterdeep undercity/lair context, not default `waterdeep`.
 
 Lower-priority source: [Waterdeep: Dungeon of the Mad Mage Now in Maps!](https://www.dndbeyond.com/posts/1682-waterdeep-dungeon-of-the-mad-mage-now-in-maps)
 
+REVIEW: WE CANT USE THIS
+
 Candidate for: Undermountain / dungeon context, not default `waterdeep`.
 
 ![Dungeon of the Mad Mage Maps preview](https://www.dndbeyond.com/attachments/11/227/dungeon-of-the-mad-mage-in-maps.jpg)
+
+REVIEW: WE CANT USE THIS EITHER
 
 ### Neverwinter
 
@@ -179,6 +183,8 @@ Candidate for: Myth Drannor design/reference variant
 
 ![Myth Drannor behind-the-scenes map](https://www.dndbeyond.com/attachments/12/544/myth-drannor.jpg)
 
+REVIEW: WE CANT USE THIS 
+
 ### Moonshae Isles
 
 Source: [From Icewind Dale to Calimport: A Sandbox of Adventure in the Forgotten Realms](https://www.dndbeyond.com/posts/2079-from-icewind-dale-to-calimport-a-sandbox-of)
@@ -203,8 +209,10 @@ Candidate for: `moonshae_isles` concept/reference variant
 
 Candidate for: `moonshae_isles` forest/Feywild-flavored variant
 
-![Moonshae Fey-touched forest concepts](https://www.dndbeyond.com/attachments/12/590/mooneshae-alex-o.jpg)
+REVIEW: WE CANT USE THIS
 
+![Moonshae Fey-touched forest concepts](https://www.dndbeyond.com/attachments/12/590/mooneshae-alex-o.jpg)
+REVIEW: WE CANT USE THIS
 ### Underdark
 
 Source: [Take a Tour of These Popular Locations in the Forgotten Realms](https://www.dndbeyond.com/posts/1485-take-a-tour-of-these-popular-locations-in-the)
@@ -220,7 +228,7 @@ Source: [Adventure in a Faerunian Sandbox: Storm King's Thunder is Now on Maps](
 Candidate for: broad route/dungeon-master reference for The North, not a default location image.
 
 ![Savage Frontier Maps preview](https://www.dndbeyond.com/attachments/11/283/storm-kings-thunder.gif)
-
+REVIEW: WE CANT USE THIS
 ## Future Scope Candidates
 
 ### Calimshan / Calimport

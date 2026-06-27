@@ -315,17 +315,17 @@ Acceptance:
 
 ## Phase 9 - Images and visual assets
 
-Keep runtime config image-safe.
+Keep runtime config image choices deliberate and traceable.
 
-- Leave location `image` fields absent during the first data implementation.
-- If images are needed, generate or add owned/redistributable location images under a public asset path.
-- Do not hotlink D&D Beyond or Forgotten Realms Wiki art into config.
-- Do not use the map assets in runtime config unless hosting/licensing has been explicitly approved.
+- Populate location `image` fields only from the reviewed per-area selection pass.
+- Prefer exact scenic area art where available, then exact maps, then regional or biome-fit fallback art.
+- Keep the selection/provenance docs updated when adding or replacing image URLs.
+- If hosting/licensing policy changes, migrate the selected images to an approved owned/public asset path.
 
 Acceptance:
 
-- No runtime `image` field points at a questionable external asset.
-- Any added image asset has a clear repo path and usage note.
+- Every configured location has a reviewed `image` URL or an explicit documented reason for omission.
+- Every added image URL has a selection note and source/provenance in the project docs.
 
 ## Phase 10 - Editor and validation
 

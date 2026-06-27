@@ -397,15 +397,15 @@ Suggested job skill flavor:
 
 ## Media and images
 
-For this starter, use `image` fields only when the image URL is safe to redistribute or was generated/owned for this project.
+For this starter, use `image` fields only when the image URL has been deliberately reviewed for the current runtime policy.
 
 Recommended policy:
 
-1. Keep the D&D Beyond map assets as internal documentation references unless publishing rights are confirmed.
-2. Do not hotlink Forgotten Realms Wiki or D&D Beyond art into config.
-3. If location images are desired, generate a neutral illustration set later under `public/westmarch-assets/forgotten-realms/locations/`.
-4. Use map crops only if the maintainer explicitly approves hosting those crops.
-5. Leave `image` absent on locations until a safe URL exists.
+1. Use the reviewed D&D Beyond attachment URLs from the per-area selection pass for the current config.
+2. Keep Forgotten Realms Wiki art out of runtime config unless separately approved.
+3. If a stricter publishing policy is needed later, migrate selected images to owned or approved public hosting.
+4. Use map images only when the maintainer accepts a map as the best available location visual.
+5. Keep weak placeholders documented so they can be replaced with stronger scenic art.
 
 ## Travel command behavior
 
