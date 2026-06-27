@@ -195,12 +195,20 @@ world_data = {
         "oakwood": {"name": "Oakwood Forest", "commands": {"enc": ["forest"]}},
     },
     "paths": [
-        {"from": "river_town", "to": "oakwood", "steps": [{"type": "encounter", "biome": "forest"}]},
+        {
+            "from": "river_town",
+            "to": "oakwood",
+            "distance_miles": 12,
+            "travel_hours": 4,
+            "steps": [{"type": "encounter", "biome": "forest"}],
+        },
     ],
 }
 ```
 
 Travel combines the default transport with any transport args on `!travel <destination> ...`. Players can set persistent availability with a JSON cvar, for example `!cvar westmarch_travel_transport ["fly", "walk", "swim"]`.
+
+Use `distance_miles` or `travel_hours` for route length. Keep `steps` for meaningful things players resolve, such as encounters, costs, hazards, or special activities; `proceed` is mainly an edge-case fallback.
 
 Large maps can be split into JSON gvars and referenced from the config:
 

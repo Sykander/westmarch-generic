@@ -53,6 +53,27 @@ name: find_journey chooses cheaper multi-leg path
 
 cfg_fixture = {
     "world_data": {
+        "locations": {
+            "river_town": {"name": "River Town"},
+            "oakwood": {"name": "Oakwood Forest"},
+            "oakwood_east": {"name": "Oakwood East Trail"},
+        },
+        "paths": [
+            {"from": "river_town", "to": "oakwood", "distance_miles": 12, "steps": [{"type": "encounter", "biome": "forest"}]},
+            {"from": "oakwood", "to": "oakwood_east", "distance_miles": 12, "steps": [{"type": "encounter", "biome": "forest"}]},
+            {"from": "river_town", "to": "oakwood_east", "distance_miles": 120, "steps": [{"type": "encounter", "biome": "road"}]},
+        ],
+    },
+}
+found, legs = journeys.find_journey(cfg_fixture, "river_town", "oakwood_east")
+return found and len(legs) == 2 and legs[0]["to"] == "oakwood"
+---
+True
+---
+name: find_journey uses distance metadata instead of action step count when present
+
+cfg_fixture = {
+    "world_data": {
         "transport": {
             "walk": {"name": "Walking", "default": True, "aliases": ["walking"]},
             "horse": {"name": "Horse or mount", "aliases": ["riding_horse", "warhorse", "pony"]},

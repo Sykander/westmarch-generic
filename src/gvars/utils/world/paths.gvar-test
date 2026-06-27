@@ -101,6 +101,30 @@ True
 ---
 name: gold shorthand becomes cost step
 
+path = {
+    "from": "river_town",
+    "to": "oakwood",
+    "distance_miles": 120,
+    "steps": [{"type": "encounter", "biome": "road"}],
+}
+return paths.get_path_cost(path) == 10
+---
+True
+---
+name: distance miles provide route cost without requiring repeated steps
+
+path = {
+    "from": "river_town",
+    "to": "oakwood",
+    "travel_hours": 8,
+    "steps": [{"type": "encounter", "biome": "road"}],
+}
+return paths.get_path_cost(path) == 2
+---
+True
+---
+name: travel hours provide route cost without requiring repeated steps
+
 cfg_fixture = {
     "world_data": {
         "locations": {

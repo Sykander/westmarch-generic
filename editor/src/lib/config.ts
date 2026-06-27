@@ -2093,6 +2093,26 @@ function validateTravel(model: ConfigModel, issues: ConfigIssue[]) {
           ),
         );
       }
+      [
+        ['distance_miles', 'Distance miles'],
+        ['travel_hours', 'Travel hours'],
+        ['travel_steps', 'Travel steps'],
+        ['route_cost', 'Route cost'],
+      ].forEach(([field, label]) => {
+        const metric = path[field];
+        if (metric == null || metric === '') return;
+        if (typeof metric === 'number' && Number.isFinite(metric) && metric >= 0) return;
+        issues.push(
+          issue(
+            'error',
+            'world.path.travel_metric',
+            'World',
+            `world_data.paths.${index}.${field}`,
+            `${label} must be a non-negative number`,
+            'Travel route metrics are used for route planning without adding repeated journey steps.',
+          ),
+        );
+      });
       const requirements = asRecord(path.requirements);
       const transportRequirement = requirements.transport ?? path.transport;
       const transportRequirements =

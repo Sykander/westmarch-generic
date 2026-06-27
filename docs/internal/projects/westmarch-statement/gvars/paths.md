@@ -46,11 +46,14 @@ westmarch compares the **cheapest applicable path** between two locations (each 
 
 | Source on path | Cost formula *(westmarch)* | Generic target |
 |----------------|---------------------------|----------------|
-| Encounter steps | `len(steps)` | `len(get_path_steps(path))` |
+| Explicit route weight | n/a | `route_cost` or `travel_steps` |
+| Travel time | n/a | `travel_hours / 4` |
+| Distance | n/a | `distance_miles / 12` |
+| Encounter/action steps | `len(steps)` | `len(get_path_steps(path))` |
 | Gold only | `gold / 25` | `cost.gold / 25` |
-| Free hop | `0` | no steps and no cost |
+| Free hop | `0` | no steps, metrics, or cost |
 
-Return **`min(...)`** across paths that match the traveller’s transport; use a large sentinel when no path applies (westmarch used `999`).
+Travel metrics take precedence over action-step count so authors can model a long, relatively safe road without adding repeated flavor steps. If no travel metric is present, return **`min(...)`** across the legacy step/gold candidates that match the traveller’s transport; use a large sentinel when no path applies (westmarch used `999`).
 
 ## Steps (`get_path_steps`)
 
@@ -59,7 +62,7 @@ Return **`min(...)`** across paths that match the traveller’s transport; use a
 
 Transport selection happens when **choosing which path dict** applies — not by swapping step lists on one path.
 
-Encounter display defaults to `!enc <biome>`. When a step sets `activity`, display uses that command instead, e.g. `{ "type": "encounter", "activity": "forage", "biome": "forest" }` renders `!forage forest`. Action steps can carry `description`; travel displays that text beside the command. Narrative-only `proceed` steps are compacted into adjacent action steps when possible.
+Encounter display defaults to `!enc <biome>`. When a step sets `activity`, display uses that command instead, e.g. `{ "type": "encounter", "activity": "forage", "biome": "forest" }` renders `!forage forest`. Action steps can carry `description`; travel displays that text beside the command. Author `steps` should be meaningful player-facing actions: encounters, costs, hazards, or special activities. Use `distance_miles`, `travel_hours`, `travel_steps`, or `route_cost` for route length. `proceed` remains available for edge-case narrative-only legs and as the fallback when no actionable steps are configured.
 
 ## Display (`display_path`)
 

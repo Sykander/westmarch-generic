@@ -4623,6 +4623,18 @@ function PathFields({
         }
       />
       <TextField
+        label="Distance miles"
+        value={String(path.distance_miles ?? '')}
+        onChange={(value) => updateField('distance_miles', numberOrUndefined(value))}
+        help="Optional route distance used for pathfinding weight."
+      />
+      <TextField
+        label="Travel hours"
+        value={String(path.travel_hours ?? '')}
+        onChange={(value) => updateField('travel_hours', numberOrUndefined(value))}
+        help="Optional travel time used for pathfinding weight."
+      />
+      <TextField
         label="Gold cost"
         value={String(cost.gold ?? '')}
         onChange={(value) => updateField('cost', { ...cost, gold: numberOrUndefined(value) })}
@@ -4632,7 +4644,8 @@ function PathFields({
         <span>
           Journey steps
           <HelpTip label="Journey steps help">
-            Ordered route steps: encounter, cost, or proceed.
+            Ordered route actions players resolve. Use encounter or cost for normal paths; proceed
+            is available for edge-case narrative hops.
           </HelpTip>
         </span>
         <div className="path-step-list">

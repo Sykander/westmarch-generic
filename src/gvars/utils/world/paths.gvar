@@ -48,6 +48,10 @@ def _read_field(obj, key):
         "transport": lambda o: o.transport,
         "steps": lambda o: o.steps,
         "cost": lambda o: o.cost,
+        "route_cost": lambda o: o.route_cost,
+        "travel_steps": lambda o: o.travel_steps,
+        "travel_hours": lambda o: o.travel_hours,
+        "distance_miles": lambda o: o.distance_miles,
         "gold": lambda o: o.gold,
         "rations": lambda o: o.rations,
         "label": lambda o: o.label,
@@ -311,6 +315,10 @@ def _copy_path(path):
         "requirements",
         "steps",
         "cost",
+        "route_cost",
+        "travel_steps",
+        "travel_hours",
+        "distance_miles",
         "gold",
         "rations",
         "label",
@@ -594,8 +602,27 @@ def _as_number(value, fallback=None):
         return fallback
 
 
+def _path_travel_cost(path):
+    explicit = _as_number(_read_field(path, "route_cost"))
+    if explicit != None:
+        return explicit
+    travel_steps = _as_number(_read_field(path, "travel_steps"))
+    if travel_steps != None:
+        return travel_steps
+    travel_hours = _as_number(_read_field(path, "travel_hours"))
+    if travel_hours != None:
+        return travel_hours / 4
+    distance_miles = _as_number(_read_field(path, "distance_miles"))
+    if distance_miles != None:
+        return distance_miles / 12
+    return None
+
+
 def get_path_cost(path, transport_id="walk", horse=False, boat=False):
     selected = _transport_id(transport_id, horse, boat)
+    travel_cost = _path_travel_cost(path)
+    if travel_cost != None:
+        return travel_cost
     candidates = []
     raw_steps = _read_field(path, "steps")
     if raw_steps != None and lists.is_list(raw_steps):

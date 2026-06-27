@@ -562,7 +562,7 @@ transport = {
 | `aliases` | no | Specific names that resolve to this broad category |
 | `default` | no | **`walk`** (or first mode) when player has no configured/default transport availability |
 
-**Path requirements** should reference canonical transport **ids** (not booleans). Configured aliases are accepted for compatibility, but categories such as `horse` and `cart` keep the route graph small. Each path has **one** `steps` list — no alternate step lists on the same edge. If a corridor has genuinely different actions for walking, riding, or boating, use separate path entries (same `from`/`to`, different `requirements.transport` and `steps`):
+**Path requirements** should reference canonical transport **ids** (not booleans). Omit transport requirements for ordinary routes that can be walked or used by mundane overland travel; add requirements only when the path genuinely needs a capability such as boat, ship, flight, swimming, a portal, or a teleportation circle. Configured aliases are accepted for compatibility, but categories such as `horse` and `cart` keep the route graph small. Each path has **one** `steps` list — no alternate step lists on the same edge. If a corridor has genuinely different actions for walking, riding, or boating, use separate path entries (same `from`/`to`, different `requirements.transport` and `steps`):
 
 ```py
 world_data = {
@@ -570,26 +570,30 @@ world_data = {
         {
             "from": "oakwood",
             "to": "oakwood_east",
-            "requirements": { "transport": "walk" },
+            "distance_miles": 12,
+            "travel_hours": 4,
             "steps": [
                 { "type": "encounter", "biome": "forest" },
-                { "type": "proceed", "description": "Hike the east trail." },
             ],
         },
         {
             "from": "oakwood",
             "to": "oakwood_east",
             "requirements": { "transport": "horse" },
+            "distance_miles": 10,
+            "travel_hours": 2,
             "steps": [
-                { "type": "proceed", "description": "Canter along the east trail." },
+                { "type": "encounter", "biome": "road", "description": "Canter along the east trail." },
             ],
         },
         {
             "from": "harbor",
             "to": "island",
             "requirements": { "transport": "boat" },
+            "distance_miles": 8,
+            "travel_hours": 3,
             "steps": [
-                { "type": "proceed", "description": "Sail across the bay." },
+                { "type": "encounter", "biome": "sea", "description": "Sail across the bay." },
             ],
         },
     ],
@@ -917,6 +921,8 @@ A **one-way route** from one location to another. Stored inline in **`world_data
 path = {
     "from": "oakwood",              # location id — origin
     "to": "oakwood_east",           # location id — destination
+    "distance_miles": 24,           # optional — route length used for pathfinding cost
+    "travel_hours": 8,              # optional — overrides distance-derived travel cost
     "requirements": {               # optional — transport / state gates
         "transport": "horse",       # or ["horse", "boat"] — see world_data.transport
     },
@@ -933,6 +939,9 @@ path = {
 |-------|----------|-------|
 | `from`, `to` | yes | Location **`id`** strings |
 | `steps` | no* | *At least one of `steps`, `cost`-only free leg, or engine default “Proceed to {to}” |
+| `distance_miles` | no | Approximate route distance. Used for route cost as `distance_miles / 12` when no more specific travel metric is set. |
+| `travel_hours` | no | Approximate travel time. Used for route cost as `travel_hours / 4`. |
+| `travel_steps` / `route_cost` | no | Explicit route-planning weights for special cases. These affect pathfinding, not player-facing journey steps. |
 | `requirements` | no | `str → bool` — player/state must satisfy `True` keys |
 | `cost` | no | Resource dict — `gold` → coinpurse; other keys → wallet currency **ids** ([Currency](#currency)) |
 | `label` | no | Shown in journey planning UI |
@@ -951,11 +960,11 @@ One entry in **`path["steps"]`** — what the player does before advancing (`!tr
 # Pay resources at this step
 { "type": "cost", "gold": 5 }
 
-# No roll — narrative / auto advance
+# Edge-case fallback / narrative-only hop
 { "type": "proceed", "description": "Follow the forest trail" }
 ```
 
-**Encounter steps** map to `!enc <biome>` by default, or to `!<activity> <biome>` when `activity` is set. **Cost steps** represent a payment/resource requirement; the first travel/location slice displays them, and a later enforcement slice will deduct them when policy allows. Steps may include **`description`**; travel displays it beside the action. **Proceed** steps are for narrative-only legs and are compacted into adjacent actionable steps when possible.
+**Encounter steps** map to `!enc <biome>` by default, or to `!<activity> <biome>` when `activity` is set. **Cost steps** represent a payment/resource requirement; the first travel/location slice displays them, and a later enforcement slice will deduct them when policy allows. Steps may include **`description`**; travel displays it beside the action. Author steps should be meaningful things players resolve; use `distance_miles`, `travel_hours`, `travel_steps`, or `route_cost` for route length. **Proceed** remains available for edge-case narrative-only legs and as the engine fallback when no actionable steps are configured.
 
 ### Requirements and parallel paths
 
@@ -981,9 +990,9 @@ world_data = {
         {
             "from": "oakwood",
             "to": "oakwood_east",
-            "requirements": { "transport": "walk" },
+            "distance_miles": 12,
+            "travel_hours": 4,
             "steps": [
-                { "type": "encounter", "biome": "forest" },
                 { "type": "encounter", "biome": "forest" },
             ],
         },
@@ -991,8 +1000,10 @@ world_data = {
             "from": "oakwood",
             "to": "oakwood_east",
             "requirements": { "transport": "horse" },
+            "distance_miles": 10,
+            "travel_hours": 2,
             "steps": [
-                { "type": "proceed", "description": "Canter along the east trail" },
+                { "type": "encounter", "biome": "road", "description": "Canter along the east trail" },
             ],
         },
         {

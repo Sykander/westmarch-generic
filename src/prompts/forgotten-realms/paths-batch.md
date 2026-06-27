@@ -16,9 +16,9 @@ Paste **all location ids** (or the subgraph ids for this region). Optionally nam
 - [ ] Every `from` / `to` is in your pasted id list
 - [ ] Every step `type` is `encounter`, `proceed`, or `cost`
 - [ ] Encounter steps use allowed biome codes only
-- [ ] No duplicate `(from, to, transport)` — treat missing `requirements` as `walk`/any
+- [ ] No duplicate `(from, to, transport)` — missing `requirements.transport` means unrestricted
 - [ ] Bidirectional routes have two entries if both directions are travelable
-- [ ] `description` on proceed steps ≤280 chars
+- [ ] Route length belongs in `distance_miles` / `travel_hours`; do not add repeated filler steps
 
 ## Integration
 

@@ -41,8 +41,10 @@ world_data_paths = [
 | Field | Required | Notes |
 |-------|----------|--------|
 | `from`, `to` | yes | Location id strings |
-| `steps` | yes* | Ordered list — at least one step (*or `cost`-only with engine default proceed) |
-| `requirements` | no | `{ "transport": "walk" }` or `"horse"` / `"boat"` / `"ship"` — omit = any transport |
+| `distance_miles` | no | Approximate route distance used for pathfinding weight |
+| `travel_hours` | no | Approximate travel time; overrides distance-derived pathfinding weight |
+| `steps` | yes* | Ordered player-facing actions — at least one meaningful step (*or `cost`-only / engine fallback for edge cases) |
+| `requirements` | no | `"boat"` / `"ship"` / `"fly"` / `"swim"` / `"portal"` / `"teleportation_circle"` — omit for ordinary overland routes |
 | `cost` | no | e.g. `{ "gold": 5, "rations": 1 }` — toll or ferry |
 | `label` | no | Player-facing gate hint |
 
@@ -50,7 +52,7 @@ world_data_paths = [
 
 ```python
 { "type": "encounter", "biome": "forest" }
-{ "type": "proceed", "description": "Short narrative for !travel next." }
+{ "type": "proceed", "description": "Edge-case narrative hop for !travel next." }
 { "type": "cost", "gold": 5 }
 ```
 
@@ -60,9 +62,9 @@ world_data_paths = [
 
 - **Hub first:** if a hub is named, connect it to 4–8 nearby locations in this batch.
 - **Wild routes:** 1–3 encounter steps; **road/urban** routes: 0–1 encounter steps, often `road` or `urban` biome.
-- **Steps length:** 1–4 steps per path; use `proceed` for filler, `encounter` for danger.
+- **Steps are not clock ticks:** use `distance_miles` / `travel_hours` for route length. Use `steps` only for meaningful player-resolved actions such as encounters, costs, hazards, or special activities.
 - **No duplicate edges:** same `from`, `to`, and `requirements.transport` (or both omitted) only once.
-- **Horse/boat:** only add a second path with `requirements.transport` when steps are **shorter or different** — not required for MVP.
+- **Transport requirements:** omit requirements for normal roads and trails. Add a second path with `requirements.transport` only when a specific capability is actually required or makes a genuinely different route.
 
 ### Example (structure only)
 

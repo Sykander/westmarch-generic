@@ -110,6 +110,12 @@ test('forgotten realms starter has slice 5 travel baseline', () => {
     const raw = requirements?.transport ?? path.transport;
     return Array.isArray(raw) ? raw.includes(transport) : raw === transport;
   }
+  function hasUnrestrictedPath(from: string, to: string) {
+    return paths.some((path) => {
+      const requirements = path.requirements as Record<string, unknown> | undefined;
+      return path.from === from && path.to === to && requirements?.transport == null;
+    });
+  }
   function hasPath(from: string, to: string, transport: string) {
     return paths.some(
       (path) => path.from === from && path.to === to && transportMatches(path, transport),
@@ -128,12 +134,19 @@ test('forgotten realms starter has slice 5 travel baseline', () => {
   }
 
   assert.ok(paths.length > 120);
-  assert.ok(hasPath('waterdeep', 'high_road', 'walk'));
-  assert.ok(hasPath('high_road', 'triboar_trail', 'walk'));
-  assert.ok(hasPath('triboar_trail', 'phandalin', 'walk'));
-  assert.ok(hasPath('baldurs_gate', 'risen_road', 'walk'));
+  assert.ok(hasUnrestrictedPath('waterdeep', 'high_road'));
+  assert.ok(hasUnrestrictedPath('high_road', 'triboar_trail'));
+  assert.ok(hasUnrestrictedPath('triboar_trail', 'phandalin'));
+  assert.ok(hasUnrestrictedPath('baldurs_gate', 'risen_road'));
   assert.ok(hasPath('waterdeep', 'sea_of_swords', 'ship'));
   assert.ok(hasPath('baldurs_gate', 'river_chionthar', 'boat'));
+  assert.ok(hasPath('waterdeep', 'neverwinter', 'fly'));
+  assert.ok(hasPath('waterdeep', 'silverymoon', 'teleportation_circle'));
+  assert.ok(
+    paths.every(
+      (path) => typeof path.distance_miles === 'number' && typeof path.travel_hours === 'number',
+    ),
+  );
   assert.ok(hasStepText('baldurs_gate', 'risen_road', "Wyrm's Crossing"));
 
   const transport = worldData.transport as Record<string, Record<string, unknown>>;
@@ -445,6 +458,53 @@ world_data = {
 `);
 
   assert.equal(aliasCodes.includes('world.path.transport_unknown'), false);
+});
+
+test('travel path route metrics must be numeric when present', () => {
+  const codes = issueCodes(`
+subsystems = {
+    "travel": {
+        "enabled": True,
+        "commands": {"travel": True, "location": True},
+    },
+}
+
+world_data = {
+    "default_location": "river_town",
+    "locations": {
+        "river_town": {"name": "River Town"},
+        "oakwood": {"name": "Oakwood Forest"},
+    },
+    "paths": [
+        {"from": "river_town", "to": "oakwood", "distance_miles": "far", "steps": [{"type": "encounter", "biome": "forest"}]},
+        {"from": "oakwood", "to": "river_town", "travel_hours": -1, "steps": [{"type": "encounter", "biome": "forest"}]},
+    ],
+}
+`);
+
+  assert.ok(codes.includes('world.path.travel_metric'));
+
+  const validCodes = issueCodes(`
+subsystems = {
+    "travel": {
+        "enabled": True,
+        "commands": {"travel": True, "location": True},
+    },
+}
+
+world_data = {
+    "default_location": "river_town",
+    "locations": {
+        "river_town": {"name": "River Town"},
+        "oakwood": {"name": "Oakwood Forest"},
+    },
+    "paths": [
+        {"from": "river_town", "to": "oakwood", "distance_miles": 24, "travel_hours": 8, "steps": [{"type": "encounter", "biome": "forest"}]},
+    ],
+}
+`);
+
+  assert.equal(validCodes.includes('world.path.travel_metric'), false);
 });
 
 test('travel config validates biome policy fields', () => {

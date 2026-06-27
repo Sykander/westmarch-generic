@@ -298,17 +298,19 @@ world_data = {
         {
             "from": "oakwood",
             "to": "oakwood_east",
+            "distance_miles": 12,
+            "travel_hours": 4,
             "steps": [
-                {"type": "encounter", "biome": "forest"},
-                {"type": "proceed", "description": "The trail opens into a clearing."},
+                {"type": "encounter", "biome": "forest", "description": "The trail opens into a clearing."},
             ],
-            "requirements": {"transport": "walk"},
         },
         {
             "from": "oakwood",
             "to": "oakwood_east",
+            "distance_miles": 10,
+            "travel_hours": 2,
             "steps": [
-                {"type": "proceed", "description": "Canter along the east trail."},
+                {"type": "encounter", "biome": "road", "description": "Canter along the east trail."},
             ],
             "requirements": {"transport": "horse"},
             "cost": {"gold": 25, "rations": 2},

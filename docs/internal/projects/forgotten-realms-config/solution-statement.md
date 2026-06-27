@@ -254,7 +254,7 @@ Path steps should be player-actionable:
 
 Follow these rules:
 
-- if a named bridge exists, use a proceed step that names the bridge;
+- if a named bridge exists, put that detail in the description of a meaningful encounter, cost, or hazard step;
 - if a ferry is the normal crossing, use `requirements.transport: "boat"` or a cost/proceed ferry step;
 - if the path expects swimming, use `requirements.transport: "swim"` and describe it as a dangerous crossing;
 - if the route crosses open sea, require `ship`;
@@ -267,11 +267,10 @@ Example road route:
     "from": "baldurs_gate",
     "to": "elturel",
     "label": "Risen Road",
-    "requirements": {"transport": ["walk", "horse", "cart"]},
+    "distance_miles": 160,
+    "travel_hours": 54,
     "steps": [
-        {"type": "proceed", "description": "Leave Baldur's Gate by Wyrm's Crossing over the River Chionthar."},
-        {"type": "encounter", "activity": "enc", "biome": "road"},
-        {"type": "proceed", "description": "Follow the Risen Road east toward Elturel."},
+        {"type": "encounter", "activity": "enc", "biome": "road", "description": "Leave Baldur's Gate by Wyrm's Crossing and follow the Risen Road east toward Elturel."},
     ],
 }
 ```
