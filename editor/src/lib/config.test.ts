@@ -76,6 +76,19 @@ test('forgotten realms starter has slice 5 travel baseline', () => {
   assert.equal(commands.time, true);
   assert.equal(commands.weather, true);
 
+  const economy = model.subsystems.economy as Record<string, unknown>;
+  const economyCommands = economy.commands as Record<string, unknown>;
+  assert.equal(economy.enabled, true);
+  assert.equal(economyCommands.job, true);
+  assert.equal(economyCommands.buy, true);
+  assert.equal(economyCommands.sell, true);
+  assert.equal(economyCommands.wallet, false);
+  assert.ok(Object.keys(model.shops ?? {}).length > 30);
+  assert.equal(
+    (model.shops?.waterdeep_general_market as Record<string, unknown>).location_id,
+    'waterdeep',
+  );
+
   const worldData = model.world_data as Record<string, unknown>;
   assert.equal(worldData.default_location, 'waterdeep');
   assert.equal(worldData.locations_gvar_id, 'engine:configs/forgotten_realms_2014_locations');
@@ -108,6 +121,17 @@ test('forgotten realms starter has slice 5 travel baseline', () => {
     assert.match(image, /^https:\/\/www\.dndbeyond\.com\/attachments\//);
   }
   assert.ok(locationImages.size > 30);
+  const waterdeep = locations.waterdeep as Record<string, unknown>;
+  const waterdeepCommands = waterdeep.commands as Record<string, unknown>;
+  assert.equal(waterdeepCommands.job, true);
+  assert.equal(waterdeepCommands.buy, true);
+  assert.equal(waterdeepCommands.sell, true);
+  assert.deepEqual(waterdeep.services, [
+    'waterdeep_general_market',
+    'waterdeep_stables',
+    'waterdeep_docks',
+    'waterdeep_healers',
+  ]);
 
   const paths = JSON.parse(
     readFileSync(

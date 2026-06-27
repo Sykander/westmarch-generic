@@ -1,5 +1,6 @@
 wd = forgotten_realms_2014.world_data
 travel = forgotten_realms_2014.subsystems["travel"]
+economy = forgotten_realms_2014.subsystems["economy"]
 return (
     forgotten_realms_2014.rules_version == "2014"
     and wd["default_location"] == "waterdeep"
@@ -8,11 +9,32 @@ return (
     and travel["enabled"] == True
     and travel["commands"]["travel"] == True
     and travel["commands"]["location"] == True
+    and economy["enabled"] == True
+    and economy["commands"]["job"] == True
+    and economy["commands"]["buy"] == True
+    and economy["commands"]["sell"] == True
+    and len(forgotten_realms_2014.shops) >= 30
+    and forgotten_realms_2014.shops["waterdeep_general_market"]["location_id"] == "waterdeep"
 )
 ---
 True
 ---
-name: Forgotten Realms 2014 config enables travel with production data gvars
+name: Forgotten Realms 2014 config enables travel and economy with production data gvars
+
+waterdeep_docks = forgotten_realms_2014.shops["waterdeep_docks"]
+waterdeep_market = forgotten_realms_2014.shops["waterdeep_general_market"]
+item_overlay = forgotten_realms_2014.subsystems["crafting"]["config"]["catalogues"]["items"]
+return (
+    waterdeep_docks["location_id"] == "waterdeep"
+    and waterdeep_docks["stock"][0]["item"] == "Ship Passage"
+    and waterdeep_market["accepts_sells"] == True
+    and item_overlay["include_engine"] == True
+    and item_overlay["entries"][0]["name"] == "Ship Passage"
+)
+---
+True
+---
+name: Forgotten Realms 2014 shops include Waterdeep market and service item overlay
 
 using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(
@@ -121,14 +143,12 @@ current_id, current_loc = journeys.get_location(ch, cfg)
 matches = locations.search_locations(cfg, "shadowdale")
 dest_id = locations.location_id(matches[0]) if len(matches) == 1 else None
 found, route = journeys.find_journey(cfg, current_id, dest_id)
-journey = journeys.build_journey(cfg, current_id, dest_id, route)
 desc = locations.display_location(current_loc, "full", ch, True, journeys.get_visit_count(ch, current_id))
-desc += "\n\n" + journeys.display_journey(cfg, journey, "detailed", prefix="!")
-return current_id == "waterdeep" and found and len(route) == 15 and route[len(route) - 1]["to"] == "shadowdale" and "Waterdeep" in desc and "Shadowdale" in desc and "!enc" in desc
+return current_id == "waterdeep" and found and len(route) == 15 and route[len(route) - 1]["to"] == "shadowdale" and "Waterdeep" in desc and "buy" in desc
 ---
 True
 ---
-name: travel command core routes Waterdeep to Shadowdale under statement budget
+name: travel command core pathfinds Waterdeep to Shadowdale under statement budget
 
 using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(

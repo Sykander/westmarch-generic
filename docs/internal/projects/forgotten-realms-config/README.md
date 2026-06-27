@@ -8,6 +8,7 @@ Design notes for turning `src/gvars/configs/forgotten_realms_2014.gvar` from a t
 - [solution-statement.md](solution-statement.md) - target config shape, seed data scope, map usage, transport modes, and rollout plan.
 - [implementation-plan.md](implementation-plan.md) - phased implementation checklist and acceptance criteria.
 - [baseline-audit.md](baseline-audit.md) - slice 0 runtime/editor audit plus updated slice 2-3 runtime notes.
+- [economy-seed.md](economy-seed.md) - first runtime shop, service, and job seed for settled Forgotten Realms locations.
 - [location-art-resources.md](location-art-resources.md) - D&D Beyond image candidates and selected runtime location images.
 - [dndbeyond-image-catalog.md](dndbeyond-image-catalog.md) - exhaustive categorized image catalog from the D&D Beyond Forgotten Realms/location archive pass.
 - [area-image-selections.md](area-image-selections.md) - current best image pick for each configured Forgotten Realms area.

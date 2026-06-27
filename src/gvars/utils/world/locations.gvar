@@ -10,7 +10,7 @@ using(
     lists = env.gvars.lists,
 )
 
-ACTIVITY_COMMANDS = ["enc", "forage", "fish", "mine", "lumber", "hunt", "loot"]
+ACTIVITY_COMMANDS = ["enc", "forage", "fish", "mine", "lumber", "hunt", "loot", "job", "buy", "sell"]
 _locations_cache = {}
 _linked_name_cache = {}
 
