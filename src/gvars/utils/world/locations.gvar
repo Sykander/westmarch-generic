@@ -18,12 +18,13 @@ _linked_name_cache = {}
 def _read_field(obj, key):
     if obj == None:
         return None
-    if dicts.is_dict(obj):
-        if key in obj:
-            return obj[key]
-        return None
     try:
         return obj[key]
+    except:
+        pass
+    try:
+        obj.keys
+        return None
     except:
         pass
     attrs = {

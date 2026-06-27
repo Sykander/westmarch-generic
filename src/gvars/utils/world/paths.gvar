@@ -29,12 +29,13 @@ _path_index_cache = {}
 def _read_field(obj, key):
     if obj == None:
         return None
-    if dicts.is_dict(obj):
-        if key in obj:
-            return obj[key]
-        return None
     try:
         return obj[key]
+    except:
+        pass
+    try:
+        obj.keys
+        return None
     except:
         pass
     attrs = {
@@ -453,7 +454,7 @@ def has_edge_to(config_override, to_id, transport_id="walk", selected_ids=None):
 
 def _legacy_encounter_steps(encs):
     out = []
-    if not lists.is_list(encs):
+    if encs == None:
         return out
     for biome in encs:
         out.append({"type": "encounter", "biome": str(biome)})
@@ -528,14 +529,16 @@ def _is_action_step(step):
 
 
 def _compact_steps(raw_steps):
-    if raw_steps == None or not lists.is_list(raw_steps):
+    if raw_steps == None:
         return []
     out = []
     pending_desc = None
     for raw_step in raw_steps:
         if _is_action_step(raw_step):
-            step = _set_step_description(_copy_step(raw_step), pending_desc, True)
-            out.append(step)
+            if pending_desc == None:
+                out.append(raw_step)
+            else:
+                out.append(_set_step_description(_copy_step(raw_step), pending_desc, True))
             pending_desc = None
             continue
         desc = _step_description(raw_step)
@@ -550,7 +553,7 @@ def _compact_steps(raw_steps):
 
 
 def _compact_step_count(raw_steps):
-    if raw_steps == None or not lists.is_list(raw_steps):
+    if raw_steps == None:
         return 0
     count = 0
     has_pending_desc = False
@@ -570,7 +573,7 @@ def get_path_steps(path, transport_id="walk", horse=False, boat=False):
     """Step list for one edge, accepting generic and westmarch shorthand paths."""
     selected = _transport_id(transport_id, horse, boat)
     raw = _read_field(path, "steps")
-    if raw != None and lists.is_list(raw):
+    if raw != None:
         return _compact_steps(raw)
     if selected == "horse":
         horse_steps = _legacy_encounter_steps(_read_field(path, "horse"))
@@ -625,13 +628,13 @@ def get_path_cost(path, transport_id="walk", horse=False, boat=False):
         return travel_cost
     candidates = []
     raw_steps = _read_field(path, "steps")
-    if raw_steps != None and lists.is_list(raw_steps):
+    if raw_steps != None:
         candidates.append(_compact_step_count(raw_steps))
-    elif selected == "horse" and lists.is_list(_read_field(path, "horse")):
+    elif selected == "horse" and _read_field(path, "horse") != None:
         candidates.append(len(_read_field(path, "horse")))
-    elif selected == "boat" and lists.is_list(_read_field(path, "boat")):
+    elif selected == "boat" and _read_field(path, "boat") != None:
         candidates.append(len(_read_field(path, "boat")))
-    elif lists.is_list(_read_field(path, "encs")):
+    elif _read_field(path, "encs") != None:
         candidates.append(len(_read_field(path, "encs")))
     cost = _read_field(path, "cost")
     gold = None
@@ -651,16 +654,26 @@ def get_path_cost(path, transport_id="walk", horse=False, boat=False):
     return best
 
 
-def _step_text(step, path=None, prefix="!", completed=False):
+def _step_parts(step, cfg=None, prefix="!", completed=False):
     text = None
     desc = None
-    if dicts.is_dict(step):
+    warning = None
+    is_step_dict = dicts.is_dict(step)
+    step_type = None
+    biome = None
+    gold = None
+    is_command_step = False
+    is_cost_step = False
+    if is_step_dict:
         desc = _step_description(step)
         step_type = _read_field(step, "type")
         biome = _read_field(step, "biome")
-        if step_type == "encounter" or biome != None:
-            if biome == None:
-                biome = _read_field(step, "code")
+        if biome == None:
+            biome = _read_field(step, "code")
+        is_command_step = step_type == "encounter" or biome != None
+        gold = _read_field(step, "gold")
+        is_cost_step = step_type == "cost" or gold != None
+        if is_command_step:
             activity = _read_field(step, "activity")
             if activity == None or str(activity).strip() == "":
                 activity = "enc"
@@ -668,9 +681,8 @@ def _step_text(step, path=None, prefix="!", completed=False):
             if biome != None and str(biome).strip() != "":
                 command += f" {str(biome).strip()}"
             text = f"Run `{command}`"
-        elif step_type == "cost" or _read_field(step, "gold") != None:
+        elif is_cost_step:
             parts = []
-            gold = _read_field(step, "gold")
             if gold != None:
                 parts.append(f"{gold} gp")
             rations = _read_field(step, "rations")
@@ -685,16 +697,20 @@ def _step_text(step, path=None, prefix="!", completed=False):
                 text = str(desc).strip()
     if text == None:
         text = str(step)
-    elif desc != None and dicts.is_dict(step):
-        step_type = _read_field(step, "type")
-        biome = _read_field(step, "biome")
-        if biome == None:
-            biome = _read_field(step, "code")
-        if step_type == "encounter" or biome != None or step_type == "cost" or _read_field(step, "gold") != None:
+    elif desc != None and is_step_dict:
+        if is_command_step or is_cost_step:
             text = f"{desc} {text}"
+    if cfg != None and is_command_step:
+        if biome == None or str(biome).strip() == "":
+            if _biome_source(cfg) != "location":
+                warning = "Encounter step has no biome. Configure a biome, or set exploration biome source to location."
     if completed:
-        return f"~~{text}~~"
-    return text
+        text = f"~~{text}~~"
+    return [text, warning]
+
+
+def _step_text(step, path=None, prefix="!", completed=False):
+    return _step_parts(step, None, prefix, completed)[0]
 
 
 def _biome_source(cfg):
@@ -786,8 +802,9 @@ def display_path(path, config_override=None, mode="short", transport_id="walk", 
                 done = index < int(progress_step)
             except:
                 done = False
-        lines.append(f"* {display_step(step, path, prefix, done)}")
-        warning = _missing_biome_warning(step, cfg)
+        parts = _step_parts(step, cfg, prefix, done)
+        lines.append(f"* {parts[0]}")
+        warning = parts[1]
         if warning != None:
             lines.append(f"  -# {warning}")
         index += 1

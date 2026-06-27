@@ -32,13 +32,39 @@ cfg = {
 }
 ch = character()
 current_id, current_loc = journeys.get_location(ch, cfg)
+desc = locations.display_location(current_loc, "full", ch, True, journeys.get_visit_count(ch, current_id))
+nearby = journeys.format_nearby_locations(cfg, current_id, "!")
+return current_id == "waterdeep" and "Waterdeep" in desc and "## Nearby" in nearby and "High Road" in nearby and "Trade Way" in nearby
+---
+True
+---
+name: location command core shows Waterdeep nearby routes under statement budget
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(
+    journeys = env.gvars.journeys,
+    locations = env.gvars.locations,
+)
+wd = {}
+for key in forgotten_realms_2014.world_data:
+    wd[key] = forgotten_realms_2014.world_data[key]
+wd["locations_gvar_id"] = "fde0dbeb-d2e3-42fd-8f56-2d94bdf3ac58"
+wd["paths_gvar_id"] = "19623e1a-3a23-49a0-9d40-986fdd26d7e7"
+cfg = {
+    "rules_version": forgotten_realms_2014.rules_version,
+    "display": forgotten_realms_2014.display,
+    "subsystems": forgotten_realms_2014.subsystems,
+    "world_data": wd,
+}
+ch = character()
+current_id, current_loc = journeys.get_location(ch, cfg)
 matches = locations.search_locations(cfg, "silverymoon")
 dest_id = locations.location_id(matches[0]) if len(matches) == 1 else None
 found, route = journeys.find_journey(cfg, current_id, dest_id)
 journey = journeys.build_journey(cfg, current_id, dest_id, route)
 desc = locations.display_location(current_loc, "full", ch, True, journeys.get_visit_count(ch, current_id))
 desc += "\n\n" + journeys.display_journey(cfg, journey, "detailed", prefix="!")
-return current_id == "waterdeep" and found and len(route) == 6 and route[len(route) - 1]["to"] == "silverymoon" and "Waterdeep" in desc and "Silverymoon" in desc and "!enc" in desc
+return current_id == "waterdeep" and found and len(route) == 8 and route[len(route) - 1]["to"] == "silverymoon" and "Waterdeep" in desc and "Silverymoon" in desc and "!enc" in desc
 ---
 True
 ---
@@ -128,7 +154,7 @@ found, route = journeys.find_journey(cfg, current_id, dest_id)
 journey = journeys.build_journey(cfg, current_id, dest_id, route)
 desc = locations.display_location(current_loc, "full", ch, True, journeys.get_visit_count(ch, current_id))
 desc += "\n\n" + journeys.display_journey(cfg, journey, "detailed", prefix="!")
-return current_id == "waterdeep" and found and len(route) == 7 and route[len(route) - 1]["to"] == "bryn_shander" and "Waterdeep" in desc and "Bryn Shander" in desc and "!enc" in desc
+return current_id == "waterdeep" and found and len(route) == 8 and route[len(route) - 1]["to"] == "bryn_shander" and "Waterdeep" in desc and "Bryn Shander" in desc and "!enc" in desc
 ---
 True
 ---

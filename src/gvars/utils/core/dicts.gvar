@@ -3,6 +3,7 @@
 
 def is_dict(maybe_dict) -> bool:
     try:
-        return maybe_dict == dict(maybe_dict)
+        maybe_dict.keys
+        return True
     except:
         return False

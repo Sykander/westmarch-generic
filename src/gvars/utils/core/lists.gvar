@@ -41,7 +41,8 @@ def get_random_from_list(items: list, count = 1) -> list:
 
 def is_list(maybe_list) -> bool:
     try:
-        return maybe_list == list(maybe_list)
+        maybe_list.append
+        return True
     except:
         return False
 

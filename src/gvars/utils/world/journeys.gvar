@@ -18,12 +18,13 @@ CVAR_TRANSPORT = "westmarch_travel_transport"
 def _read_field(obj, key):
     if obj == None:
         return None
-    if dicts.is_dict(obj):
-        if key in obj:
-            return obj[key]
-        return None
     try:
         return obj[key]
+    except:
+        pass
+    try:
+        obj.keys
+        return None
     except:
         pass
     attrs = {
@@ -699,24 +700,22 @@ def find_journey(config_override, from_id, to_id, horse=False, boat=False, trans
     available_transports = _available_transport_ids(cfg, transport_ids, transport_id, horse, boat)
     transport = _primary_transport_id(cfg, transport_ids, transport_id, horse, boat)
     selected_ids = paths.get_available_transport_match_ids(cfg, available_transports)
-    if not paths.has_edge_to(cfg, dest, transport, selected_ids):
-        return False, []
     costs = {start: 0}
     searched = {}
-    open_ids = [start]
-    open_costs = [0]
+    open_costs = {start: 0}
     previous = {}
     via_path = {}
-    cheapest_dest_cost = None
 
-    while len(open_ids) > 0:
-        next_id = open_ids.pop(0)
-        next_cost = open_costs.pop(0)
-        if next_id in searched:
-            continue
-        if next_cost != costs[next_id]:
-            continue
-        if cheapest_dest_cost != None and cheapest_dest_cost <= next_cost:
+    while len(open_costs) > 0:
+        next_id = None
+        next_cost = None
+        for candidate in open_costs:
+            candidate_cost = open_costs[candidate]
+            if next_cost == None or candidate_cost < next_cost:
+                next_id = candidate
+                next_cost = candidate_cost
+        open_costs.pop(next_id, None)
+        if next_id == dest:
             break
         searched[next_id] = True
 
@@ -731,13 +730,7 @@ def find_journey(config_override, from_id, to_id, horse=False, boat=False, trans
             costs[path_to] = new_cost
             previous[path_to] = next_id
             via_path[path_to] = path
-            index = 0
-            while index < len(open_costs) and open_costs[index] <= new_cost:
-                index += 1
-            open_ids.insert(index, path_to)
-            open_costs.insert(index, new_cost)
-            if path_to == dest:
-                cheapest_dest_cost = new_cost
+            open_costs[path_to] = new_cost
 
     if dest not in costs:
         return False, []
