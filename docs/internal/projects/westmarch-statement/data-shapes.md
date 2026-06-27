@@ -493,9 +493,9 @@ world_data = {
 |-----|----------|-------|
 | **`default_location`** | when travel/location on | **`locations`** id slug |
 | **`locations`** | when travel/location on and no **`locations_gvar_id`** | Dict keyed by stable **`id`** — [Location](#location). Inline entries override matching external ids. |
-| **`locations_gvar_id`** | no | UUID of a JSON gvar containing the large locations dict, optionally wrapped as **`{"locations": {...}}`** |
+| **`locations_gvar_id`** | no | UUID of a JSON gvar containing the large locations dict, optionally wrapped as **`{"locations": {...}}`**. The web editor may display shipped preset UUIDs as **`engine:configs/...`** aliases while editing. |
 | **`paths`** | when **`travel`** routes journeys and no **`paths_gvar_id`** | List of [Path](#path) edges. Inline entries are appended after external entries. |
-| **`paths_gvar_id`** | no | UUID of a JSON gvar containing the large paths list, optionally wrapped as **`{"paths": [...]}`** |
+| **`paths_gvar_id`** | no | UUID of a JSON gvar containing the large paths list, optionally wrapped as **`{"paths": [...]}`**. The web editor may display shipped preset UUIDs as **`engine:configs/...`** aliases while editing. |
 | **`transport`** | no | [Transport](#transport) modes — horse, boat, ship, … |
 | **`calendars`** | when world clock on | [Calendar](#calendar) definitions |
 | **`biomes`** | when exploration on | Registry only — [Biome registry](#biome-registry); encounter bodies in separate gvars |

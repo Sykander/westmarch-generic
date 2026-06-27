@@ -61,6 +61,18 @@ import {
   normaliseBiomeCode,
   presetFromGvarId,
 } from '../domain/biomes';
+import {
+  findLoadedGvarSource,
+  isReadOnlyWorldGvarId,
+  locationsFromGvarSource,
+  locationsFromPreset,
+  mergeWorldLocations,
+  mergeWorldPaths,
+  pathsFromGvarSource,
+  pathsFromPreset,
+  worldLocationsSourceBody,
+  worldPathsSourceBody,
+} from '../domain/worldData';
 import { DISPLAY_OVERRIDE_HELP, monsterArtSelectValue } from '../domain/display';
 import { SUBSYSTEM_DEFINITIONS } from '../domain/subsystems';
 import {
@@ -658,11 +670,12 @@ export function App() {
     setConfigId(gvarId);
 
     setIsBusy(true);
+    const publishableRelatedGvars = relatedGvars.filter((row) => {
+      return row.loaded && !row.error && row.value.trim() && !isReadOnlyWorldGvarId(row.id);
+    });
     const publishTargets = [
       { id: gvarId, label: 'westmarch_config', value: serialized },
-      ...relatedGvars
-        .filter((row) => row.loaded && !row.error && row.value.trim())
-        .map((row) => ({ id: row.id, label: row.label, value: row.value })),
+      ...publishableRelatedGvars.map((row) => ({ id: row.id, label: row.label, value: row.value })),
     ];
     const nextSteps: RunStep[] = [
       { label: 'Validate config', state: 'running' },
@@ -2917,8 +2930,60 @@ function WorldView({
   relatedGvars: LoadedGvarSource[];
   updateRelatedGvarSource: (id: string, value: string) => void;
 }) {
-  const locations = asRecord(config.world_data.locations);
-  const paths = Array.isArray(config.world_data.paths) ? config.world_data.paths : [];
+  const [generatingWorldData, setGeneratingWorldData] = useState(false);
+  const inlineLocations = useMemo(
+    () => asRecord(config.world_data.locations),
+    [config.world_data.locations],
+  );
+  const inlinePaths = useMemo(
+    () => (Array.isArray(config.world_data.paths) ? config.world_data.paths : []),
+    [config.world_data.paths],
+  );
+  const locationsSource = findLoadedGvarSource(relatedGvars, config.world_data.locations_gvar_id);
+  const pathsSource = findLoadedGvarSource(relatedGvars, config.world_data.paths_gvar_id);
+  const loadedLocations = useMemo(
+    () => locationsFromGvarSource(locationsSource),
+    [locationsSource],
+  );
+  const presetLocations = useMemo(
+    () => locationsFromPreset(config.world_data.locations_gvar_id),
+    [config.world_data.locations_gvar_id],
+  );
+  const loadedPaths = useMemo(() => pathsFromGvarSource(pathsSource), [pathsSource]);
+  const presetPaths = useMemo(
+    () => pathsFromPreset(config.world_data.paths_gvar_id),
+    [config.world_data.paths_gvar_id],
+  );
+  const externalLocations = useMemo(
+    () => (Object.keys(loadedLocations).length > 0 ? loadedLocations : presetLocations),
+    [loadedLocations, presetLocations],
+  );
+  const externalPaths = useMemo(
+    () => (loadedPaths.length > 0 ? loadedPaths : presetPaths),
+    [loadedPaths, presetPaths],
+  );
+  const locations = useMemo(
+    () => mergeWorldLocations(externalLocations, inlineLocations),
+    [externalLocations, inlineLocations],
+  );
+  const paths = useMemo(
+    () => mergeWorldPaths(externalPaths, inlinePaths),
+    [externalPaths, inlinePaths],
+  );
+  const locationsSourceReadOnly = isReadOnlyWorldGvarId(config.world_data.locations_gvar_id);
+  const pathsSourceReadOnly = isReadOnlyWorldGvarId(config.world_data.paths_gvar_id);
+  const hasLocations = Object.keys(locations).length > 0;
+  const hasPaths = paths.length > 0;
+  const visibleWorldSourceCount = (hasLocations ? 1 : 0) + (hasPaths ? 1 : 0);
+  const locationsAlreadyEditable =
+    hasLocations &&
+    Boolean(locationsSource) &&
+    !locationsSourceReadOnly &&
+    Object.keys(inlineLocations).length === 0;
+  const pathsAlreadyEditable =
+    hasPaths && Boolean(pathsSource) && !pathsSourceReadOnly && inlinePaths.length === 0;
+  const needsGeneratedWorldGvars =
+    (hasLocations && !locationsAlreadyEditable) || (hasPaths && !pathsAlreadyEditable);
   const transport = asRecord(config.world_data.transport);
   const biomeOptions = Object.keys(asRecord(config.world_data.biomes)).sort();
   const calendars = asRecord(config.world_data.calendars);
@@ -2928,6 +2993,99 @@ function WorldView({
   const weatherAreaIds = Object.keys(weatherAreasInfo.areas).sort();
   const customTemplates = useMemo(() => customTemplatesFromConfig(config), [config]);
   const templates = useMemo(() => [...ENCOUNTER_TEMPLATES, ...customTemplates], [customTemplates]);
+
+  function updateExternalLocations(nextLocations: AnyRecord) {
+    if (!locationsSource) return;
+    updateRelatedGvarSource(locationsSource.id, worldLocationsSourceBody(nextLocations));
+  }
+
+  function updateExternalPaths(nextPaths: unknown[]) {
+    if (!pathsSource) return;
+    updateRelatedGvarSource(pathsSource.id, worldPathsSourceBody(nextPaths));
+  }
+
+  async function generateWorldGvars() {
+    const targets = [
+      Object.keys(locations).length > 0 && !locationsAlreadyEditable
+        ? {
+            label: 'locations',
+            name: 'Westmarch locations',
+            configPath: 'world_data.locations_gvar_id',
+            clearPath: 'world_data.locations',
+            path: 'world_data.locations_gvar_id',
+            body: worldLocationsSourceBody(locations),
+          }
+        : null,
+      paths.length > 0 && !pathsAlreadyEditable
+        ? {
+            label: 'paths',
+            name: 'Westmarch paths',
+            configPath: 'world_data.paths_gvar_id',
+            clearPath: 'world_data.paths',
+            path: 'world_data.paths_gvar_id',
+            body: worldPathsSourceBody(paths),
+          }
+        : null,
+    ].filter((target): target is NonNullable<typeof target> => Boolean(target));
+
+    if (targets.length === 0) {
+      setStatus('Add locations or paths before generating world data gvars.');
+      return;
+    }
+    if (!token.trim()) {
+      setStatus('Add AVRAE_TOKEN to generate location and path gvars.');
+      return;
+    }
+
+    const nextSteps: RunStep[] = targets.map((target) => ({
+      label: `Generate ${target.label} gvar`,
+      state: 'pending',
+    }));
+    setSteps([...nextSteps]);
+    setGeneratingWorldData(true);
+
+    try {
+      for (const [index, target] of targets.entries()) {
+        nextSteps[index] = { label: `Generate ${target.label} gvar`, state: 'running' };
+        setSteps([...nextSteps]);
+
+        const created = await createGvar(token.trim(), target.body, target.name);
+        const id = normalizeGvarId(String(created.id ?? ''));
+        updateConfig(target.configPath, id);
+        updateConfig(target.clearPath, undefined);
+        upsertRelatedGvar({
+          id,
+          label: target.path.replace(/_/g, ' '),
+          path: target.path,
+          kind: 'json',
+          value: target.body,
+          loaded: true,
+        });
+
+        nextSteps[index] = {
+          label: `Generate ${target.label} gvar`,
+          state: 'success',
+          detail: id,
+        };
+        setSteps([...nextSteps]);
+      }
+
+      setStatus(`Generated ${targets.length} world data gvar(s) in your Avrae account.`);
+    } catch (error) {
+      const index = nextSteps.findIndex((step) => step.state === 'running');
+      if (index >= 0) {
+        nextSteps[index] = {
+          ...nextSteps[index],
+          state: 'failed',
+          detail: error instanceof Error ? error.message : 'Unknown error',
+        };
+      }
+      setSteps([...nextSteps]);
+      setStatus(error instanceof Error ? error.message : 'Could not generate world data gvars.');
+    } finally {
+      setGeneratingWorldData(false);
+    }
+  }
 
   return (
     <section className="section-panel">
@@ -2950,14 +3108,47 @@ function WorldView({
           onChange={(value) =>
             updateConfig('world_data.locations_gvar_id', value.trim() || undefined)
           }
-          help="Optional JSON gvar containing the large locations map."
+          help="Optional JSON gvar UUID or engine preset slug containing the large locations map."
         />
         <TextField
           label="Paths gvar id"
           value={String(config.world_data.paths_gvar_id ?? '')}
           onChange={(value) => updateConfig('world_data.paths_gvar_id', value.trim() || undefined)}
-          help="Optional JSON gvar containing the large paths list."
+          help="Optional JSON gvar UUID or engine preset slug containing the large paths list."
         />
+        <div className="field span-2">
+          <span>
+            World data gvars
+            <HelpTip label="World data gvars help">
+              Generate owner gvars from the currently visible preset, loaded, and inline locations
+              and paths. Preset sources stay read-only until they are generated into your account.
+            </HelpTip>
+          </span>
+          <div className="button-row">
+            <button
+              type="button"
+              onClick={generateWorldGvars}
+              disabled={!needsGeneratedWorldGvars || !token.trim() || generatingWorldData}
+              title={
+                needsGeneratedWorldGvars
+                  ? 'Create editable location and path gvars in your Avrae account'
+                  : visibleWorldSourceCount
+                    ? 'Location and path data already use editable owner gvars'
+                    : 'Add or select location or path data before generating gvars'
+              }
+            >
+              <FileCode2 size={16} aria-hidden="true" />
+              Generate Gvars
+            </button>
+            <span className="quiet">
+              {!visibleWorldSourceCount
+                ? 'No location or path data is available yet.'
+                : needsGeneratedWorldGvars
+                  ? `${visibleWorldSourceCount} visible source(s); preset sources are read-only.`
+                  : 'World data already uses editable owner gvars.'}
+            </span>
+          </div>
+        </div>
       </div>
       <CalendarEditor calendars={calendars} updateConfig={updateConfig} />
       <WeatherAreaEditor
@@ -2967,6 +3158,11 @@ function WorldView({
       />
       <LocationEditor
         locations={locations}
+        inlineLocations={inlineLocations}
+        externalLocations={externalLocations}
+        externalSourceId={locationsSource?.id ?? ''}
+        externalReadOnly={locationsSourceReadOnly}
+        onExternalLocationsChange={updateExternalLocations}
         biomeOptions={biomeOptions}
         calendarIds={calendarIds}
         weatherAreaIds={weatherAreaIds}
@@ -2982,6 +3178,11 @@ function WorldView({
       <TransportEditor transport={transport} updateConfig={updateConfig} />
       <PathBuilder
         paths={paths}
+        inlinePaths={inlinePaths}
+        externalPaths={externalPaths}
+        externalSourceId={pathsSource?.id ?? ''}
+        externalReadOnly={pathsSourceReadOnly}
+        onExternalPathsChange={updateExternalPaths}
         locations={locations}
         transportIds={Object.keys(transport).sort()}
         biomeOptions={biomeOptions}
@@ -3055,8 +3256,17 @@ const SERVICE_LOCATION_COMMANDS = [
   'read',
 ];
 
+function hasRecordKey(record: AnyRecord, key: string) {
+  return Object.prototype.hasOwnProperty.call(record, key);
+}
+
 function LocationEditor({
   locations,
+  inlineLocations,
+  externalLocations,
+  externalSourceId,
+  externalReadOnly,
+  onExternalLocationsChange,
   biomeOptions,
   calendarIds,
   weatherAreaIds,
@@ -3070,6 +3280,11 @@ function LocationEditor({
   updateRelatedGvarSource,
 }: {
   locations: AnyRecord;
+  inlineLocations: AnyRecord;
+  externalLocations: AnyRecord;
+  externalSourceId: string;
+  externalReadOnly: boolean;
+  onExternalLocationsChange: (locations: AnyRecord) => void;
   biomeOptions: string[];
   calendarIds: string[];
   weatherAreaIds: string[];
@@ -3087,20 +3302,38 @@ function LocationEditor({
   function addLocation() {
     const id = slugValue(newLocationId);
     if (!id) return;
-    updateConfig('world_data.locations', {
-      ...locations,
-      [id]: { name: titleFromSlug(id), commands: {} },
-    });
+    const location = { name: titleFromSlug(id), commands: {} };
+    if (externalSourceId && !externalReadOnly) {
+      onExternalLocationsChange({ ...externalLocations, [id]: location });
+      return;
+    }
+    updateConfig('world_data.locations', { ...inlineLocations, [id]: location });
   }
 
   function updateLocation(id: string, value: AnyRecord) {
-    updateConfig('world_data.locations', { ...locations, [id]: value });
+    const isInline = hasRecordKey(inlineLocations, id);
+    const isExternal = hasRecordKey(externalLocations, id);
+    if (isExternal && !isInline) {
+      if (externalReadOnly) return;
+      onExternalLocationsChange({ ...externalLocations, [id]: value });
+      return;
+    }
+    updateConfig('world_data.locations', { ...inlineLocations, [id]: value });
   }
 
   function removeLocation(id: string) {
+    const isInline = hasRecordKey(inlineLocations, id);
+    const isExternal = hasRecordKey(externalLocations, id);
+    if (isExternal && !isInline) {
+      if (externalReadOnly) return;
+      onExternalLocationsChange(
+        Object.fromEntries(Object.entries(externalLocations).filter(([key]) => key !== id)),
+      );
+      return;
+    }
     updateConfig(
       'world_data.locations',
-      Object.fromEntries(Object.entries(locations).filter(([key]) => key !== id)),
+      Object.fromEntries(Object.entries(inlineLocations).filter(([key]) => key !== id)),
     );
   }
 
@@ -3122,43 +3355,69 @@ function LocationEditor({
         </div>
       </div>
       <div className="collection-list">
-        {Object.entries(locations).map(([id, value], index) => (
-          <details className="collection-item" open={index === 0} key={id}>
-            <summary className="collection-item-head">
-              <div>
-                <strong>{String(asRecord(value).name ?? titleFromSlug(id))}</strong>
-                <span>{id}</span>
-              </div>
-              <button
-                type="button"
-                className="field-action-button"
-                onClick={(event) => {
-                  event.preventDefault();
-                  removeLocation(id);
-                }}
-                aria-label={`Remove ${id}`}
-                title="Remove location"
-              >
-                <X size={16} aria-hidden="true" />
-              </button>
-            </summary>
-            <LocationFields
-              id={id}
-              location={asRecord(value)}
-              biomeOptions={biomeOptions}
-              calendarIds={calendarIds}
-              weatherAreaIds={weatherAreaIds}
-              templates={templates}
-              onChange={(next) => updateLocation(id, next)}
-              token={token}
-              setStatus={setStatus}
-              setSteps={setSteps}
-              upsertRelatedGvar={upsertRelatedGvar}
-              relatedGvars={relatedGvars}
-              updateRelatedGvarSource={updateRelatedGvarSource}
-            />
-          </details>
-        ))}
+        {Object.entries(locations).map(([id, value], index) => {
+          const isInline = hasRecordKey(inlineLocations, id);
+          const isExternal = hasRecordKey(externalLocations, id);
+          const readOnly = isExternal && !isInline && externalReadOnly;
+          const sourceLabel = isInline
+            ? isExternal
+              ? 'Inline override'
+              : 'Inline'
+            : externalReadOnly
+              ? 'Preset'
+              : 'External gvar';
+
+          return (
+            <details className="collection-item" open={index === 0} key={id}>
+              <summary className="collection-item-head">
+                <div>
+                  <strong>{String(asRecord(value).name ?? titleFromSlug(id))}</strong>
+                  <span>{id}</span>
+                </div>
+                <div className="collection-item-actions">
+                  <span className={readOnly ? 'badge neutral' : 'badge ok'}>{sourceLabel}</span>
+                  {!readOnly ? (
+                    <button
+                      type="button"
+                      className="field-action-button"
+                      onClick={(event) => {
+                        event.preventDefault();
+                        removeLocation(id);
+                      }}
+                      aria-label={`Remove ${id}`}
+                      title="Remove location"
+                    >
+                      <X size={16} aria-hidden="true" />
+                    </button>
+                  ) : null}
+                </div>
+              </summary>
+              {readOnly ? (
+                <p className="field-note">
+                  Loaded from a read-only preset source. Generate world data gvars to edit this
+                  location in your own Avrae gvar.
+                </p>
+              ) : null}
+              <fieldset className="read-only-fieldset" disabled={readOnly}>
+                <LocationFields
+                  id={id}
+                  location={asRecord(value)}
+                  biomeOptions={biomeOptions}
+                  calendarIds={calendarIds}
+                  weatherAreaIds={weatherAreaIds}
+                  templates={templates}
+                  onChange={(next) => updateLocation(id, next)}
+                  token={token}
+                  setStatus={setStatus}
+                  setSteps={setSteps}
+                  upsertRelatedGvar={upsertRelatedGvar}
+                  relatedGvars={relatedGvars}
+                  updateRelatedGvarSource={updateRelatedGvarSource}
+                />
+              </fieldset>
+            </details>
+          );
+        })}
         {Object.keys(locations).length === 0 ? (
           <p className="collection-empty">
             No locations yet. Add one to enable location-aware travel.
@@ -4154,30 +4413,73 @@ function TransportFields({
 
 function PathBuilder({
   paths,
+  inlinePaths,
+  externalPaths,
+  externalSourceId,
+  externalReadOnly,
+  onExternalPathsChange,
   locations,
   transportIds,
   biomeOptions,
   updateConfig,
 }: {
   paths: unknown[];
+  inlinePaths: unknown[];
+  externalPaths: unknown[];
+  externalSourceId: string;
+  externalReadOnly: boolean;
+  onExternalPathsChange: (paths: unknown[]) => void;
   locations: AnyRecord;
   transportIds: string[];
   biomeOptions: string[];
   updateConfig: (path: string, value: unknown) => void;
 }) {
   const locationIds = Object.keys(locations);
+  const pathEntries = [
+    ...externalPaths.map((path, index) => ({ path, index, source: 'external' as const })),
+    ...inlinePaths.map((path, index) => ({ path, index, source: 'inline' as const })),
+  ];
 
-  function updatePathItem(index: number, value: AnyRecord) {
+  function defaultPath() {
+    return {
+      from: locationIds[0] ?? '',
+      to: locationIds[1] ?? locationIds[0] ?? '',
+      steps: [{ type: 'encounter', biome: '' }],
+    };
+  }
+
+  function addPath() {
+    const path = defaultPath();
+    if (externalSourceId && !externalReadOnly) {
+      onExternalPathsChange([...externalPaths, path]);
+      return;
+    }
+    updateConfig('world_data.paths', [...inlinePaths, path]);
+  }
+
+  function updatePathItem(entry: (typeof pathEntries)[number], value: AnyRecord) {
+    if (entry.source === 'external') {
+      if (externalReadOnly) return;
+      onExternalPathsChange(
+        externalPaths.map((item, itemIndex) => (itemIndex === entry.index ? value : item)),
+      );
+      return;
+    }
     updateConfig(
       'world_data.paths',
-      paths.map((item, itemIndex) => (itemIndex === index ? value : item)),
+      inlinePaths.map((item, itemIndex) => (itemIndex === entry.index ? value : item)),
     );
   }
 
-  function removePath(index: number) {
+  function removePath(entry: (typeof pathEntries)[number]) {
+    if (entry.source === 'external') {
+      if (externalReadOnly) return;
+      onExternalPathsChange(externalPaths.filter((_, itemIndex) => itemIndex !== entry.index));
+      return;
+    }
     updateConfig(
       'world_data.paths',
-      paths.filter((_, itemIndex) => itemIndex !== index),
+      inlinePaths.filter((_, itemIndex) => itemIndex !== entry.index),
     );
   }
 
@@ -4185,28 +4487,27 @@ function PathBuilder({
     <section className="world-editor">
       <div className="collection-editor-head">
         <h3>Paths</h3>
-        <button
-          type="button"
-          onClick={() =>
-            updateConfig('world_data.paths', [
-              ...paths,
-              {
-                from: locationIds[0] ?? '',
-                to: locationIds[1] ?? locationIds[0] ?? '',
-                steps: [{ type: 'encounter', biome: '' }],
-              },
-            ])
-          }
-        >
+        <button type="button" onClick={addPath}>
           <Save size={16} aria-hidden="true" />
           Add Path
         </button>
       </div>
       <div className="collection-list">
-        {paths.map((path, index) => {
-          const record = asRecord(path);
+        {pathEntries.map((entry, index) => {
+          const record = asRecord(entry.path);
+          const readOnly = entry.source === 'external' && externalReadOnly;
+          const sourceLabel =
+            entry.source === 'external'
+              ? externalReadOnly
+                ? 'Preset'
+                : 'External gvar'
+              : 'Inline';
           return (
-            <details className="collection-item" open={index === 0} key={index}>
+            <details
+              className="collection-item"
+              open={index === 0}
+              key={`${entry.source}:${entry.index}`}
+            >
               <summary className="collection-item-head">
                 <div>
                   <strong>
@@ -4214,26 +4515,39 @@ function PathBuilder({
                   </strong>
                   <span>{String(record.label ?? 'route')}</span>
                 </div>
-                <button
-                  type="button"
-                  className="field-action-button"
-                  onClick={(event) => {
-                    event.preventDefault();
-                    removePath(index);
-                  }}
-                  aria-label={`Remove path ${index + 1}`}
-                  title="Remove path"
-                >
-                  <X size={16} aria-hidden="true" />
-                </button>
+                <div className="collection-item-actions">
+                  <span className={readOnly ? 'badge neutral' : 'badge ok'}>{sourceLabel}</span>
+                  {!readOnly ? (
+                    <button
+                      type="button"
+                      className="field-action-button"
+                      onClick={(event) => {
+                        event.preventDefault();
+                        removePath(entry);
+                      }}
+                      aria-label={`Remove path ${index + 1}`}
+                      title="Remove path"
+                    >
+                      <X size={16} aria-hidden="true" />
+                    </button>
+                  ) : null}
+                </div>
               </summary>
-              <PathFields
-                path={record}
-                locationIds={locationIds}
-                transportIds={transportIds}
-                biomeOptions={biomeOptions}
-                onChange={(next) => updatePathItem(index, next)}
-              />
+              {readOnly ? (
+                <p className="field-note">
+                  Loaded from a read-only preset source. Generate world data gvars to edit this path
+                  in your own Avrae gvar.
+                </p>
+              ) : null}
+              <fieldset className="read-only-fieldset" disabled={readOnly}>
+                <PathFields
+                  path={record}
+                  locationIds={locationIds}
+                  transportIds={transportIds}
+                  biomeOptions={biomeOptions}
+                  onChange={(next) => updatePathItem(entry, next)}
+                />
+              </fieldset>
             </details>
           );
         })}
@@ -5306,6 +5620,7 @@ function RawSourceView({
         </span>
         <GvarSourceRows
           rows={rows}
+          readOnlyIds={rows.filter((row) => isReadOnlyWorldGvarId(row.id)).map((row) => row.id)}
           onChange={(id, value) => {
             if (id === rows[0]?.id) {
               setRawSource(value);

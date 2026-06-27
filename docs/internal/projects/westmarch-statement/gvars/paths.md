@@ -38,7 +38,7 @@ def display_path(path, config, mode="short", transport_id="walk", prefix="!"):
     """One leg — markdown string (linked names via [locations.md](locations.md))."""
 ```
 
-External path gvars are raw JSON arrays of path objects. A wrapper object with **`{"paths": [...]}`** is also accepted. Inline **`world_data.paths`** entries are appended after external entries so small owner additions can live directly on the config gvar.
+External path gvars are raw JSON arrays of path objects. A wrapper object with **`{"paths": [...]}`** is also accepted. The web editor may display shipped preset UUIDs as **`engine:configs/...`** aliases while editing, then export runtime UUIDs. Inline **`world_data.paths`** entries are appended after external entries so small owner additions can live directly on the config gvar.
 
 ## Edge cost (`get_path_cost`)
 

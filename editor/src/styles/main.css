@@ -1725,6 +1725,25 @@ th {
   gap: 2px;
 }
 
+.collection-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.read-only-fieldset {
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.read-only-fieldset:disabled {
+  opacity: 0.78;
+}
+
 .collection-empty {
   margin: 0;
   border: 1px dashed #d9ded9;

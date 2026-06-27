@@ -34,7 +34,7 @@ Engine gvars read **`world_data`** — they do not duplicate it:
 
 ## Travel / location requirement
 
-The web config editor reports an error when **`subsystems.travel`** or **`travel.commands.location`** is on but no location source exists. A location source may be inline **`world_data.locations`** or external **`world_data.locations_gvar_id`**. **`default_location`** is still required and should match an id in the inline or external locations map.
+The web config editor reports an error when **`subsystems.travel`** or **`travel.commands.location`** is on but no location source exists. A location source may be inline **`world_data.locations`** or external **`world_data.locations_gvar_id`**. External world-data pointers are runtime gvar UUIDs; the editor may show shipped preset UUIDs as **`engine:configs/...`** aliases while editing. **`default_location`** is still required and should match an id in the inline or external locations map.
 
 ## Related
 

@@ -212,6 +212,9 @@ world_data = {
 }
 ```
 
+The web editor may display shipped world-data presets as `engine:configs/...` aliases while
+editing; generated/exported config bodies use runtime gvar UUIDs unless you generate owner gvars.
+
 `time` and `weather` are planned commands. Keep them disabled until their runtime modules ship; the editor Check page reports an error if either is enabled.
 
 Economy setup needs top-level data before enabling player commands:

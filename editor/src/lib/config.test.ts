@@ -78,8 +78,8 @@ test('forgotten realms starter has slice 5 travel baseline', () => {
 
   const worldData = model.world_data as Record<string, unknown>;
   assert.equal(worldData.default_location, 'waterdeep');
-  assert.equal(worldData.locations_gvar_id, '6c50e5a7-e36b-49fe-96e7-7e82e157bd31');
-  assert.equal(worldData.paths_gvar_id, '40403500-be2c-4b1a-8170-6176adf87aa5');
+  assert.equal(worldData.locations_gvar_id, 'engine:configs/forgotten_realms_2014_locations');
+  assert.equal(worldData.paths_gvar_id, 'engine:configs/forgotten_realms_2014_paths');
   assert.ok((worldData.calendars as Record<string, unknown>).primary);
   assert.ok(
     ((worldData.weather as Record<string, unknown>).by_area as Record<string, unknown>).coast,
@@ -150,6 +150,8 @@ test('forgotten realms starter has slice 5 travel baseline', () => {
   assert.equal(codes.includes('world.path.transport_unknown'), false);
 
   const serialized = serializeConfig(model);
+  assert.match(serialized, /"locations_gvar_id": "6c50e5a7-e36b-49fe-96e7-7e82e157bd31"/);
+  assert.match(serialized, /"paths_gvar_id": "40403500-be2c-4b1a-8170-6176adf87aa5"/);
   const serializedParsed = parseConfig(serialized);
   assert.deepEqual(
     serializedParsed.issues.filter((entry) => entry.code.startsWith('parse.')),
@@ -319,7 +321,44 @@ world_data = {
   assert.equal(codes.includes('world.paths_gvar_id.invalid'), false);
 });
 
-test('world data gvar pointers must be valid uuids', () => {
+test('travel accepts engine world data preset pointers', () => {
+  const codes = issueCodes(`
+world_data = {
+    "locations_gvar_id": "engine:configs/forgotten_realms_2014_locations",
+    "paths_gvar_id": "engine:configs/forgotten_realms_2014_paths",
+}
+`);
+
+  assert.equal(codes.includes('world.locations_gvar_id.invalid'), false);
+  assert.equal(codes.includes('world.paths_gvar_id.invalid'), false);
+});
+
+test('travel does not reject external default locations when inline locations are additions', () => {
+  const codes = issueCodes(`
+subsystems = {
+    "travel": {
+        "enabled": True,
+        "commands": {"travel": True, "location": True},
+    },
+}
+
+world_data = {
+    "default_location": "waterdeep",
+    "locations_gvar_id": "11111111-1111-1111-1111-111111111111",
+    "locations": {
+        "custom_camp": {"name": "Custom Camp"},
+    },
+    "paths": [
+        {"from": "waterdeep", "to": "custom_camp", "steps": [{"type": "encounter", "biome": "road"}]},
+    ],
+}
+`);
+
+  assert.equal(codes.includes('world.default_location_unknown'), false);
+  assert.equal(codes.includes('world.path.endpoint_unknown'), false);
+});
+
+test('world data gvar pointers must be valid uuids or engine presets', () => {
   const codes = issueCodes(`
 world_data = {
     "locations_gvar_id": "locations",

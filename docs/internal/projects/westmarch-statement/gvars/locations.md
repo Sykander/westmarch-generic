@@ -55,7 +55,7 @@ text = locations.display_location(loc, mode="full", character=character, include
 2. **`search_locations(config, query)`** — exact id match first; exact display-name match next; else filter `location.name` containing `query` (case-insensitive). Port `areas.search_for_area()` behaviour.
 3. **`get_default_location(config)`** — `get_location(config, config.world_data.default_location)`.
 
-External location gvars are raw JSON objects keyed by location id. A wrapper object with **`{"locations": {...}}`** is also accepted.
+External location gvars are raw JSON objects keyed by location id. A wrapper object with **`{"locations": {...}}`** is also accepted. The web editor may display shipped preset UUIDs as **`engine:configs/...`** aliases while editing, then export runtime UUIDs.
 
 Aliases pass **player input** through **`search_locations`**; engine internals use **ids** (paths, cvars keyed by id — TBD in journeys port).
 

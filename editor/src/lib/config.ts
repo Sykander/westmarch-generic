@@ -114,6 +114,20 @@ const CRAFTING_REQUIRED_CATALOGUES: Record<string, string> = {
 };
 const CRAFTING_RESOURCE_KEYS = ['gold', 'materials', 'items', 'downtime', 'spell_slot'];
 const GVAR_ID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+const VALID_WORLD_ENGINE_GVARS = [
+  'engine:configs/forgotten_realms_2014_locations',
+  'engine:configs/forgotten_realms_2014_paths',
+];
+const WORLD_GVAR_UUID_TO_ENGINE: Record<string, string> = {
+  '6c50e5a7-e36b-49fe-96e7-7e82e157bd31': 'engine:configs/forgotten_realms_2014_locations',
+  'fde0dbeb-d2e3-42fd-8f56-2d94bdf3ac58': 'engine:configs/forgotten_realms_2014_locations',
+  '40403500-be2c-4b1a-8170-6176adf87aa5': 'engine:configs/forgotten_realms_2014_paths',
+  '19623e1a-3a23-49a0-9d40-986fdd26d7e7': 'engine:configs/forgotten_realms_2014_paths',
+};
+const WORLD_ENGINE_TO_RUNTIME_UUID: Record<string, string> = {
+  'engine:configs/forgotten_realms_2014_locations': '6c50e5a7-e36b-49fe-96e7-7e82e157bd31',
+  'engine:configs/forgotten_realms_2014_paths': '40403500-be2c-4b1a-8170-6176adf87aa5',
+};
 
 const DEFAULT_MODEL: ConfigModel = {
   display: {},
@@ -558,7 +572,7 @@ export function parseConfig(source: string): ParseResult {
     display: parseRecordAssignment(cleaned, 'display', issues),
     subsystems: mergeSubsystemDefaults(parsedSubsystems),
     policies: parseRecordAssignment(cleaned, 'policies', issues),
-    world_data: parseRecordAssignment(cleaned, 'world_data', issues),
+    world_data: worldDataForEditor(parseRecordAssignment(cleaned, 'world_data', issues)),
     currencies: parseRecordAssignment(cleaned, 'currencies', issues),
     shops: parseRecordAssignment(cleaned, 'shops', issues),
     books: parseRecordAssignment(cleaned, 'books', issues),
@@ -680,7 +694,7 @@ function customEncounterTemplateExport(model: ConfigModel) {
 export function serializeConfig(model: ConfigModel): string {
   const compactDisplay = compactValue(model.display) as AnyRecord;
   const compactSubsystems = compactValue(model.subsystems) as Record<string, AnyRecord>;
-  const compactWorldData = compactValue(model.world_data) as AnyRecord;
+  const compactWorldData = worldDataForRuntime(compactValue(model.world_data) as AnyRecord);
   const compactPolicies = compactValue(model.policies) as AnyRecord;
   const compactCurrencies = compactValue(model.currencies ?? {}) as AnyRecord;
   const compactShops = compactValue(model.shops ?? {}) as AnyRecord;
@@ -743,6 +757,12 @@ function normalizedLookupId(value: unknown): string {
     .toLowerCase();
 }
 
+function isValidWorldGvarPointer(value: unknown): boolean {
+  const text = String(value ?? '').trim();
+  if (GVAR_ID_RE.test(text)) return true;
+  return VALID_WORLD_ENGINE_GVARS.includes(text.toLowerCase());
+}
+
 function transportLabelsFromWorldData(worldData: AnyRecord): Set<string> {
   const labels = new Set<string>();
   const transport = asRecord(worldData.transport);
@@ -762,6 +782,28 @@ function transportLabelsFromWorldData(worldData: AnyRecord): Set<string> {
   }
   labels.delete('');
   return labels;
+}
+
+function worldDataForEditor(worldData: AnyRecord): AnyRecord {
+  const next = { ...worldData };
+  for (const key of ['locations_gvar_id', 'paths_gvar_id']) {
+    const text = String(next[key] ?? '')
+      .trim()
+      .toLowerCase();
+    if (WORLD_GVAR_UUID_TO_ENGINE[text]) next[key] = WORLD_GVAR_UUID_TO_ENGINE[text];
+  }
+  return next;
+}
+
+function worldDataForRuntime(worldData: AnyRecord): AnyRecord {
+  const next = { ...worldData };
+  for (const key of ['locations_gvar_id', 'paths_gvar_id']) {
+    const text = String(next[key] ?? '')
+      .trim()
+      .toLowerCase();
+    if (WORLD_ENGINE_TO_RUNTIME_UUID[text]) next[key] = WORLD_ENGINE_TO_RUNTIME_UUID[text];
+  }
+  return next;
 }
 
 function normalizedStringList(value: unknown): string[] {
@@ -1528,7 +1570,7 @@ function validateWorld(model: ConfigModel, issues: ConfigIssue[]) {
   ] as const) {
     const value = model.world_data[key];
     if (value == null || String(value).trim() === '') continue;
-    if (!GVAR_ID_RE.test(String(value).trim())) {
+    if (!isValidWorldGvarPointer(value)) {
       issues.push(
         issue(
           'error',
@@ -1536,8 +1578,8 @@ function validateWorld(model: ConfigModel, issues: ConfigIssue[]) {
           'World',
           `world_data.${key}`,
           `${label} gvar id is invalid`,
-          `${label} gvar ids must be Avrae workshop UUIDs.`,
-          'Paste a UUID from the Avrae gvar dashboard.',
+          `${label} gvar ids must be Avrae workshop UUIDs or a supported engine preset slug.`,
+          'Paste a UUID from the Avrae gvar dashboard, or use a supported engine preset.',
         ),
       );
     }
@@ -1956,6 +1998,7 @@ function validateTravel(model: ConfigModel, issues: ConfigIssue[]) {
   if (
     typeof defaultLocation === 'string' &&
     defaultLocation.trim() !== '' &&
+    !hasLocationGvar &&
     Object.keys(locations).length > 0 &&
     !locations[defaultLocation.trim().toLowerCase()]
   ) {
@@ -2034,7 +2077,11 @@ function validateTravel(model: ConfigModel, issues: ConfigIssue[]) {
         );
         return;
       }
-      if (Object.keys(locations).length > 0 && (!locations[from] || !locations[to])) {
+      if (
+        !hasLocationGvar &&
+        Object.keys(locations).length > 0 &&
+        (!locations[from] || !locations[to])
+      ) {
         issues.push(
           issue(
             'error',
