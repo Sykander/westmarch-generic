@@ -6,6 +6,8 @@ These are research notes only. Do not add image URLs to the runtime config until
 
 Full archive companion: [dndbeyond-image-catalog.md](dndbeyond-image-catalog.md) contains all 491 distinct image URLs extracted from the Forgotten Realms/location candidate pass, categorized as locations, maps, monsters, NPCs/player options, items, products, UI/tooling, encounter art, and review-needed images.
 
+Per-area selection pass: [area-image-selections.md](area-image-selections.md) lists the current best image pick for each configured location id.
+
 ## Selection notes
 
 - Prefer direct D&D Beyond image URLs under `https://www.dndbeyond.com/attachments/...`.
