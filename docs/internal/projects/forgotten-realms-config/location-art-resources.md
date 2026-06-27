@@ -4,12 +4,21 @@ Candidate D&D Beyond-hosted images for future `world_data.locations` image enric
 
 These are research notes only. Do not add image URLs to the runtime config until the hosted asset set and usage policy are reviewed.
 
+Full archive companion: [dndbeyond-image-catalog.md](dndbeyond-image-catalog.md) contains all 491 distinct image URLs extracted from the Forgotten Realms/location candidate pass, categorized as locations, maps, monsters, NPCs/player options, items, products, UI/tooling, encounter art, and review-needed images.
+
 ## Selection notes
 
 - Prefer direct D&D Beyond image URLs under `https://www.dndbeyond.com/attachments/...`.
 - Keep the article source URL with each candidate so we can trace context later.
 - Favor location, city, region, or map art over character, creature, product, or tool UI screenshots.
 - Some images are maps rather than scenic art. They may still be useful for docs, admin preview, or map-specific UI, but should be reviewed separately before player-facing embeds.
+
+## Archive pass coverage
+
+- Scanned numeric D&D Beyond posts listing pages 1-57; pages 58 and 59 repeated page 57, so page 57 was the archive end at the time of the pass.
+- Checked 1,533 listing entries and selected 164 Forgotten Realms/location candidate posts or resources.
+- Fetched 152 candidate pages, found images on 144 of them, and extracted 676 image occurrences.
+- Collapsed those occurrences to 491 distinct D&D Beyond-hosted image URLs in the full catalog.
 
 ## Recommended first pass
 

@@ -9,6 +9,7 @@ Design notes for turning `src/gvars/configs/forgotten_realms_2014.gvar` from a t
 - [implementation-plan.md](implementation-plan.md) - phased implementation checklist and acceptance criteria.
 - [baseline-audit.md](baseline-audit.md) - slice 0 runtime/editor audit plus updated slice 2-3 runtime notes.
 - [location-art-resources.md](location-art-resources.md) - D&D Beyond image candidates for future location image enrichment.
+- [dndbeyond-image-catalog.md](dndbeyond-image-catalog.md) - exhaustive categorized image catalog from the D&D Beyond Forgotten Realms/location archive pass.
 
 ## Map assets
 
