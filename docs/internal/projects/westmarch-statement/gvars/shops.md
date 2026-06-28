@@ -56,7 +56,7 @@ shops = {
         "accepts_sells": True,
         "buyback": 0.5,
         "stock": [
-            { "item": "Rope", "price": { "gold": 1 } },
+    { "item": "Rope", "price": { "gold": 1 } },
             { "item": "Potion of Healing", "price": { "shards": 2 }, "qty": 5 },
         ],
     },
@@ -70,7 +70,7 @@ shops = {
 | **`accepts_sells`** | Gate for **`!sell`** |
 | **`buyback`** | Default sell fraction when **`sell_price`** omitted on row |
 
-Stock item names must exactly match a configured item catalogue display name. The engine checks the bundled item/potion/magic item catalogues plus owner entries from `world_data.items`, `world_data.catalogues.items`, or `extensions.items`.
+Stock item names are matched with the shared `lists.search_list` behavior: exact, case-insensitive exact, then substring. Explicit `price` rows do not need catalogue validation during lookup; when `price` is omitted, the engine falls back to the bundled item/potion/magic item catalogues plus owner entries from `world_data.items`, `world_data.catalogues.items`, or `extensions.items` to infer value.
 
 ## Related
 

@@ -90,6 +90,7 @@ def _read_field(obj, key):
         "currencies": lambda o: o.currencies,
         "economy": lambda o: o.economy,
         "job_location_policy": lambda o: o.job_location_policy,
+        "ask_to_confirm_purchases": lambda o: o.ask_to_confirm_purchases,
         "jobs": lambda o: o.jobs,
         "gvar_id": lambda o: o.gvar_id,
         "monster_images": lambda o: o.monster_images,
@@ -367,6 +368,9 @@ def _enabled_commands_summary(cfg):
                 policy = _read_field(cfg_block, "job_location_policy")
                 if policy == None:
                     policy = "off"
+                confirm = _read_field(cfg_block, "ask_to_confirm_purchases")
+                if confirm == None:
+                    confirm = False
                 jobs = _read_field(cfg_block, "jobs")
                 count = 0
                 if lists.is_list(jobs):
@@ -374,6 +378,7 @@ def _enabled_commands_summary(cfg):
                 elif _is_dict(jobs):
                     count = len(jobs)
                 lines.append(f"    job_location_policy: {policy}")
+                lines.append(f"    ask_to_confirm_purchases: {_bool_text(confirm == True)}")
                 lines.append(f"    jobs: {count}")
     return _codeblock("yaml", lines)
 

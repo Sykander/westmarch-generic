@@ -139,6 +139,26 @@ character:
   cvars:
     bags: '[["Materials", {"Arnica": 2}]]'
 
+ok, msg = pc.modify_gold(character(), -5.0)
+return ok and "Spent **5 gp**" in msg
+---
+True
+---
+name: modify_gold spends whole gp float as integer coin delta
+character:
+  coinpurse:
+    gp: 10
+
+ok, msg = pc.modify_gold(character(), 0)
+return ok and msg == ""
+---
+True
+---
+name: modify_gold ignores zero gp deltas
+character:
+  coinpurse:
+    gp: 10
+
 cfg_fixture = {
     "currencies": {
         "shards": {"name": "Arcane Shard", "plural": "Arcane Shards", "symbol": "◇"},

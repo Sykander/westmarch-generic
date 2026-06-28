@@ -9,7 +9,7 @@
 Purchase items from a configured shop; debit gp or wallet currencies; add items to inventory.
 
 ```
-!buy [shop] <item> [qty]
+!buy [shop] <item> [qty] [yes]
 ```
 
 | Form | Meaning |
@@ -17,11 +17,13 @@ Purchase items from a configured shop; debit gp or wallet currencies; add items 
 | `!buy rope` | Buy from default shop or only shop matching current location |
 | `!buy general_store rope` | Explicit shop id |
 | `!buy "Healing Potion" 2` | Quantity default 1 |
+| `!buy "Healing Potion" yes` | Confirm purchase when `ask_to_confirm_purchases` is enabled |
 
 - **Help:** list shops available at current location (or all shops if no travel gate), usage, examples.
 - **Location gate:** when **travel** is on, restrict by shop **`location_id`** vs character location; **MVP fallback:** ignore location or require explicit shop id.
 - **Stock:** optional finite **`qty`** on [StockEntry](../../data-shapes.md#stockentry); unlimited when omitted.
 - **Price:** **`stock[].price`** — `{ "gold": N }` and/or wallet ids ([data-shapes § Shop](../../data-shapes.md#shop)).
+- **Confirmation:** **`subsystems.economy.config.ask_to_confirm_purchases`** defaults to `True`; the first invocation previews the resolved stock item and total price and asks the player to re-run the command with trailing `yes`. Set it to `False` to allow immediate purchases.
 
 ## westmarch reference
 

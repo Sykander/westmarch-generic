@@ -214,8 +214,8 @@ shop = {
 
 ```py
 stock_entry = {
-    "item": "Rope",                  # required — Avrae sheet / items catalogue display name
-    "price": { "gold": 1 },          # required — buy price; see price keys below
+    "item": "Rope",                  # required — Avrae sheet / shop stock display name
+    "price": { "gold": 1 },          # optional — buy price; see price keys below
     "qty": 10,                       # optional — finite stock; omit = unlimited (MVP default)
     "sell_price": { "gold": 1 },     # optional — sell payout; default buyback × list **`price`**
 }
@@ -229,6 +229,8 @@ stock_entry = {
 | *wallet id* | Config **`currencies`** slug (e.g. **`shards`**) | **`pc.modify_wallet`** |
 
 **Transactions** — [shops.gvar](gvars/shops.md) **`buy`** / **`sell`** call **`pc`** mutators only; aliases do not touch coinpurse or bags directly.
+
+Stock lookup uses `lists.search_list` over visible shop stock names. Explicit `price` rows are resolved directly from shop config; rows without `price` may fall back to catalogue value and therefore need an exact catalogue display-name match.
 
 Example:
 
@@ -1543,6 +1545,7 @@ table-wide policy.
 | Key | Type | Default | Notes |
 |-----|------|---------|-------|
 | `job_location_policy` | `"off"` \| `"warn"` \| `"check"` | `"off"` | Whether `!job` checks current location job availability and local listed skills |
+| `ask_to_confirm_purchases` | `bool` | `True` | When `True`, `!buy` previews the resolved item and price, then requires trailing `yes` before spending currency |
 | `jobs` | `[Job, ...]` or `{ id: Job }` | `[]` | Named job rows for `!location` display and optional `!job` checks |
 
 ### Other subsystems
@@ -1583,6 +1586,7 @@ Per-command **durations and costs** live under **`subsystems.<subsystem>.command
 "economy": {
     "enabled": True,
     "commands": { "job": True, "buy": True, "sell": True },
+    "config": { "ask_to_confirm_purchases": True },
     "command_config": {
         "job": { "cooldown_seconds": 28800, "workdays_cost": 0 },
     },

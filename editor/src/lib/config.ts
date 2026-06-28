@@ -614,6 +614,7 @@ function createDefaultSubsystems(): Record<string, AnyRecord> {
       commands: defaultCommands(DEFAULT_SUBSYSTEM_COMMANDS.economy),
       config: {
         job_location_policy: 'off',
+        ask_to_confirm_purchases: true,
         jobs: [],
       },
       command_config: {
@@ -3456,6 +3457,19 @@ function validateEconomy(model: ConfigModel, issues: ConfigIssue[]) {
     }
   }
   const jobs = economyConfig.jobs;
+  const askToConfirm = economyConfig.ask_to_confirm_purchases;
+  if (askToConfirm != null && typeof askToConfirm !== 'boolean') {
+    issues.push(
+      issue(
+        'error',
+        'economy.ask_to_confirm_purchases_bool',
+        'Subsystems',
+        'subsystems.economy.config.ask_to_confirm_purchases',
+        'Purchase confirmation setting must be boolean',
+        'ask_to_confirm_purchases must be True or False.',
+      ),
+    );
+  }
   if (jobs != null) {
     if (Array.isArray(jobs)) {
       jobs.forEach((entry, index) =>

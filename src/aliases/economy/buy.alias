@@ -31,8 +31,38 @@ def _split_qty(tokens):
     return tokens, 1
 
 
+def _split_confirmation(tokens):
+    if len(tokens) > 0 and str(tokens[-1]).strip().lower() == "yes":
+        return tokens[0:-1], True
+    return tokens, False
+
+
 def _join(tokens):
     return " ".join([str(token) for token in tokens]).strip()
+
+
+def _quote_arg(text):
+    clean = str(text).replace('"', "'").strip()
+    return f'"{clean}"'
+
+
+def _confirm_command(shop, item_name, qty, include_shop):
+    bits = [f"{ctx.prefix}{cmd_name}"]
+    if include_shop:
+        bits.append(_quote_arg(shops.shop_name(shop)))
+    bits.append(_quote_arg(item_name))
+    if int(qty) != 1:
+        bits.append(str(int(qty)))
+    bits.append("yes")
+    return " ".join(bits)
+
+
+def _confirm_message(preview, command_text):
+    return (
+        f"Buying **{preview['qty']}x {preview['item_name']}** from "
+        f"**{preview['shop_name']}** costs **{preview['price_text']}**.\n"
+        f"To confirm, run:\n`{command_text}`"
+    )
 
 
 def _shop_names(cfg, ch):
@@ -47,21 +77,22 @@ def _shop_names(cfg, ch):
 
 def _resolve_purchase(cfg, ch, argslist):
     tokens = _clean_tokens(argslist)
+    tokens, confirmed = _split_confirmation(tokens)
     tokens, qty = _split_qty(tokens)
     if len(tokens) == 0:
-        return None, "", qty, "Choose an item to buy."
+        return None, "", qty, confirmed, False, "Choose an item to buy."
     loc_id = shops.character_location_id(ch, cfg)
     if len(tokens) > 1:
         shop, matches, shop_err = shops.find_shop(cfg, tokens[0], loc_id, False)
         if shop != None:
-            return shop, _join(tokens[1:]), qty, None
+            return shop, _join(tokens[1:]), qty, confirmed, True, None
         if len(matches) > 1:
-            return None, "", qty, shop_err
+            return None, "", qty, confirmed, False, shop_err
     item_query = _join(tokens)
     shop, stock, err_msg = shops.find_shop_for_item(cfg, item_query, loc_id, False)
     if err_msg != None:
-        return None, item_query, qty, err_msg
-    return shop, item_query, qty, None
+        return None, item_query, qty, confirmed, False, err_msg
+    return shop, item_query, qty, confirmed, False, None
 
 
 ok, msg = auth.is_allowed(COMMAND)
@@ -92,10 +123,18 @@ help_text = f"""Buy a configured shop item.
 if len(argslist) == 0 or argslist[0] in ["help", "?"]:
     return get_embed(desc=help_text)
 
-shop, item_query, qty, err_msg = _resolve_purchase(cfg, ch, argslist)
+shop, item_query, qty, confirmed, used_shop_arg, err_msg = _resolve_purchase(cfg, ch, argslist)
 if err_msg != None:
     return get_embed(desc=err_msg)
 
-ok_buy, msg_buy = shops.buy(ch, cfg, shop, item_query, qty)
+preview, preview_err = shops.buy_preview(ch, cfg, shop, item_query, qty)
+if preview_err != None:
+    return get_embed(desc=preview_err)
+
+if shops.ask_to_confirm_purchases(cfg) and not confirmed:
+    command_text = _confirm_command(shop, preview["item_name"], preview["qty"], used_shop_arg)
+    return get_embed(desc=_confirm_message(preview, command_text))
+
+ok_buy, msg_buy = shops.buy(ch, cfg, shop, preview["item_name"], preview["qty"])
 return get_embed(desc=msg_buy)
 </drac2>

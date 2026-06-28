@@ -172,6 +172,7 @@ DEFAULTS = {
             },
             "config": {
                 "job_location_policy": "off",
+                "ask_to_confirm_purchases": True,
                 "jobs": [],
             },
         },

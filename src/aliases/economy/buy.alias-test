@@ -9,6 +9,34 @@ vars:
   gvars:
     eeee1000-1000-1000-1000-100000000002: |
       subsystems = {
+          "economy": {
+              "enabled": True,
+              "commands": {"buy": True},
+              "config": {"ask_to_confirm_purchases": False},
+          },
+      }
+      shops = {
+          "general": {
+              "id": "general",
+              "name": "General Store",
+              "stock": [{"item": "Rope, Hemp (50 ft)", "price": {"gold": 0}}],
+          },
+      }
+character:
+  cvars:
+    bags: '[["Equipment", {}]]'
+
+!buy rope
+---
+re:Buying \*\*1x Rope, Hemp \(50 ft\)\*\*[\s\S]*`!buy "Rope, Hemp \(50 ft\)" yes`
+---
+name: buy asks for confirmation by default when config omits purchase confirmation flag
+vars:
+  svars:
+    westmarch_config: "eeee1000-1000-1000-1000-100000000009"
+  gvars:
+    eeee1000-1000-1000-1000-100000000009: |
+      subsystems = {
           "economy": {"enabled": True, "commands": {"buy": True}},
       }
       shops = {
@@ -16,6 +44,62 @@ vars:
               "id": "general",
               "name": "General Store",
               "stock": [{"item": "Rope, Hemp (50 ft)", "price": {"gold": 0}}],
+          },
+      }
+character:
+  cvars:
+    bags: '[["Equipment", {}]]'
+
+!buy herbalism
+---
+re:Buying \*\*1x Herbalism Kit\*\*[\s\S]*`!buy "Herbalism Kit" yes`
+---
+name: buy asks for confirmation with resolved stock item when configured
+vars:
+  svars:
+    westmarch_config: "eeee1000-1000-1000-1000-100000000007"
+  gvars:
+    eeee1000-1000-1000-1000-100000000007: |
+      subsystems = {
+          "economy": {
+              "enabled": True,
+              "commands": {"buy": True},
+              "config": {"ask_to_confirm_purchases": True},
+          },
+      }
+      shops = {
+          "general": {
+              "id": "general",
+              "name": "General Store",
+              "stock": [{"item": "Herbalism Kit", "price": {"gold": 0}}],
+          },
+      }
+character:
+  cvars:
+    bags: '[["Equipment", {}]]'
+
+!buy "Herbalism Kit" yes
+---
+re:Bought \*\*1x Herbalism Kit\*\*
+---
+name: buy purchases after yes confirmation
+vars:
+  svars:
+    westmarch_config: "eeee1000-1000-1000-1000-100000000008"
+  gvars:
+    eeee1000-1000-1000-1000-100000000008: |
+      subsystems = {
+          "economy": {
+              "enabled": True,
+              "commands": {"buy": True},
+              "config": {"ask_to_confirm_purchases": True},
+          },
+      }
+      shops = {
+          "general": {
+              "id": "general",
+              "name": "General Store",
+              "stock": [{"item": "Herbalism Kit", "price": {"gold": 0}}],
           },
       }
 character:
@@ -33,7 +117,11 @@ vars:
   gvars:
     eeee1000-1000-1000-1000-100000000002: |
       subsystems = {
-          "economy": {"enabled": True, "commands": {"buy": True}},
+          "economy": {
+              "enabled": True,
+              "commands": {"buy": True},
+              "config": {"ask_to_confirm_purchases": False},
+          },
       }
       shops = {
           "general": {

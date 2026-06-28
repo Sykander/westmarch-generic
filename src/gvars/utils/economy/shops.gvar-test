@@ -17,7 +17,74 @@ return shop != None and error == None and stock != None and item_error == None
 ---
 True
 ---
-name: shops resolves shop and validates stock item against catalogue
+name: shops resolves shop and stock item
+
+cfg_fixture = {
+    "shops": {
+        "general": {
+            "id": "general",
+            "name": "General Store",
+            "stock": [
+                {"item": "Herbalism Kit", "price": {"gold": 5}},
+            ],
+        },
+    },
+}
+shop, matches, error = shops.find_shop(cfg_fixture, "general")
+stock, item_matches, item_error = shops.find_stock_item(shop, "herbalism", cfg_fixture)
+price = shops.price_for_buy(shop, stock, 1, cfg_fixture)
+return stock != None and item_error == None and shops.stock_item_name(stock) == "Herbalism Kit" and price["gold"] == 5
+---
+True
+---
+name: shops resolves partial stock names without requiring catalogue expansion when price is explicit
+
+cfg_fixture = {
+    "subsystems": {
+        "economy": {
+            "config": {"ask_to_confirm_purchases": True},
+        },
+    },
+}
+return shops.ask_to_confirm_purchases(cfg_fixture) == True and shops.ask_to_confirm_purchases({}) == True
+---
+True
+---
+name: shops defaults purchase confirmation on
+
+cfg_fixture = {
+    "subsystems": {
+        "economy": {
+            "config": {"ask_to_confirm_purchases": False},
+        },
+    },
+}
+return shops.ask_to_confirm_purchases(cfg_fixture) == False
+---
+True
+---
+name: shops allows purchase confirmation opt out
+
+cfg_fixture = {
+    "shops": {
+        "tools": {
+            "id": "tools",
+            "name": "Tool Stall",
+            "stock": [{"item": "Herbalism Kit", "price": {"gold": 5}}],
+        },
+        "apothecary": {
+            "id": "apothecary",
+            "name": "Apothecary",
+            "stock": [{"item": "Herbal Remedy", "price": {"gold": 2}}],
+        },
+    },
+}
+shop, stock, error = shops.find_shop_for_item(cfg_fixture, "herb")
+return shop == None and "Be more specific" in error and "Herbalism Kit" in error and "Herbal Remedy" in error
+---
+True
+---
+name: shops reports item ambiguity across visible shop stock
 
 cfg_fixture = {
     "currencies": {"shards": {"name": "Arcane Shard", "plural": "Arcane Shards", "symbol": "◇"}},

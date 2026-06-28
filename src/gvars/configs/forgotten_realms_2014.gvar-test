@@ -21,6 +21,7 @@ return (
     and economy["commands"]["buy"] == True
     and economy["commands"]["sell"] == True
     and economy["config"]["job_location_policy"] == "check"
+    and economy["config"]["ask_to_confirm_purchases"] == True
     and len(economy["config"]["jobs"]) >= 4
     and content["enabled"] == True
     and content["commands"]["library"] == True

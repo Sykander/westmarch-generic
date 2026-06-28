@@ -89,6 +89,7 @@ test('forgotten realms starter has slice 5 travel baseline', () => {
   assert.equal(economyCommands.sell, true);
   assert.equal(economyCommands.wallet, false);
   assert.equal(economyConfig.job_location_policy, 'check');
+  assert.equal(economyConfig.ask_to_confirm_purchases, true);
   assert.ok((economyConfig.jobs as unknown[]).length >= 4);
   assert.ok(Object.keys(model.shops ?? {}).length > 30);
   assert.equal(
@@ -1123,6 +1124,18 @@ subsystems = {
   assert.ok(codes.includes('economy.job_location_policy'));
   assert.ok(codes.includes('economy.job_skills'));
   assert.ok(codes.includes('economy.job_shape'));
+});
+
+test('economy purchase confirmation config validates boolean values', () => {
+  assert.ok(
+    issueCodes(`
+subsystems = {
+    "economy": {
+        "config": {"ask_to_confirm_purchases": "yes"},
+    },
+}
+`).includes('economy.ask_to_confirm_purchases_bool'),
+  );
 });
 
 test('economy shop validation catches malformed stock', () => {

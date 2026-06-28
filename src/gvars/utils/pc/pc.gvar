@@ -213,6 +213,22 @@ def _gp_text(value):
     return str(num)
 
 
+def _coin_delta(gp_delta):
+    raw_cp = float(gp_delta) * 100
+    cp = int(round(raw_cp))
+    if abs(raw_cp - cp) > 0.001:
+        return None, 0
+    if cp == 0:
+        return "zero", 0
+    if cp % 100 == 0:
+        return "gp", int(cp / 100)
+    if cp % 50 == 0:
+        return "ep", int(cp / 50)
+    if cp % 10 == 0:
+        return "sp", int(cp / 10)
+    return "cp", cp
+
+
 def _number_text(value):
     try:
         num = float(value)
@@ -380,11 +396,23 @@ def modify_gold(ch, gp_delta):
         delta = float(gp_delta)
     except:
         return False, "Gold amount is invalid."
+    coin, amount = _coin_delta(delta)
+    if coin == None:
+        return False, "Gold amount must resolve to whole copper pieces."
+    if coin == "zero":
+        return True, ""
     current = get_gold(ch)
     if delta < 0 and current != None and current + delta < 0:
         return False, f"Not enough gold - {_character_name(ch)} has **{current} gp**."
     try:
-        ch.coinpurse.modify_coins(gp=delta)
+        if coin == "gp":
+            ch.coinpurse.modify_coins(gp=amount)
+        elif coin == "ep":
+            ch.coinpurse.modify_coins(ep=amount)
+        elif coin == "sp":
+            ch.coinpurse.modify_coins(sp=amount)
+        else:
+            ch.coinpurse.modify_coins(cp=amount)
         if delta < 0:
             return True, f"Spent **{_gp_text(abs(delta))} gp**."
         return True, f"Gained **{_gp_text(delta)} gp**."

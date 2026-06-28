@@ -30,7 +30,7 @@ vars:
 
 !show
 ---
-"re:travel:[\\s\\S]*show_arrival_time: true[\\s\\S]*show_arrival_weather: true[\\s\\S]*economy:[\\s\\S]*job_location_policy: warn[\\s\\S]*jobs: 1"
+"re:travel:[\\s\\S]*show_arrival_time: true[\\s\\S]*show_arrival_weather: true[\\s\\S]*economy:[\\s\\S]*job_location_policy: warn[\\s\\S]*ask_to_confirm_purchases: true[\\s\\S]*jobs: 1"
 ---
 name: show lists travel arrival and economy job config
 vars:
@@ -49,6 +49,7 @@ vars:
               "commands": {"job": True},
               "config": {
                   "job_location_policy": "warn",
+                  "ask_to_confirm_purchases": True,
                   "jobs": [{"id": "guard", "name": "Caravan Guard"}],
               },
           },

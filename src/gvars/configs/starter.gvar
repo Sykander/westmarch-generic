@@ -204,6 +204,8 @@ subsystems = {
             # Job location policy: "off", "warn", or "check".
             # When check/warn, !job uses location.commands.job plus configured jobs below.
             "job_location_policy": "off",
+            # Optional — require a second `!buy ... yes` command before purchases mutate sheets.
+            "ask_to_confirm_purchases": True,
             # Optional named jobs. location.commands.job remains a boolean availability flag.
             # "jobs": {
             #     "caravan_guard": {

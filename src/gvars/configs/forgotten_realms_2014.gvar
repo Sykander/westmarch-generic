@@ -101,6 +101,7 @@ subsystems = {
         },
         "config": {
             "job_location_policy": "check",
+            "ask_to_confirm_purchases": True,
             "jobs": [
                 {
                     "id": "caravan_guard",

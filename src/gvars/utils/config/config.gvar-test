@@ -190,6 +190,18 @@ vars:
     aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1: |
       # owner body intentionally empty
 
+return config.cfg.subsystems.economy.config.ask_to_confirm_purchases
+---
+True
+---
+name: empty owner defaults economy purchase confirmation on
+vars:
+  svars:
+    westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"
+  gvars:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1: |
+      # owner body intentionally empty
+
 return config.cfg.policies.player_setup.require_character
 ---
 True

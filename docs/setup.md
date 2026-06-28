@@ -239,6 +239,7 @@ subsystems = {
         "commands": {"job": True, "buy": True, "sell": True, "wallet": False},
         "config": {
             "job_location_policy": "warn",  # off, warn, or check
+            "ask_to_confirm_purchases": True,
             "jobs": [
                 {"id": "dock_work", "name": "Dock Work", "skills": ["athletics", "perception"]},
             ],
@@ -262,7 +263,7 @@ shops = {
 }
 ```
 
-`!wallet` needs `currencies`. `!buy` and `!sell` need `shops`, and `!sell` needs at least one shop with `accepts_sells: True`. Location rows still use boolean availability (`"commands": {"job": True, "buy": True, "sell": True}`); named job rows live under `subsystems.economy.config.jobs`.
+`!wallet` needs `currencies`. `!buy` and `!sell` need `shops`, and `!sell` needs at least one shop with `accepts_sells: True`. Leave `ask_to_confirm_purchases` true to require a preview first and a trailing `yes` confirmation before `!buy` spends currency; set it false only if immediate purchases are desired. Location rows still use boolean availability (`"commands": {"job": True, "buy": True, "sell": True}`); named job rows live under `subsystems.economy.config.jobs`.
 
 Quest setup is mostly data-driven. To try quest-flavoured exploration, add quest-tagged encounter rows to a biome pool such as `enc.quest`; to use `policies.quest.self_assign`, also enable `subsystems.misc.commands.quest` so the quest journal command is available.
 

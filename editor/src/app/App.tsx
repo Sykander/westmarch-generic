@@ -1812,6 +1812,28 @@ function SubsystemAdvancedEditor({
             }
             help="off ignores location job data; warn allows mismatches with a note; check blocks mismatches."
           />
+          <div className="field">
+            <span>
+              Purchase confirmation
+              <HelpTip label="Purchase confirmation help">
+                Ask players to re-run buy with yes before the purchase spends currency and adds the
+                item.
+              </HelpTip>
+            </span>
+            <label className="switch-line">
+              <input
+                type="checkbox"
+                checked={config.ask_to_confirm_purchases === true}
+                onChange={(event) =>
+                  updateConfig(
+                    `subsystems.${subsystemKey}.config.ask_to_confirm_purchases`,
+                    event.target.checked,
+                  )
+                }
+              />
+              <span>Require yes for buys</span>
+            </label>
+          </div>
           <div className="span-2">
             <JsonField
               label="Jobs JSON"
