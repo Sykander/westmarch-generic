@@ -61,6 +61,8 @@ Reference westmarch `src/gvars/utils/encounters/biomes/*.gvar` for flavour and e
 
 The non-forest baseline rows use the [Realms Helps Faerunian Random Encounters by Region and Locale](https://www.realmshelps.net/adventuring/faerun_encounters.shtml) index as broad inspiration for terrain coverage only. Keep copied prose, table weights, and location-specific rows out of these biome presets. The same index is useful later for location encounter modules because it breaks Forgotten Realms encounters out by named regions, roads, marshes, mountains, caves, aquatic zones, frostfell, wastes, and Underdark locales.
 
+Quest-hook rows should stay original, compact, and biome-scoped. Broad adventure structure may be inspired by freely accessible official D&D material such as [*Lost Mine of Phandelver*](https://www.dndbeyond.com/sources/dnd/lmop) and [*Spelljammer Academy*](https://www.dndbeyond.com/sources/dnd/sja), but do not copy adventure text, boxed text, maps, room keys, NPC blocks, or sequence-specific encounter details into these presets.
+
 ## Related
 
 - [gvars/biomes.md](../../../../docs/internal/projects/westmarch-statement/gvars/biomes.md) — runtime loader
