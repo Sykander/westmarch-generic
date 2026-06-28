@@ -479,8 +479,17 @@ def format_price(config_override, price):
     return ", ".join(parts)
 
 
-def _trade_line(item_name, price_text):
-    return f"    {item_name}: {price_text}"
+def _pad_text(value, width):
+    text = str(value)
+    if len(text) >= width:
+        return text
+    return text + (" " * (width - len(text)))
+
+
+def _trade_row(item_name, buy_text, sell_text=None):
+    if sell_text == None:
+        return f"  {_pad_text(item_name, 28)} {buy_text}"
+    return f"  {_pad_text(item_name, 28)} {_pad_text(buy_text, 10)} {sell_text}"
 
 
 def trade_text(config_override=None, character_location_id=None, max_lines=80):
@@ -493,29 +502,32 @@ def trade_text(config_override=None, character_location_id=None, max_lines=80):
     for shop in visible:
         if not _has_stock(shop):
             continue
-        pending = [f"{shop_name(shop)}:"]
-        buy_lines = []
-        sell_lines = []
+        show_sell = _accepts_sells(shop)
+        pending = [shop_name(shop)]
+        if show_sell:
+            pending.append("  Item                         Buy        Sell")
+        else:
+            pending.append("  Item                         Buy")
+        item_lines = []
         for stock_entry in _stock_entries(shop):
             name = _stock_item_name(stock_entry)
             if name == "":
                 continue
             buy_price = price_for_buy(shop, stock_entry, 1, cfg)
+            buy_text = "-"
+            sell_text = None
             if len(buy_price) > 0:
-                buy_lines.append(_trade_line(name, format_price(cfg, buy_price)))
-            if _accepts_sells(shop):
+                buy_text = format_price(cfg, buy_price)
+            if show_sell:
+                sell_text = "-"
                 sell_price = price_for_sell(shop, stock_entry, 1, cfg)
                 if len(sell_price) > 0:
-                    sell_lines.append(_trade_line(name, format_price(cfg, sell_price)))
-        if len(buy_lines) == 0 and len(sell_lines) == 0:
+                    sell_text = format_price(cfg, sell_price)
+            item_lines.append(_trade_row(name, buy_text, sell_text))
+        if len(item_lines) == 0:
             continue
-        pending.append("  buy_from_shop:")
-        for line in buy_lines:
+        for line in item_lines:
             pending.append(line)
-        if len(sell_lines) > 0:
-            pending.append("  sell_to_shop:")
-            for line in sell_lines:
-                pending.append(line)
         if len(lines) + len(pending) > max_lines:
             hidden += 1
             continue
@@ -525,7 +537,7 @@ def trade_text(config_override=None, character_location_id=None, max_lines=80):
         return ""
     if hidden > 0:
         lines.append(f"... {hidden} more shops hidden; use buy or sell with a shop name.")
-    return "**Shops**\n```yaml\n" + "\n".join(lines) + "\n```"
+    return "**Shops**\n```text\n" + "\n".join(lines) + "\n```"
 
 
 def _inventory_bag(config_override, stock_entry=None):

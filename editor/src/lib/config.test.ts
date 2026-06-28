@@ -78,6 +78,7 @@ test('forgotten realms starter has slice 5 travel baseline', () => {
   assert.equal(commands.weather, true);
   assert.equal(travelConfig.show_arrival_time, true);
   assert.equal(travelConfig.show_arrival_weather, true);
+  assert.equal(travelConfig.show_shops_on_travel, false);
 
   const economy = model.subsystems.economy as Record<string, unknown>;
   const economyCommands = economy.commands as Record<string, unknown>;
@@ -794,7 +795,7 @@ test('travel arrival display settings validate boolean values', () => {
     issueCodes(`
 subsystems = {
     "travel": {
-        "config": {"show_arrival_time": "yes", "show_arrival_weather": 1},
+        "config": {"show_arrival_time": "yes", "show_arrival_weather": 1, "show_shops_on_travel": "no"},
     },
 }
 `).includes('travel.arrival_display_bool'),

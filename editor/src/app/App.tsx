@@ -1633,6 +1633,27 @@ function SubsystemAdvancedEditor({
                 <span>Show weather on arrival</span>
               </label>
             </div>
+            <div className="field">
+              <span>
+                Travel shops
+                <HelpTip label="Travel shops help">
+                  Include local shop price tables in bare travel and arrival output.
+                </HelpTip>
+              </span>
+              <label className="switch-line">
+                <input
+                  type="checkbox"
+                  checked={config.show_shops_on_travel !== false}
+                  onChange={(event) =>
+                    updateConfig(
+                      `subsystems.${subsystemKey}.config.show_shops_on_travel`,
+                      event.target.checked,
+                    )
+                  }
+                />
+                <span>Show shops in travel</span>
+              </label>
+            </div>
           </div>
           <TransportIconsEditor
             value={asRecord(config.transport_icons ?? TRANSPORT_ICON_DEFAULTS)}

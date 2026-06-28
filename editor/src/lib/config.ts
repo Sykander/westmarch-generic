@@ -528,6 +528,7 @@ function createDefaultSubsystems(): Record<string, AnyRecord> {
         path_biome_policy: 'from_location',
         show_arrival_time: false,
         show_arrival_weather: false,
+        show_shops_on_travel: true,
         transport_icons: {
           walk: '🚶',
           fly: '🪽',
@@ -2134,7 +2135,7 @@ function validateTravel(model: ConfigModel, issues: ConfigIssue[]) {
       ),
     );
   }
-  for (const key of ['show_arrival_time', 'show_arrival_weather']) {
+  for (const key of ['show_arrival_time', 'show_arrival_weather', 'show_shops_on_travel']) {
     const value = travelConfig[key];
     if (value != null && typeof value !== 'boolean') {
       issues.push(
@@ -2143,7 +2144,7 @@ function validateTravel(model: ConfigModel, issues: ConfigIssue[]) {
           'travel.arrival_display_bool',
           'Subsystems',
           `subsystems.travel.config.${key}`,
-          'Arrival display setting must be boolean',
+          'Travel display setting must be boolean',
           `${key} must be True or False.`,
         ),
       );

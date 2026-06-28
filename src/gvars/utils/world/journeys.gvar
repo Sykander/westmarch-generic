@@ -338,7 +338,19 @@ def _requirement_transport_ids(cfg, requirement):
     return out
 
 
-def nearby_locations(config_override, from_id):
+def _nearby_limit(limit):
+    if limit == None:
+        return None
+    try:
+        value = int(limit)
+    except:
+        return None
+    if value <= 0:
+        return None
+    return value
+
+
+def nearby_locations(config_override, from_id, limit=None):
     """Direct route destinations from one location, grouped by target id."""
     cfg = _cfg(config_override)
     origin = _normalize_id(from_id)
@@ -349,8 +361,10 @@ def nearby_locations(config_override, from_id):
     all_match_ids = paths.get_available_transport_match_ids(cfg, all_transport_ids)
     routes = {}
     route_ids = []
+    max_routes = _nearby_limit(limit)
+    edge_limit = max_routes
 
-    for edge in paths.get_edge_entries_from(cfg, origin, default_transport, all_match_ids):
+    for edge in paths.get_edge_entries_from(cfg, origin, default_transport, all_match_ids, edge_limit):
         path = _read_field(edge, "path")
         dest_id = _normalize_id(_read_field(path, "to"))
         if dest_id == None or dest_id == origin:
@@ -378,6 +392,8 @@ def nearby_locations(config_override, from_id):
         current_steps = _read_field(route, "step_count")
         if current_steps == None or step_count < current_steps:
             route["step_count"] = step_count
+        if max_routes != None and len(route_ids) >= max_routes:
+            break
 
     out = []
     for route_id in route_ids:
@@ -437,9 +453,9 @@ def _brief_location_description(location):
     return text
 
 
-def format_nearby_locations(config_override, from_id, prefix="!", limit=8):
+def format_nearby_locations(config_override, from_id, prefix="!", limit=5):
     cfg = _cfg(config_override)
-    routes = nearby_locations(cfg, from_id)
+    routes = nearby_locations(cfg, from_id, limit + 1)
     if len(routes) == 0:
         return ""
     lines = ["## Nearby"]
@@ -455,7 +471,7 @@ def format_nearby_locations(config_override, from_id, prefix="!", limit=8):
         lines.append(line)
         count += 1
     if len(routes) > limit:
-        lines.append(f"-# {len(routes) - limit} more direct route(s).")
+        lines.append("-# More direct routes may be available.")
     return "\n".join(lines)
 
 

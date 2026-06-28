@@ -77,6 +77,7 @@ def read_field(obj, key):
         "weather": lambda o: o.weather,
         "show_arrival_time": lambda o: o.show_arrival_time,
         "show_arrival_weather": lambda o: o.show_arrival_weather,
+        "show_shops_on_travel": lambda o: o.show_shops_on_travel,
     }
     if key in attrs:
         try:
@@ -221,11 +222,15 @@ def location_description(loc_id, loc, include_activities=True, include_economy=T
     return desc
 
 
+def show_shops_on_travel():
+    return travel_config_value("show_shops_on_travel", True) == True
+
+
 def response_for_current(messages=[]):
     loc_id, loc, err_msg = current_location_or_error()
     if err_msg != None:
         return get_embed(desc=err_msg)
-    desc = location_description(loc_id, loc, True)
+    desc = location_description(loc_id, loc, True, show_shops_on_travel())
     journey_text = journeys.active_journey_text(cfg, ch, ctx.prefix)
     if journey_text != "":
         desc += "\n\n" + journey_text

@@ -51,6 +51,7 @@ subsystems = {
             "path_biome_policy": "from_location",
             "show_arrival_time": True,
             "show_arrival_weather": True,
+            "show_shops_on_travel": False,
             "transport_icons": {
                 "walk": "🚶",
                 "fly": "🪽",

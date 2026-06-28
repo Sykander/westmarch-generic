@@ -35,7 +35,7 @@ Start with useful but safe command coverage.
 | Subsystem | Target | Notes |
 |-----------|--------|-------|
 | `exploration` | enabled | `enc`, `forage`, `fish`, `mine`, `lumber` on; keep `hunt` and `loot` off until combat/loot tuning is reviewed |
-| `travel` | enabled | `travel`, `location`, `time`, and `weather` on once calendar and weather-area data are seeded |
+| `travel` | enabled | `travel`, `location`, `time`, and `weather` on once calendar and weather-area data are seeded; `show_shops_on_travel` off so `!travel` stays route-focused |
 | `economy` | enabled | `job`, `buy`, `sell` on when shops and services are seeded; `wallet` off unless custom currencies are added |
 | `content` | enabled | `library` and `read` on with `world_data.book_gvar_ids` pointed at generated Forgotten Realms book shards |
 | `crafting` | disabled by default | Seed location services now; enable commands after recipe/catalogue validation |

@@ -185,6 +185,7 @@ subsystems = {
             "path_biome_policy": "from_location",
             "show_arrival_time": True,
             "show_arrival_weather": True,
+            "show_shops_on_travel": True,
             "transport_icons": {"walk": "🚶", "fly": "🪽", "horse": "🐎", "boat": "⛵"},
         },
     },
@@ -225,7 +226,7 @@ world_data = {
 The web editor may display shipped world-data presets as `engine:configs/...` aliases while
 editing; generated/exported config bodies use runtime gvar UUIDs unless you generate owner gvars.
 
-`time` needs `world_data.calendars`; `weather` needs `world_data.weather.by_area`. When `show_arrival_time` or `show_arrival_weather` is true, `!travel next` appends those notes when the character arrives somewhere.
+`time` needs `world_data.calendars`; `weather` needs `world_data.weather.by_area`. When `show_arrival_time` or `show_arrival_weather` is true, `!travel next` appends those notes when the character arrives somewhere. Use `show_shops_on_travel` to control whether bare `!travel` and arrival output include local shop price tables.
 
 Economy setup needs top-level data before enabling player commands:
 

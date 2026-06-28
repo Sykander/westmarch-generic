@@ -75,7 +75,7 @@ cfg_fixture = {
     },
 }
 text = shops.trade_text(cfg_fixture, "oakwood")
-return "```yaml" in text and "General Store" in text and "buy_from_shop" in text and "sell_to_shop" in text and "Rope, Hemp" in text and "2 gp" in text and "1 gp" in text
+return "```text" in text and "General Store" in text and "Item" in text and "Buy" in text and "Sell" in text and "Rope, Hemp" in text and "2 gp" in text and "1 gp" in text and "buy_from_shop" not in text
 ---
 True
 ---

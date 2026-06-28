@@ -27,10 +27,10 @@ match list.
 `track` and `journey` persist a planned route to `wg_journey`. `next` advances
 one route step and updates `wg_location` when a path leg completes.
 
-On arrival, the current-location view includes local jobs and visible shop
-trade prices. `subsystems.travel.config.show_arrival_time` and
-`show_arrival_weather` append compact arrival notes when the corresponding
-`time` or `weather` command is enabled.
+On arrival, the current-location view includes local jobs. Visible shop trade
+prices are controlled by `subsystems.travel.config.show_shops_on_travel`.
+`show_arrival_time` and `show_arrival_weather` append compact arrival notes when
+the corresponding `time` or `weather` command is enabled.
 
 ## Config
 
@@ -41,7 +41,11 @@ subsystems = {
     "travel": {
         "enabled": True,
         "commands": {"travel": True, "location": True, "time": True, "weather": True},
-        "config": {"show_arrival_time": True, "show_arrival_weather": True},
+        "config": {
+            "show_arrival_time": True,
+            "show_arrival_weather": True,
+            "show_shops_on_travel": True,
+        },
     },
 }
 ```

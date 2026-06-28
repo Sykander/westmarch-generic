@@ -1532,6 +1532,7 @@ Travel reads shared **`world_data.default_location`**, the configured location s
 | `path_biome_policy` | `"from_location"` \| `"off"` | `"from_location"` | When enabled, path encounter step biomes should be listed on the path's origin location for that activity. |
 | `show_arrival_time` | `bool` | `False` | When `travel.commands.time` is enabled, append the formatted world time after `!travel next` arrives. |
 | `show_arrival_weather` | `bool` | `False` | When `travel.commands.weather` is enabled, append the resolved weather after `!travel next` arrives. |
+| `show_shops_on_travel` | `bool` | `True` | Include local shop price tables in bare `!travel` / arrival output. `!location` still shows shops when the location supports trade. |
 | `transport_icons` | `{ transport_id: emoji }` | engine defaults | Icons shown once per path beside the route label when that path has transport requirements. |
 
 ### `economy.config`

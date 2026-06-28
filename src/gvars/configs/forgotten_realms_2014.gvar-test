@@ -15,6 +15,7 @@ return (
     and travel["commands"]["location"] == True
     and travel["config"]["show_arrival_time"] == True
     and travel["config"]["show_arrival_weather"] == True
+    and travel["config"]["show_shops_on_travel"] == False
     and economy["enabled"] == True
     and economy["commands"]["job"] == True
     and economy["commands"]["buy"] == True
@@ -76,6 +77,50 @@ True
 ---
 name: Forgotten Realms 2014 config loads generated Forgotten Realms book shards
 
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(library = env.gvars.library)
+wd = {}
+for key in forgotten_realms_2014.world_data:
+    wd[key] = forgotten_realms_2014.world_data[key]
+wd["locations_gvar_id"] = "fde0dbeb-d2e3-42fd-8f56-2d94bdf3ac58"
+wd["paths_gvar_id"] = "19623e1a-3a23-49a0-9d40-986fdd26d7e7"
+wd["book_gvar_ids"] = [
+    env.gvars.forgotten_realms_a,
+    env.gvars.forgotten_realms_b,
+    env.gvars.forgotten_realms_c,
+    env.gvars.forgotten_realms_d,
+    env.gvars.forgotten_realms_e,
+    env.gvars.forgotten_realms_f,
+    env.gvars.forgotten_realms_g,
+    env.gvars.forgotten_realms_h,
+    env.gvars.forgotten_realms_i,
+    env.gvars.forgotten_realms_j,
+    env.gvars.forgotten_realms_k,
+    env.gvars.forgotten_realms_l,
+    env.gvars.forgotten_realms_m,
+    env.gvars.forgotten_realms_n,
+    env.gvars.forgotten_realms_o,
+    env.gvars.forgotten_realms_pq,
+    env.gvars.forgotten_realms_r,
+    env.gvars.forgotten_realms_s,
+    env.gvars.forgotten_realms_t,
+    env.gvars.forgotten_realms_v,
+    env.gvars.forgotten_realms_w,
+]
+cfg = {
+    "subsystems": forgotten_realms_2014.subsystems,
+    "world_data": wd,
+}
+ch = character()
+args = argparse("")
+topics, error = library.resolve_search_topics(cfg, ch, args, [])
+result = library.search_by_topics(cfg, topics, ch, args, [])
+return error == None and len(topics) > 0 and result["book"] != None
+---
+True
+---
+name: Forgotten Realms 2014 library searches Waterdeep inferred topics under statement budget
+
 waterdeep_docks = forgotten_realms_2014.shops["waterdeep_docks"]
 waterdeep_market = forgotten_realms_2014.shops["waterdeep_general_market"]
 item_overlay = forgotten_realms_2014.subsystems["crafting"]["config"]["catalogues"]["items"]
@@ -95,6 +140,7 @@ using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(
     journeys = env.gvars.journeys,
     locations = env.gvars.locations,
+    shops = env.gvars.shops,
 )
 wd = {}
 for key in forgotten_realms_2014.world_data:
@@ -106,16 +152,19 @@ cfg = {
     "display": forgotten_realms_2014.display,
     "subsystems": forgotten_realms_2014.subsystems,
     "world_data": wd,
+    "shops": forgotten_realms_2014.shops,
 }
 ch = character()
 current_id, current_loc = journeys.get_location(ch, cfg)
 desc = locations.display_location(current_loc, "full", ch, True, journeys.get_visit_count(ch, current_id))
+if locations.location_has_trade(current_loc):
+    desc += "\n\n" + shops.trade_text(cfg, current_id)
 nearby = journeys.format_nearby_locations(cfg, current_id, "!")
-return current_id == "waterdeep" and "Waterdeep" in desc and "## Nearby" in nearby and "High Road" in nearby and "Trade Way" in nearby
+return current_id == "waterdeep" and "Waterdeep General Market" in desc and "```text" in desc and "## Nearby" in nearby and "High Road" in nearby and "Trade Way" in nearby
 ---
 True
 ---
-name: location command core shows Waterdeep nearby routes under statement budget
+name: location command core shows Waterdeep shops and nearby routes under statement budget
 
 using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(

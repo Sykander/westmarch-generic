@@ -110,7 +110,7 @@ vars:
 
 !location
 ---
-'re:Jobs[\s\S]*Caravan Guard[\s\S]*Shops[\s\S]*```yaml[\s\S]*General Store[\s\S]*buy_from_shop[\s\S]*Rope, Hemp \(50 ft\): 2 gp[\s\S]*sell_to_shop[\s\S]*Rope, Hemp \(50 ft\): 1 gp'
+'re:Jobs[\s\S]*Caravan Guard[\s\S]*Shops[\s\S]*```text[\s\S]*General Store[\s\S]*Item[\s\S]*Buy[\s\S]*Sell[\s\S]*Rope, Hemp \(50 ft\)[\s\S]*2 gp[\s\S]*1 gp'
 ---
 name: shows configured jobs and shop trade prices for current location
 vars:

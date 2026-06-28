@@ -79,6 +79,8 @@ subsystems = {
             # Optional — append current clock/weather notes when travel arrives somewhere.
             "show_arrival_time": False,
             "show_arrival_weather": False,
+            # Optional — include local shop prices in bare !travel / arrival output.
+            "show_shops_on_travel": True,
             "transport_icons": {
                 "walk": "🚶",
                 "fly": "🪽",

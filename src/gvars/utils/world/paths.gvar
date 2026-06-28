@@ -165,6 +165,18 @@ def _path_index(cfg):
     return index
 
 
+def _max_count(limit):
+    if limit == None:
+        return None
+    try:
+        value = int(limit)
+    except:
+        return None
+    if value <= 0:
+        return None
+    return value
+
+
 def has_path_source(config_override=None):
     cfg = _cfg(config_override)
     wd = _world_data(cfg)
@@ -392,18 +404,36 @@ def get_edges_from(config_override, from_id, transport_id="walk"):
     return out
 
 
-def get_edge_entries_from(config_override, from_id, transport_id="walk", selected_ids=None):
+def get_edge_entries_from(config_override, from_id, transport_id="walk", selected_ids=None, limit=None):
     """Route-planning edge entries from one origin with normalized dest and cost."""
     cfg = _cfg(config_override)
     origin = _normalize_id(from_id)
     out = []
     if origin == None:
         return out
+    max_edges = _max_count(limit)
+    if selected_ids == None:
+        selected_ids = _transport_match_ids(cfg, transport_id)
+    if max_edges != None:
+        for path in _path_list(cfg):
+            if _normalize_id(_read_field(path, "from")) != origin:
+                continue
+            if not _path_matches_transport_ids(path, selected_ids):
+                continue
+            dest = _normalize_id(_read_field(path, "to"))
+            if dest == None:
+                continue
+            out.append({
+                "to": dest,
+                "cost": get_path_cost(path, transport_id),
+                "path": path,
+            })
+            if len(out) >= max_edges:
+                return out
+        return out
     index = _path_index(cfg)
     if origin not in index:
         return out
-    if selected_ids == None:
-        selected_ids = _transport_match_ids(cfg, transport_id)
     for path in index[origin]:
         if not _path_matches_transport_ids(path, selected_ids):
             continue
@@ -416,6 +446,8 @@ def get_edge_entries_from(config_override, from_id, transport_id="walk", selecte
             "cost": cost,
             "path": path,
         })
+        if max_edges != None and len(out) >= max_edges:
+            return out
     return out
 
 

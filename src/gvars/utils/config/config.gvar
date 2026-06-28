@@ -57,6 +57,7 @@ DEFAULTS = {
                 "path_biome_policy": "from_location",
                 "show_arrival_time": False,
                 "show_arrival_weather": False,
+                "show_shops_on_travel": True,
                 "transport_icons": {
                     "walk": "🚶",
                     "fly": "🪽",

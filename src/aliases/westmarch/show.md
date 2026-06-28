@@ -11,6 +11,6 @@ Sections: `wiring`, `subsystems`, `policies`, `crafting`, `display`, `runtime`, 
 
 The `data` section summarizes `world_data` counts, including locations, paths,
 transport modes, and biome registry entries. The subsystem summary includes
-travel arrival display toggles and economy job-location config.
+travel display toggles and economy job-location config.
 
 The `crafting` section shows the resolved crafting rules override, recipe mode, known-spell scribing gate, catalogue sources, checks/tools, and item-output bag policy. Validation still lives in the web editor Check page.

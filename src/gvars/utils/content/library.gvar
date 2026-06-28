@@ -16,6 +16,7 @@ _STALE_BASE_DAYS = 100
 _STALE_KEEN_EXTRA_DAYS = 30
 _MAX_CV_CHARS = 10000
 _POOL_TARGET = 20
+_TOPIC_SCAN_LIMIT = 60
 _QUICK_BODY_LEN = 120
 _MAX_TOPIC_WORDS = 8
 _MAX_TOPIC_EXPANDED = 14
@@ -584,30 +585,41 @@ def _metadata_line(book, censored_meta, score):
     return censored_meta
 
 
-def _book_topic_tags(book):
-    seen = {}
-    out = []
-    for raw in _book_tags(book):
-        tag = _norm(raw)
-        if tag == "":
-            continue
-        canon = _canonical_topic_tag(tag)
-        for token in [tag, canon]:
-            if token != None and token != "" and token not in seen:
-                seen[token] = True
-                out.append(token)
+def _topic_lookup(topics_norm):
+    out = {}
+    if topics_norm == None:
+        return out
+    for topic in topics_norm:
+        token = _norm(topic)
+        if token != "":
+            out[token] = True
     return out
 
 
-def _topic_match(book, topics_norm):
-    if len(topics_norm) == 0:
+def _topic_match(book, topics_lookup):
+    if len(topics_lookup) == 0:
         return False
-    book_tags = _book_topic_tags(book)
-    for query in topics_norm:
-        for tag in book_tags:
-            if query == tag:
-                return True
+    for raw in _book_tags(book):
+        tag = _norm(raw)
+        if tag != "" and tag in topics_lookup:
+            return True
+        canon = _canonical_topic_tag(tag)
+        if canon != None and canon != "" and canon in topics_lookup:
+            return True
     return False
+
+
+def _topic_scan_books(books):
+    count = min(int(_TOPIC_SCAN_LIMIT), len(books))
+    if count <= 0:
+        return []
+    if len(books) <= count:
+        return books
+    out = []
+    total = len(books)
+    for i in range(count):
+        out.append(books[int((i * total) // count)])
+    return out
 
 
 def _lang_score_for_book(ch, book, comprehend):
@@ -649,16 +661,18 @@ def _normalize_topics(topic_phrases):
 
 def _build_topic_pool(books, topics_norm, ch, inv_total):
     max_rank = _max_rarity_rank_from_inv(inv_total)
+    scanned = _topic_scan_books(books)
     candidates = []
-    for book in books:
+    for book in scanned:
         if _rarity_rank(book) <= max_rank:
             candidates.append(book)
     if len(candidates) == 0:
-        candidates = books[:]
+        candidates = scanned[:]
     relevant = []
     unrelated = []
+    topics_lookup = _topic_lookup(topics_norm)
     for book in candidates:
-        if _topic_match(book, topics_norm):
+        if _topic_match(book, topics_lookup):
             relevant.append(book)
         else:
             unrelated.append(book)

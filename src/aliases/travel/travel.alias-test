@@ -61,6 +61,40 @@ vars:
           ],
       }
 
+!travel
+---
+re:River Town(?![\s\S]*Shops)(?![\s\S]*General Store)
+---
+name: bare travel can hide local shop prices through travel config
+vars:
+  svars:
+    westmarch_config: "aaaa2002-2002-2002-2002-200000000024"
+  gvars:
+    aaaa2002-2002-2002-2002-200000000024: |
+      subsystems = {
+          "travel": {
+              "enabled": True,
+              "commands": {"travel": True, "location": True},
+              "config": {"show_shops_on_travel": False},
+          },
+          "economy": {"enabled": True, "commands": {"buy": True, "sell": True}},
+      }
+      world_data = {
+          "default_location": "river_town",
+          "locations": {
+              "river_town": {"name": "River Town", "commands": {"buy": True, "sell": True}},
+          },
+      }
+      shops = {
+          "general": {
+              "id": "general",
+              "name": "General Store",
+              "location_id": "river_town",
+              "accepts_sells": True,
+              "stock": [{"item": "Rope, Hemp (50 ft)", "price": {"gold": 2}}],
+          },
+      }
+
 !travel Oakwood
 ---
 re:River Town[\s\S]*Oakwood Forest[\s\S]*!enc forest[\s\S]*track this journey
