@@ -479,6 +479,55 @@ def format_price(config_override, price):
     return ", ".join(parts)
 
 
+def _trade_line(item_name, price_text):
+    return f"    {item_name}: {price_text}"
+
+
+def trade_text(config_override=None, character_location_id=None, max_lines=80):
+    cfg = _cfg(config_override)
+    visible = list_shops(cfg, character_location_id, False)
+    if len(visible) == 0:
+        return ""
+    lines = []
+    hidden = 0
+    for shop in visible:
+        if not _has_stock(shop):
+            continue
+        pending = [f"{shop_name(shop)}:"]
+        buy_lines = []
+        sell_lines = []
+        for stock_entry in _stock_entries(shop):
+            name = _stock_item_name(stock_entry)
+            if name == "":
+                continue
+            buy_price = price_for_buy(shop, stock_entry, 1, cfg)
+            if len(buy_price) > 0:
+                buy_lines.append(_trade_line(name, format_price(cfg, buy_price)))
+            if _accepts_sells(shop):
+                sell_price = price_for_sell(shop, stock_entry, 1, cfg)
+                if len(sell_price) > 0:
+                    sell_lines.append(_trade_line(name, format_price(cfg, sell_price)))
+        if len(buy_lines) == 0 and len(sell_lines) == 0:
+            continue
+        pending.append("  buy_from_shop:")
+        for line in buy_lines:
+            pending.append(line)
+        if len(sell_lines) > 0:
+            pending.append("  sell_to_shop:")
+            for line in sell_lines:
+                pending.append(line)
+        if len(lines) + len(pending) > max_lines:
+            hidden += 1
+            continue
+        for line in pending:
+            lines.append(line)
+    if len(lines) == 0:
+        return ""
+    if hidden > 0:
+        lines.append(f"... {hidden} more shops hidden; use buy or sell with a shop name.")
+    return "**Shops**\n```yaml\n" + "\n".join(lines) + "\n```"
+
+
 def _inventory_bag(config_override, stock_entry=None):
     bag = _read_field(stock_entry, "bag")
     if bag != None and str(bag).strip() != "":

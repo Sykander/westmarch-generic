@@ -73,9 +73,10 @@ Use these config placements:
 | Shops/vendors/services | top-level `shops` |
 | Books/libraries | top-level `books`, `world_data.books`, or future book gvar ids |
 | Job tuning | `subsystems.economy.command_config.job` |
+| Named job rows | `subsystems.economy.config.jobs` |
 | Location job availability | location entry `<id>.commands.job = True` |
 
-Current `!job` is skill-based, not named-job-based. The starter can list plausible local jobs in descriptions and location encounter prose, but it should not invent a new `jobs` schema until the economy command supports it.
+Current `!job` remains skill-based. Named jobs are display/check metadata under `subsystems.economy.config.jobs`; the per-location availability flag stays boolean as `<id>.commands.job = True`.
 
 ## Calendar and weather
 
@@ -375,14 +376,15 @@ Current runtime job behavior:
 
 - command is `!job <skill> [bonuses]`;
 - payout is controlled by job payout bands;
-- there is no location-specific named job registry yet.
+- named local jobs are configured under `subsystems.economy.config.jobs`;
+- `location.commands.job` remains the boolean gate for whether any job is available there.
 
 Starter config should therefore:
 
 - enable `commands.job` only in settlements where work makes sense;
 - tune `subsystems.economy.command_config.job.allowed_skills` broadly enough for Forgotten Realms work;
-- describe local job flavor in the location description or future location encounter gvar;
-- avoid adding top-level `jobs` until the economy command is designed for it.
+- use `subsystems.economy.config.job_location_policy` to decide whether local job data warns or blocks;
+- keep named job rows under `subsystems.economy.config.jobs`, not as a top-level `jobs` table.
 
 Suggested job skill flavor:
 

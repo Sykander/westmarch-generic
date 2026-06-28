@@ -1589,6 +1589,49 @@ function SubsystemAdvancedEditor({
               }
               help="Checks whether path encounter biomes are listed on the origin location."
             />
+            <div className="field">
+              <span>
+                Arrival time
+                <HelpTip label="Arrival time help">
+                  Show the configured world clock in travel output when a character arrives somewhere.
+                </HelpTip>
+              </span>
+              <label className="switch-line">
+                <input
+                  type="checkbox"
+                  checked={config.show_arrival_time === true}
+                  onChange={(event) =>
+                    updateConfig(
+                      `subsystems.${subsystemKey}.config.show_arrival_time`,
+                      event.target.checked,
+                    )
+                  }
+                />
+                <span>Show time on arrival</span>
+              </label>
+            </div>
+            <div className="field">
+              <span>
+                Arrival weather
+                <HelpTip label="Arrival weather help">
+                  Show the configured regional weather in travel output when a character arrives
+                  somewhere.
+                </HelpTip>
+              </span>
+              <label className="switch-line">
+                <input
+                  type="checkbox"
+                  checked={config.show_arrival_weather === true}
+                  onChange={(event) =>
+                    updateConfig(
+                      `subsystems.${subsystemKey}.config.show_arrival_weather`,
+                      event.target.checked,
+                    )
+                  }
+                />
+                <span>Show weather on arrival</span>
+              </label>
+            </div>
           </div>
           <TransportIconsEditor
             value={asRecord(config.transport_icons ?? TRANSPORT_ICON_DEFAULTS)}
@@ -1733,6 +1776,27 @@ function SubsystemAdvancedEditor({
             value={commandConfig}
             onChange={(value) => updateConfig(`subsystems.${subsystemKey}.command_config`, value)}
           />
+        </div>
+      ) : null}
+      {subsystemKey === 'economy' ? (
+        <div className="form-grid compact">
+          <SelectField
+            label="Job location policy"
+            value={String(config.job_location_policy ?? 'off')}
+            values={['off', 'warn', 'check']}
+            onChange={(value) =>
+              updateConfig(`subsystems.${subsystemKey}.config.job_location_policy`, value)
+            }
+            help="off ignores location job data; warn allows mismatches with a note; check blocks mismatches."
+          />
+          <div className="span-2">
+            <JsonField
+              label="Jobs JSON"
+              value={config.jobs ?? []}
+              onCommit={(value) => updateConfig(`subsystems.${subsystemKey}.config.jobs`, value)}
+              minRows={6}
+            />
+          </div>
         </div>
       ) : null}
       {cooldownCommands.length > 0 ? (

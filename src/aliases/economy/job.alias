@@ -4,6 +4,8 @@ using(
     auth = env.gvars.auth,
     display = env.gvars.display,
     config = env.gvars.config,
+    journeys = env.gvars.journeys,
+    locations = env.gvars.locations,
     pc = env.gvars.pc,
     rolls = env.gvars.rolls,
     stats = env.gvars.stats,
@@ -135,6 +137,28 @@ def _workdays_cost(cfg):
         return 0
 
 
+def _job_location_check(cfg, ch, skill_name):
+    policy = locations.job_location_policy(cfg)
+    if policy == "off":
+        return True, ""
+    loc_id, loc = journeys.get_location(ch, cfg)
+    loc_name = locations.location_name(loc, loc_id)
+    entries = []
+    if loc != None:
+        entries = locations.jobs_for_location(cfg, loc)
+    if loc_id == None or loc == None:
+        msg = "No current location could be resolved for job checks."
+    elif len(entries) == 0:
+        msg = f"No jobs are available in **{loc_name}**."
+    elif not locations.job_entries_match_skill(entries, skill_name):
+        msg = f"**{skill_name}** is not a listed job check in **{loc_name}**. Jobs here: {locations.format_jobs(entries)}."
+    else:
+        return True, ""
+    if policy == "check":
+        return False, msg
+    return True, "Warning: " + msg
+
+
 ok, msg = auth.is_allowed(COMMAND)
 get_embed = display.get_display(COMMAND)
 cmd_name = COMMAND
@@ -172,6 +196,10 @@ if skill_name == None:
         return get_embed(desc=f"Be more specific: **{argslist[0]}** matched {', '.join(ambiguous[0:5])}.")
     return get_embed(desc=f"Skill **{argslist[0]}** was not recognised.")
 
+ok_job_loc, job_loc_msg = _job_location_check(cfg, ch, skill_name)
+if not ok_job_loc:
+    return get_embed(desc=job_loc_msg)
+
 workdays = _workdays_cost(cfg)
 if workdays > 0:
     ok_dt, msg_dt = pc.modify_downtime(ch, -1 * workdays, cfg)
@@ -194,6 +222,9 @@ description = f"""{roll_result.full} **{roll_result.name}**
 {ch.name} earns {payout.full} gp!
 
 -# {msg_gold}"""
+
+if job_loc_msg != "":
+    description += f"\n-# {job_loc_msg}"
 
 return get_embed(desc=description, thumb=ch.image)
 </drac2>

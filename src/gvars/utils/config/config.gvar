@@ -55,6 +55,8 @@ DEFAULTS = {
             "config": {
                 "location_biome_override": True,
                 "path_biome_policy": "from_location",
+                "show_arrival_time": False,
+                "show_arrival_weather": False,
                 "transport_icons": {
                     "walk": "🚶",
                     "fly": "🪽",
@@ -166,6 +168,10 @@ DEFAULTS = {
                         {"roll": "1d8+3"},
                     ],
                 },
+            },
+            "config": {
+                "job_location_policy": "off",
+                "jobs": [],
             },
         },
         "content": {

@@ -53,6 +53,7 @@ const SUBSYSTEMS = Object.keys(DEFAULT_SUBSYSTEM_COMMANDS);
 
 const VALID_ENC_BIOME = ['auto', 'argument', 'location'];
 const VALID_PATH_BIOME_POLICY = ['from_location', 'off'];
+const VALID_JOB_LOCATION_POLICY = ['off', 'warn', 'check'];
 const VALID_RULES_VERSION = ['2014', '2024'];
 const VALID_FOOTER = ['helpful_tips', 'string', 'help', 'credits', 'balanced'];
 const VALID_COMMAND_THUMBNAIL = ['default', 'character', 'pc', 'current_character', 'current_pc'];
@@ -399,6 +400,8 @@ function createDefaultSubsystems(): Record<string, AnyRecord> {
       config: {
         location_biome_override: true,
         path_biome_policy: 'from_location',
+        show_arrival_time: false,
+        show_arrival_weather: false,
         transport_icons: {
           walk: '🚶',
           fly: '🪽',
@@ -482,6 +485,24 @@ function createDefaultSubsystems(): Record<string, AnyRecord> {
     economy: {
       enabled: false,
       commands: defaultCommands(DEFAULT_SUBSYSTEM_COMMANDS.economy),
+      config: {
+        job_location_policy: 'off',
+        jobs: [],
+      },
+      command_config: {
+        job: {
+          cooldown_seconds: 28800,
+          workdays_cost: 0,
+          payout_bands: [
+            { max: 0, roll: '0' },
+            { max: 5, roll: '1d4-1' },
+            { max: 10, roll: '1d4+1' },
+            { max: 15, roll: '1d6+1' },
+            { max: 20, roll: '1d8+2' },
+            { roll: '1d8+3' },
+          ],
+        },
+      },
     },
     content: {
       enabled: false,
@@ -1942,6 +1963,21 @@ function validateTravel(model: ConfigModel, issues: ConfigIssue[]) {
       ),
     );
   }
+  for (const key of ['show_arrival_time', 'show_arrival_weather']) {
+    const value = travelConfig[key];
+    if (value != null && typeof value !== 'boolean') {
+      issues.push(
+        issue(
+          'error',
+          'travel.arrival_display_bool',
+          'Subsystems',
+          `subsystems.travel.config.${key}`,
+          'Arrival display setting must be boolean',
+          `${key} must be True or False.`,
+        ),
+      );
+    }
+  }
   const transportIcons = asRecord(travelConfig.transport_icons);
   for (const key of REQUIRED_TRANSPORT_ICONS) {
     const icon = transportIcons[key];
@@ -3150,7 +3186,106 @@ function validateShopPriceShape(value: unknown, path: string, issues: ConfigIssu
   }
 }
 
+function validateEconomyJobEntry(value: unknown, path: string, issues: ConfigIssue[]) {
+  if (!isPlainRecord(value)) {
+    issues.push(
+      issue(
+        'error',
+        'economy.job_shape',
+        'Subsystems',
+        path,
+        'Job must be an object',
+        'Use fields such as name, skills, location_id, locations, and description.',
+      ),
+    );
+    return;
+  }
+  const job = asRecord(value);
+  for (const key of ['skills', 'locations']) {
+    const raw = job[key];
+    if (raw == null) continue;
+    if (!Array.isArray(raw) || raw.some((entry) => typeof entry !== 'string' || entry.trim() === '')) {
+      issues.push(
+        issue(
+          'error',
+          `economy.job_${key}`,
+          'Subsystems',
+          `${path}.${key}`,
+          `Job ${key} must be a text list`,
+          `Use a list of non-empty strings for ${key}.`,
+        ),
+      );
+    }
+  }
+  if (job.skill != null && typeof job.skill !== 'string') {
+    issues.push(
+      issue(
+        'error',
+        'economy.job_skill',
+        'Subsystems',
+        `${path}.skill`,
+        'Job skill must be text',
+        'Use a skill name such as "survival".',
+      ),
+    );
+  }
+  if (job.location_id != null && typeof job.location_id !== 'string') {
+    issues.push(
+      issue(
+        'error',
+        'economy.job_location_id',
+        'Subsystems',
+        `${path}.location_id`,
+        'Job location must be text',
+        'Use a location id from world_data.locations.',
+      ),
+    );
+  }
+}
+
 function validateEconomy(model: ConfigModel, issues: ConfigIssue[]) {
+  const economy = asRecord(model.subsystems.economy);
+  const economyConfig = asRecord(economy.config);
+  const policy = economyConfig.job_location_policy;
+  if (policy != null) {
+    const normalized = String(policy).trim().toLowerCase();
+    if (!VALID_JOB_LOCATION_POLICY.includes(normalized)) {
+      issues.push(
+        issue(
+          'error',
+          'economy.job_location_policy',
+          'Subsystems',
+          'subsystems.economy.config.job_location_policy',
+          'Invalid job location policy',
+          '`job_location_policy` must be off, warn, or check.',
+        ),
+      );
+    }
+  }
+  const jobs = economyConfig.jobs;
+  if (jobs != null) {
+    if (Array.isArray(jobs)) {
+      jobs.forEach((entry, index) =>
+        validateEconomyJobEntry(entry, `subsystems.economy.config.jobs.${index}`, issues),
+      );
+    } else if (isPlainRecord(jobs)) {
+      for (const [jobId, entry] of Object.entries(jobs)) {
+        validateEconomyJobEntry(entry, `subsystems.economy.config.jobs.${jobId}`, issues);
+      }
+    } else {
+      issues.push(
+        issue(
+          'error',
+          'economy.jobs_shape',
+          'Subsystems',
+          'subsystems.economy.config.jobs',
+          'Jobs must be a list or object',
+          'Use a list of job objects or an object keyed by job id.',
+        ),
+      );
+    }
+  }
+
   const shops = configuredShops(model);
 
   for (const [shopId, value] of Object.entries(shops)) {

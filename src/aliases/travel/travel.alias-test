@@ -390,3 +390,52 @@ vars:
               {"from": "river_town", "to": "oakwood", "steps": [{"type": "encounter", "biome": "forest"}]},
           ],
       }
+
+!travel next
+---
+'re:Arrived in[\s\S]*Oakwood Forest[\s\S]*Time: Firstday, 1 Hammer 1492 DR 00:00[\s\S]*Weather: \*\*forest\*\*: Cool mist hangs beneath the trees\.'
+---
+name: next arrival can include configured time and weather
+vars:
+  cvars:
+    wg_location: "river_town"
+    wg_journey: '{"title":"River Town -> Oakwood Forest","from":"river_town","to":"oakwood","paths":[{"from":"river_town","to":"oakwood","steps":[{"type":"encounter","biome":"forest"}]}],"path_index":0,"step_index":0,"horse":false,"boat":false}'
+  svars:
+    westmarch_config: "aaaa2004-2004-2004-2004-200000000004"
+  gvars:
+    aaaa2004-2004-2004-2004-200000000004: |
+      subsystems = {
+          "travel": {
+              "enabled": True,
+              "commands": {"travel": True, "location": True, "time": True, "weather": True},
+              "config": {"show_arrival_time": True, "show_arrival_weather": True},
+          },
+      }
+      world_data = {
+          "default_location": "river_town",
+          "locations": {
+              "river_town": {"name": "River Town", "weather_area": "forest"},
+              "oakwood": {"name": "Oakwood Forest", "weather_area": "forest"},
+          },
+          "paths": [
+              {"from": "river_town", "to": "oakwood", "steps": [{"type": "encounter", "biome": "forest"}]},
+          ],
+          "calendars": {
+              "primary": {
+                  "id": "primary",
+                  "name": "Faerûnian Calendar",
+                  "epoch_unix": 0,
+                  "tick_rate": 0,
+                  "seconds_per_day": 86400,
+                  "start_year": 1492,
+                  "months": [{"name": "Hammer", "days": 30}],
+                  "weekdays": ["Firstday"],
+                  "display_format": "{weekday}, {day} {month} {year} DR {hour}:{minute}",
+              },
+          },
+          "weather": {
+              "by_area": {
+                  "forest": {"default": ["Cool mist hangs beneath the trees."]},
+              },
+          },
+      }

@@ -30,6 +30,32 @@ vars:
 
 !show
 ---
+"re:travel:[\\s\\S]*show_arrival_time: true[\\s\\S]*show_arrival_weather: true[\\s\\S]*economy:[\\s\\S]*job_location_policy: warn[\\s\\S]*jobs: 1"
+---
+name: show lists travel arrival and economy job config
+vars:
+  svars:
+    westmarch_config: "ffff3434-3434-3434-3434-343434343434"
+  gvars:
+    ffff3434-3434-3434-3434-343434343434: |
+      subsystems = {
+          "travel": {
+              "enabled": True,
+              "commands": {"travel": True, "location": True, "time": True, "weather": True},
+              "config": {"show_arrival_time": True, "show_arrival_weather": True},
+          },
+          "economy": {
+              "enabled": True,
+              "commands": {"job": True},
+              "config": {
+                  "job_location_policy": "warn",
+                  "jobs": [{"id": "guard", "name": "Caravan Guard"}],
+              },
+          },
+      }
+
+!show
+---
 re:Data overview
 ---
 name: show includes data overview section

@@ -62,6 +62,25 @@ True
 ---
 name: shops filters by character location when available
 
+cfg_fixture = {
+    "shops": {
+        "general": {
+            "id": "general",
+            "name": "General Store",
+            "location_id": "oakwood",
+            "accepts_sells": True,
+            "buyback": 0.5,
+            "stock": [{"item": "Rope, Hemp (50 ft)", "price": {"gold": 2}}],
+        },
+    },
+}
+text = shops.trade_text(cfg_fixture, "oakwood")
+return "```yaml" in text and "General Store" in text and "buy_from_shop" in text and "sell_to_shop" in text and "Rope, Hemp" in text and "2 gp" in text and "1 gp" in text
+---
+True
+---
+name: trade_text summarizes visible buy and sell prices in code block
+
 shop, stock, error = shops.find_shop_for_item({"shops": {}}, "Dagger")
 return "No shops are configured" in error
 ---

@@ -70,19 +70,25 @@ test('forgotten realms starter has slice 5 travel baseline', () => {
 
   const travel = model.subsystems.travel as Record<string, unknown>;
   const commands = travel.commands as Record<string, unknown>;
+  const travelConfig = travel.config as Record<string, unknown>;
   assert.equal(travel.enabled, true);
   assert.equal(commands.travel, true);
   assert.equal(commands.location, true);
   assert.equal(commands.time, true);
   assert.equal(commands.weather, true);
+  assert.equal(travelConfig.show_arrival_time, true);
+  assert.equal(travelConfig.show_arrival_weather, true);
 
   const economy = model.subsystems.economy as Record<string, unknown>;
   const economyCommands = economy.commands as Record<string, unknown>;
+  const economyConfig = economy.config as Record<string, unknown>;
   assert.equal(economy.enabled, true);
   assert.equal(economyCommands.job, true);
   assert.equal(economyCommands.buy, true);
   assert.equal(economyCommands.sell, true);
   assert.equal(economyCommands.wallet, false);
+  assert.equal(economyConfig.job_location_policy, 'check');
+  assert.ok((economyConfig.jobs as unknown[]).length >= 4);
   assert.ok(Object.keys(model.shops ?? {}).length > 30);
   assert.equal(
     (model.shops?.waterdeep_general_market as Record<string, unknown>).location_id,
@@ -732,6 +738,18 @@ subsystems = {
   assert.equal(codes.includes('travel.weather_planned'), false);
 });
 
+test('travel arrival display settings validate boolean values', () => {
+  assert.ok(
+    issueCodes(`
+subsystems = {
+    "travel": {
+        "config": {"show_arrival_time": "yes", "show_arrival_weather": 1},
+    },
+}
+`).includes('travel.arrival_display_bool'),
+  );
+});
+
 test('unsupported raw cooldown config is reported without hiding supported cooldowns', () => {
   const codes = issueCodes(`
 subsystems = {
@@ -1001,6 +1019,26 @@ subsystems = {
 
   assert.equal(codes.includes('economy.currencies_missing'), false);
   assert.equal(codes.includes('economy.shops_missing'), false);
+});
+
+test('economy job location config validates policy and job rows', () => {
+  const codes = issueCodes(`
+subsystems = {
+    "economy": {
+        "config": {
+            "job_location_policy": "strict",
+            "jobs": [
+                {"name": "Guard", "skills": "athletics"},
+                "bad job row",
+            ],
+        },
+    },
+}
+`);
+
+  assert.ok(codes.includes('economy.job_location_policy'));
+  assert.ok(codes.includes('economy.job_skills'));
+  assert.ok(codes.includes('economy.job_shape'));
 });
 
 test('economy shop validation catches malformed stock', () => {

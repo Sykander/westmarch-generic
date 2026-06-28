@@ -9,10 +9,14 @@ return (
     and travel["enabled"] == True
     and travel["commands"]["travel"] == True
     and travel["commands"]["location"] == True
+    and travel["config"]["show_arrival_time"] == True
+    and travel["config"]["show_arrival_weather"] == True
     and economy["enabled"] == True
     and economy["commands"]["job"] == True
     and economy["commands"]["buy"] == True
     and economy["commands"]["sell"] == True
+    and economy["config"]["job_location_policy"] == "check"
+    and len(economy["config"]["jobs"]) >= 4
     and len(forgotten_realms_2014.shops) >= 30
     and forgotten_realms_2014.shops["waterdeep_general_market"]["location_id"] == "waterdeep"
 )

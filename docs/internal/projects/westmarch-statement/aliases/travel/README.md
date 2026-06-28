@@ -10,8 +10,8 @@ Movement, place, and world-state commands. Matches [mvp-commands.md](../../mvp-c
 |---|---------|-----|--------|
 | 1 | **travel** | [travel.md](travel.md) | westmarch — journeys, areas, paths |
 | 2 | **location** | [location.md](location.md) | **new** — read-only current place |
-| 3 | **time** | [time.md](time.md) | planned — in-world clock |
-| 4 | **weather** | [weather.md](weather.md) | planned — regional weather |
+| 3 | **time** | [time.md](time.md) | in-world clock |
+| 4 | **weather** | [weather.md](weather.md) | regional weather |
 
 ## Config
 
@@ -25,6 +25,8 @@ Movement, place, and world-state commands. Matches [mvp-commands.md](../../mvp-c
         "weather": False,
     },
     "config": {
+        "show_arrival_time": False,
+        "show_arrival_weather": False,
         "transport_icons": {"walk": "🚶", "fly": "🪽", "horse": "🐎", "boat": "⛵"},
     },
 },
@@ -32,7 +34,7 @@ Movement, place, and world-state commands. Matches [mvp-commands.md](../../mvp-c
 
 Shared engine: **[journeys.gvar](../../gvars/journeys.md)**, **[locations.gvar](../../gvars/locations.md)**, **[paths.gvar](../../gvars/paths.md)**, **[clock.gvar](../../gvars/clock.md)**, **[weather.gvar](../../gvars/weather.gvar)**.
 
-`time` and `weather` remain disabled for the initial release. The aliases return planned-feature setup copy if invoked, and the editor Check page reports an error if either command is enabled.
+Enable `time` only with calendar data and `weather` only with weather-area data. Arrival notes are controlled by `show_arrival_time` and `show_arrival_weather`.
 
 ## Implementation order
 

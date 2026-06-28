@@ -110,6 +110,45 @@ vars:
 
 !location
 ---
+'re:Jobs[\s\S]*Caravan Guard[\s\S]*Shops[\s\S]*```yaml[\s\S]*General Store[\s\S]*buy_from_shop[\s\S]*Rope, Hemp \(50 ft\): 2 gp[\s\S]*sell_to_shop[\s\S]*Rope, Hemp \(50 ft\): 1 gp'
+---
+name: shows configured jobs and shop trade prices for current location
+vars:
+  svars:
+    westmarch_config: "aaaa1005-1005-1005-1005-100000000005"
+  gvars:
+    aaaa1005-1005-1005-1005-100000000005: |
+      subsystems = {
+          "travel": {"enabled": True, "commands": {"location": True}},
+          "economy": {
+              "enabled": True,
+              "commands": {"job": True, "buy": True, "sell": True},
+              "config": {
+                  "jobs": [
+                      {"id": "guard", "name": "Caravan Guard", "skills": ["athletics", "perception"]},
+                  ],
+              },
+          },
+      }
+      world_data = {
+          "default_location": "river_town",
+          "locations": {
+              "river_town": {"name": "River Town", "commands": {"job": True, "buy": True, "sell": True}},
+          },
+      }
+      shops = {
+          "general": {
+              "id": "general",
+              "name": "General Store",
+              "location_id": "river_town",
+              "accepts_sells": True,
+              "buyback": 0.5,
+              "stock": [{"item": "Rope, Hemp (50 ft)", "price": {"gold": 2}}],
+          },
+      }
+
+!location
+---
 re:Oakwood Forest
 ---
 name: shows character cvar location over default

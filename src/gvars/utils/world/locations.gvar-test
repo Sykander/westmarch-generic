@@ -67,6 +67,67 @@ True
 name: display_location includes description activities and visits
 
 cfg_fixture = {
+    "subsystems": {
+        "economy": {
+            "config": {
+                "jobs": [
+                    {"id": "guard", "name": "Caravan Guard", "skills": ["athletics", "perception"]},
+                ],
+            },
+        },
+    },
+    "world_data": {
+        "locations": {
+            "river_town": {
+                "name": "River Town",
+                "commands": {"job": True},
+            },
+        },
+    },
+}
+loc = locations.get_location(cfg_fixture, "river_town")
+text = locations.display_location(loc, "full", character(), True, 1, cfg_fixture)
+return "First visit." in text and "Jobs here" in text and "Caravan Guard" in text and "Jobs" in text
+---
+True
+---
+name: display_location shows configured jobs when boolean job command is enabled
+
+cfg_fixture = {
+    "subsystems": {
+        "economy": {
+            "config": {
+                "jobs": [
+                    {"id": "guard", "name": "Caravan Guard", "skills": ["athletics"]},
+                ],
+            },
+        },
+    },
+    "world_data": {
+        "locations": {
+            "river_town": {
+                "name": "River Town",
+                "commands": {"job": {"name": "Inline Job"}},
+            },
+        },
+    },
+}
+loc = locations.get_location(cfg_fixture, "river_town")
+return not locations.location_has_job(loc) and len(locations.jobs_for_location(cfg_fixture, loc)) == 0
+---
+True
+---
+name: location job command remains boolean only
+
+trade_loc = {"id": "river_town", "name": "River Town", "commands": {"buy": True}}
+quiet_loc = {"id": "quiet_road", "name": "Quiet Road", "commands": {"enc": ["road"]}}
+return locations.location_has_trade(trade_loc) == True and locations.location_has_trade(quiet_loc) == False
+---
+True
+---
+name: location trade command remains boolean availability
+
+cfg_fixture = {
     "world_data": {
         "locations_gvar_id": "eeee1111-1111-1111-1111-111111111111",
         "locations": {"inline_camp": {"name": "Inline Camp"}},

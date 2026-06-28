@@ -49,6 +49,8 @@ subsystems = {
         "config": {
             "location_biome_override": True,
             "path_biome_policy": "from_location",
+            "show_arrival_time": True,
+            "show_arrival_weather": True,
             "transport_icons": {
                 "walk": "🚶",
                 "fly": "🪽",
@@ -95,6 +97,36 @@ subsystems = {
             "buy": True,
             "sell": True,
             "wallet": False,
+        },
+        "config": {
+            "job_location_policy": "check",
+            "jobs": [
+                {
+                    "id": "caravan_guard",
+                    "name": "Caravan Guard",
+                    "skills": ["animal handling", "athletics", "perception", "survival"],
+                    "description": "Guard wagons, watch roads, and help crews through dangerous country.",
+                },
+                {
+                    "id": "market_runner",
+                    "name": "Market Runner",
+                    "skills": ["investigation", "performance", "persuasion", "sleight of hand"],
+                    "description": "Carry messages, compare prices, perform errands, and handle crowded trade work.",
+                },
+                {
+                    "id": "field_healer",
+                    "name": "Field Healer",
+                    "skills": ["medicine", "nature", "religion"],
+                    "description": "Assist healers, temples, and herbalists with practical care and remedies.",
+                },
+                {
+                    "id": "scribe_researcher",
+                    "name": "Scribe Researcher",
+                    "skills": ["arcana", "history", "investigation", "religion"],
+                    "locations": ["waterdeep", "candlekeep", "silverymoon", "everlund", "suzail"],
+                    "description": "Copy records, chase references, and assist scholars with specialist research.",
+                },
+            ],
         },
         "command_config": {
             "job": {

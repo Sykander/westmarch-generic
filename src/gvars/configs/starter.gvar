@@ -76,6 +76,9 @@ subsystems = {
         "config": {
             "location_biome_override": True,
             "path_biome_policy": "from_location",
+            # Optional — append current clock/weather notes when travel arrives somewhere.
+            "show_arrival_time": False,
+            "show_arrival_weather": False,
             "transport_icons": {
                 "walk": "🚶",
                 "fly": "🪽",
@@ -194,6 +197,20 @@ subsystems = {
             "buy": False,
             "sell": False,
             "wallet": False,
+        },
+        "config": {
+            # Job location policy: "off", "warn", or "check".
+            # When check/warn, !job uses location.commands.job plus configured jobs below.
+            "job_location_policy": "off",
+            # Optional named jobs. location.commands.job remains a boolean availability flag.
+            # "jobs": {
+            #     "caravan_guard": {
+            #         "name": "Caravan Guard",
+            #         "skills": ["athletics", "perception", "survival"],
+            #         "locations": ["river_town"],
+            #     },
+            # },
+            "jobs": [],
         },
         "command_config": {
             "job": {

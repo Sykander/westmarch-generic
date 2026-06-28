@@ -43,6 +43,17 @@ def _read_field(obj, key):
         "activities": lambda o: o.activities,
         "encs": lambda o: o.encs,
         "biome": lambda o: o.biome,
+        "subsystems": lambda o: o.subsystems,
+        "economy": lambda o: o.economy,
+        "config": lambda o: o.config,
+        "command_config": lambda o: o.command_config,
+        "job": lambda o: o.job,
+        "jobs": lambda o: o.jobs,
+        "location_id": lambda o: o.location_id,
+        "skills": lambda o: o.skills,
+        "skill": lambda o: o.skill,
+        "check": lambda o: o.check,
+        "allowed_skills": lambda o: o.allowed_skills,
     }
     if key in attrs:
         try:
@@ -389,6 +400,271 @@ def _format_command_value(value):
     return str(value)
 
 
+def _economy_config(cfg):
+    return _read_field(_read_field(_read_field(cfg, "subsystems"), "economy"), "config")
+
+
+def _job_command_config(cfg):
+    return _read_field(_read_field(_read_field(_read_field(cfg, "subsystems"), "economy"), "command_config"), "job")
+
+
+def job_location_policy(config_override=None):
+    policy = _read_field(_economy_config(_cfg(config_override)), "job_location_policy")
+    if policy == None:
+        policy = _read_field(_economy_config(_cfg(config_override)), "job_location_check")
+    if policy == None:
+        return "off"
+    text = str(policy).strip().lower()
+    if text in ["check", "enforce", "enabled", "on", "true"]:
+        return "check"
+    if text in ["warn", "warning"]:
+        return "warn"
+    return "off"
+
+
+def job_allowed_skills(config_override=None):
+    cfg = _cfg(config_override)
+    raw = _read_field(_job_command_config(cfg), "allowed_skills")
+    if raw == None:
+        raw = _read_field(_economy_config(cfg), "allowed_skills")
+    if not lists.is_list(raw):
+        return []
+    out = []
+    for skill in raw:
+        text = str(skill).strip()
+        if text != "":
+            out.append(text)
+    return out
+
+
+def _title_text(value):
+    text = str(value).strip()
+    if text == "":
+        return ""
+    words = []
+    for part in text.replace("_", " ").split(" "):
+        if part == "":
+            continue
+        words.append(part[0:1].upper() + part[1:])
+    return " ".join(words)
+
+
+def _as_skill_list(value):
+    if value == None:
+        return []
+    if lists.is_list(value):
+        out = []
+        for item in value:
+            text = str(item).strip()
+            if text != "":
+                out.append(text)
+        return out
+    text = str(value).strip()
+    if text == "":
+        return []
+    return [text]
+
+
+def _job_entry(raw, fallback_name=None, generic=False):
+    out = {"generic": generic == True}
+    if dicts.is_dict(raw):
+        job_id = _read_field(raw, "id")
+        if job_id != None and str(job_id).strip() != "":
+            out["id"] = str(job_id).strip()
+        name = _read_field(raw, "name")
+        if name == None:
+            name = fallback_name
+        if name != None and str(name).strip() != "":
+            out["name"] = str(name).strip()
+        skill = _read_field(raw, "skill")
+        if skill == None:
+            skill = _read_field(raw, "check")
+        skills = _read_field(raw, "skills")
+        parsed = _as_skill_list(skill)
+        for item in _as_skill_list(skills):
+            parsed.append(item)
+        if len(parsed) > 0:
+            out["skills"] = parsed
+        desc = _read_field(raw, "description")
+        if desc != None and str(desc).strip() != "":
+            out["description"] = str(desc).strip()
+    else:
+        name = fallback_name
+        if name == None:
+            name = raw
+        if name != None and str(name).strip() != "":
+            out["name"] = str(name).strip()
+    if _read_field(out, "name") == None:
+        out["name"] = "Local work"
+    return out
+
+
+def _job_visible_at(job, location_id):
+    if location_id == None or str(location_id).strip() == "":
+        return True
+    wanted = str(location_id).strip().lower()
+    loc = _read_field(job, "location_id")
+    if loc != None and str(loc).strip() != "":
+        return str(loc).strip().lower() == wanted
+    locs = _read_field(job, "locations")
+    if lists.is_list(locs):
+        for item in locs:
+            if str(item).strip().lower() == wanted:
+                return True
+        return False
+    return True
+
+
+def _configured_jobs(cfg, location_id):
+    raw = _read_field(_economy_config(cfg), "jobs")
+    entries = []
+    if dicts.is_dict(raw):
+        for key in raw:
+            job = raw[key]
+            if _job_visible_at(job, location_id):
+                entries.append(_job_entry(job, _title_text(key)))
+    elif lists.is_list(raw):
+        for job in raw:
+            if _job_visible_at(job, location_id):
+                entries.append(_job_entry(job))
+    return entries
+
+
+def command_available(location, command):
+    return _read_field(_read_command_map(location), command) == True
+
+
+def location_has_job(location):
+    return command_available(location, "job")
+
+
+def location_has_trade(location):
+    return command_available(location, "buy") or command_available(location, "sell")
+
+
+def _dedupe_jobs(entries):
+    found = []
+    seen = {}
+    for entry in entries:
+        key = _read_field(entry, "id")
+        if key == None or str(key).strip() == "":
+            key = _read_field(entry, "name")
+        key = str(key).strip().lower()
+        if key in seen:
+            continue
+        seen[key] = True
+        found.append(entry)
+    return found
+
+
+def jobs_for_location(config_override, location):
+    cfg = _cfg(config_override)
+    if not location_has_job(location):
+        return []
+    loc_id = location_id(location)
+    entries = _configured_jobs(cfg, loc_id)
+    if len(entries) == 0:
+        entries.append({"name": "Local work", "skills": job_allowed_skills(cfg), "generic": True})
+    return _dedupe_jobs(entries)
+
+
+def job_entry_name(entry):
+    name = _read_field(entry, "name")
+    if name != None and str(name).strip() != "":
+        return str(name).strip()
+    return "Local work"
+
+
+def job_entry_skills(entry):
+    return _as_skill_list(_read_field(entry, "skills"))
+
+
+def _normalize_skill(value):
+    return str(value).strip().lower().replace(" ", "")
+
+
+def job_entries_match_skill(entries, skill):
+    if len(entries) == 0:
+        return False
+    wanted = _normalize_skill(skill)
+    for entry in entries:
+        skills = job_entry_skills(entry)
+        if len(skills) == 0 and _read_field(entry, "generic") == True:
+            return True
+        for job_skill in skills:
+            if _normalize_skill(job_skill) == wanted:
+                return True
+    return False
+
+
+def job_entries_have_specific_skills(entries):
+    for entry in entries:
+        if len(job_entry_skills(entry)) > 0 and _read_field(entry, "generic") != True:
+            return True
+    return False
+
+
+def job_skill_list(entries):
+    out = []
+    seen = {}
+    for entry in entries:
+        for skill in job_entry_skills(entry):
+            key = _normalize_skill(skill)
+            if key in seen:
+                continue
+            seen[key] = True
+            out.append(skill)
+    return out
+
+
+def format_job_entry(entry):
+    skills = job_entry_skills(entry)
+    name = job_entry_name(entry)
+    if len(skills) == 0:
+        return f"**{name}**"
+    shown = []
+    count = 0
+    for skill in skills:
+        if count >= 3:
+            break
+        shown.append(skill)
+        count += 1
+    suffix = ", ".join(shown)
+    if len(skills) > 3:
+        suffix += ", ..."
+    return f"**{name}** ({suffix})"
+
+
+def format_jobs(entries, limit=5):
+    shown = []
+    count = 0
+    for entry in entries:
+        if count >= limit:
+            break
+        shown.append(format_job_entry(entry))
+        count += 1
+    text = ", ".join(shown)
+    if len(entries) > limit:
+        text += ", ..."
+    return text
+
+
+def jobs_text(config_override, location, limit=8):
+    entries = jobs_for_location(config_override, location)
+    if len(entries) == 0:
+        return ""
+    lines = []
+    count = 0
+    for entry in entries:
+        if count >= limit:
+            break
+        lines.append("- " + format_job_entry(entry))
+        count += 1
+    if len(entries) > limit:
+        lines.append(f"- ...and {len(entries) - limit} more.")
+    return "**Jobs**\n" + "\n".join(lines)
+
+
 def activities_text(location):
     cmds = _read_command_map(location)
     if not dicts.is_dict(cmds) or len(cmds) == 0:
@@ -407,7 +683,7 @@ def activities_text(location):
     return "**Activities**\n" + "\n".join(lines)
 
 
-def display_location(location, mode="full", character=None, include_activities=False, visits=None):
+def display_location(location, mode="full", character=None, include_activities=False, visits=None, config_override=None):
     """Markdown body for a location embed."""
     if location == None:
         return "Unknown location."
@@ -429,8 +705,15 @@ def display_location(location, mode="full", character=None, include_activities=F
         try:
             count = int(visits)
             if count > 0:
-                label = "visit" if count == 1 else "visits"
-                lines.append(f"Visited **{count}** {label}.")
+                if count == 1:
+                    visit_text = "First visit."
+                else:
+                    visit_text = f"Visited **{count}** times."
+                if config_override != None:
+                    jobs = jobs_for_location(config_override, location)
+                    if len(jobs) > 0:
+                        visit_text += f" Jobs here: {format_jobs(jobs, 3)}."
+                lines.append(visit_text)
         except:
             pass
 
@@ -448,5 +731,9 @@ def display_location(location, mode="full", character=None, include_activities=F
         acts = activities_text(location)
         if acts != "":
             lines.append(acts)
+        if config_override != None:
+            job_block = jobs_text(config_override, location)
+            if job_block != "":
+                lines.append(job_block)
 
     return "\n\n".join(lines)

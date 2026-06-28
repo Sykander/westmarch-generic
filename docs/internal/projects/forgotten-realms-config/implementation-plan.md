@@ -284,7 +284,7 @@ Acceptance:
 
 ## Phase 7 - Jobs and economy tuning
 
-Make `!job` useful without inventing a new named-job schema.
+Make `!job` useful with named job display/check metadata under `subsystems.economy.config.jobs` while keeping `location.commands.job` as a boolean availability flag.
 
 - Enable `commands.job` on settlements with plausible work.
 - Add `subsystems.economy.command_config.job.allowed_skills` only if the default all-skills behavior is too broad.

@@ -1,7 +1,7 @@
 # Location
 
 Read-only current-place view for the travel subsystem, including nearby direct
-routes.
+routes, local activities, configured jobs, and visible shop trade prices.
 
 ## Usage
 
@@ -18,6 +18,11 @@ it falls back to `world_data.default_location`.
 The embed also shows nearby destinations reachable by one configured path edge
 from the current location. Each row includes the route label, usable transport
 tokens, step count, and the `!travel` command to start that route.
+
+When economy data is configured, `!location` lists local jobs from
+`subsystems.economy.config.jobs` when `location.commands.job` is `True`, and
+shows visible shop buy/sell prices in a fenced `yaml` block when
+`location.commands.buy` or `location.commands.sell` is `True`.
 
 `!location journey` appends the active `wg_journey` summary when one is being
 tracked.

@@ -25,10 +25,10 @@ def get_default_location(config):
 def list_location_ids(config):
     """Sorted ids from inline locations plus the optional locations gvar."""
 
-def display_location(location, mode="full", character=None, include_activities=False):
+def display_location(location, mode="full", character=None, include_activities=False, visits=None, config_override=None):
     """
     Markdown string for embed body.
-    mode: "short" | "full"
+    mode: "short" | "full"; config_override enables job display.
     """
 ```
 
@@ -37,7 +37,7 @@ def display_location(location, mode="full", character=None, include_activities=F
 | Mode | Output |
 |------|--------|
 | **`short`** | Name (+ optional one-line `description`) — for compact `!location`, journey headers |
-| **`full`** | Linked title (`link`), character line, `description`, optional `travel_description`, optional activities block when `include_activities=True` |
+| **`full`** | Linked title (`link`), character line, visit line, `description`, optional `travel_description`, optional activities/jobs block when `include_activities=True` |
 
 westmarch reference: `describe_location()` in `travel.alias` — linked `## [Name](link)`, “{character} is in {name}”, activities table when `include_activities`.
 
@@ -46,7 +46,7 @@ using(locations = env.gvars.locations)
 
 cfg = config.get_config()
 loc = locations.get_location(cfg, "oakwood")
-text = locations.display_location(loc, mode="full", character=character, include_activities=True)
+text = locations.display_location(loc, mode="full", character=character, include_activities=True, config_override=cfg)
 ```
 
 ## Lookup rules
@@ -58,6 +58,8 @@ text = locations.display_location(loc, mode="full", character=character, include
 External location gvars are raw JSON objects keyed by location id. A wrapper object with **`{"locations": {...}}`** is also accepted. The web editor may display shipped preset UUIDs as **`engine:configs/...`** aliases while editing, then export runtime UUIDs.
 
 Aliases pass **player input** through **`search_locations`**; engine internals use **ids** (paths, cvars keyed by id — TBD in journeys port).
+
+Job helpers read **`subsystems.economy.config.jobs`** only when the location row has **`commands.job == True`**. The location command field remains a boolean availability flag.
 
 ## Not in this module
 

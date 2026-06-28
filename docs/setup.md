@@ -179,10 +179,12 @@ Travel/location example:
 subsystems = {
     "travel": {
         "enabled": True,
-        "commands": {"travel": True, "location": True, "time": False, "weather": False},
+        "commands": {"travel": True, "location": True, "time": True, "weather": True},
         "config": {
             "location_biome_override": True,
             "path_biome_policy": "from_location",
+            "show_arrival_time": True,
+            "show_arrival_weather": True,
             "transport_icons": {"walk": "🚶", "fly": "🪽", "horse": "🐎", "boat": "⛵"},
         },
     },
@@ -223,11 +225,24 @@ world_data = {
 The web editor may display shipped world-data presets as `engine:configs/...` aliases while
 editing; generated/exported config bodies use runtime gvar UUIDs unless you generate owner gvars.
 
-`time` and `weather` are planned commands. Keep them disabled until their runtime modules ship; the editor Check page reports an error if either is enabled.
+`time` needs `world_data.calendars`; `weather` needs `world_data.weather.by_area`. When `show_arrival_time` or `show_arrival_weather` is true, `!travel next` appends those notes when the character arrives somewhere.
 
 Economy setup needs top-level data before enabling player commands:
 
 ```py
+subsystems = {
+    "economy": {
+        "enabled": True,
+        "commands": {"job": True, "buy": True, "sell": True, "wallet": False},
+        "config": {
+            "job_location_policy": "warn",  # off, warn, or check
+            "jobs": [
+                {"id": "dock_work", "name": "Dock Work", "skills": ["athletics", "perception"]},
+            ],
+        },
+    },
+}
+
 currencies = {
     "shards": {"name": "Arcane Shard", "plural": "Arcane Shards"},
 }
@@ -244,7 +259,7 @@ shops = {
 }
 ```
 
-`!wallet` needs `currencies`. `!buy` and `!sell` need `shops`, and `!sell` needs at least one shop with `accepts_sells: True`.
+`!wallet` needs `currencies`. `!buy` and `!sell` need `shops`, and `!sell` needs at least one shop with `accepts_sells: True`. Location rows still use boolean availability (`"commands": {"job": True, "buy": True, "sell": True}`); named job rows live under `subsystems.economy.config.jobs`.
 
 Quest setup is mostly data-driven. To try quest-flavoured exploration, add quest-tagged encounter rows to a biome pool such as `enc.quest`; to use `policies.quest.self_assign`, also enable `subsystems.misc.commands.quest` so the quest journal command is available.
 

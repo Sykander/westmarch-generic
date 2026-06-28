@@ -250,6 +250,44 @@ shops = {
 
 ---
 
+## Job
+
+Named job rows for location display and optional `!job` location/skill checks.
+Stored under **`subsystems.economy.config.jobs`** as a list, or as a dict keyed
+by stable job id. They do not replace the boolean
+**`location.commands.job`** availability flag.
+
+```py
+job = {
+    "id": "caravan_guard",                 # optional in list form; dict key otherwise
+    "name": "Caravan Guard",               # required for useful display
+    "skills": ["athletics", "perception"], # optional; listed checks for this job
+    "locations": ["river_town"],           # optional; omit for every job-enabled location
+    "description": str,                    # optional; owner-facing/source flavour
+}
+```
+
+| Field | Required | Notes |
+|-------|----------|-------|
+| `id` | no | Stable slug; dict keys also work |
+| `name` | yes | Player-facing job title |
+| `skills` | no | Skill names accepted by the local job check; empty means generic local work |
+| `skill` | no | Single-skill shorthand |
+| `locations` | no | List of `world_data.locations` ids where this row appears |
+| `location_id` | no | Single-location shorthand |
+| `description` | no | Display/detail text for config readers |
+
+`subsystems.economy.config.job_location_policy` controls how `!job` uses these
+rows:
+
+| Value | Runtime behavior |
+|-------|------------------|
+| `off` | Do not check the character location |
+| `warn` | Allow the job roll, but append a warning when local job data does not match |
+| `check` | Block the job roll unless the current location offers `job` and the skill matches a listed local job |
+
+---
+
 ## Recipe
 
 Explicit **brew / enchant / craft / scribe** instructions for an output item. Source TSV: [assets/recipes.tsv](../../../../assets/recipes.tsv). Stored in config as **`recipes`** — list of recipe dicts, or dict keyed by **`id`**.
@@ -827,7 +865,7 @@ location = {
 
 **Exploration keys** (value must be a biome list): `enc`, `forage`, `fish`, `mine`, `lumber`, `hunt`, `loot`.
 
-**Economy keys** (value `True` when offered): `job`, `buy`, `sell` — wire **`shops`** / payout config to this **`location_id`**; optional prose in **location encounter gvar**.
+**Economy keys** (value `True` when offered): `job`, `buy`, `sell` — these are boolean availability flags. Wire **`shops`** / payout config to this **`location_id`**; named job rows live under **`subsystems.economy.config.jobs`**.
 
 **Crafting keys** (value `True` when offered): `craft`, `brew`, `enchant`, `scribe`.
 
@@ -1492,7 +1530,19 @@ Travel reads shared **`world_data.default_location`**, the configured location s
 |-----|------|---------|-------|
 | `location_biome_override` | `bool` | `True` | In location-inferred exploration mode, an exact registered biome code as the first arg overrides the location biome. |
 | `path_biome_policy` | `"from_location"` \| `"off"` | `"from_location"` | When enabled, path encounter step biomes should be listed on the path's origin location for that activity. |
+| `show_arrival_time` | `bool` | `False` | When `travel.commands.time` is enabled, append the formatted world time after `!travel next` arrives. |
+| `show_arrival_weather` | `bool` | `False` | When `travel.commands.weather` is enabled, append the resolved weather after `!travel next` arrives. |
 | `transport_icons` | `{ transport_id: emoji }` | engine defaults | Icons shown once per path beside the route label when that path has transport requirements. |
+
+### `economy.config`
+
+Economy subsystem wiring that is not a per-command cooldown/cost and not a
+table-wide policy.
+
+| Key | Type | Default | Notes |
+|-----|------|---------|-------|
+| `job_location_policy` | `"off"` \| `"warn"` \| `"check"` | `"off"` | Whether `!job` checks current location job availability and local listed skills |
+| `jobs` | `[Job, ...]` or `{ id: Job }` | `[]` | Named job rows for `!location` display and optional `!job` checks |
 
 ### Other subsystems
 
@@ -1919,6 +1969,8 @@ Crafting-specific `item_handling` overrides can appear at `subsystems.crafting.c
 | `starting_gold` | int \| `None` | `None` | One-time gp grant on first successful economy/exploration command; **`None`** = off *(honour system)* |
 
 **`!job`** uses **`command_config.job.cooldown_seconds`** (default **28800**) — **not** downtime unless **`workdays_cost > 0`**. Typical tables: cooldown-only jobs; set **`workdays_cost: 1`** for “a day’s work” tables.
+
+Location and skill enforcement for jobs lives under **`subsystems.economy.config.job_location_policy`**, not under **`policies.economy`**.
 
 Per-currency caps: optional **`max_balance`** on each [Currency](#currency) entry — only enforced when **`enforce_wallet_caps`** is **`True`**.
 

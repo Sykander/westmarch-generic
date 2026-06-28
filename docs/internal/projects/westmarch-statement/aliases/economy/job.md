@@ -63,6 +63,8 @@ flowchart TD
 | `JOB.payout_bands` | **Config** | Mirrors westmarch tiers; servers can rebalance |
 | `JOB.cooldown_seconds` | **`command_config.job`** | Default **28800** — see [Command config](../../data-shapes.md#command-config) |
 | `JOB.allowed_skills` | **Config** | Optional restrict list |
+| `subsystems.economy.config.jobs` | **Config** | Named local job display/check metadata; gated by boolean `location.commands.job` |
+| `subsystems.economy.config.job_location_policy` | **Config** | `off`, `warn`, or `check` for local job enforcement |
 | Cooldown | **stats.gvar** + **pc.check_cooldown** | Key **`"job"`** |
 | Skill names / edition | **Engine** `get_rules_edition()` | **`core/rolls`**; branch if 2024 skill renames apply |
 | Work-flavour beats | **Location encounter gvar** | Optional when **`commands.job`** — not on biomes ([location_encounters.gvar](../../gvars/location_encounters.md)) |
@@ -92,7 +94,7 @@ flowchart TD
 
 ### Out of scope (initial)
 
-- Job types / employers / location-specific pay (future config extension)
+- Employer-specific pay, non-skill job names, and per-location payout tables
 - Integration with **downtime** workdays
 - Wallet currency payouts via config `currencies` + [wallet.md](wallet.md)
 

@@ -2,10 +2,13 @@
 using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(
     auth = env.gvars.auth,
+    clock = env.gvars.clock,
     config = env.gvars.config,
     display = env.gvars.display,
     journeys = env.gvars.journeys,
     locations = env.gvars.locations,
+    shops = env.gvars.shops,
+    weather = env.gvars.weather,
 )
 
 COMMAND = "travel"
@@ -52,6 +55,78 @@ except:
 
 cfg = config.get_config()
 CONTROL_TOKENS = ["track", "journey", "yes"]
+
+
+def read_field(obj, key):
+    if obj == None:
+        return None
+    try:
+        return obj[key]
+    except:
+        pass
+    try:
+        return obj.get(key)
+    except:
+        pass
+    attrs = {
+        "subsystems": lambda o: o.subsystems,
+        "travel": lambda o: o.travel,
+        "config": lambda o: o.config,
+        "commands": lambda o: o.commands,
+        "time": lambda o: o.time,
+        "weather": lambda o: o.weather,
+        "show_arrival_time": lambda o: o.show_arrival_time,
+        "show_arrival_weather": lambda o: o.show_arrival_weather,
+    }
+    if key in attrs:
+        try:
+            return attrs[key](obj)
+        except:
+            pass
+    return None
+
+
+def travel_config_value(key, fallback=False):
+    value = read_field(read_field(read_field(cfg, "subsystems"), "travel"), "config")
+    value = read_field(value, key)
+    if value == None:
+        return fallback
+    return value
+
+
+def command_enabled(subsystem, command):
+    block = read_field(read_field(cfg, "subsystems"), subsystem)
+    return read_field(read_field(block, "commands"), command) == True
+
+
+def has_arrival_message(messages):
+    for message in messages:
+        text = str(message)
+        if "Arrived in" in text or "Location set to" in text:
+            return True
+    return False
+
+
+def arrival_info_lines():
+    lines = []
+    if travel_config_value("show_arrival_time", False) == True and command_enabled("travel", "time"):
+        now_text = None
+        try:
+            now_text = clock.format_instant(cfg)
+        except:
+            now_text = None
+        if now_text != None and str(now_text).strip() != "":
+            lines.append(f"Time: {str(now_text).strip()}")
+    if travel_config_value("show_arrival_weather", False) == True and command_enabled("travel", "weather"):
+        forecast = None
+        try:
+            area = weather.resolve_area_code(cfg, ch, [])
+            forecast = weather.format_weather(cfg, area)
+        except:
+            forecast = None
+        if forecast != None and str(forecast).strip() != "":
+            lines.append(f"Weather: {str(forecast).strip()}")
+    return lines
 
 
 def has_token(token):
@@ -136,9 +211,14 @@ def current_location_or_error():
     return loc_id, loc, None
 
 
-def location_description(loc_id, loc, include_activities=True):
+def location_description(loc_id, loc, include_activities=True, include_economy=True):
     visits = journeys.get_visit_count(ch, loc_id)
-    return locations.display_location(loc, "full", ch, include_activities, visits)
+    desc = locations.display_location(loc, "full", ch, include_activities, visits, cfg)
+    if include_economy and locations.location_has_trade(loc):
+        trade = shops.trade_text(cfg, loc_id)
+        if trade != "":
+            desc += "\n\n" + trade
+    return desc
 
 
 def response_for_current(messages=[]):
@@ -150,8 +230,14 @@ def response_for_current(messages=[]):
     if journey_text != "":
         desc += "\n\n" + journey_text
         desc += f"\n\nOnce a step is complete, run `{ctx.prefix}travel next`."
-    if len(messages) > 0:
-        desc += "\n\n-# " + "\n-# ".join(messages)
+    message_lines = []
+    for message in messages:
+        message_lines.append(str(message))
+    if has_arrival_message(message_lines):
+        for line in arrival_info_lines():
+            message_lines.append(line)
+    if len(message_lines) > 0:
+        desc += "\n\n-# " + "\n-# ".join(message_lines)
     return get_embed(desc=desc, image=locations.location_image(loc))
 
 
@@ -262,7 +348,7 @@ else:
     suffix = transport_suffix(selected_transports)
     messages.append(f"To track this journey, run `{ctx.prefix}travel \"{locations.location_name(dest)}\"{suffix} track`.")
 
-desc = location_description(current_id, current_loc, True)
+desc = location_description(current_id, current_loc, True, False)
 desc += "\n\n" + journeys.display_journey(cfg, journey, "detailed", prefix=ctx.prefix)
 desc += "\n\n-# " + "\n-# ".join(messages)
 return get_embed(desc=desc, image=locations.location_image(current_loc))

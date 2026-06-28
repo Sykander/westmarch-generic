@@ -83,8 +83,13 @@ def _read_field(obj, key):
         "paths": lambda o: o.paths,
         "paths_gvar_id": lambda o: o.paths_gvar_id,
         "transport": lambda o: o.transport,
+        "show_arrival_time": lambda o: o.show_arrival_time,
+        "show_arrival_weather": lambda o: o.show_arrival_weather,
         "biomes": lambda o: o.biomes,
         "currencies": lambda o: o.currencies,
+        "economy": lambda o: o.economy,
+        "job_location_policy": lambda o: o.job_location_policy,
+        "jobs": lambda o: o.jobs,
         "gvar_id": lambda o: o.gvar_id,
         "monster_images": lambda o: o.monster_images,
         "show_check_dcs": lambda o: o.show_check_dcs,
@@ -330,12 +335,33 @@ def _enabled_commands_summary(cfg):
             if _is_dict(cfg_block):
                 override = _read_field(cfg_block, "location_biome_override")
                 path_policy = _read_field(cfg_block, "path_biome_policy")
-                if override != None or path_policy != None:
+                arrival_time = _read_field(cfg_block, "show_arrival_time")
+                arrival_weather = _read_field(cfg_block, "show_arrival_weather")
+                if override != None or path_policy != None or arrival_time != None or arrival_weather != None:
                     lines.append("  config:")
                     if override != None:
                         lines.append(f"    location_biome_override: {_bool_text(override == True)}")
                     if path_policy != None:
                         lines.append(f"    path_biome_policy: {path_policy}")
+                    if arrival_time != None:
+                        lines.append(f"    show_arrival_time: {_bool_text(arrival_time == True)}")
+                    if arrival_weather != None:
+                        lines.append(f"    show_arrival_weather: {_bool_text(arrival_weather == True)}")
+        if key == "economy":
+            cfg_block = _read_field(block, "config")
+            if _is_dict(cfg_block):
+                lines.append("  config:")
+                policy = _read_field(cfg_block, "job_location_policy")
+                if policy == None:
+                    policy = "off"
+                jobs = _read_field(cfg_block, "jobs")
+                count = 0
+                if lists.is_list(jobs):
+                    count = len(jobs)
+                elif _is_dict(jobs):
+                    count = len(jobs)
+                lines.append(f"    job_location_policy: {policy}")
+                lines.append(f"    jobs: {count}")
     return _codeblock("yaml", lines)
 
 

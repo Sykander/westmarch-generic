@@ -34,3 +34,102 @@ vars:
           "economy": {"enabled": True, "commands": {"job": True}},
       }
       policies = {"economy": {"enforce_cooldowns": False}}
+
+!job athletics -b 100
+---
+re:No jobs are available in \*\*High Forest\*\*
+---
+name: job check policy blocks work where location has no job
+vars:
+  svars:
+    westmarch_config: "eeee1001-1001-1001-1001-100000000001"
+  gvars:
+    eeee1001-1001-1001-1001-100000000001: |
+      subsystems = {
+          "economy": {
+              "enabled": True,
+              "commands": {"job": True},
+              "config": {"job_location_policy": "check"},
+          },
+      }
+      policies = {"economy": {"enforce_cooldowns": False}}
+      world_data = {
+          "default_location": "high_forest",
+          "locations": {
+              "high_forest": {"name": "High Forest", "commands": {"enc": ["forest"]}},
+          },
+      }
+character:
+  skills:
+    athletics:
+      value: 8
+      prof: 1
+      bonus: 0
+      adv: null
+
+!job athletics -b 100
+---
+re:not a listed job check[\s\S]*Field Healer
+---
+name: job check policy blocks wrong skill for local job
+vars:
+  svars:
+    westmarch_config: "eeee1002-1002-1002-1002-100000000002"
+  gvars:
+    eeee1002-1002-1002-1002-100000000002: |
+      subsystems = {
+          "economy": {
+              "enabled": True,
+              "commands": {"job": True},
+              "config": {
+                  "job_location_policy": "check",
+                  "jobs": [{"id": "healer", "name": "Field Healer", "skills": ["medicine"]}],
+              },
+          },
+      }
+      policies = {"economy": {"enforce_cooldowns": False}}
+      world_data = {
+          "default_location": "river_town",
+          "locations": {
+              "river_town": {"name": "River Town", "commands": {"job": True}},
+          },
+      }
+character:
+  skills:
+    athletics:
+      value: 8
+      prof: 1
+      bonus: 0
+      adv: null
+
+!job athletics -b 100
+---
+'re:earns[\s\S]*Warning: No jobs are available in \*\*High Forest\*\*'
+---
+name: job warn policy allows work but reports location mismatch
+vars:
+  svars:
+    westmarch_config: "eeee1003-1003-1003-1003-100000000003"
+  gvars:
+    eeee1003-1003-1003-1003-100000000003: |
+      subsystems = {
+          "economy": {
+              "enabled": True,
+              "commands": {"job": True},
+              "config": {"job_location_policy": "warn"},
+          },
+      }
+      policies = {"economy": {"enforce_cooldowns": False}}
+      world_data = {
+          "default_location": "high_forest",
+          "locations": {
+              "high_forest": {"name": "High Forest", "commands": {"enc": ["forest"]}},
+          },
+      }
+character:
+  skills:
+    athletics:
+      value: 8
+      prof: 1
+      bonus: 0
+      adv: null

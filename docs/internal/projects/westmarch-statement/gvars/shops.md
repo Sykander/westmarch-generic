@@ -27,6 +27,9 @@ def price_for_buy(shop, stock_entry, qty):
 def price_for_sell(shop, stock_entry, qty):
     """Sell payout dict — buyback × list price unless sell_price set."""
 
+def trade_text(config, character_location_id=None):
+    """Markdown yaml code block summarizing visible shop buy/sell prices."""
+
 def buy(ch, config, shop, item_query, qty=1):
     """
     Validate funds, debit via pc.modify_gold / pc.modify_wallet, pc.modify_bag add.
