@@ -30,7 +30,7 @@ make test      # lint + types + sourcemap checks + editor tests + avrae-ls alias
 | [generate-monsters.js](generate-monsters.js) | `npm run generate:monsters` | [monsters.tsv](../assets/monsters.tsv) | `monsters_{a-z}.gvar.json` |
 | [generate-items.js](generate-items.js) | `npm run generate:items` | [items.tsv](../assets/items.tsv) | `items_list.gvar.json`, `potions_list.gvar.json`, `magic_items_list.gvar.json` |
 | [generate-spells.js](generate-spells.js) | `npm run generate:spells` | [spells.tsv](../assets/spells.tsv) | `spells_list.gvar.json` |
-| **`generate-books.js`** | `npm run generate:books` | books-forgotten-realms/real.tsv | `configs/books/{forgotten_realms,real}_all.gvar.json` when empty; else `{corpus}_{a-z}.gvar.json` |
+| **`generate-books.js`** | `npm run generate:books` | books-forgotten-realms/real.tsv | `configs/books/forgotten_realms_{a-o,pq,r-t,v,w}.gvar.json`, plus corpus `*_all`/letter shards as needed |
 | [generate-recipes.js](generate-recipes.js) | `npm run generate:recipes` | [recipes.tsv](../assets/recipes.tsv) | `configs/recipes/recipes_list.gvar.json` |
 
 ```bash
@@ -63,7 +63,7 @@ Shard files are **raw JSON arrays** — loaded at runtime with `load_json(get_gv
 2. **Shard rule** — letter, type, or separate file per corpus; document in [content-pipeline.md](../docs/internal/projects/westmarch-statement/content-pipeline.md).
 3. **Implement** `utils/generate-<name>.js` using **`utils/lib/read-tsv.js`** + **`write-json-gvar.js`**.
 4. **Output paths** under `src/gvars/utils/catalogues/` for engine catalogues, or `src/gvars/configs/` for setting-specific data (biomes, books, recipes).
-5. **Sourcemap** — engine catalogue generators call **`lib/sourcemap-shards.js`**. Engine biome presets and deployable split preset JSON gvars are sourcemapped; setting-specific books and recipes are not registered. Ensure enough UUIDs in **`unused_gvars.md`** before generated shard changes, then **`make build`**.
+5. **Sourcemap** — engine catalogue generators call **`lib/sourcemap-shards.js`**. Engine biome presets, deployable split preset JSON gvars, and the Forgotten Realms book shards are sourcemapped; owner-only books and recipes are not registered. Ensure enough UUIDs in **`unused_gvars.md`** before generated shard changes, then **`make build`**.
 6. **Facade** — engine gvar with lazy cache; document API in `docs/internal/projects/westmarch-statement/gvars/`.
 7. **npm script** — add to `package.json`; add a matching target to the Makefile's Generates section.
 
@@ -84,7 +84,7 @@ Path layout:
 
 - `public/*.tsv` → **`assets/*.tsv`**
 - Engine modules → **`src/gvars/utils/`** (auth, catalogues, world, core, …)
-- Server presets → **`src/gvars/configs/`**; engine biome presets are sourcemapped as `biome_<code>`, split preset data gvars may be sourcemapped by name, and setting-specific books/recipes stay owner data
+- Server presets → **`src/gvars/configs/`**; engine biome presets are sourcemapped as `biome_<code>`, split preset data gvars may be sourcemapped by name, Forgotten Realms book shards are sourcemapped as `forgotten_realms_*`, and other setting-specific books/recipes stay owner data
 
 Runtime improvement: westmarch **`items.gvar`** loads all three lists at import — generic facades should **lazy-load** per type (see content-pipeline).
 

@@ -37,7 +37,7 @@ Start with useful but safe command coverage.
 | `exploration` | enabled | `enc`, `forage`, `fish`, `mine`, `lumber` on; keep `hunt` and `loot` off until combat/loot tuning is reviewed |
 | `travel` | enabled | `travel`, `location`, `time`, and `weather` on once calendar and weather-area data are seeded |
 | `economy` | enabled | `job`, `buy`, `sell` on when shops and services are seeded; `wallet` off unless custom currencies are added |
-| `content` | enabled | `library` and `read` on once book catalogue source ids are wired |
+| `content` | enabled | `library` and `read` on with `world_data.book_gvar_ids` pointed at generated Forgotten Realms book shards |
 | `crafting` | disabled by default | Seed location services now; enable commands after recipe/catalogue validation |
 | `downtime` | disabled by default | Keep until downtime acquisition policy is finalized |
 | `misc` | disabled by default | Quest/recipe commands can be enabled after content pass |
@@ -71,7 +71,7 @@ Use these config placements:
 | Calendar data | `world_data.calendars` |
 | Weather areas | `world_data.weather.by_area` |
 | Shops/vendors/services | top-level `shops` |
-| Books/libraries | top-level `books`, `world_data.books`, or future book gvar ids |
+| Books/libraries | `world_data.book_gvar_ids` → generated `forgotten_realms_*` book shard gvars |
 | Job tuning | `subsystems.economy.command_config.job` |
 | Named job rows | `subsystems.economy.config.jobs` |
 | Location job availability | location entry `<id>.commands.job = True` |

@@ -115,19 +115,145 @@ const CRAFTING_REQUIRED_CATALOGUES: Record<string, string> = {
 };
 const CRAFTING_RESOURCE_KEYS = ['gold', 'materials', 'items', 'downtime', 'spell_slot'];
 const GVAR_ID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+const FORGOTTEN_REALMS_BOOK_SHARD_GVARS = [
+  [
+    'forgotten_realms_a',
+    'a7771172-0ee2-49a0-b892-bb3c9d6842e3',
+    'db6387b7-6856-4346-8601-8a326d856885',
+  ],
+  [
+    'forgotten_realms_b',
+    '50e7b4e1-3109-430a-b7a0-46914c57e7fe',
+    '02119878-36c4-4f9d-8aa7-468a440521a5',
+  ],
+  [
+    'forgotten_realms_c',
+    'e598419a-a631-4ada-8a54-a5cac0302b6b',
+    'e0ef1522-71ab-41f0-929b-71c397af8615',
+  ],
+  [
+    'forgotten_realms_d',
+    '09a3182a-5062-404f-99f3-be317978b020',
+    '725818d3-b318-4e3f-ae7d-cf31f1209cf7',
+  ],
+  [
+    'forgotten_realms_e',
+    '328a409c-beec-4fc4-9674-4f4fa0ae46f6',
+    'c4750f55-7874-4b82-b006-36b93859aa4c',
+  ],
+  [
+    'forgotten_realms_f',
+    '07f95c94-ec44-4b32-bfb8-6f7ca22007d2',
+    '5b25fbcb-9308-45a4-8ba0-8c1b8c4ca4d3',
+  ],
+  [
+    'forgotten_realms_g',
+    'e31ce04e-980c-4922-84c4-1477fc1c46f3',
+    '3bcf6923-b626-491d-a655-0a9c1634ba2c',
+  ],
+  [
+    'forgotten_realms_h',
+    '87e3d839-a982-4f2b-9ca3-fb9f7f63f87f',
+    'aedf732b-75e5-465a-aef9-6bfbc75cf260',
+  ],
+  [
+    'forgotten_realms_i',
+    '4ab16b9d-3ef5-4750-97c4-bdd681362229',
+    '396f9804-c1c4-46d2-a99a-c77f82ad6418',
+  ],
+  [
+    'forgotten_realms_j',
+    '716db491-cd03-4f32-858c-366c87aee584',
+    '68f0c308-318a-446c-a0ad-c9d92ad0c779',
+  ],
+  [
+    'forgotten_realms_k',
+    'cff98ad8-4cdd-4d0b-93a6-6be0b4adc495',
+    'dd39c394-f150-48e2-8500-22f0417f331a',
+  ],
+  [
+    'forgotten_realms_l',
+    '4bdbb056-e670-4f41-8375-908a37eac5d3',
+    '5d9b408c-1b2d-4acd-947d-212dec6d41f9',
+  ],
+  [
+    'forgotten_realms_m',
+    '8d7d0cbc-7c7d-4b48-80cd-a09480d73959',
+    '82f08053-8f69-4a07-ad7d-4cbec703cac9',
+  ],
+  [
+    'forgotten_realms_n',
+    '9e16c2f8-88ea-46a4-a37f-5a3641fbef2c',
+    '083b1b68-fa3c-491b-b726-9ce13d4c9568',
+  ],
+  [
+    'forgotten_realms_o',
+    '29172224-ef6c-4eca-9133-e9d899177130',
+    '08b9df10-df71-44dc-aede-89c402e11abc',
+  ],
+  [
+    'forgotten_realms_pq',
+    'fce1d254-d6b4-43d1-9c48-7f5cf11b054f',
+    '55de7183-afd4-443d-8acb-4b1804f1ca45',
+  ],
+  [
+    'forgotten_realms_r',
+    '50aabbac-94c4-4a59-a65c-5f520ae51305',
+    'bc9c0712-c675-4c8a-9826-1e40959f61a5',
+  ],
+  [
+    'forgotten_realms_s',
+    '3dda0999-78aa-43b8-855b-5e92bea1ba16',
+    'b4e96cb2-7ff8-49a0-9cec-8aaa51a7fba9',
+  ],
+  [
+    'forgotten_realms_t',
+    'e8c5cada-0e8d-42b4-9f1a-71cad233fc71',
+    'ea9c7fab-8538-42c2-a0df-e537a20531be',
+  ],
+  [
+    'forgotten_realms_v',
+    '5fbbf320-0d2c-4e82-9f06-e85573077977',
+    'c5eef426-8036-41cf-8c7b-cf6e0d57eaf8',
+  ],
+  [
+    'forgotten_realms_w',
+    'c49f88c2-6922-4eed-b020-82fedbe297a0',
+    'ea8973e5-0590-4252-9a1d-b6121f8ebd0f',
+  ],
+] as const;
+const engineSlugForBookShard = (name: string) => `engine:configs/books/${name}`;
+const FORGOTTEN_REALMS_BOOK_ENGINE_TO_RUNTIME_UUID = Object.fromEntries(
+  FORGOTTEN_REALMS_BOOK_SHARD_GVARS.map(([name, , prodId]) => [
+    engineSlugForBookShard(name),
+    prodId,
+  ]),
+) as Record<string, string>;
+const FORGOTTEN_REALMS_BOOK_UUID_TO_ENGINE = Object.fromEntries(
+  FORGOTTEN_REALMS_BOOK_SHARD_GVARS.flatMap(([name, devId, prodId]) => {
+    const slug = engineSlugForBookShard(name);
+    return [
+      [devId, slug],
+      [prodId, slug],
+    ];
+  }),
+) as Record<string, string>;
 const VALID_WORLD_ENGINE_GVARS = [
   'engine:configs/forgotten_realms_2014_locations',
   'engine:configs/forgotten_realms_2014_paths',
 ];
+const VALID_BOOK_ENGINE_GVARS = Object.keys(FORGOTTEN_REALMS_BOOK_ENGINE_TO_RUNTIME_UUID);
 const WORLD_GVAR_UUID_TO_ENGINE: Record<string, string> = {
   '6c50e5a7-e36b-49fe-96e7-7e82e157bd31': 'engine:configs/forgotten_realms_2014_locations',
   'fde0dbeb-d2e3-42fd-8f56-2d94bdf3ac58': 'engine:configs/forgotten_realms_2014_locations',
   '40403500-be2c-4b1a-8170-6176adf87aa5': 'engine:configs/forgotten_realms_2014_paths',
   '19623e1a-3a23-49a0-9d40-986fdd26d7e7': 'engine:configs/forgotten_realms_2014_paths',
+  ...FORGOTTEN_REALMS_BOOK_UUID_TO_ENGINE,
 };
 const WORLD_ENGINE_TO_RUNTIME_UUID: Record<string, string> = {
   'engine:configs/forgotten_realms_2014_locations': '6c50e5a7-e36b-49fe-96e7-7e82e157bd31',
   'engine:configs/forgotten_realms_2014_paths': '40403500-be2c-4b1a-8170-6176adf87aa5',
+  ...FORGOTTEN_REALMS_BOOK_ENGINE_TO_RUNTIME_UUID,
 };
 
 const DEFAULT_MODEL: ConfigModel = {
@@ -778,10 +904,26 @@ function normalizedLookupId(value: unknown): string {
     .toLowerCase();
 }
 
-function isValidWorldGvarPointer(value: unknown): boolean {
+function isValidGvarPointer(value: unknown, validEngineGvars: string[]): boolean {
   const text = String(value ?? '').trim();
   if (GVAR_ID_RE.test(text)) return true;
-  return VALID_WORLD_ENGINE_GVARS.includes(text.toLowerCase());
+  return validEngineGvars.includes(text.toLowerCase());
+}
+
+function isValidWorldGvarPointer(value: unknown): boolean {
+  return isValidGvarPointer(value, VALID_WORLD_ENGINE_GVARS);
+}
+
+function isValidBookGvarPointer(value: unknown): boolean {
+  return isValidGvarPointer(value, VALID_BOOK_ENGINE_GVARS);
+}
+
+function mappedWorldGvarPointer(value: unknown, map: Record<string, string>): unknown {
+  if (Array.isArray(value)) return value.map((entry) => mappedWorldGvarPointer(entry, map));
+  const text = String(value ?? '')
+    .trim()
+    .toLowerCase();
+  return map[text] ?? value;
 }
 
 function transportLabelsFromWorldData(worldData: AnyRecord): Set<string> {
@@ -807,22 +949,16 @@ function transportLabelsFromWorldData(worldData: AnyRecord): Set<string> {
 
 function worldDataForEditor(worldData: AnyRecord): AnyRecord {
   const next = { ...worldData };
-  for (const key of ['locations_gvar_id', 'paths_gvar_id']) {
-    const text = String(next[key] ?? '')
-      .trim()
-      .toLowerCase();
-    if (WORLD_GVAR_UUID_TO_ENGINE[text]) next[key] = WORLD_GVAR_UUID_TO_ENGINE[text];
+  for (const key of ['locations_gvar_id', 'paths_gvar_id', 'book_gvar_ids', 'book_gvars']) {
+    next[key] = mappedWorldGvarPointer(next[key], WORLD_GVAR_UUID_TO_ENGINE);
   }
   return next;
 }
 
 function worldDataForRuntime(worldData: AnyRecord): AnyRecord {
   const next = { ...worldData };
-  for (const key of ['locations_gvar_id', 'paths_gvar_id']) {
-    const text = String(next[key] ?? '')
-      .trim()
-      .toLowerCase();
-    if (WORLD_ENGINE_TO_RUNTIME_UUID[text]) next[key] = WORLD_ENGINE_TO_RUNTIME_UUID[text];
+  for (const key of ['locations_gvar_id', 'paths_gvar_id', 'book_gvar_ids', 'book_gvars']) {
+    next[key] = mappedWorldGvarPointer(next[key], WORLD_ENGINE_TO_RUNTIME_UUID);
   }
   return next;
 }
@@ -1604,6 +1740,41 @@ function validateWorld(model: ConfigModel, issues: ConfigIssue[]) {
         ),
       );
     }
+  }
+
+  for (const key of ['book_gvar_ids', 'book_gvars'] as const) {
+    const value = model.world_data[key];
+    if (value == null || String(value).trim() === '') continue;
+    if (!Array.isArray(value)) {
+      issues.push(
+        issue(
+          'error',
+          `world.${key}.shape`,
+          'World',
+          `world_data.${key}`,
+          'Book gvars must be a list',
+          '`book_gvar_ids` and `book_gvars` should be lists of Avrae workshop UUIDs or supported engine preset slugs.',
+          'Use a list such as ["engine:configs/books/forgotten_realms_a"].',
+        ),
+      );
+      continue;
+    }
+    value.forEach((entry, index) => {
+      if (entry == null || String(entry).trim() === '') return;
+      if (!isValidBookGvarPointer(entry)) {
+        issues.push(
+          issue(
+            'error',
+            `world.${key}.invalid`,
+            'World',
+            `world_data.${key}.${index}`,
+            'Book gvar id is invalid',
+            'Book gvar ids must be Avrae workshop UUIDs or supported engine preset slugs.',
+            'Paste a UUID from the Avrae gvar dashboard, or use a supported engine preset.',
+          ),
+        );
+      }
+    });
   }
 
   for (const [code, value] of Object.entries(biomes)) {
@@ -3204,7 +3375,10 @@ function validateEconomyJobEntry(value: unknown, path: string, issues: ConfigIss
   for (const key of ['skills', 'locations']) {
     const raw = job[key];
     if (raw == null) continue;
-    if (!Array.isArray(raw) || raw.some((entry) => typeof entry !== 'string' || entry.trim() === '')) {
+    if (
+      !Array.isArray(raw) ||
+      raw.some((entry) => typeof entry !== 'string' || entry.trim() === '')
+    ) {
       issues.push(
         issue(
           'error',

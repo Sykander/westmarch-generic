@@ -302,8 +302,8 @@ Acceptance:
 
 Enable content commands only when catalogue wiring is clear.
 
-- Keep the generated Forgotten Realms book shards under `src/gvars/configs/books/` as the likely source.
-- Decide whether the starter config points at book shard ids, inline `books`, or a future book gvar list.
+- Keep the generated Forgotten Realms book shards under `src/gvars/configs/books/`.
+- Register non-empty Forgotten Realms book shards as engine gvars and point `world_data.book_gvar_ids` at their runtime UUIDs.
 - Enable `library` and `read` at Waterdeep, Candlekeep, Silverymoon, and other major knowledge centers.
 - Add `library_topics` to locations where topic inference should be useful.
 

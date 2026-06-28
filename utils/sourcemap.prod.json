@@ -325,6 +325,111 @@
       "id": "40403500-be2c-4b1a-8170-6176adf87aa5"
     },
     {
+      "name": "forgotten_realms_a",
+      "file": "src/gvars/configs/books/forgotten_realms_a.gvar.json",
+      "id": "db6387b7-6856-4346-8601-8a326d856885"
+    },
+    {
+      "name": "forgotten_realms_b",
+      "file": "src/gvars/configs/books/forgotten_realms_b.gvar.json",
+      "id": "02119878-36c4-4f9d-8aa7-468a440521a5"
+    },
+    {
+      "name": "forgotten_realms_c",
+      "file": "src/gvars/configs/books/forgotten_realms_c.gvar.json",
+      "id": "e0ef1522-71ab-41f0-929b-71c397af8615"
+    },
+    {
+      "name": "forgotten_realms_d",
+      "file": "src/gvars/configs/books/forgotten_realms_d.gvar.json",
+      "id": "725818d3-b318-4e3f-ae7d-cf31f1209cf7"
+    },
+    {
+      "name": "forgotten_realms_e",
+      "file": "src/gvars/configs/books/forgotten_realms_e.gvar.json",
+      "id": "c4750f55-7874-4b82-b006-36b93859aa4c"
+    },
+    {
+      "name": "forgotten_realms_f",
+      "file": "src/gvars/configs/books/forgotten_realms_f.gvar.json",
+      "id": "5b25fbcb-9308-45a4-8ba0-8c1b8c4ca4d3"
+    },
+    {
+      "name": "forgotten_realms_g",
+      "file": "src/gvars/configs/books/forgotten_realms_g.gvar.json",
+      "id": "3bcf6923-b626-491d-a655-0a9c1634ba2c"
+    },
+    {
+      "name": "forgotten_realms_h",
+      "file": "src/gvars/configs/books/forgotten_realms_h.gvar.json",
+      "id": "aedf732b-75e5-465a-aef9-6bfbc75cf260"
+    },
+    {
+      "name": "forgotten_realms_i",
+      "file": "src/gvars/configs/books/forgotten_realms_i.gvar.json",
+      "id": "396f9804-c1c4-46d2-a99a-c77f82ad6418"
+    },
+    {
+      "name": "forgotten_realms_j",
+      "file": "src/gvars/configs/books/forgotten_realms_j.gvar.json",
+      "id": "68f0c308-318a-446c-a0ad-c9d92ad0c779"
+    },
+    {
+      "name": "forgotten_realms_k",
+      "file": "src/gvars/configs/books/forgotten_realms_k.gvar.json",
+      "id": "dd39c394-f150-48e2-8500-22f0417f331a"
+    },
+    {
+      "name": "forgotten_realms_l",
+      "file": "src/gvars/configs/books/forgotten_realms_l.gvar.json",
+      "id": "5d9b408c-1b2d-4acd-947d-212dec6d41f9"
+    },
+    {
+      "name": "forgotten_realms_m",
+      "file": "src/gvars/configs/books/forgotten_realms_m.gvar.json",
+      "id": "82f08053-8f69-4a07-ad7d-4cbec703cac9"
+    },
+    {
+      "name": "forgotten_realms_n",
+      "file": "src/gvars/configs/books/forgotten_realms_n.gvar.json",
+      "id": "083b1b68-fa3c-491b-b726-9ce13d4c9568"
+    },
+    {
+      "name": "forgotten_realms_o",
+      "file": "src/gvars/configs/books/forgotten_realms_o.gvar.json",
+      "id": "08b9df10-df71-44dc-aede-89c402e11abc"
+    },
+    {
+      "name": "forgotten_realms_pq",
+      "file": "src/gvars/configs/books/forgotten_realms_pq.gvar.json",
+      "id": "55de7183-afd4-443d-8acb-4b1804f1ca45"
+    },
+    {
+      "name": "forgotten_realms_r",
+      "file": "src/gvars/configs/books/forgotten_realms_r.gvar.json",
+      "id": "bc9c0712-c675-4c8a-9826-1e40959f61a5"
+    },
+    {
+      "name": "forgotten_realms_s",
+      "file": "src/gvars/configs/books/forgotten_realms_s.gvar.json",
+      "id": "b4e96cb2-7ff8-49a0-9cec-8aaa51a7fba9"
+    },
+    {
+      "name": "forgotten_realms_t",
+      "file": "src/gvars/configs/books/forgotten_realms_t.gvar.json",
+      "id": "ea9c7fab-8538-42c2-a0df-e537a20531be"
+    },
+    {
+      "name": "forgotten_realms_v",
+      "file": "src/gvars/configs/books/forgotten_realms_v.gvar.json",
+      "id": "c5eef426-8036-41cf-8c7b-cf6e0d57eaf8"
+    },
+    {
+      "name": "forgotten_realms_w",
+      "file": "src/gvars/configs/books/forgotten_realms_w.gvar.json",
+      "id": "ea8973e5-0590-4252-9a1d-b6121f8ebd0f"
+    },
+    {
       "name": "items",
       "file": "src/gvars/utils/catalogues/items/items.gvar",
       "id": "573a61f9-8b12-40e2-b296-cb5445c61edd"

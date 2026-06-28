@@ -54,8 +54,8 @@ Large lists are **never** one monolithic gvar. Split rules:
 | [monsters.tsv](../../../../assets/monsters.tsv) | `catalogues/monsters/monsters_{a-z}.gvar.json` | First letter of **`name`**; facade also has hotpath routes for common families | [monsters.gvar](gvars/monsters.md) |
 | [items.tsv](../../../../assets/items.tsv) | `items_list.gvar.json`, `potions_list.gvar.json`, `magic_items_list.gvar.json` | **`type`** column | [items.gvar](gvars/items.md) |
 | [spells.tsv](../../../../assets/spells.tsv) | `spells/spells_list.gvar.json` *(split by level later if size requires)* | — | [spells.gvar](gvars/spells.md) |
-| [books-forgotten-realms.tsv](../../../../assets/books-forgotten-realms.tsv) | `configs/books/forgotten_realms_{a-z}.gvar.json` or single file until count grows | First letter of **`name`** | [library.gvar](gvars/library.md) |
-| [books-real.tsv](../../../../assets/books-real.tsv) | `configs/books/real_{a-z}.gvar.json` | Same | library |
+| [books-forgotten-realms.tsv](../../../../assets/books-forgotten-realms.tsv) | `configs/books/forgotten_realms_{a-o,pq,r-t,v,w}.gvar.json` registered as engine shards | First letter of **`name`** with tiny P/Q shards grouped | [library.gvar](gvars/library.md) |
+| [books-real.tsv](../../../../assets/books-real.tsv) | `configs/books/real_all.gvar.json` or `real_{a-z}.gvar.json` when count grows | Same | library |
 
 Book rows include optional **`content_link`** (full text URL) — see [data-shapes.md § Book](data-shapes.md#book). **`description`** is embed excerpt only; **`content_link`** is shown in-game only at **100%** comprehension when set.
 | [recipes.tsv](../../../../assets/recipes.tsv) | **`configs/recipes/recipes_list.gvar.json`** — merge into owner config **`recipes`** or reference as extension | **`kind`** or single file | [recipe.gvar](gvars/recipe.md) |
@@ -122,7 +122,7 @@ Location: **`utils/`** at repo root — see [utils/README.md](../../../utils/REA
 | **`generate-monsters.js`** | `assets/monsters.tsv` | `src/gvars/utils/catalogues/monsters/monsters_{a-z}.gvar.json` |
 | **`generate-items.js`** | `assets/items.tsv` | `items_list.gvar.json`, `potions_list.gvar.json`, `magic_items_list.gvar.json` |
 | **`generate-spells.js`** | `assets/spells.tsv` | `spells/spells_list.gvar.json` |
-| **`generate-books.js`** | `books-forgotten-realms.tsv`, `books-real.tsv` | `configs/books/{corpus}_all.gvar.json` when empty; else `{corpus}_{a-z}.gvar.json` |
+| **`generate-books.js`** | `books-forgotten-realms.tsv`, `books-real.tsv` | Forgotten Realms engine shards plus corpus `*_all`/letter shards as needed |
 | **`generate-recipes.js`** | `assets/recipes.tsv` | `configs/recipes/recipes_list.gvar.json` |
 
 Shared library: **`utils/lib/`** — `read-tsv`, `write-json-gvar`, `shard-by`, `manifest`, `sourcemap-shards`.

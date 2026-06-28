@@ -1,11 +1,15 @@
 wd = forgotten_realms_2014.world_data
 travel = forgotten_realms_2014.subsystems["travel"]
 economy = forgotten_realms_2014.subsystems["economy"]
+content = forgotten_realms_2014.subsystems["content"]
 return (
     forgotten_realms_2014.rules_version == "2014"
     and wd["default_location"] == "waterdeep"
     and wd["locations_gvar_id"] == "6c50e5a7-e36b-49fe-96e7-7e82e157bd31"
     and wd["paths_gvar_id"] == "40403500-be2c-4b1a-8170-6176adf87aa5"
+    and len(wd["book_gvar_ids"]) == 21
+    and wd["book_gvar_ids"][0] == "db6387b7-6856-4346-8601-8a326d856885"
+    and "55de7183-afd4-443d-8acb-4b1804f1ca45" in wd["book_gvar_ids"]
     and travel["enabled"] == True
     and travel["commands"]["travel"] == True
     and travel["commands"]["location"] == True
@@ -17,6 +21,10 @@ return (
     and economy["commands"]["sell"] == True
     and economy["config"]["job_location_policy"] == "check"
     and len(economy["config"]["jobs"]) >= 4
+    and content["enabled"] == True
+    and content["commands"]["library"] == True
+    and content["commands"]["read"] == True
+    and content["config"]["library_topic_source"] == "balanced"
     and len(forgotten_realms_2014.shops) >= 30
     and forgotten_realms_2014.shops["waterdeep_general_market"]["location_id"] == "waterdeep"
 )
@@ -24,6 +32,49 @@ return (
 True
 ---
 name: Forgotten Realms 2014 config enables travel and economy with production data gvars
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(library = env.gvars.library)
+wd = {}
+for key in forgotten_realms_2014.world_data:
+    wd[key] = forgotten_realms_2014.world_data[key]
+wd["book_gvar_ids"] = [
+    env.gvars.forgotten_realms_a,
+    env.gvars.forgotten_realms_b,
+    env.gvars.forgotten_realms_c,
+    env.gvars.forgotten_realms_d,
+    env.gvars.forgotten_realms_e,
+    env.gvars.forgotten_realms_f,
+    env.gvars.forgotten_realms_g,
+    env.gvars.forgotten_realms_h,
+    env.gvars.forgotten_realms_i,
+    env.gvars.forgotten_realms_j,
+    env.gvars.forgotten_realms_k,
+    env.gvars.forgotten_realms_l,
+    env.gvars.forgotten_realms_m,
+    env.gvars.forgotten_realms_n,
+    env.gvars.forgotten_realms_o,
+    env.gvars.forgotten_realms_pq,
+    env.gvars.forgotten_realms_r,
+    env.gvars.forgotten_realms_s,
+    env.gvars.forgotten_realms_t,
+    env.gvars.forgotten_realms_v,
+    env.gvars.forgotten_realms_w,
+]
+cfg = {
+    "subsystems": forgotten_realms_2014.subsystems,
+    "world_data": wd,
+}
+books = library.catalogue_entries(cfg)
+found = False
+for book in books:
+    if library.book_name(book) == "A Sage's Travel Guide to the North":
+        found = True
+return len(books) == 185 and found
+---
+True
+---
+name: Forgotten Realms 2014 config loads generated Forgotten Realms book shards
 
 waterdeep_docks = forgotten_realms_2014.shops["waterdeep_docks"]
 waterdeep_market = forgotten_realms_2014.shops["waterdeep_general_market"]

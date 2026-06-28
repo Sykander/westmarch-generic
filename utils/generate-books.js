@@ -1,13 +1,46 @@
 #!/usr/bin/env node
 /**
  * Generate book shards from books-forgotten-realms.tsv and books-real.tsv
- * Output: src/gvars/configs/books/{forgotten_realms,real}_{a-z}.gvar.json
+ * Output: src/gvars/configs/books/forgotten_realms_{a-o,pq,r-t,v,w}.gvar.json
+ * plus corpus all/letter shards as needed.
  */
+const { readdirSync, unlinkSync } = require('fs');
 const paths = require('./lib/paths');
 const { readTsv } = require('./lib/read-tsv');
 const { writeJsonGvar } = require('./lib/write-json-gvar');
 const { LETTERS, letterFromName } = require('./lib/shard-by');
 const { printManifest } = require('./lib/manifest');
+const { ensureShardSlots } = require('./lib/sourcemap-shards');
+
+const OUT_DIR = 'src/gvars/configs/books';
+const LETTER_SHARD_THRESHOLD = 100;
+const FORGOTTEN_REALMS_GROUPS = [
+  ['a'],
+  ['b'],
+  ['c'],
+  ['d'],
+  ['e'],
+  ['f'],
+  ['g'],
+  ['h'],
+  ['i'],
+  ['j'],
+  ['k'],
+  ['l'],
+  ['m'],
+  ['n'],
+  ['o'],
+  ['p', 'q'],
+  ['r'],
+  ['s'],
+  ['t'],
+  ['u'],
+  ['v'],
+  ['w'],
+  ['x'],
+  ['y'],
+  ['z'],
+];
 
 function parseTags(s) {
   return String(s || '')
@@ -51,6 +84,24 @@ function rowToBook(row) {
   return book;
 }
 
+function cleanCorpusOutputs(corpus) {
+  const dir = paths.gvar(OUT_DIR);
+  for (const filename of readdirSync(dir)) {
+    if (filename.startsWith(`${corpus}_`) && filename.endsWith('.gvar.json')) {
+      unlinkSync(paths.gvar(`${OUT_DIR}/${filename}`));
+    }
+  }
+}
+
+function shardGroups(corpus) {
+  if (corpus === 'forgotten_realms') return FORGOTTEN_REALMS_GROUPS;
+  return LETTERS.map((letter) => [letter]);
+}
+
+function groupSuffix(group) {
+  return group.join('');
+}
+
 function generateCorpus(corpus, tsvName) {
   const input = paths.assets(tsvName);
   console.log(`Reading ${input}`);
@@ -59,35 +110,37 @@ function generateCorpus(corpus, tsvName) {
   const books = rows.map(rowToBook).filter((b) => b.name.length > 0);
 
   const manifest = [];
-  const outDir = 'src/gvars/configs/books';
+  const sourcemapEntries = [];
+  cleanCorpusOutputs(corpus);
 
   // Single shard until corpus is large enough to split by letter (content-pipeline)
   if (books.length === 0) {
     const name = `${corpus}_all`;
-    const file = `${outDir}/${name}.gvar.json`;
+    const file = `${OUT_DIR}/${name}.gvar.json`;
     writeJsonGvar(paths.gvar(file), []);
     manifest.push({ name, file, count: 0 });
-    return { manifest, total: 0 };
+    return { manifest, sourcemapEntries, total: 0 };
   }
 
-  const LETTER_SHARD_THRESHOLD = 100;
   if (books.length < LETTER_SHARD_THRESHOLD) {
     const name = `${corpus}_all`;
-    const file = `${outDir}/${name}.gvar.json`;
+    const file = `${OUT_DIR}/${name}.gvar.json`;
     writeJsonGvar(paths.gvar(file), books);
     manifest.push({ name, file, count: books.length });
-    return { manifest, total: books.length };
+    sourcemapEntries.push({ name, file });
+    return { manifest, sourcemapEntries, total: books.length };
   }
 
-  for (const letter of LETTERS) {
-    const name = `${corpus}_${letter}`;
-    const file = `${outDir}/${name}.gvar.json`;
-    const contents = books.filter((b) => letterFromName(b.name) === letter);
+  for (const group of shardGroups(corpus)) {
+    const name = `${corpus}_${groupSuffix(group)}`;
+    const file = `${OUT_DIR}/${name}.gvar.json`;
+    const contents = books.filter((b) => group.includes(letterFromName(b.name)));
     writeJsonGvar(paths.gvar(file), contents);
     manifest.push({ name, file, count: contents.length });
+    if (contents.length > 0) sourcemapEntries.push({ name, file });
   }
 
-  return { manifest, total: books.length };
+  return { manifest, sourcemapEntries, total: books.length };
 }
 
 const forgottenRealms = generateCorpus('forgotten_realms', 'books-forgotten-realms.tsv');
@@ -97,4 +150,6 @@ printManifest('Books (forgotten realms)', forgottenRealms.manifest);
 console.log(`  (${forgottenRealms.total} total forgotten realms rows)`);
 printManifest('Books (real)', real.manifest);
 console.log(`  (${real.total} total real rows)`);
+const { added, skipped } = ensureShardSlots(forgottenRealms.sourcemapEntries);
+console.log(`Sourcemap: ${added} slot(s) added, ${skipped} already registered.`);
 console.log('Books done.');

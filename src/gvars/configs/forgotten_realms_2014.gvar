@@ -159,10 +159,15 @@ subsystems = {
         },
     },
     "content": {
-        "enabled": False,
+        "enabled": True,
         "commands": {
-            "library": False,
-            "read": False,
+            "library": True,
+            "read": True,
+        },
+        "config": {
+            "library_topic_source": "balanced",
+            "allowed_topics": [],
+            "books": None,
         },
     },
     "misc": {
@@ -178,6 +183,29 @@ world_data = {
     "default_location": "waterdeep",
     "locations_gvar_id": "6c50e5a7-e36b-49fe-96e7-7e82e157bd31",
     "paths_gvar_id": "40403500-be2c-4b1a-8170-6176adf87aa5",
+    "book_gvar_ids": [
+        "db6387b7-6856-4346-8601-8a326d856885",
+        "02119878-36c4-4f9d-8aa7-468a440521a5",
+        "e0ef1522-71ab-41f0-929b-71c397af8615",
+        "725818d3-b318-4e3f-ae7d-cf31f1209cf7",
+        "c4750f55-7874-4b82-b006-36b93859aa4c",
+        "5b25fbcb-9308-45a4-8ba0-8c1b8c4ca4d3",
+        "3bcf6923-b626-491d-a655-0a9c1634ba2c",
+        "aedf732b-75e5-465a-aef9-6bfbc75cf260",
+        "396f9804-c1c4-46d2-a99a-c77f82ad6418",
+        "68f0c308-318a-446c-a0ad-c9d92ad0c779",
+        "dd39c394-f150-48e2-8500-22f0417f331a",
+        "5d9b408c-1b2d-4acd-947d-212dec6d41f9",
+        "82f08053-8f69-4a07-ad7d-4cbec703cac9",
+        "083b1b68-fa3c-491b-b726-9ce13d4c9568",
+        "08b9df10-df71-44dc-aede-89c402e11abc",
+        "55de7183-afd4-443d-8acb-4b1804f1ca45",
+        "bc9c0712-c675-4c8a-9826-1e40959f61a5",
+        "b4e96cb2-7ff8-49a0-9cec-8aaa51a7fba9",
+        "ea9c7fab-8538-42c2-a0df-e537a20531be",
+        "c5eef426-8036-41cf-8c7b-cf6e0d57eaf8",
+        "ea8973e5-0590-4252-9a1d-b6121f8ebd0f",
+    ],
     "transport": {
         "walk": {
             "name": "Walking",

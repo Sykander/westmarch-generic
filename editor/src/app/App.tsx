@@ -1593,7 +1593,8 @@ function SubsystemAdvancedEditor({
               <span>
                 Arrival time
                 <HelpTip label="Arrival time help">
-                  Show the configured world clock in travel output when a character arrives somewhere.
+                  Show the configured world clock in travel output when a character arrives
+                  somewhere.
                 </HelpTip>
               </span>
               <label className="switch-line">

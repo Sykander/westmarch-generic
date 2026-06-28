@@ -108,6 +108,69 @@
         "19623e1a-3a23-49a0-9d40-986fdd26d7e7": {
             "filePath": "src/gvars/configs/forgotten_realms_2014_paths.gvar.json"
         },
+        "a7771172-0ee2-49a0-b892-bb3c9d6842e3": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_a.gvar.json"
+        },
+        "50e7b4e1-3109-430a-b7a0-46914c57e7fe": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_b.gvar.json"
+        },
+        "e598419a-a631-4ada-8a54-a5cac0302b6b": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_c.gvar.json"
+        },
+        "09a3182a-5062-404f-99f3-be317978b020": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_d.gvar.json"
+        },
+        "328a409c-beec-4fc4-9674-4f4fa0ae46f6": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_e.gvar.json"
+        },
+        "07f95c94-ec44-4b32-bfb8-6f7ca22007d2": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_f.gvar.json"
+        },
+        "e31ce04e-980c-4922-84c4-1477fc1c46f3": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_g.gvar.json"
+        },
+        "87e3d839-a982-4f2b-9ca3-fb9f7f63f87f": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_h.gvar.json"
+        },
+        "4ab16b9d-3ef5-4750-97c4-bdd681362229": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_i.gvar.json"
+        },
+        "716db491-cd03-4f32-858c-366c87aee584": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_j.gvar.json"
+        },
+        "cff98ad8-4cdd-4d0b-93a6-6be0b4adc495": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_k.gvar.json"
+        },
+        "4bdbb056-e670-4f41-8375-908a37eac5d3": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_l.gvar.json"
+        },
+        "8d7d0cbc-7c7d-4b48-80cd-a09480d73959": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_m.gvar.json"
+        },
+        "9e16c2f8-88ea-46a4-a37f-5a3641fbef2c": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_n.gvar.json"
+        },
+        "29172224-ef6c-4eca-9133-e9d899177130": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_o.gvar.json"
+        },
+        "fce1d254-d6b4-43d1-9c48-7f5cf11b054f": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_pq.gvar.json"
+        },
+        "50aabbac-94c4-4a59-a65c-5f520ae51305": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_r.gvar.json"
+        },
+        "3dda0999-78aa-43b8-855b-5e92bea1ba16": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_s.gvar.json"
+        },
+        "e8c5cada-0e8d-42b4-9f1a-71cad233fc71": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_t.gvar.json"
+        },
+        "5fbbf320-0d2c-4e82-9f06-e85573077977": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_v.gvar.json"
+        },
+        "c49f88c2-6922-4eed-b020-82fedbe297a0": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_w.gvar.json"
+        },
         "e66a5c21-4467-473f-9d84-6dcbaa43b7af": {
             "filePath": "src/gvars/utils/catalogues/items/items.gvar"
         },

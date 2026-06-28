@@ -95,10 +95,26 @@ test('forgotten realms starter has slice 5 travel baseline', () => {
     'waterdeep',
   );
 
+  const content = model.subsystems.content as Record<string, unknown>;
+  const contentCommands = content.commands as Record<string, unknown>;
+  const contentConfig = content.config as Record<string, unknown>;
+  assert.equal(content.enabled, true);
+  assert.equal(contentCommands.library, true);
+  assert.equal(contentCommands.read, true);
+  assert.equal(contentConfig.library_topic_source, 'balanced');
+
   const worldData = model.world_data as Record<string, unknown>;
   assert.equal(worldData.default_location, 'waterdeep');
   assert.equal(worldData.locations_gvar_id, 'engine:configs/forgotten_realms_2014_locations');
   assert.equal(worldData.paths_gvar_id, 'engine:configs/forgotten_realms_2014_paths');
+  assert.equal((worldData.book_gvar_ids as unknown[]).length, 21);
+  assert.equal(
+    (worldData.book_gvar_ids as unknown[])[0],
+    'engine:configs/books/forgotten_realms_a',
+  );
+  assert.ok(
+    (worldData.book_gvar_ids as unknown[]).includes('engine:configs/books/forgotten_realms_pq'),
+  );
   assert.ok((worldData.calendars as Record<string, unknown>).primary);
   assert.ok(
     ((worldData.weather as Record<string, unknown>).by_area as Record<string, unknown>).coast,
@@ -132,12 +148,21 @@ test('forgotten realms starter has slice 5 travel baseline', () => {
   assert.equal(waterdeepCommands.job, true);
   assert.equal(waterdeepCommands.buy, true);
   assert.equal(waterdeepCommands.sell, true);
+  assert.equal(waterdeepCommands.library, true);
+  assert.equal(waterdeepCommands.read, true);
+  assert.ok((waterdeep.library_topics as unknown[]).includes('waterdeep'));
   assert.deepEqual(waterdeep.services, [
     'waterdeep_general_market',
     'waterdeep_stables',
     'waterdeep_docks',
     'waterdeep_healers',
   ]);
+  const candlekeepCommands = (locations.candlekeep as Record<string, unknown>).commands as Record<
+    string,
+    unknown
+  >;
+  assert.equal(candlekeepCommands.library, true);
+  assert.equal(candlekeepCommands.read, true);
 
   const paths = JSON.parse(
     readFileSync(
@@ -205,6 +230,8 @@ test('forgotten realms starter has slice 5 travel baseline', () => {
   const serialized = serializeConfig(model);
   assert.match(serialized, /"locations_gvar_id": "6c50e5a7-e36b-49fe-96e7-7e82e157bd31"/);
   assert.match(serialized, /"paths_gvar_id": "40403500-be2c-4b1a-8170-6176adf87aa5"/);
+  assert.match(serialized, /"db6387b7-6856-4346-8601-8a326d856885"/);
+  assert.match(serialized, /"55de7183-afd4-443d-8acb-4b1804f1ca45"/);
   const serializedParsed = parseConfig(serialized);
   assert.deepEqual(
     serializedParsed.issues.filter((entry) => entry.code.startsWith('parse.')),
@@ -384,6 +411,30 @@ world_data = {
 
   assert.equal(codes.includes('world.locations_gvar_id.invalid'), false);
   assert.equal(codes.includes('world.paths_gvar_id.invalid'), false);
+});
+
+test('content accepts engine book gvar preset pointers', () => {
+  const codes = issueCodes(`
+world_data = {
+    "book_gvar_ids": [
+        "engine:configs/books/forgotten_realms_a",
+        "engine:configs/books/forgotten_realms_pq",
+    ],
+}
+`);
+
+  assert.equal(codes.includes('world.book_gvar_ids.shape'), false);
+  assert.equal(codes.includes('world.book_gvar_ids.invalid'), false);
+});
+
+test('travel does not accept engine book gvar pointers as world data presets', () => {
+  const codes = issueCodes(`
+world_data = {
+    "locations_gvar_id": "engine:configs/books/forgotten_realms_a",
+}
+`);
+
+  assert.ok(codes.includes('world.locations_gvar_id.invalid'));
 });
 
 test('travel does not reject external default locations when inline locations are additions', () => {
