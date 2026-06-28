@@ -2,6 +2,8 @@
 
 **Subsystem:** economy · **Toggle:** `subsystems.economy.commands.buy` · **Phase:** 1 (Tier F)
 
+**Status:** implemented in `src/aliases/economy/buy.alias`; older unchecked checklist items below are retained as implementation-history context until the command docs get a full checklist refresh.
+
 **Greenfield** — no westmarch alias. Design together with [sell.md](sell.md); both use **[shops.gvar](../../gvars/shops.md)** and config **`shops`**.
 
 ## Player-facing behaviour *(MVP outline)*

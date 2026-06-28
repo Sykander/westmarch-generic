@@ -4,6 +4,8 @@
 
 **Subcommand** of [`!westmarch`](westmarch.md) — onboarding for server owners: how to create a config gvar, wire the svar, validate in the editor, and review with Discord summary output.
 
+**Status:** implemented in `src/aliases/westmarch/setup.alias`; older unchecked checklist items below are retained as implementation-history context until the command docs get a full checklist refresh.
+
 ## Player-facing behaviour
 
 ```

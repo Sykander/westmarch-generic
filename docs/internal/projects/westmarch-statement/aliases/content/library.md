@@ -2,6 +2,8 @@
 
 **Subsystem:** content · **Toggle:** `subsystems.content.commands.library` · **Phase:** 1 (Tier G)
 
+**Status:** implemented in `src/aliases/content/library.alias`; older unchecked checklist items below are retained as implementation-history context until the command docs get a full checklist refresh.
+
 Sixth in this folder’s sequence. **Not** part of the encounter pipeline — uses the westmarch **library** book engine instead of `process_encounters`.
 
 Pairs with **read** ([read.md](read.md)) when designing; ships in Tier G.

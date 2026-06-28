@@ -2,6 +2,8 @@
 
 **Subsystem:** travel · **Toggle:** `subsystems.travel.commands.time` · **Phase:** 1 (Tier C)
 
+**Status:** implemented in `src/aliases/travel/time.alias`; older unchecked checklist items below are retained as implementation-history context until the command docs get a full checklist refresh.
+
 **Greenfield** — in-world calendar and clock derived from config. Independent of real-world time except via configured epoch and tick rate.
 
 ## Player-facing behaviour

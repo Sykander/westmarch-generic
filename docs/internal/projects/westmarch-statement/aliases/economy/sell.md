@@ -2,6 +2,8 @@
 
 **Subsystem:** economy · **Toggle:** `subsystems.economy.commands.sell` · **Phase:** 1 (Tier F)
 
+**Status:** implemented in `src/aliases/economy/sell.alias`; older unchecked checklist items below are retained as implementation-history context until the command docs get a full checklist refresh.
+
 **Greenfield** — pairs with [buy.md](buy.md). Uses **[shops.gvar](../../gvars/shops.md)** and config **`shops`**.
 
 ## Player-facing behaviour *(MVP outline)*

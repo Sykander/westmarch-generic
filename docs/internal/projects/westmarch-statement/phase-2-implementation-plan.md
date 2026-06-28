@@ -23,7 +23,7 @@ This plan is intentionally sliced so each step can merge with implementation, do
 
 ## Slice 1 - Phase 1 stabilization audit
 
-**Status:** planned.
+**Status:** implemented. Baseline recorded in [phase-2-slice-1-stabilization-audit.md](phase-2-slice-1-stabilization-audit.md).
 
 Lock in the current MVP surface before adding more behaviour:
 

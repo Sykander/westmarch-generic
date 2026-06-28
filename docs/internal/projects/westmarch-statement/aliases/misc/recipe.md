@@ -2,6 +2,8 @@
 
 **Subsystem:** misc · **Toggle:** `subsystems.misc.commands.recipe` · **Phase:** 1 (Tier H)
 
+**Status:** implemented in `src/aliases/misc/recipe.alias`; older unchecked checklist items below are retained as implementation-history context until the command docs get a full checklist refresh.
+
 **Greenfield** — read-only recipe browser. Complements [crafting/](../crafting/README.md) commands without consuming materials or downtime.
 
 ## Player-facing behaviour *(MVP outline)*

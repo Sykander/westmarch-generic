@@ -4,6 +4,8 @@
 
 **Subcommand** of [`!westmarch`](westmarch.md) — readable summary of the server’s loaded config for server configurers and content authors.
 
+**Status:** implemented in `src/aliases/westmarch/show.alias`; older unchecked checklist items below are retained as implementation-history context until the command docs get a full checklist refresh.
+
 ## Player-facing behaviour
 
 ```

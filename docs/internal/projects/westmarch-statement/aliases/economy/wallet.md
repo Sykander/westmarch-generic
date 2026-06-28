@@ -2,6 +2,8 @@
 
 **Subsystem:** economy · **Toggle:** `subsystems.economy.commands.wallet` · **Phase:** 1 (Tier F)
 
+**Status:** implemented in `src/aliases/economy/wallet.alias`; older unchecked checklist items below are retained as implementation-history context until the command docs get a full checklist refresh.
+
 **New command** — view and manage **server-defined currencies** (not Avrae gp). One command for all currencies configured in the owner’s config gvar; no per-currency commands like `!runes`.
 
 ## Player-facing behaviour

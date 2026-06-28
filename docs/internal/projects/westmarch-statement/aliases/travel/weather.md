@@ -2,6 +2,8 @@
 
 **Subsystem:** travel · **Toggle:** `subsystems.travel.commands.weather` · **Phase:** 1 (Tier C)
 
+**Status:** implemented in `src/aliases/travel/weather.alias`; older unchecked checklist items below are retained as implementation-history context until the command docs get a full checklist refresh.
+
 **Greenfield** — regional weather from config, scoped to the player’s current location (or a named area).
 
 ## Player-facing behaviour

@@ -2,6 +2,8 @@
 
 **Subsystem:** content · **Toggle:** `subsystems.content.commands.read` · **Phase:** 1 (Tier G)
 
+**Status:** implemented in `src/aliases/content/read.alias`; older unchecked checklist items below are retained as implementation-history context until the command docs get a full checklist refresh.
+
 Deep read companion to [library.md](library.md). Same **`library.gvar`** engine; `deep_read` mode + 8h cooldown.
 
 ## Player-facing behaviour

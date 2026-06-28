@@ -2,6 +2,8 @@
 
 **Subsystem:** economy · **Toggle:** `subsystems.economy.commands.job` · **Phase:** 1 (Tier F)
 
+**Status:** implemented in `src/aliases/economy/job.alias`; older unchecked checklist items below are retained as implementation-history context until the command docs get a full checklist refresh.
+
 First economy port. Reference westmarch command: skill check → gp payout → coinpurse credit with cooldown.
 
 ## Player-facing behaviour
