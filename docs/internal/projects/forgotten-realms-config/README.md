@@ -2,6 +2,16 @@
 
 Design notes for turning `src/gvars/configs/forgotten_realms_2014.gvar` from a tiny example into a usable Forgotten Realms starter preset.
 
+## Current status
+
+The runtime starter now has the core playable baseline: Forgotten Realms identity, Waterdeep default, external location and path gvars, transport catalogue, calendar/weather data, engine biome registry, economy shops/services/jobs, Forgotten Realms book shards, library-enabled locations, and reviewed D&D Beyond location image URLs.
+
+Remaining active project work is mostly validation and polish:
+
+- keep focused editor/Avrae tests green after config changes;
+- update public/admin docs when the preset behavior changes;
+- add more regional ports, island markets, job-board prose, quest hooks, and crafting/downtime/misc data only when gameplay needs those slices.
+
 ## Documents
 
 - [problem-statement.md](problem-statement.md) - why the current starter config is not enough.

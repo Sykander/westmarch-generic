@@ -6,7 +6,7 @@ This plan follows the solution statement and keeps work split into reviewable sl
 
 ## Status
 
-Slices 0-5 are implemented.
+Slices 0-11 are implemented for the current starter baseline.
 
 - Slice 0 audit: [baseline-audit.md](baseline-audit.md)
 - Slice 1 preset identity/defaults: `src/gvars/configs/forgotten_realms_2014.gvar`
@@ -14,7 +14,17 @@ Slices 0-5 are implemented.
 - Slice 3 location atlas: Sword Coast/North locations with Waterdeep as the default.
 - Slice 4 biome registry: existing engine preset biomes are wired through `world_data.biomes`.
 - Slice 5 path graph: directed land, river, and sea starter routes are seeded in the paths JSON gvar referenced by `world_data.paths_gvar_id`.
-- Remaining work starts with shops and service data.
+- Slice 6 shops and services: 37 top-level shops are configured and linked from settled locations.
+- Slice 7 jobs: economy is enabled with starter job metadata and location availability.
+- Slice 8 content and libraries: Forgotten Realms book shards are registered and library locations have topics.
+- Slice 9 images: every configured location has a reviewed D&D Beyond image URL tracked in [area-image-selections.md](area-image-selections.md).
+- Slice 10 editor/validation: the editor accepts shipped `engine:configs/...` aliases, validates path transport ids, and has a focused starter regression test.
+- Slice 11 admin/docs: setup and config docs describe the current preset shape.
+
+Remaining active work:
+
+- Phase 12 verification after each behavior/config change.
+- Optional expansion: more regional ports and island markets, first-class shop browse/list support, job-board encounter prose, quest hooks, and future crafting/downtime/misc data once those gameplay slices are deliberately enabled.
 
 ## Phase 0 - Baseline audit
 
@@ -245,6 +255,8 @@ Acceptance:
 
 ## Phase 6 - Shops and service data
 
+Status: implemented. See [economy-seed.md](economy-seed.md).
+
 Seed top-level `shops` after the first city/town batch lands.
 
 Priority shops:
@@ -284,6 +296,8 @@ Acceptance:
 
 ## Phase 7 - Jobs and economy tuning
 
+Status: implemented for the starter baseline.
+
 Make `!job` useful with named job display/check metadata under `subsystems.economy.config.jobs` while keeping `location.commands.job` as a boolean availability flag.
 
 - Enable `commands.job` on settlements with plausible work.
@@ -300,6 +314,8 @@ Acceptance:
 
 ## Phase 8 - Content and libraries
 
+Status: implemented for the starter baseline.
+
 Enable content commands only when catalogue wiring is clear.
 
 - Keep the generated Forgotten Realms book shards under `src/gvars/configs/books/`.
@@ -315,6 +331,8 @@ Acceptance:
 
 ## Phase 9 - Images and visual assets
 
+Status: implemented for the starter baseline. See [area-image-selections.md](area-image-selections.md).
+
 Keep runtime config image choices deliberate and traceable.
 
 - Populate location `image` fields only from the reviewed per-area selection pass.
@@ -328,6 +346,8 @@ Acceptance:
 - Every added image URL has a selection note and source/provenance in the project docs.
 
 ## Phase 10 - Editor and validation
+
+Status: implemented for the current config shape.
 
 Update the editor only where the config shape changes or validation needs to catch new risks.
 
@@ -344,6 +364,8 @@ Acceptance:
 - Existing starter config tests still pass.
 
 ## Phase 11 - Admin display and docs
+
+Status: implemented for the current starter baseline.
 
 Update admin-facing and public docs.
 

@@ -60,7 +60,7 @@ Optional starting worlds (duplicate into your workshop, then set **`westmarch_co
 
 | Preset | Setting | Set Avrae rules to |
 |--------|---------|-------------------|
-| Forgotten Realms (2014) | Sword Coast travel, time, weather, and FR tone | **2014** |
+| Forgotten Realms (2014) | Sword Coast travel, time, weather, trade, shops, and libraries | **2014** |
 | Forgotten Realms (2024) | FR lore; 2024 tables | **2024** |
 | Generic fantasy (2014) | Setting-neutral | **2014** |
 | Generic fantasy (2024) | Setting-neutral; 2024 tables | **2024** |
@@ -186,7 +186,17 @@ subsystems = {
             "show_arrival_time": True,
             "show_arrival_weather": True,
             "show_shops_on_travel": True,
-            "transport_icons": {"walk": "🚶", "fly": "🪽", "horse": "🐎", "boat": "⛵"},
+            "transport_icons": {
+                "walk": "🚶",
+                "fly": "🪽",
+                "horse": "🐎",
+                "cart": "🛞",
+                "boat": "⛵",
+                "ship": "⛵",
+                "swim": "🌊",
+                "portal": "🌀",
+                "teleportation_circle": "🌀",
+            },
         },
     },
 }

@@ -50,7 +50,7 @@ test('editor starter sources parse cleanly', () => {
   }
 });
 
-test('forgotten realms starter has slice 5 travel baseline', () => {
+test('forgotten realms starter has travel, economy, content, and media baseline', () => {
   const starterSource = STARTER_SOURCES.find((source) => source.id === 'forgotten-realms-2014');
   assert.ok(starterSource);
 
