@@ -479,17 +479,14 @@ def format_price(config_override, price):
     return ", ".join(parts)
 
 
-def _pad_text(value, width):
-    text = str(value)
-    if len(text) >= width:
-        return text
-    return text + (" " * (width - len(text)))
+def _trade_code_text(value):
+    return str(value).replace("`", "'").strip()
 
 
 def _trade_row(item_name, buy_text, sell_text=None):
     if sell_text == None:
-        return f"  {_pad_text(item_name, 28)} {buy_text}"
-    return f"  {_pad_text(item_name, 28)} {_pad_text(buy_text, 10)} {sell_text}"
+        return f"{_trade_code_text(item_name)} = {_trade_code_text(buy_text)}"
+    return f"{_trade_code_text(item_name)} = {_trade_code_text(buy_text)} / {_trade_code_text(sell_text)}"
 
 
 def trade_text(config_override=None, character_location_id=None, max_lines=80):
@@ -503,11 +500,11 @@ def trade_text(config_override=None, character_location_id=None, max_lines=80):
         if not _has_stock(shop):
             continue
         show_sell = _accepts_sells(shop)
-        pending = [shop_name(shop)]
+        pending = ["```ini", f"[{_trade_code_text(shop_name(shop))}]"]
         if show_sell:
-            pending.append("  Item                         Buy        Sell")
+            pending.append("; buy / sell")
         else:
-            pending.append("  Item                         Buy")
+            pending.append("; buy")
         item_lines = []
         for stock_entry in _stock_entries(shop):
             name = _stock_item_name(stock_entry)
@@ -528,6 +525,7 @@ def trade_text(config_override=None, character_location_id=None, max_lines=80):
             continue
         for line in item_lines:
             pending.append(line)
+        pending.append("```")
         if len(lines) + len(pending) > max_lines:
             hidden += 1
             continue
@@ -537,7 +535,7 @@ def trade_text(config_override=None, character_location_id=None, max_lines=80):
         return ""
     if hidden > 0:
         lines.append(f"... {hidden} more shops hidden; use buy or sell with a shop name.")
-    return "**Shops**\n```text\n" + "\n".join(lines) + "\n```"
+    return "**Shops**\n" + "\n".join(lines)
 
 
 def _inventory_bag(config_override, stock_entry=None):

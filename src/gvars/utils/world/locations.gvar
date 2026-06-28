@@ -709,10 +709,6 @@ def display_location(location, mode="full", character=None, include_activities=F
                     visit_text = "First visit."
                 else:
                     visit_text = f"Visited **{count}** times."
-                if config_override != None:
-                    jobs = jobs_for_location(config_override, location)
-                    if len(jobs) > 0:
-                        visit_text += f" Jobs here: {format_jobs(jobs, 3)}."
                 lines.append(visit_text)
         except:
             pass

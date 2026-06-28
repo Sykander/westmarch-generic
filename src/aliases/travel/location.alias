@@ -46,17 +46,17 @@ description = locations.display_location(loc, "full", ch, True, visits, cfg)
 if locations.location_has_trade(loc):
     trade = shops.trade_text(cfg, loc_id)
     if trade != "":
-        description += "\n\n" + trade
+        description += "\n" + trade
 nearby = journeys.format_nearby_locations(cfg, loc_id, ctx.prefix)
 if nearby != "":
-    description += "\n\n" + nearby
+    description += "\n" + nearby
 
 if len(argslist) > 0 and str(argslist[0]).strip().lower() == "journey":
     journey_text = journeys.active_journey_text(cfg, ch, ctx.prefix)
     if journey_text == "":
-        description += "\n\nNo active journey is being tracked."
+        description += "\nNo active journey is being tracked."
     else:
-        description += "\n\n" + journey_text
+        description += "\n" + journey_text
 
 image = locations.location_image(loc)
 return get_embed(desc=description, image=image)

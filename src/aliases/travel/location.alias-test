@@ -143,9 +143,9 @@ vars:
 
 !location
 ---
-'re:Jobs[\s\S]*Caravan Guard[\s\S]*Shops[\s\S]*```text[\s\S]*General Store[\s\S]*Item[\s\S]*Buy[\s\S]*Sell[\s\S]*Rope, Hemp \(50 ft\)[\s\S]*2 gp[\s\S]*1 gp'
+'re:Jobs[\s\S]*Caravan Guard[\s\S]*Shops[\s\S]*```ini[\s\S]*\[General Store\][\s\S]*; buy / sell[\s\S]*Rope, Hemp \(50 ft\) = 2 gp / 1 gp\n```\n## Nearby[\s\S]*Oakwood Forest'
 ---
-name: shows configured jobs and shop trade prices for current location
+name: shows configured jobs shop trade prices and nearby without extra section gap
 vars:
   svars:
     westmarch_config: "aaaa1005-1005-1005-1005-100000000005"
@@ -167,7 +167,11 @@ vars:
           "default_location": "river_town",
           "locations": {
               "river_town": {"name": "River Town", "commands": {"job": True, "buy": True, "sell": True}},
+              "oakwood": {"name": "Oakwood Forest"},
           },
+          "paths": [
+              {"from": "river_town", "to": "oakwood", "label": "Old Road"},
+          ],
       }
       shops = {
           "general": {

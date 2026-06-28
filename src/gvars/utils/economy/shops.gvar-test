@@ -75,11 +75,11 @@ cfg_fixture = {
     },
 }
 text = shops.trade_text(cfg_fixture, "oakwood")
-return "```text" in text and "General Store" in text and "Item" in text and "Buy" in text and "Sell" in text and "Rope, Hemp" in text and "2 gp" in text and "1 gp" in text and "buy_from_shop" not in text
+return "```ini" in text and "[General Store]" in text and "; buy / sell" in text and "Rope, Hemp (50 ft) = 2 gp / 1 gp" in text and "buy_from_shop" not in text
 ---
 True
 ---
-name: trade_text summarizes visible buy and sell prices in code block
+name: trade_text summarizes visible buy and sell prices in compact shop code blocks
 
 shop, stock, error = shops.find_shop_for_item({"shops": {}}, "Dagger")
 return "No shops are configured" in error

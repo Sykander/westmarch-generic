@@ -87,7 +87,7 @@ cfg_fixture = {
 }
 loc = locations.get_location(cfg_fixture, "river_town")
 text = locations.display_location(loc, "full", character(), True, 1, cfg_fixture)
-return "First visit." in text and "Jobs here" in text and "Caravan Guard" in text and "Jobs" in text
+return "First visit." in text and "Jobs here" not in text and "Caravan Guard" in text and "Jobs" in text
 ---
 True
 ---
