@@ -165,12 +165,14 @@ test('forgotten realms starter has slice 5 travel baseline', () => {
   assert.equal(candlekeepCommands.library, true);
   assert.equal(candlekeepCommands.read, true);
 
-  const paths = JSON.parse(
+  const pathsPayload = JSON.parse(
     readFileSync(
       new URL('../../../src/gvars/configs/forgotten_realms_2014_paths.gvar.json', import.meta.url),
       'utf8',
     ),
-  ) as Record<string, unknown>[];
+  ) as Record<string, unknown>;
+  const pathsByFrom = pathsPayload.paths_by_from as Record<string, Record<string, unknown>[]>;
+  const paths = Object.values(pathsByFrom).flat();
   function transportMatches(path: Record<string, unknown>, transport: string) {
     const requirements = path.requirements as Record<string, unknown> | undefined;
     const raw = requirements?.transport ?? path.transport;
@@ -200,6 +202,7 @@ test('forgotten realms starter has slice 5 travel baseline', () => {
   }
 
   assert.ok(paths.length > 120);
+  assert.ok(Array.isArray(pathsByFrom.waterdeep));
   assert.ok(hasUnrestrictedPath('waterdeep', 'high_road'));
   assert.ok(hasUnrestrictedPath('high_road', 'triboar_trail'));
   assert.ok(hasUnrestrictedPath('triboar_trail', 'phandalin'));
@@ -496,6 +499,35 @@ world_data = {
 }
 `).includes('world.path.endpoint_unknown'),
   );
+});
+
+test('travel paths accept indexed paths_by_from shape', () => {
+  const codes = issueCodes(`
+subsystems = {
+    "travel": {
+        "enabled": True,
+        "commands": {"travel": True, "location": True},
+    },
+}
+
+world_data = {
+    "default_location": "river_town",
+    "locations": {
+        "river_town": {"name": "River Town"},
+        "oakwood": {"name": "Oakwood Forest"},
+    },
+    "paths": {
+        "paths_by_from": {
+            "river_town": [
+                {"from": "river_town", "to": "oakwood", "steps": [{"type": "encounter", "biome": "forest"}]},
+            ],
+        },
+    },
+}
+`);
+
+  assert.equal(codes.includes('world.paths.type'), false);
+  assert.equal(codes.includes('world.path.endpoint_unknown'), false);
 });
 
 test('travel path transport requirements must match configured transport', () => {

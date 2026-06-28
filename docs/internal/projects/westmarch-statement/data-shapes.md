@@ -533,7 +533,7 @@ world_data = {
 | **`locations`** | when travel/location on and no **`locations_gvar_id`** | Dict keyed by stable **`id`** — [Location](#location). Inline entries override matching external ids. |
 | **`locations_gvar_id`** | no | UUID of a JSON gvar containing the large locations dict, optionally wrapped as **`{"locations": {...}}`**. The web editor may display shipped preset UUIDs as **`engine:configs/...`** aliases while editing. |
 | **`paths`** | when **`travel`** routes journeys and no **`paths_gvar_id`** | List of [Path](#path) edges. Inline entries are appended after external entries. |
-| **`paths_gvar_id`** | no | UUID of a JSON gvar containing the large paths list, optionally wrapped as **`{"paths": [...]}`**. The web editor may display shipped preset UUIDs as **`engine:configs/...`** aliases while editing. |
+| **`paths_gvar_id`** | no | UUID of a JSON gvar containing the large paths source. Small sources may be a flat list or **`{"paths": [...]}`**; large sources should use **`{"paths_by_from": {"location_id": [path, ...]}}`** so route lookups can read one origin directly. The web editor may display shipped preset UUIDs as **`engine:configs/...`** aliases while editing. |
 | **`transport`** | no | [Transport](#transport) modes — horse, boat, ship, … |
 | **`calendars`** | when world clock on | [Calendar](#calendar) definitions |
 | **`biomes`** | when exploration on | Registry only — [Biome registry](#biome-registry); encounter bodies in separate gvars |
@@ -953,7 +953,7 @@ Loader: [location_encounters.gvar](gvars/location_encounters.md). Design rationa
 
 ## Path
 
-A **one-way route** from one location to another. Stored inline in **`world_data.paths`** or in the JSON gvar pointed to by **`world_data.paths_gvar_id`** — list of path dicts. Routing and display: [gvars/paths.md](gvars/paths.md).
+A **one-way route** from one location to another. Stored inline in **`world_data.paths`** or in the JSON gvar pointed to by **`world_data.paths_gvar_id`**. Small configs can use a list of path dicts; large configs should use **`paths_by_from`** keyed by origin id so commands can fetch only paths leaving the current location. Routing and display: [gvars/paths.md](gvars/paths.md).
 
 ```py
 path = {

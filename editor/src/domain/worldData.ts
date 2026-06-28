@@ -57,6 +57,39 @@ function parseJsonSource(source: LoadedGvarSource | undefined): unknown {
   }
 }
 
+function flattenPathsByFrom(pathsByFrom: AnyRecord): unknown[] {
+  const paths: unknown[] = [];
+  for (const origin of Object.keys(pathsByFrom)) {
+    const entries = pathsByFrom[origin];
+    if (!Array.isArray(entries)) continue;
+    paths.push(...entries);
+  }
+  return paths;
+}
+
+export function pathsFromSourceValue(value: unknown): unknown[] {
+  if (Array.isArray(value)) return value;
+  if (!isPlainRecord(value)) return [];
+  if (Array.isArray(value.paths)) return value.paths;
+  if (isPlainRecord(value.paths_by_from)) return flattenPathsByFrom(value.paths_by_from);
+  return [];
+}
+
+function pathsByFrom(paths: unknown[]): AnyRecord {
+  const out: AnyRecord = {};
+  paths.forEach((entry) => {
+    const path = isPlainRecord(entry) ? entry : {};
+    const from = String(path.from ?? '_unassigned')
+      .trim()
+      .toLowerCase();
+    const key = from || '_unassigned';
+    const entries = Array.isArray(out[key]) ? out[key] : [];
+    entries.push(entry);
+    out[key] = entries;
+  });
+  return out;
+}
+
 export function isReadOnlyWorldGvarId(value: unknown) {
   const key = sourceKey(value);
   return Boolean(
@@ -87,10 +120,7 @@ export function locationsFromGvarSource(source: LoadedGvarSource | undefined): A
 }
 
 export function pathsFromGvarSource(source: LoadedGvarSource | undefined): unknown[] {
-  const parsed = parseJsonSource(source);
-  if (Array.isArray(parsed)) return parsed;
-  if (isPlainRecord(parsed) && Array.isArray(parsed.paths)) return parsed.paths;
-  return [];
+  return pathsFromSourceValue(parseJsonSource(source));
 }
 
 export function locationsFromPreset(value: unknown): AnyRecord {
@@ -100,9 +130,7 @@ export function locationsFromPreset(value: unknown): AnyRecord {
 }
 
 export function pathsFromPreset(value: unknown): unknown[] {
-  return PATH_PRESET_KEYS.has(sourceKey(value))
-    ? (forgottenRealmsPaths as unknown as unknown[])
-    : [];
+  return PATH_PRESET_KEYS.has(sourceKey(value)) ? pathsFromSourceValue(forgottenRealmsPaths) : [];
 }
 
 export function mergeWorldLocations(externalLocations: AnyRecord, inlineLocations: AnyRecord) {
@@ -118,5 +146,5 @@ export function worldLocationsSourceBody(locations: AnyRecord) {
 }
 
 export function worldPathsSourceBody(paths: unknown[]) {
-  return JSON.stringify(paths, null, 2);
+  return JSON.stringify({ paths_by_from: pathsByFrom(paths) }, null, 2);
 }

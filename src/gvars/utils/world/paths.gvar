@@ -22,8 +22,9 @@ DEFAULT_TRANSPORT_ICONS = {
     "portal": "🌀",
     "teleportation_circle": "🌀",
 }
+INDEXED_PATHS_FIELD = "paths_by_from"
+_path_payload_cache = {}
 _paths_cache = {}
-_path_index_cache = {}
 
 
 def _read_field(obj, key):
@@ -41,6 +42,7 @@ def _read_field(obj, key):
     attrs = {
         "world_data": lambda o: o.world_data,
         "paths": lambda o: o.paths,
+        "paths_by_from": lambda o: o.paths_by_from,
         "paths_gvar_id": lambda o: o.paths_gvar_id,
         "aliases": lambda o: o.aliases,
         "from": lambda o: o["from"],
@@ -98,36 +100,112 @@ def _coerce_path_list(raw):
         wrapped = _read_field(raw, "paths")
         if wrapped != None and lists.is_list(wrapped):
             return wrapped
+        indexed = _indexed_path_map(raw)
+        if dicts.is_dict(indexed) and len(indexed) > 0:
+            out = []
+            for origin in indexed:
+                for path in _coerce_path_list(indexed[origin]):
+                    out.append(path)
+            return out
         out = []
         for key in raw:
-            out.append(raw[key])
+            value = raw[key]
+            if lists.is_list(value):
+                for path in value:
+                    out.append(path)
+            else:
+                out.append(value)
         return out
     return []
+
+
+def _indexed_path_map(raw):
+    if raw == None or not dicts.is_dict(raw):
+        return {}
+    if _read_field(raw, "from") != None and _read_field(raw, "to") != None:
+        return {}
+    wrapped = _read_field(raw, INDEXED_PATHS_FIELD)
+    if dicts.is_dict(wrapped):
+        return wrapped
+    if _read_field(raw, "paths") != None:
+        return {}
+    for key in raw:
+        if lists.is_list(raw[key]):
+            return raw
+    return {}
+
+
+def _load_paths_gvar_payload(cfg):
+    wd = _world_data(cfg)
+    gvar_id = _read_field(wd, "paths_gvar_id")
+    if gvar_id == None:
+        return None
+    addr = str(gvar_id).strip()
+    if addr == "":
+        return None
+    if addr in _path_payload_cache:
+        return _path_payload_cache[addr]
+    body = get_gvar(addr)
+    if body == None or str(body).strip() == "":
+        _path_payload_cache[addr] = None
+        return None
+    try:
+        payload = load_json(body)
+        _path_payload_cache[addr] = payload
+        return payload
+    except:
+        pass
+    _path_payload_cache[addr] = None
+    return None
 
 
 def _load_paths_gvar(cfg):
     wd = _world_data(cfg)
     gvar_id = _read_field(wd, "paths_gvar_id")
-    if gvar_id == None:
-        return []
-    addr = str(gvar_id).strip()
-    if addr == "":
-        return []
-    if addr in _paths_cache:
+    addr = str(gvar_id).strip() if gvar_id != None else ""
+    if addr != "" and addr in _paths_cache:
         return _paths_cache[addr]
-    body = get_gvar(addr)
-    if body == None or str(body).strip() == "":
-        _paths_cache[addr] = []
-        return []
-    try:
-        payload = load_json(body)
-        path_list = _coerce_path_list(payload)
+    payload = _load_paths_gvar_payload(cfg)
+    path_list = _coerce_path_list(payload)
+    if addr != "":
         _paths_cache[addr] = path_list
-        return path_list
-    except:
-        pass
-    _paths_cache[addr] = []
+    return path_list
+
+
+def _indexed_paths_from(raw, origin):
+    indexed = _indexed_path_map(raw)
+    if not dicts.is_dict(indexed) or len(indexed) == 0:
+        return None
+    direct = _read_field(indexed, origin)
+    if direct != None:
+        return _coerce_path_list(direct)
+    for key in indexed:
+        if _normalize_id(key) == origin:
+            return _coerce_path_list(indexed[key])
     return []
+
+
+def _path_list_from(cfg, origin):
+    out = []
+    external = _indexed_paths_from(_load_paths_gvar_payload(cfg), origin)
+    if external == None:
+        for path in _load_paths_gvar(cfg):
+            if _normalize_id(_read_field(path, "from")) == origin:
+                out.append(path)
+    else:
+        for path in external:
+            out.append(path)
+    inline_raw = _read_field(_world_data(cfg), "paths")
+    inline = _indexed_paths_from(inline_raw, origin)
+    if inline == None:
+        inline = _coerce_path_list(inline_raw)
+        for path in inline:
+            if _normalize_id(_read_field(path, "from")) == origin:
+                out.append(path)
+    else:
+        for path in inline:
+            out.append(path)
+    return out
 
 
 def _path_list(cfg):
@@ -137,32 +215,6 @@ def _path_list(cfg):
     for path in _coerce_path_list(_read_field(_world_data(cfg), "paths")):
         out.append(path)
     return out
-
-
-def _path_index_cache_key(cfg):
-    wd = _world_data(cfg)
-    inline_paths = _coerce_path_list(_read_field(wd, "paths"))
-    gvar_id = _read_field(wd, "paths_gvar_id")
-    if len(inline_paths) == 0 and gvar_id != None and str(gvar_id).strip() != "":
-        return str(gvar_id).strip()
-    return None
-
-
-def _path_index(cfg):
-    cache_key = _path_index_cache_key(cfg)
-    if cache_key != None and cache_key in _path_index_cache:
-        return _path_index_cache[cache_key]
-    index = {}
-    for path in _path_list(cfg):
-        path_from = _normalize_id(_read_field(path, "from"))
-        if path_from == None:
-            continue
-        if path_from not in index:
-            index[path_from] = []
-        index[path_from].append(path)
-    if cache_key != None:
-        _path_index_cache[cache_key] = index
-    return index
 
 
 def _max_count(limit):
@@ -393,14 +445,31 @@ def get_edges_from(config_override, from_id, transport_id="walk"):
     out = []
     if origin == None:
         return out
-    index = _path_index(cfg)
-    if origin not in index:
-        return out
     selected_ids = _transport_match_ids(cfg, transport_id)
-    for path in index[origin]:
+    for path in _path_list_from(cfg, origin):
         if not _path_matches_transport_ids(path, selected_ids):
             continue
         out.append(_copy_path(path))
+    return out
+
+
+def get_nearby_locations(config_override, from_id, limit=None):
+    """Direct destination ids from one origin, without journey cost or transport work."""
+    cfg = _cfg(config_override)
+    origin = _normalize_id(from_id)
+    out = []
+    seen = {}
+    if origin == None:
+        return out
+    max_locations = _max_count(limit)
+    for path in _path_list_from(cfg, origin):
+        dest = _normalize_id(_read_field(path, "to"))
+        if dest == None or dest == origin or dest in seen:
+            continue
+        seen[dest] = True
+        out.append(dest)
+        if max_locations != None and len(out) >= max_locations:
+            return out
     return out
 
 
@@ -414,27 +483,7 @@ def get_edge_entries_from(config_override, from_id, transport_id="walk", selecte
     max_edges = _max_count(limit)
     if selected_ids == None:
         selected_ids = _transport_match_ids(cfg, transport_id)
-    if max_edges != None:
-        for path in _path_list(cfg):
-            if _normalize_id(_read_field(path, "from")) != origin:
-                continue
-            if not _path_matches_transport_ids(path, selected_ids):
-                continue
-            dest = _normalize_id(_read_field(path, "to"))
-            if dest == None:
-                continue
-            out.append({
-                "to": dest,
-                "cost": get_path_cost(path, transport_id),
-                "path": path,
-            })
-            if len(out) >= max_edges:
-                return out
-        return out
-    index = _path_index(cfg)
-    if origin not in index:
-        return out
-    for path in index[origin]:
+    for path in _path_list_from(cfg, origin):
         if not _path_matches_transport_ids(path, selected_ids):
             continue
         dest = _normalize_id(_read_field(path, "to"))
@@ -753,22 +802,6 @@ def _biome_source(cfg):
     if source == None or str(source).strip() == "":
         return "auto"
     return str(source).strip().lower()
-
-
-def _missing_biome_warning(step, cfg):
-    if not dicts.is_dict(step):
-        return None
-    step_type = _read_field(step, "type")
-    biome = _read_field(step, "biome")
-    if biome == None:
-        biome = _read_field(step, "code")
-    if step_type != "encounter" and biome == None:
-        return None
-    if biome != None and str(biome).strip() != "":
-        return None
-    if _biome_source(cfg) == "location":
-        return None
-    return "Encounter step has no biome. Configure a biome, or set exploration biome source to location."
 
 
 def display_step(step, path=None, prefix="!", completed=False):

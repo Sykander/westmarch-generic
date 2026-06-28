@@ -90,6 +90,39 @@ vars:
 
 !location
 ---
+re:River Town[\s\S]*Nearby[\s\S]*Oakwood Forest[\s\S]*Docks
+---
+name: shows nearby destinations from indexed paths
+vars:
+  svars:
+    westmarch_config: "aaaa1009-1009-1009-1009-100000000009"
+  gvars:
+    aaaa1009-1009-1009-1009-100000000009: |
+      subsystems = {
+          "travel": {"enabled": True, "commands": {"location": True}},
+      }
+      world_data = {
+          "default_location": "river_town",
+          "locations": {
+              "river_town": {"name": "River Town"},
+              "oakwood": {"name": "Oakwood Forest", "description": "A nearby forest road."},
+              "docks": {"name": "Docks", "description": "River landings and boats."},
+          },
+          "paths": {
+              "paths_by_from": {
+                  "river_town": [
+                      {"from": "river_town", "to": "oakwood", "label": "Old Road"},
+                      {"from": "river_town", "to": "docks", "label": "Harbor lane"},
+                  ],
+                  "far_city": [
+                      {"from": "far_city", "to": "missing", "label": "Should Not Be Read"},
+                  ],
+              },
+          },
+      }
+
+!location
+---
 re:Activities
 ---
 name: shows activities for current location

@@ -102,7 +102,7 @@ vars:
     ffff2424-2424-2424-2424-242424242424: |
       {"river_town":{"name":"River Town"},"oakwood":{"name":"Oakwood Forest"}}
     ffff2525-2525-2525-2525-252525252525: |
-      [{"from":"river_town","to":"oakwood","steps":[{"type":"proceed","description":"Follow the road."}]}]
+      {"paths_by_from":{"river_town":[{"from":"river_town","to":"oakwood","steps":[{"type":"proceed","description":"Follow the road."}]}]}}
 
 !show wiring
 ---

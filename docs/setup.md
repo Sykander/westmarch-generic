@@ -223,6 +223,8 @@ world_data = {
 }
 ```
 
+For large route graphs, store path JSON as `{"paths_by_from": {"location_id": [path, ...]}}` so travel commands can read only the paths leaving the current location.
+
 The web editor may display shipped world-data presets as `engine:configs/...` aliases while
 editing; generated/exported config bodies use runtime gvar UUIDs unless you generate owner gvars.
 

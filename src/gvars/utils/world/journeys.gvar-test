@@ -138,11 +138,35 @@ cfg_fixture = {
 }
 nearby = journeys.nearby_locations(cfg_fixture, "river_town")
 text = journeys.format_nearby_locations(cfg_fixture, "river_town", "!")
-return len(nearby) == 2 and nearby[0]["id"] == "oakwood" and len(nearby[0]["transports"]) == 2 and "Oakwood Forest" in text and "Docks" in text and "Old Road" not in text and "walk, horse" not in text and "!travel" not in text
+return len(nearby) == 2 and nearby[0]["id"] == "oakwood" and nearby[0]["step_count"] == None and len(nearby[0]["transports"]) == 0 and len(nearby[0]["labels"]) == 0 and "Oakwood Forest" in text and "Docks" in text and "Old Road" not in text and "walk, horse" not in text and "!travel" not in text
 ---
 True
 ---
 name: nearby locations group direct destinations with concise text
+
+cfg_fixture = {
+    "world_data": {
+        "locations_gvar_id": "eeee3335-3335-3335-3335-333333333335",
+        "paths": {
+            "paths_by_from": {
+                "river_town": [
+                    {"from": "river_town", "to": "oakwood_forest"},
+                ],
+            },
+        },
+    },
+}
+nearby = journeys.nearby_locations(cfg_fixture, "river_town")
+text = journeys.format_nearby_locations(cfg_fixture, "river_town", "!")
+return len(nearby) == 1 and nearby[0]["location"] == None and "Oakwood Forest" in text and "External Oakwood" not in text
+---
+True
+---
+name: nearby locations do not resolve external location records
+vars:
+  gvars:
+    eeee3335-3335-3335-3335-333333333335: |
+      {"oakwood_forest":{"name":"External Oakwood"}}
 
 cfg_fixture = {
     "world_data": {

@@ -18,6 +18,7 @@ _MAX_CV_CHARS = 10000
 _POOL_TARGET = 20
 _TOPIC_SCAN_LIMIT = 60
 _QUICK_BODY_LEN = 120
+_CENSOR_WORD_LIMIT = 36
 _MAX_TOPIC_WORDS = 8
 _MAX_TOPIC_EXPANDED = 14
 _READ_SKILLS_FALLBACK = ["history", "investigation", "nature", "religion", "arcana", "insight", "medicine"]
@@ -543,14 +544,15 @@ def _censor_token(word, score, seed_s, wi):
         return text
     hide_pct = 100 - int(max(0, min(100, score)))
     th = int(max(0, min(99, hide_pct)))
-    h = (_string_mix_int(seed_s + "|" + str(wi))) % 100
+    seed_len = len(str(seed_s))
+    h = ((int(wi) + 1) * 37 + len(text) * 17 + seed_len * 7) % 100
     if h < th:
         return "□" * len(text)
-    h2 = (_string_mix_int(seed_s + "|h|" + str(wi))) % 100
+    h2 = (h + len(text) * 19 + 31) % 100
     if h2 < th:
         mid = len(text) // 2
         return "□" * mid + text[mid:]
-    h3 = (_string_mix_int(seed_s + "|t|" + str(wi))) % 100
+    h3 = (h + seed_len * 11 + 67) % 100
     if h3 < th:
         mid = len(text) // 2
         return text[0:mid] + "□" * (len(text) - mid)
@@ -570,9 +572,14 @@ def _censor_line(text, score, seed_s):
         for word in line.split(" "):
             if len(word) == 0:
                 continue
+            if wi >= int(_CENSOR_WORD_LIMIT):
+                parts.append("...")
+                break
             parts.append(_censor_token(word, score, seed_s, wi))
             wi += 1
         out_lines.append(" ".join(parts))
+        if wi >= int(_CENSOR_WORD_LIMIT):
+            break
     return "\n".join(out_lines)
 
 
@@ -878,7 +885,7 @@ def read_book(book, character, args, mode, argslist=None):
     raw_desc = str(_read_field(book, "description") or "")
     body_for_censor = raw_desc
     if str(mode).lower() == "quick_read":
-        cap = int(_QUICK_BODY_LEN) + 64
+        cap = int(_QUICK_BODY_LEN)
         if len(body_for_censor) > cap:
             body_for_censor = body_for_censor[0:cap]
     if impossible:

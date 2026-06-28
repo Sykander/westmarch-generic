@@ -65,3 +65,58 @@ return "Read the full text online" not in library.read_display(read_result)
 True
 ---
 name: read_display hides content link below full comprehension
+
+long_body = " ".join([
+    "ancient",
+    "marginalia",
+    "repeats",
+    "itself",
+    "across",
+    "many",
+    "fragile",
+    "pages",
+    "where",
+    "each",
+    "symbol",
+    "requires",
+    "patient",
+    "study",
+    "and",
+    "careful",
+    "comparison",
+    "against",
+    "older",
+    "copies",
+    "stored",
+    "behind",
+    "sealed",
+    "library",
+    "doors",
+    "beneath",
+    "watchful",
+    "candlelight",
+    "through",
+    "several",
+    "late",
+    "winter",
+    "nights",
+    "without",
+    "easy",
+    "answers",
+    "remaining",
+])
+book = {
+    "name": "Sealed Cipher Notes",
+    "author": "Unknown",
+    "written": "unknown",
+    "rarity": "common",
+    "language": "NoSuchLanguage",
+    "description": long_body,
+}
+result = library.read_book(book, character(), argparse(""), "quick_read", [])
+desc = result["comprehended_book"]["description"]
+return result["impossible"] == True and len(desc) <= 123
+---
+True
+---
+name: quick library read censors long undeciphered text under statement budget

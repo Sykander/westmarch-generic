@@ -22,7 +22,7 @@ Paste **all location ids** (or the subgraph ids for this region). Optionally nam
 
 ## Integration
 
-> Append these entries to `forgotten_realms_2014_paths.gvar.json`. Skip duplicates matching same `from`, `to`, and `requirements.transport`.
+> Merge these entries into `forgotten_realms_2014_paths.gvar.json` under `paths_by_from`, grouped by each path's `from` id. Skip duplicates matching same `from`, `to`, and `requirements.transport`.
 
 ## Tips
 

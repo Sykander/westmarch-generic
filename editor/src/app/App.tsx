@@ -70,6 +70,7 @@ import {
   mergeWorldPaths,
   pathsFromGvarSource,
   pathsFromPreset,
+  pathsFromSourceValue,
   worldLocationsSourceBody,
   worldPathsSourceBody,
 } from '../domain/worldData';
@@ -3022,7 +3023,7 @@ function WorldView({
     [config.world_data.locations],
   );
   const inlinePaths = useMemo(
-    () => (Array.isArray(config.world_data.paths) ? config.world_data.paths : []),
+    () => pathsFromSourceValue(config.world_data.paths),
     [config.world_data.paths],
   );
   const locationsSource = findLoadedGvarSource(relatedGvars, config.world_data.locations_gvar_id);

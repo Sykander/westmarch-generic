@@ -263,6 +263,15 @@ def _location_count(wd):
 
 def _paths_payload(wd):
     payload = _load_json_gvar(_read_field(wd, "paths_gvar_id"))
+    paths_by_from = _read_field(payload, "paths_by_from")
+    if _is_dict(paths_by_from):
+        out = []
+        for origin in paths_by_from:
+            entries = paths_by_from[origin]
+            if lists.is_list(entries):
+                for entry in entries:
+                    out.append(entry)
+        return out
     paths = _read_field(payload, "paths")
     if paths != None:
         payload = paths

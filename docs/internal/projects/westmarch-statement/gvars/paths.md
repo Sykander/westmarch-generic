@@ -4,6 +4,8 @@
 
 Look up [paths](../data-shapes.md#path) from inline **`world_data.paths`** and optional external **`world_data.paths_gvar_id`** JSON, then resolve **per-edge** costs and steps. Transport modes from **`world_data.transport`**. Edge helpers used by [journeys.md](journeys.md).
 
+For large path graphs, store the JSON as **`{"paths_by_from": {"waterdeep": [path, ...]}}`**. The helpers still accept flat lists and **`{"paths": [...]}`**, but the indexed shape lets commands fetch outgoing paths for the current origin without scanning the whole graph.
+
 **Shortest-path search** lives in **`journeys.gvar`** — not here.
 
 Each path dict is **one directed edge** with **one** `steps` list. Same `from`/`to` with different transport → **separate path entries** (see [data-shapes § Transport](../data-shapes.md#transport)).
@@ -94,7 +96,7 @@ found, legs = journeys.find_journey(cfg, from_id, to_id, transport_id="horse")
 
 | westmarch | Generic |
 |-----------|---------|
-| `paths` list in engine gvar | Config **`world_data.paths`** or **`world_data.paths_gvar_id`** |
+| `paths` list/index in engine gvar | Config **`world_data.paths`** or **`world_data.paths_gvar_id`** |
 | `get_path_cost` / `get_path_steps` | same names |
 | `path.horse` / `path.boat` on one edge | Separate path dicts per transport |
 | `get_shortest_path` | **`journeys.find_journey`** |

@@ -66,13 +66,17 @@ test('locationsFromGvarSource accepts direct and wrapped location maps', () => {
   );
 });
 
-test('pathsFromGvarSource accepts direct and wrapped path lists', () => {
+test('pathsFromGvarSource accepts direct, wrapped, and indexed path lists', () => {
   assert.deepEqual(pathsFromGvarSource(source(CUSTOM_ID, [{ from: 'a', to: 'b' }])), [
     { from: 'a', to: 'b' },
   ]);
   assert.deepEqual(pathsFromGvarSource(source(CUSTOM_ID, { paths: [{ from: 'b', to: 'c' }] })), [
     { from: 'b', to: 'c' },
   ]);
+  assert.deepEqual(
+    pathsFromGvarSource(source(CUSTOM_ID, { paths_by_from: { c: [{ from: 'c', to: 'd' }] } })),
+    [{ from: 'c', to: 'd' }],
+  );
 });
 
 test('world data helpers merge external data before inline overrides', () => {
@@ -93,6 +97,6 @@ test('world source bodies serialise canonical editable gvar shapes', () => {
   );
   assert.equal(
     worldPathsSourceBody([{ from: 'a', to: 'b' }]),
-    '[\n  {\n    "from": "a",\n    "to": "b"\n  }\n]',
+    '{\n  "paths_by_from": {\n    "a": [\n      {\n        "from": "a",\n        "to": "b"\n      }\n    ]\n  }\n}',
   );
 });

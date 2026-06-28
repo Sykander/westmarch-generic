@@ -60,6 +60,42 @@ name: transport requirement lists require every listed transport
 
 cfg_fixture = {
     "world_data": {
+        "locations": {
+            "river_town": {"name": "River Town"},
+            "oakwood": {"name": "Oakwood Forest"},
+        },
+        "paths": [
+            {
+                "from": "river_town",
+                "to": "oakwood",
+                "requirements": {"transport": "ship"},
+                "steps": [{"type": "encounter", "biome": "forest"}],
+            },
+            {
+                "from": "river_town",
+                "to": "oakwood",
+                "requirements": {"transport": "walk"},
+                "steps": [{"type": "encounter", "biome": "road"}],
+            },
+            {
+                "from": "river_town",
+                "to": "docks",
+                "requirements": {"transport": "boat"},
+                "steps": [{"type": "encounter", "biome": "river"}],
+            },
+        ],
+    },
+}
+nearby = paths.get_nearby_locations(cfg_fixture, "river_town")
+limited = paths.get_nearby_locations(cfg_fixture, "river_town", 1)
+return nearby == ["oakwood", "docks"] and limited == ["oakwood"]
+---
+True
+---
+name: get_nearby_locations returns direct unique destinations without transport work
+
+cfg_fixture = {
+    "world_data": {
         "transport": {
             "horse": {"name": "Horse or mount", "aliases": ["riding_horse", "warhorse", "pony"]},
         },
@@ -238,4 +274,4 @@ name: paths can load from world_data paths_gvar_id with inline additions
 vars:
   gvars:
     eeee2222-2222-2222-2222-222222222222: |
-      [{"from":"river_town","to":"oakwood","steps":[{"type":"proceed","description":"Follow the old road."}]}]
+      {"paths_by_from":{"river_town":[{"from":"river_town","to":"oakwood","steps":[{"type":"proceed","description":"Follow the old road."}]}],"far_city":[{"from":"far_city","to":"missing","steps":[{"type":"proceed","description":"Not relevant."}]}]}}

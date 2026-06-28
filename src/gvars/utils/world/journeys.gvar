@@ -320,24 +320,6 @@ def _add_unique_id(items, value):
     return True
 
 
-def _path_transport_requirement(path):
-    reqs = _read_field(path, "requirements")
-    transport = _read_field(reqs, "transport")
-    if transport != None:
-        return transport
-    return _read_field(path, "transport")
-
-
-def _requirement_transport_ids(cfg, requirement):
-    out = []
-    if requirement == None:
-        return out
-    values = requirement if lists.is_list(requirement) else [requirement]
-    for value in values:
-        _add_unique_id(out, resolve_transport_id(cfg, value))
-    return out
-
-
 def _nearby_limit(limit):
     if limit == None:
         return None
@@ -350,27 +332,49 @@ def _nearby_limit(limit):
     return value
 
 
+def _inline_locations(cfg):
+    inline = _read_field(_world_data(cfg), "locations")
+    if dicts.is_dict(inline):
+        return inline
+    return {}
+
+
+def _has_external_locations(cfg):
+    gvar_id = _read_field(_world_data(cfg), "locations_gvar_id")
+    return gvar_id != None and str(gvar_id).strip() != ""
+
+
+def _inline_location(cfg, loc_id):
+    key = _normalize_id(loc_id)
+    if key == None:
+        return None
+    inline = _inline_locations(cfg)
+    loc = _read_field(inline, key)
+    if loc != None:
+        return loc
+    for existing_id in inline:
+        if _normalize_id(existing_id) == key:
+            return inline[existing_id]
+    return None
+
+
 def nearby_locations(config_override, from_id, limit=None):
     """Direct route destinations from one location, grouped by target id."""
     cfg = _cfg(config_override)
     origin = _normalize_id(from_id)
     if origin == None:
         return []
-    default_transport = _transport_default_id(cfg)
-    all_transport_ids = _transport_ids(cfg)
-    all_match_ids = paths.get_available_transport_match_ids(cfg, all_transport_ids)
+    should_filter_inline = len(_inline_locations(cfg)) > 0 and not _has_external_locations(cfg)
     routes = {}
     route_ids = []
     max_routes = _nearby_limit(limit)
-    edge_limit = max_routes
+    source_limit = None if should_filter_inline else max_routes
 
-    for edge in paths.get_edge_entries_from(cfg, origin, default_transport, all_match_ids, edge_limit):
-        path = _read_field(edge, "path")
-        dest_id = _normalize_id(_read_field(path, "to"))
+    for dest_id in paths.get_nearby_locations(cfg, origin, source_limit):
         if dest_id == None or dest_id == origin:
             continue
-        loc = locations.get_location(cfg, dest_id)
-        if loc == None:
+        loc = _inline_location(cfg, dest_id)
+        if loc == None and should_filter_inline:
             continue
         if dest_id not in routes:
             routes[dest_id] = {
@@ -381,17 +385,6 @@ def nearby_locations(config_override, from_id, limit=None):
                 "step_count": None,
             }
             route_ids.append(dest_id)
-        route = routes[dest_id]
-        req_ids = _requirement_transport_ids(cfg, _path_transport_requirement(path))
-        if len(req_ids) == 0:
-            req_ids = [default_transport]
-        for transport in req_ids:
-            _add_unique_text(route["transports"], transport)
-        _add_unique_text(route["labels"], _read_field(path, "label"))
-        step_count = len(paths.get_path_steps(path, default_transport))
-        current_steps = _read_field(route, "step_count")
-        if current_steps == None or step_count < current_steps:
-            route["step_count"] = step_count
         if max_routes != None and len(route_ids) >= max_routes:
             break
 
@@ -399,6 +392,20 @@ def nearby_locations(config_override, from_id, limit=None):
     for route_id in route_ids:
         out.append(routes[route_id])
     return out
+
+
+def _title_from_id(value):
+    text = str(value or "").strip().replace("_", " ")
+    if text == "":
+        return "Unknown Location"
+    parts = []
+    for word in text.split(" "):
+        if word == "":
+            continue
+        parts.append(word[0:1].upper() + word[1:])
+    if len(parts) == 0:
+        return text
+    return " ".join(parts)
 
 
 def _travel_command_target(location, loc_id):
@@ -464,8 +471,11 @@ def format_nearby_locations(config_override, from_id, prefix="!", limit=5):
         if count >= limit:
             break
         loc = _read_field(route, "location")
+        loc_id = _read_field(route, "id")
         brief = _brief_location_description(loc)
-        line = f"* {locations.linked_name(loc)}"
+        line = f"* {_title_from_id(loc_id)}"
+        if loc != None:
+            line = f"* {locations.linked_name(loc)}"
         if brief != "":
             line += f" - {brief}"
         lines.append(line)

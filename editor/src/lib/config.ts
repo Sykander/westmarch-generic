@@ -892,6 +892,23 @@ function asRecord(value: unknown): AnyRecord {
   return isPlainRecord(value) ? value : {};
 }
 
+function pathListFromSourceValue(value: unknown): unknown[] | undefined {
+  if (value == null) return [];
+  if (Array.isArray(value)) return value;
+  if (!isPlainRecord(value)) return undefined;
+  if (Array.isArray(value.paths)) return value.paths;
+  const pathsByFrom = asRecord(value.paths_by_from);
+  if (Object.keys(pathsByFrom).length > 0) {
+    const paths: unknown[] = [];
+    for (const origin of Object.keys(pathsByFrom)) {
+      const entries = pathsByFrom[origin];
+      if (Array.isArray(entries)) paths.push(...entries);
+    }
+    return paths;
+  }
+  return undefined;
+}
+
 function weatherAreasFromWorldData(worldData: AnyRecord): AnyRecord {
   const weather = asRecord(worldData.weather);
   if (weather.by_area != null) return asRecord(weather.by_area);
@@ -2251,24 +2268,25 @@ function validateTravel(model: ConfigModel, issues: ConfigIssue[]) {
   }
 
   const rawPaths = model.world_data.paths;
-  if (travelCommandOn && rawPaths != null && !Array.isArray(rawPaths)) {
+  const paths = pathListFromSourceValue(rawPaths);
+  if (travelCommandOn && rawPaths != null && paths == null) {
     issues.push(
       issue(
         'error',
         'world.paths.type',
         'World',
         'world_data.paths',
-        'Paths must be a list',
-        '`!travel` route planning expects `world_data.paths` to be a list of path objects.',
+        'Paths must be a list or indexed map',
+        '`!travel` route planning expects `world_data.paths` to be a list of path objects or `{paths_by_from:{...}}`.',
       ),
     );
   }
-  if (travelCommandOn && Array.isArray(rawPaths)) {
+  if (travelCommandOn && paths != null) {
     const explorationConfig = asRecord(asRecord(model.subsystems.exploration).config);
     const biomeSource = String(explorationConfig.enc_biome_source ?? 'auto')
       .trim()
       .toLowerCase();
-    rawPaths.forEach((entry, index) => {
+    paths.forEach((entry, index) => {
       const path = asRecord(entry);
       const from = typeof path.from === 'string' ? path.from.trim().toLowerCase() : '';
       const to = typeof path.to === 'string' ? path.to.trim().toLowerCase() : '';
