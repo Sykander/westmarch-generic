@@ -10,7 +10,7 @@ Tab-separated value (`.tsv`) catalogues used to build config gvars and seed serv
 |------|--------|---------------|-------|
 | [monsters.tsv](monsters.tsv) | Copied from westmarch | hunt, loot | `Name`, `Source`, `CR`, `Type`, `Size`, … |
 | [items.tsv](items.tsv) | Copied from westmarch | craft, brew, enchant, buy, sell | Single file; `type` column splits Item / Magic Item / Potion at build time |
-| [recipes.tsv](recipes.tsv) | **Examples** in repo | brew, enchant, craft, **recipe** | Explicit recipes; `consumed` vs `required` materials — links to [items.tsv](items.tsv) `name` |
+| [recipes.tsv](recipes.tsv) | Curated engine defaults | brew, enchant, craft, **recipe** | Explicit recipes; `consumed` vs `required` materials — output names link to [items.tsv](items.tsv) `name` |
 | [spells.tsv](spells.tsv) | Copied from westmarch | scribe | `name`, `level`, `school` |
 | [books-forgotten-realms.tsv](books-forgotten-realms.tsv) | Curated FR in-universe set | library, read | Forgotten Realms gazetteers, histories, travelogues — **`content_link`** when wiki or official digital edition exists |
 | [books-real.tsv](books-real.tsv) | Curated public-domain set | library, read | Real works — **`content_link`** points to Project Gutenberg |
@@ -54,13 +54,15 @@ Structured crafting recipes for **`!brew`**, **`!craft`**, **`!enchant`**, and *
 | `name` | Output item — should match a row in [items.tsv](items.tsv) |
 | `kind` | `brew` \| `enchant` \| `craft` \| `scribe` |
 | `workdays` | Downtime / workdays required |
+| `gold` | gp cost required by the recipe; blank falls back to command baseline costs |
 | `consumed` | Semicolon-separated `item:qty` — materials **used up** (`Arnica:2;Crystal vial:1`) |
 | `required` | Semicolon-separated `item:qty` — items that must be present but **not consumed** (e.g. `Cloak:1` for enchant); empty when none |
 | `spells` | Comma-separated spell names that must be **cast** to complete; empty when none |
+| `tools` | Comma-separated tool names shown by recipe lookup and used by crafting tool policy |
 | `tags` | Comma-separated — `!recipe` search |
 | `description` | Player-facing process prose — the recipe as written; quantities and workdays belong in other columns |
 
-The repo ships three **example** rows (one per `brew` / `craft` / `enchant`). Owners add server-specific recipes in their config gvar or by extending this TSV at build time.
+The repo ships a small Forgotten Realms-flavoured starter catalogue. Owners add server-specific recipes in their config gvar or by extending this TSV at build time.
 
 **`craft`** mundane items may also use gp value bands from config ([CRAFT_PRICE_BANDS](../docs/internal/projects/westmarch-statement/aliases/crafting/craft.md)) without a **`recipes.tsv`** row.
 

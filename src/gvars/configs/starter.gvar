@@ -132,7 +132,7 @@ subsystems = {
                 "spells": "engine:catalogues/spells",
                 "magic_items": "engine:catalogues/magic_items",
                 # Optional list/gvar of recipe rows: id, name, kind, workdays, gold, consumed,
-                # required, spells, tags, description.
+                # required, spells, tools, tags, description.
                 "recipes": None,
             },
             # RAW does not require a roll to complete these crafts. Servers that want rolls can

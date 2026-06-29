@@ -2,6 +2,7 @@ wd = forgotten_realms_2014.world_data
 travel = forgotten_realms_2014.subsystems["travel"]
 economy = forgotten_realms_2014.subsystems["economy"]
 content = forgotten_realms_2014.subsystems["content"]
+misc = forgotten_realms_2014.subsystems["misc"]
 return (
     forgotten_realms_2014.rules_version == "2014"
     and wd["default_location"] == "waterdeep"
@@ -27,6 +28,9 @@ return (
     and content["commands"]["library"] == True
     and content["commands"]["read"] == True
     and content["config"]["library_topic_source"] == "balanced"
+    and misc["enabled"] == True
+    and misc["commands"]["quest"] == True
+    and misc["commands"]["recipe"] == False
     and len(forgotten_realms_2014.shops) >= 30
     and forgotten_realms_2014.shops["waterdeep_general_market"]["location_id"] == "waterdeep"
 )

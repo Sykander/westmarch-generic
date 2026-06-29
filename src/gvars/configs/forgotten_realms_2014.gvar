@@ -173,9 +173,9 @@ subsystems = {
         },
     },
     "misc": {
-        "enabled": False,
+        "enabled": True,
         "commands": {
-            "quest": False,
+            "quest": True,
             "recipe": False,
         },
     },

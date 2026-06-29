@@ -31,6 +31,13 @@ function parseCsvList(raw) {
     .filter(Boolean);
 }
 
+function parseOptionalFloat(raw) {
+  const s = String(raw || '').trim();
+  if (!s) return undefined;
+  const n = Number.parseFloat(s);
+  return Number.isFinite(n) ? n : undefined;
+}
+
 console.log(`Reading ${INPUT}`);
 
 const { rows } = readTsv(INPUT);
@@ -41,9 +48,11 @@ const recipes = rows
     name: row.name,
     kind: row.kind,
     workdays: Number.parseInt(row.workdays, 10) || 0,
+    gold: parseOptionalFloat(row.gold),
     consumed: parseMaterialList(row.consumed),
     required: parseMaterialList(row.required),
     spells: parseCsvList(row.spells),
+    tools: parseCsvList(row.tools),
     tags: parseCsvList(row.tags),
     description: String(row.description || '').replace(/\\n/g, '\n'),
   }))
