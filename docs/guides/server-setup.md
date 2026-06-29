@@ -59,18 +59,18 @@ Suggested categories:
 
 | Category | Channels |
 |----------|----------|
-| **Start Here** | `#server-rules`, `#server-description`, `#welcome`, `#character-creation`, `#announcements`, `#links`, `#roles` |
-| **General** | `#general`, `#media`, `#community-hub`, `#questions`, `#bot-commands` |
-| **Westmarch** | `#westmarch`, `#quest-board`, `#westmarch-ooc`, `#adventurers`, `#factions`, `#trade-hall`, `#downtime` |
+| **Start Here** | #rules, #getting-started, #westmarch, #character-creation, #meta, #welcome |
+| **General** | #general, #questions, #bot, #media, #community, #hangout |
+| **Westmarch** | #quests, #adventurers, #ooc |
 | **World** | Location channels for actual places players can travel to in the world |
-| **Dungeon Masters** | `#dm-chat`, `#dm-planning`, `#dm-questions`, `#session-notes`, `#directory` |
-| **Maintainers** | `#maintainer-chat`, `#config-changes`, `#avrae-testing`, `#automation-notes` |
-| **Moderators** | `#moderator-chat`, `#mod-log`, `#tickets`, `#incident-notes` |
-| **Game 1** | Live table text, voice, maps, handouts, and bot commands |
-| **Game 2** | Same shape as **Game 1** |
-| **Game 3** | Same shape as **Game 1** |
+| **Dungeon Masters** | #discussion, #directory, #world-info, #meta, #bot, #hangout |
+| **Maintainers** | #discussion, #suggestions, #bot, #meta, #hangout |
+| **Moderators** | #discussion, #moderator-only, #logs, #dyno-logs, #report-something, #hangout |
+| **Game 1** | #ooc, #game, #rp, voice #vc |
+| **Game 2** | #ooc, #game, #rp, voice #vc |
+| **Game 3** | #ooc, #game, #rp, voice #vc |
 
-Lock **Dungeon Masters**, **Maintainers**, and **Moderators** to their staff roles. The **Dungeon Masters** category can still include a player-visible `#directory` channel that lists current DMs and what they run; give players read-only access to that channel if it lives inside the staff category.
+Lock **Dungeon Masters**, **Maintainers**, and **Moderators** to their staff roles. The **Dungeon Masters** category can still include a player-visible #directory channel that lists current DMs and what they run; give players read-only access to that channel if it lives inside the staff category.
 
 Let Avrae see and speak in any channel where players will run game commands.
 
@@ -80,78 +80,65 @@ Let Avrae see and speak in any channel where players will run game commands.
 
 Use these as first-pass posts while building the server. They avoid setting-specific lore by default; edit names, tone, allowed sources, staff contacts, and world details to match the actual community before launch.
 
-### `#welcome`
+### #getting-started
 
-Paste this into the welcome or getting-started channel:
+Paste this into the getting-started channel:
 
 ```markdown
 # ✨ Welcome to Westmarch! ✨
-
 Thanks for joining us! We're excited to have you here and look forward to playing with you. Westmarch is a collaborative world where adventurers shape the story through quests, dungeons, and roleplay.
-
 ## Getting Started
 Welcome to Westmarch, and thank you for joining us!
 
-First, please make sure you've read and understand `#rules` and, if you'd like, read about the server and what it's for in `#westmarch`.
-
+First, please make sure you've read and understand #rules and, if you'd like, read about the server and what it's for in #westmarch.
 ## Next Steps
-To get started, head over to `Channels & Roles` and answer the questions to get the `Adventurer` role.
+To get started, head over to Channels & Roles and answer the questions to get the Adventurer role.
 You need this role to see most of the channels below.
 
-Then read `#character-creation` to start making your character.
+Then read #character-creation to start making your character.
 
 Once you're all set up, you can dive into adventures by:
-* joining quests in `#quests`
-* or engaging in roleplay in `#world` location channels.
+* joining quests in #quests
+* or engaging in roleplay in the World location channels.
 
-Guides and rules on how to play can be found in `#meta`.
+Guides and rules on how to play can be found in #meta.
 
 We look forward to playing with you and seeing how you shape the world!
 ```
 
-### `#server-rules` / `#rules`
+### #rules
 
 Paste this into the rules channel:
 
 ```markdown
 # Server Rules
-
 ## **1. Respectful Communication**
 Treat everyone with respect. Absolutely no harassment, witch hunting, sexism, racism, or hate speech will be tolerated.
-
 ## **2. No Spam**
 No spam or self-promotion (server invites, advertisements, etc.) without permission from a staff member. This includes DMing fellow members, excessive messages, irrelevant content, and unnecessary @mentions.
-
 ## **3. Keep it clean**
 No age-restricted or obscene content. This includes text, images, or links featuring nudity, sex, hard violence, or other graphically disturbing content.
-
 ## **4. Respect Privacy**
 Do not share personal information about yourself or others without explicit consent. This includes addresses, phone numbers, emails, etc.
-
 ## **5. Follow Discord's Terms of Service**
 By being a member of this server, you are expected to adhere to Discord's official Terms of Service and Community Guidelines.
-
 ## **6. No PVP**
 Players may not engage in any form of harm or hostile action - physical, magical, or otherwise - against other players, their characters, allies, or pets.
-
 ## **7. 18+**
 All server members should be 18 years of age or older.
-
 ## **8. Let us know**
 If you see something against the rules or something that makes you feel unsafe, let staff know. We want this server to be a welcoming space!
 ```
 
-### `#westmarch`
+### #westmarch
 
 Paste this into the main westmarch channel:
 
 ```markdown
 # ♾️ Westmarch
-
 This server is intended to be a collaborative hub for adventurers, storytellers, and gamers who share a passion for D&D 5e. Built on respect, creativity, and inclusivity, our community thrives on compelling stories, engaging roleplay, and shared adventures. Here, no single voice rules; instead, trusted maintainers and active participants shape the experience together.
 
 Whether it's crafting characters, delving into epic quests, playing minigames, or roleplaying downtime moments, this is a space where everyone can find a place at the table and contribute to a living world.
-
 ## 🌍 How Westmarch Works
 This Westmarch server is intended as a community driven by collaboration, creativity, and shared adventures. The server is designed for everyone to contribute in meaningful ways, shaping the world and the stories we create together.
 
@@ -164,17 +151,17 @@ This Westmarch server is intended as a community driven by collaboration, creati
 **Moderators** help maintain a safe and respectful environment by enforcing server rules and ensuring all members engage positively. They address any issues that arise, keeping the community enjoyable for everyone.
 ```
 
-### `#character-creation`
+### #character-creation
 
 Paste these into the character creation channel as separate posts, in order.
+
+Before posting, edit the defaults in Post 2 if your server uses a different starting level, ability score method, source list, or starting equipment policy. Remove the vSheet bullet in Post 4 if your server does not use vSheet.
 
 Post 1:
 
 ```markdown
 # Character Creation in Westmarch
-
 Adventurers come from all walks of life, with rich backgrounds and intriguing stories waiting to unfold. Your character will be part of a living, breathing world, and their journey starts with creating a unique individual ready to explore, discover, and grow.
-
 ## Character Creation Rules
 To help keep the process smooth and consistent for everyone, please follow these guidelines when creating your character.
 ```
@@ -183,29 +170,25 @@ Post 2:
 
 ```markdown
 ## **1. Character Sheet Format**
-Please use this server's approved Avrae-compatible sheet format. D&D Beyond is a common choice because Avrae imports it cleanly, but staff may allow other Avrae-supported sheet sources. This helps keep everything organized and ensures that all necessary information is available.
+Use D&D Beyond for your character sheet. This keeps imports consistent and easy to review.
 
-Keep in mind that your character's backstory and additional details should be posted separately in the designated channel.
+Your backstory and additional character details should be posted separately in #adventurers.
 
-If this server uses D&D Beyond content sharing campaigns, `#links` lists the campaigns available from the community.
-
+D&D Beyond content sharing campaigns are listed in #meta or #community.
 ## **2. Starting Level**
-All characters begin at the starting level chosen by this server. If staff has not announced another starting level, begin at Level 1.
+All characters begin at Level 1.
 
-Please use the ability score method chosen by this server. If staff has not announced another method, use standard array or point buy, with 27 points.
+Use standard array or point buy with 27 points for ability scores.
 
-Use the starting equipment and starting gold policy chosen by this server. If staff has not announced another policy, use the normal starting equipment or starting gold options from your class and background.
-
+Use the normal starting equipment or starting gold options from your class and background.
 ## **3. Allowed Content**
-Use the rules version and source list chosen by this server. A common default is official D&D 5e content for the server's chosen rules edition, with partner, third-party, playtest, or homebrew material allowed only when staff approves it.
+Use official D&D 5e content for this server's rules edition. Partner, third-party, playtest, and homebrew material require staff approval.
 
 Flavor is free! You are allowed to reflavor anything, however you may not change mechanics.
-
 ## **4. Joining the World**
 Adventurers can arrive from distant lands, nearby settlements, established factions, or any origin that fits the server's setting. Some may be locals, some may be travelers, and some may have come seeking danger, work, discovery, or a fresh start.
 
-Your character can come from any origin the server allows. Your character must be an original creation and cannot copy names, faces, or known figures.
-
+Your character can come from any origin that fits the setting. Your character must be an original creation and cannot copy names, faces, or known figures.
 ## **5. Backstories and Details**
 Your character's backstory and background are essential parts of their creation. When creating your character, be sure to provide a detailed backstory that reflects their personality, goals, and how they ended up in the lands. This is your chance to tie your character into the world!
 
@@ -219,12 +202,12 @@ Post 3:
 
 ````markdown
 ## **6. Character Import**
-Once you've created your sheet, head over to `#bot-commands` and run the following commands.
+Once you've created your sheet, head over to #bot and run the following commands.
 
-First, import your character from your approved sheet source. If you use D&D Beyond, use the URL for your character sheet and set your sheet as public first. Replace `<rules_version>` with the rules edition used by this server, such as `2014` or `2024`.
+First, set your D&D Beyond character sheet to public, then import it with the character sheet URL.
 
 ```sh
-!import <url_here> <rules_version>
+!import <url_here>
 ```
 
 If you update your sheet later, you can instead:
@@ -245,30 +228,28 @@ Next, set your character's level, languages, tools, and other details. Use only 
 !westmarch
 ```
 
-`!westmarch` shows this server's player setup checklist. If the server requires downtime, wallet, inventory, location, or other character data, follow the instructions shown there.
+`!westmarch` shows your setup checklist. Complete any items it lists.
 ````
 
 Post 4:
 
 ```markdown
 ## **7. Character Approval Process**
-Once you've created your character, make a post in `#adventurers` with the following details:
+Once you've created your character, make a post in #adventurers with the following details:
 
 * A link to your public character sheet.
 * An image of your character.
 * Your character's full backstory, background, and ability scores.
-* If this server uses vSheet, include the `!vsheet` output in the post.
+* Include the `!vsheet` output in the post.
 
-When you're ready, tag the post with `Awaiting Approval`.
+When you're ready, tag the post with Awaiting Approval.
 
 A Maintainer will review your submission and either approve it or provide feedback on what needs to be adjusted. Once approved, your character will be ready to embark on their adventures!
 
 **Note**
-If you can't see `#adventurers`, you need to complete registration in `Channels & Roles`.
-
+If you can't see #adventurers, you need to complete registration in Channels & Roles.
 ## **8. Alignment and Roleplay Guidelines**
 There are no strict alignment restrictions, but we ask that you create characters who fit within the collaborative storytelling nature of Westmarch. Characters should engage in roleplay that encourages cooperation and interaction with others, avoiding disruptive or antisocial behavior.
-
 ## Getting Started
 Once your character is approved, you're ready to explore Westmarch! Join games, dive into storylines, and immerse yourself in the world. The journey is yours to shape, and your character's adventures await!
 ```
@@ -394,20 +375,21 @@ Run these commands from an account with Avrae aliasing permissions, such as **Dr
 Minimum flow:
 
 1. Subscribe to the **Westmarch Generic** workshop.
-2. Create or duplicate a config gvar.
-3. Set the server svar:
+2. Set Avrae server settings with `!servsettings`, including the server-wide character import policy and rules edition.
+3. Create or duplicate a config gvar.
+4. Set the server svar:
 
 ```text
 !svar westmarch_config <your-gvar-uuid>
 ```
 
-4. Check what the engine loaded:
+5. Check what the engine loaded:
 
 ```text
 !westmarch show
 ```
 
-5. Open the web editor and use the **Check** page before publishing config changes:
+6. Open the web editor and use the **Check** page before publishing config changes:
 
 ```text
 https://sykander.github.io/westmarch-generic/?westmarch_config=<your-gvar-uuid>
@@ -427,15 +409,15 @@ Before launch, write a short onboarding message that tells a new player exactly 
 
 Recommended checklist:
 
-1. Read `#rules` and `#server-guide`.
+1. Read #rules, #getting-started, #westmarch, and #meta.
 2. Create or import a character into Avrae.
 3. Run the server's vSheet setup, if vSheet is required.
 4. Run `!westmarch` to see server-specific setup checks.
 5. Set any required downtime, wallet, location, or inventory data.
 6. Create Tupperbox proxies, if roleplay proxying is used.
-7. Ask in `#sheet-help` or `#questions` if anything fails.
+7. Ask in #questions if anything fails.
 
-Keep staff-facing setup notes in `#config-changes` or a private document. When you change the config gvar, record what changed and what command you used to test it.
+Keep staff-facing setup notes in the Maintainers #discussion or #meta channel, or in a private document. When you change the config gvar, record what changed and what command you used to test it.
 
 ---
 
