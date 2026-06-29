@@ -51,7 +51,7 @@ get_embed = display.get_display(COMMAND)
 cmd_name = COMMAND
 
 if not ok:
-    return get_embed(desc=msg)
+    return get_embed(desc=msg, error=True)
 
 args = argparse(&ARGS&)
 argslist = &ARGS&
@@ -59,7 +59,7 @@ argslist = &ARGS&
 try:
     ch = character()
 except:
-    return get_embed(desc = f"{cmd_name} requires a character")
+    return get_embed(desc = f"{cmd_name} requires a character", error=True)
 
 cfg = config.get_config()
 mode = _topic_source(cfg)
@@ -83,16 +83,16 @@ if len(argslist) > 0 and argslist[0] in ["help", "?"]:
 allowed, remaining = pc.check_cooldown(ch, COMMAND, cfg)
 if not allowed:
     ready = int(floor(time())) + int(remaining)
-    return get_embed(desc=f"You can search again <t:{ready}><t:{ready}:R>.")
+    return get_embed(desc=f"You can search again <t:{ready}><t:{ready}:R>.", error=True)
 
 topics, topic_error = library.resolve_search_topics(cfg, ch, args, argslist)
 if topic_error != None:
-    return get_embed(desc=topic_error)
+    return get_embed(desc=topic_error, error=True)
 
 search_result = library.search_by_topics(cfg, topics, ch, args, argslist)
 book = search_result["book"]
 if book == None:
-    return get_embed(desc="No books are configured for this server.")
+    return get_embed(desc="No books are configured for this server.", error=True)
 
 read_result = library.read_book(book, ch, args, "quick_read", argslist)
 roll_result = search_result["roll_result"]

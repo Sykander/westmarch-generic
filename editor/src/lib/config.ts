@@ -1170,6 +1170,50 @@ export function validateConfig(model: ConfigModel | null, parseIssues: ConfigIss
       ),
     );
   }
+  const errorEmbeds = asRecord(model.policies.display).error_embeds;
+  if (errorEmbeds != null && typeof errorEmbeds !== 'boolean' && !isPlainRecord(errorEmbeds)) {
+    issues.push(
+      issue(
+        'error',
+        'policies.display.error_embeds_type',
+        'Policies',
+        'policies.display.error_embeds',
+        'Error embed policy must be an object',
+        'Use {"auto_delete": true, "timeout_seconds": 60}, or set auto_delete false to keep error messages.',
+      ),
+    );
+  }
+  if (isPlainRecord(errorEmbeds)) {
+    const autoDelete = errorEmbeds.auto_delete;
+    if (autoDelete != null && typeof autoDelete !== 'boolean') {
+      issues.push(
+        issue(
+          'error',
+          'policies.display.error_auto_delete_type',
+          'Policies',
+          'policies.display.error_embeds.auto_delete',
+          'Error auto-delete must be true or false',
+          '`auto_delete` controls whether command error embeds delete themselves.',
+        ),
+      );
+    }
+    const timeoutSeconds = errorEmbeds.timeout_seconds;
+    if (
+      timeoutSeconds != null &&
+      (!isNonNegativeInteger(timeoutSeconds) || Number(timeoutSeconds) < 1)
+    ) {
+      issues.push(
+        issue(
+          'error',
+          'policies.display.error_timeout_seconds',
+          'Policies',
+          'policies.display.error_embeds.timeout_seconds',
+          'Error timeout must be positive seconds',
+          'Use a positive whole number, such as 5, 60, or 120.',
+        ),
+      );
+    }
+  }
   if (footerBehaviour === 'string' && !hasAnyFooterText(model)) {
     issues.push(
       issue(
@@ -3648,6 +3692,7 @@ export function createBlankConfig(): ConfigModel {
       display: {
         footer_behaviour: 'balanced',
         command_thumbnail: 'default',
+        error_embeds: { auto_delete: true, timeout_seconds: 60 },
         helpful_tips: [],
         credits: null,
       },

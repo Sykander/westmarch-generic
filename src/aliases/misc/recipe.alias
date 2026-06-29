@@ -13,7 +13,7 @@ get_embed = display.get_display(COMMAND)
 cmd_name = COMMAND
 
 if not ok:
-    return get_embed(desc=msg)
+    return get_embed(desc=msg, error=True)
 
 args = argparse(&ARGS&)
 argslist = &ARGS&
@@ -21,7 +21,7 @@ argslist = &ARGS&
 try:
     ch = character()
 except:
-    return get_embed(desc = f"{cmd_name} requires a character")
+    return get_embed(desc = f"{cmd_name} requires a character", error=True)
 
 help_text = f"""Browse configured crafting recipes.
 
@@ -36,11 +36,11 @@ cfg = config.get_config()
 
 if str(argslist[0]).strip().lower() in ["ingredient", "item", "uses"]:
     if len(argslist) < 2:
-        return get_embed(desc="Choose an ingredient to search for.")
+        return get_embed(desc="Choose an ingredient to search for.", error=True)
     query = " ".join([str(token) for token in argslist[1:]])
     matches = recipe.search_by_ingredient(cfg, query)
     if len(matches) == 0:
-        return get_embed(desc=f"Found no recipes using **{query}**.")
+        return get_embed(desc=f"Found no recipes using **{query}**.", error=True)
     if len(matches) > 10:
         shown = matches[0:10]
     else:
@@ -55,7 +55,7 @@ if str(argslist[0]).strip().lower() in ["ingredient", "item", "uses"]:
 query = " ".join([str(token) for token in argslist])
 entry, matches, error = recipe.resolve(cfg, query)
 if error != None:
-    return get_embed(desc=error)
+    return get_embed(desc=error, error=True)
 
 return get_embed(desc=recipe.format_recipe(entry))
 </drac2>

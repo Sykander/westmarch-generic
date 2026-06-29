@@ -52,7 +52,7 @@ get_embed = display.get_display(COMMAND)
 cmd_name = COMMAND
 
 if not ok:
-    return get_embed(desc=msg)
+    return get_embed(desc=msg, error=True)
 
 args = argparse(&ARGS&)
 argslist = &ARGS&
@@ -60,7 +60,7 @@ argslist = &ARGS&
 try:
     ch = character()
 except:
-    return get_embed(desc = f"{cmd_name} requires a character")
+    return get_embed(desc = f"{cmd_name} requires a character", error=True)
 
 cfg = config.get_config()
 
@@ -75,7 +75,7 @@ if len(argslist) > 0 and argslist[0] in ["help", "?"]:
 
 ids = pc.list_currency_ids(cfg)
 if len(ids) == 0:
-    return get_embed(desc="No wallet currencies configured. Avrae gp remains on your sheet coinpurse.")
+    return get_embed(desc="No wallet currencies configured. Avrae gp remains on your sheet coinpurse.", error=True)
 
 if len(argslist) == 0:
     lines = pc.wallet_lines(ch, cfg)
@@ -83,9 +83,9 @@ if len(argslist) == 0:
 
 matches = _currency_matches(cfg, " ".join(argslist))
 if len(matches) == 0:
-    return get_embed(desc=f"Found no currency matches for **{' '.join(argslist)}**.")
+    return get_embed(desc=f"Found no currency matches for **{' '.join(argslist)}**.", error=True)
 if len(matches) > 1:
-    return get_embed(desc=f"Be more specific: **{' '.join(argslist)}** matched {_format_matches(matches, cfg)}.")
+    return get_embed(desc=f"Be more specific: **{' '.join(argslist)}** matched {_format_matches(matches, cfg)}.", error=True)
 
 detail = pc.wallet_detail(ch, cfg, matches[0])
 return get_embed(desc=f"**{matches[0]}**\n{detail}")

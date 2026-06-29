@@ -217,9 +217,9 @@ vars:
 
 !show display
 ---
-"re:```yaml[\\s\\S]*command_thumbnail: character"
+"re:```yaml[\\s\\S]*command_thumbnail: character[\\s\\S]*error_embeds.auto_delete: true[\\s\\S]*error_embeds.timeout_seconds: 60"
 ---
-name: show section filter display summarizes command thumbnail policy
+name: show section filter display summarizes command thumbnail and error policy
 vars:
   svars:
     westmarch_config: "ffff8888-8888-8888-8888-888888888888"
@@ -227,6 +227,20 @@ vars:
     ffff8888-8888-8888-8888-888888888888: |
       policies = {
           "display": {"command_thumbnail": "character"},
+      }
+
+!show policies
+---
+"re:display.error_embeds.auto_delete: false[\\s\\S]*display.error_embeds.timeout_seconds: 5"
+---
+name: show policies summarizes custom error embed policy
+vars:
+  svars:
+    westmarch_config: "ffff8989-8989-8989-8989-898989898989"
+  gvars:
+    ffff8989-8989-8989-8989-898989898989: |
+      policies = {
+          "display": {"error_embeds": {"auto_delete": False, "timeout_seconds": 5}},
       }
 
 !show crafting

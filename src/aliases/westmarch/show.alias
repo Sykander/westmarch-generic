@@ -13,7 +13,7 @@ ok, msg = auth.is_allowed(COMMAND)
 get_embed = display.get_display(COMMAND)
 
 if not ok:
-    return get_embed(desc=msg)
+    return get_embed(desc=msg, error=True)
 
 argslist = &ARGS&
 
@@ -72,6 +72,9 @@ def _read_field(obj, key):
         "downtime": lambda o: o.downtime,
         "footer_behaviour": lambda o: o.footer_behaviour,
         "command_thumbnail": lambda o: o.command_thumbnail,
+        "error_embeds": lambda o: o.error_embeds,
+        "auto_delete": lambda o: o.auto_delete,
+        "timeout_seconds": lambda o: o.timeout_seconds,
         "player_setup": lambda o: o.player_setup,
         "require_character": lambda o: o.require_character,
         "checks": lambda o: o.checks,
@@ -453,8 +456,23 @@ def _display_summary(cfg):
     if fb == None:
         fb = "balanced"
     command_thumb = _text_or_default(_read_field(disp_pol, "command_thumbnail"), "default")
+    error_policy = _read_field(disp_pol, "error_embeds")
+    error_delete = True
+    error_timeout = 60
+    if error_policy == False:
+        error_delete = False
+    elif _is_dict(error_policy):
+        raw_delete = _read_field(error_policy, "auto_delete")
+        if raw_delete == False:
+            error_delete = False
+        raw_timeout = _read_field(error_policy, "timeout_seconds")
+        if raw_timeout != None:
+            error_timeout = raw_timeout
     lines.append(f"command_thumbnail: {command_thumb}")
     lines.append(f"footer_policy: {fb}")
+    lines.append(f"error_embeds.auto_delete: {_bool_text(error_delete)}")
+    if error_delete:
+        lines.append(f"error_embeds.timeout_seconds: {error_timeout}")
     return _codeblock("yaml", lines)
 
 
@@ -474,6 +492,17 @@ def _policy_summary(cfg):
     command_thumb = _read_field(disp_pol, "command_thumbnail")
     if command_thumb != None:
         lines.append(f"display.command_thumbnail: {command_thumb}")
+    error_policy = _read_field(disp_pol, "error_embeds")
+    if error_policy != None:
+        if error_policy == False:
+            lines.append("display.error_embeds.auto_delete: false")
+        elif _is_dict(error_policy):
+            raw_delete = _read_field(error_policy, "auto_delete")
+            raw_timeout = _read_field(error_policy, "timeout_seconds")
+            if raw_delete != None:
+                lines.append(f"display.error_embeds.auto_delete: {_bool_text(raw_delete == True)}")
+            if raw_timeout != None:
+                lines.append(f"display.error_embeds.timeout_seconds: {raw_timeout}")
     if len(lines) == 0:
         lines.append("notable: none")
     return _codeblock("yaml", lines)
@@ -701,6 +730,7 @@ if summary == None:
             f"Unknown section `{section}`. "
             f"Try: wiring, subsystems, policies, crafting, display, runtime, data, biomes, player_setup"
         ),
+        error=True,
     )
 
 return get_embed(

@@ -14,7 +14,7 @@ ok, msg = auth.is_allowed(COMMAND)
 get_embed = display.get_display(COMMAND)
 
 if not ok:
-    return get_embed(desc=msg)
+    return get_embed(desc=msg, error=True)
 
 argslist = &ARGS&
 
@@ -31,15 +31,15 @@ if len(argslist) > 0 and argslist[0] in ["help", "?"]:
 try:
     ch = character()
 except:
-    return get_embed(desc="Select a character first.")
+    return get_embed(desc="Select a character first.", error=True)
 
 cfg = config.get_config()
 loc_id, loc = journeys.get_location(ch, cfg)
 
 if loc_id == None:
-    return get_embed(desc="No **default_location** is configured for this server.")
+    return get_embed(desc="No **default_location** is configured for this server.", error=True)
 if loc == None:
-    return get_embed(desc=f"Unknown location **{loc_id}**.")
+    return get_embed(desc=f"Unknown location **{loc_id}**.", error=True)
 
 visits = journeys.get_visit_count(ch, loc_id)
 description = locations.display_location(loc, "full", ch, True, visits, cfg)

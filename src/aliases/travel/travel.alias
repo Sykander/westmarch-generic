@@ -16,7 +16,7 @@ ok, msg = auth.is_allowed(COMMAND)
 get_embed = display.get_display(COMMAND)
 
 if not ok:
-    return get_embed(desc=msg)
+    return get_embed(desc=msg, error=True)
 
 args = argparse(&ARGS&)
 argslist = &ARGS&
@@ -51,7 +51,7 @@ if len(argslist) > 0 and argslist[0] in ["help", "?"]:
 try:
     ch = character()
 except:
-    return get_embed(desc="Select a character first.")
+    return get_embed(desc="Select a character first.", error=True)
 
 cfg = config.get_config()
 CONTROL_TOKENS = ["track", "journey", "yes"]
@@ -229,7 +229,7 @@ def show_shops_on_travel():
 def response_for_current(messages=[]):
     loc_id, loc, err_msg = current_location_or_error()
     if err_msg != None:
-        return get_embed(desc=err_msg)
+        return get_embed(desc=err_msg, error=True)
     desc = location_description(loc_id, loc, True, show_shops_on_travel())
     journey_text = journeys.active_journey_text(cfg, ch, ctx.prefix)
     if journey_text != "":
@@ -293,7 +293,7 @@ if subcommand == "set":
     query = destination_text(1)
     dest, err_msg = resolve_destination(query)
     if err_msg != None:
-        return get_embed(desc=err_msg)
+        return get_embed(desc=err_msg, error=True)
     dest_id = locations.location_id(dest)
     if not has_token("yes"):
         return get_embed(
@@ -307,20 +307,20 @@ if subcommand == "set":
 if subcommand == "next":
     progressed, messages = journeys.next_step(ch, cfg)
     if not progressed:
-        return get_embed(desc="\n".join(messages))
+        return get_embed(desc="\n".join(messages), error=True)
     return response_for_current(messages)
 
 current_id, current_loc, err_msg = current_location_or_error()
 if err_msg != None:
-    return get_embed(desc=err_msg)
+    return get_embed(desc=err_msg, error=True)
 
 dest, selected_transports, err_msg = resolve_route_destination(0)
 if err_msg != None:
-    return get_embed(desc=err_msg, image=locations.location_image(current_loc))
+    return get_embed(desc=err_msg, image=locations.location_image(current_loc), error=True)
 
 dest_id = locations.location_id(dest)
 if current_id == dest_id:
-    return get_embed(desc=f"You are already in **{locations.location_name(dest)}**.", image=locations.location_image(current_loc))
+    return get_embed(desc=f"You are already in **{locations.location_name(dest)}**.", image=locations.location_image(current_loc), error=True)
 
 available_transports = journeys.get_available_transport_ids(cfg, ch, selected_transports)
 selected_transport = primary_transport(selected_transports)
@@ -335,6 +335,7 @@ if not found:
     return get_embed(
         desc=f"Could not find a route from **{locations.location_name(current_loc)}** to **{locations.location_name(dest)}**.",
         image=locations.location_image(current_loc),
+        error=True,
     )
 
 journey = journeys.build_journey(

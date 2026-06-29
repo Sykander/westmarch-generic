@@ -13,7 +13,7 @@ get_embed = display.get_display(COMMAND)
 cmd_name = COMMAND
 
 if not ok:
-    return get_embed(desc=msg)
+    return get_embed(desc=msg, error=True)
 
 argslist = &ARGS&
 cfg = config.get_config()
@@ -35,11 +35,11 @@ if len(argslist) > 0:
 
 instant = clock.now(cfg, calendar_id)
 if instant == None:
-    return get_embed(desc="No world calendar is configured. Add `world_data.calendars` to use `!time`.")
+    return get_embed(desc="No world calendar is configured. Add `world_data.calendars` to use `!time`.", error=True)
 
 text = clock.format_instant(cfg, instant, calendar_id)
 if text == None or str(text).strip() == "":
-    return get_embed(desc="The configured calendar could not be formatted.")
+    return get_embed(desc="The configured calendar could not be formatted.", error=True)
 
 calendar_name = instant["calendar"]
 return get_embed(desc=f"**{calendar_name}**\n{text}")

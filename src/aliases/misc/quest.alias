@@ -13,7 +13,7 @@ get_embed = display.get_display(COMMAND)
 cmd_name = COMMAND
 
 if not ok:
-    return get_embed(desc=msg)
+    return get_embed(desc=msg, error=True)
 
 args = argparse(&ARGS&)
 argslist = &ARGS&
@@ -21,7 +21,7 @@ argslist = &ARGS&
 try:
     ch = character()
 except:
-    return get_embed(desc = f"{cmd_name} requires a character")
+    return get_embed(desc = f"{cmd_name} requires a character", error=True)
 
 cfg = config.get_config()
 journal = quests.load_journal(ch)
@@ -48,30 +48,30 @@ if sub in ["active", "completed", "done", "all"] and len(argslist) == 1:
 
 if sub == "add":
     if len(argslist) < 3:
-        return get_embed(desc=f"Use `{ctx.prefix}{cmd_name} add <quest> <note>`.")
+        return get_embed(desc=f"Use `{ctx.prefix}{cmd_name} add <quest> <note>`.", error=True)
     title = str(argslist[1]).strip()
     note = " ".join([str(token) for token in argslist[2:]]).strip()
     ok_add, msg_add = quests.append_entry(ch, cfg, title, note)
-    return get_embed(desc=msg_add)
+    return get_embed(desc=msg_add, error=(ok_add != True))
 
 if sub in ["done", "complete", "completed"]:
     if len(argslist) < 2:
-        return get_embed(desc="Choose a quest to complete.")
+        return get_embed(desc="Choose a quest to complete.", error=True)
     query = " ".join([str(token) for token in argslist[1:]]).strip()
     ok_done, msg_done = quests.set_status(ch, query, "completed")
-    return get_embed(desc=msg_done)
+    return get_embed(desc=msg_done, error=(ok_done != True))
 
 if sub in ["reopen", "activate", "active"]:
     if len(argslist) < 2:
-        return get_embed(desc="Choose a quest to mark active.")
+        return get_embed(desc="Choose a quest to mark active.", error=True)
     query = " ".join([str(token) for token in argslist[1:]]).strip()
     ok_active, msg_active = quests.set_status(ch, query, "active")
-    return get_embed(desc=msg_active)
+    return get_embed(desc=msg_active, error=(ok_active != True))
 
 query = " ".join([str(token) for token in argslist]).strip()
 matches = quests.find_quests(journal, query)
 error = quests.match_error(query, matches)
 if error != None:
-    return get_embed(desc=error)
+    return get_embed(desc=error, error=True)
 return get_embed(desc=quests.format_quest(matches[0]))
 </drac2>

@@ -1088,6 +1088,7 @@ policies = {
     "display": {
         "footer_behaviour": "balanced",
         "command_thumbnail": "default",
+        "error_embeds": {"auto_delete": True, "timeout_seconds": 60},
         "helpful_tips": [],
         "credits": None,
     },

@@ -495,7 +495,7 @@ def run(argslist, args, get_embed, config, ch, prefix="!", command="loot"):
     if len(argslist) == 0:
         session = get_session(ch)
         if session == None:
-            return get_embed(desc=f"No active loot session. Use `{cmd} <creature>` to start one.")
+            return get_embed(desc=f"No active loot session. Use `{cmd} <creature>` to start one.", error=True)
         return get_embed(desc=format_session(session, config, prefix, command))
 
     first = str(argslist[0]).strip().lower()
@@ -504,17 +504,21 @@ def run(argslist, args, get_embed, config, ch, prefix="!", command="loot"):
     if first in ["clear", "reset", "end"]:
         if clear_session(ch):
             return get_embed(desc="Loot session cleared.")
-        return get_embed(desc="No active loot session to clear.")
+        return get_embed(desc="No active loot session to clear.", error=True)
 
     text = " ".join([str(a) for a in argslist]).strip()
     session = get_session(ch)
     if session != None:
         ok, msg, updated = attempt_loot(ch, config, text, args, prefix, command)
+        if ok:
+            return get_embed(desc=msg)
+        if msg.startswith("No active") or msg.startswith("Be more specific") or msg.startswith("Unknown lootable"):
+            return get_embed(desc=msg, error=True)
         return get_embed(desc=msg)
 
     monster, matches, resolve_err = monsters.resolve(config, text)
     if monster == None:
-        return get_embed(desc=resolve_err)
+        return get_embed(desc=resolve_err, error=True)
     session = start_session(ch, monster, config)
     if len(_items(session)) == 0:
         clear_session(ch)

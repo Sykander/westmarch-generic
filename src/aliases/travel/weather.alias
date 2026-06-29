@@ -13,7 +13,7 @@ get_embed = display.get_display(COMMAND)
 cmd_name = COMMAND
 
 if not ok:
-    return get_embed(desc=msg)
+    return get_embed(desc=msg, error=True)
 
 argslist = &ARGS&
 cfg = config.get_config()
@@ -45,12 +45,12 @@ except:
 
 area = weather.resolve_area_code(cfg, ch, argslist)
 if area == None:
-    return get_embed(desc=f"Choose a configured weather area.\n\n{_area_list()}")
+    return get_embed(desc=f"Choose a configured weather area.\n\n{_area_list()}", error=True)
 
 season = weather.current_season(cfg)
 forecast = weather.pick_weather(cfg, area, season)
 if forecast == None:
-    return get_embed(desc=f"No weather entries are configured for **{area}**.")
+    return get_embed(desc=f"No weather entries are configured for **{area}**.", error=True)
 
 if season != None and str(season).strip() not in ["", "default"]:
     return get_embed(desc=f"**{area}** — {season}\n{forecast}")

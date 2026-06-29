@@ -1684,7 +1684,7 @@ House rules and **what the engine enforces** vs what stays narrative/manual. Sto
 | **`combat`** | ✓ | `scale_encounters_to_level` *(defer)*, `roll_monster_hp`, `scale_mode`, `max_cr_delta`, `min_cr` *(defer)* | scaling on → warn |
 | **`quest`** | ✓ | `self_assign`, `max_active` | **`self_assign`** + quest encounters → **`misc.commands.quest`** on |
 | **`inventory`** | schema | encumbrance, attunement, **`enforce_*`** | enforcement deferred; warn when enforce on |
-| **`display`** | ✓ | `footer_behaviour`, `command_thumbnail`, tips, credits | invalid mode → error |
+| **`display`** | ✓ | `footer_behaviour`, `command_thumbnail`, `error_embeds`, tips, credits | invalid mode / timeout → error |
 | **`player_setup`** | ✓ | `enabled`, `require_character`, `hud`, `checks` | check type/key/gates |
 | **`languages`** | ✓ | `allowed` | unknown names → warn |
 | **`content`** | partial | `enforce_read_cooldowns`, `enforce_library_cooldowns` | uses **`command_config.read`** / **`library`** |
@@ -1764,6 +1764,10 @@ policies = {
     "display": {
         "footer_behaviour": "balanced",
         "command_thumbnail": "default",
+        "error_embeds": {
+            "auto_delete": True,
+            "timeout_seconds": 60,
+        },
         "helpful_tips": [],
         "credits": None,
     },
@@ -2087,10 +2091,13 @@ Per-command toggles under **`subsystems.misc`**. MVP ships **`quest`** and **`re
 |-----|------|---------|---------|
 | `footer_behaviour` | see below | `"balanced"` | How to populate the embed footer |
 | `command_thumbnail` | `"default"` \| `"character"` | `"default"` | Whether command embed thumbnails use the configured logo/default logo or the selected PC image when available |
+| `error_embeds` | object | `{"auto_delete": True, "timeout_seconds": 60}` | Whether command error embeds pass Avrae's embed timeout flag, and how many seconds they remain |
 | `helpful_tips` | `[ str, … ]` | `[]` | Owner tips for **`helpful_tips`** mode; engine defaults used when empty |
 | `credits` | `str` \| `None` | `None` | Override credits line for **`credits`** mode; `None` → engine default string |
 
 `command_thumbnail: "character"` changes the default thumbnail passed by **`display.get_display()`**. A command that explicitly passes its own thumbnail, such as hunt/loot monster art, still wins for that embed response.
+
+`error_embeds` applies only to call sites marked as command errors: permission gates, missing character/configuration, cooldown blocks, invalid lookup terms, and similar user-correctable failures. Help, confirmation prompts, successful command output, and normal gameplay outcomes remain persistent unless a command explicitly passes its own timeout. Set **`auto_delete`** to **`False`** to keep error messages in chat, or set **`timeout_seconds`** to another positive whole number such as **`5`** or **`120`**.
 
 #### `footer_behaviour`
 
@@ -2109,6 +2116,7 @@ Example — FR table with custom tips and fixed footer fallback:
 ```py
 "display": {
     "footer_behaviour": "balanced",
+    "error_embeds": {"auto_delete": True, "timeout_seconds": 60},
     "helpful_tips": [
         "Tip: `!location` shows where you are before rolling `!enc`.",
         "Tip: `!westmarch show` summarizes enabled commands for this server.",
@@ -2117,7 +2125,7 @@ Example — FR table with custom tips and fixed footer fallback:
 },
 ```
 
-The editor reports errors on unknown **`footer_behaviour`** values. It warns when **`footer_behaviour`** is **`string`** and no **`footer`** is set at any inheritance layer (runtime still falls back to title / world name).
+The editor reports errors on malformed **`error_embeds`** values and unknown **`footer_behaviour`** values. It warns when **`footer_behaviour`** is **`string`** and no **`footer`** is set at any inheritance layer (runtime still falls back to title / world name).
 
 ### `languages`
 

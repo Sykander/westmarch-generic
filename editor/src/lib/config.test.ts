@@ -1052,6 +1052,17 @@ subsystems = {
   );
 });
 
+test('display error embed policy validates shape and timeout', () => {
+  const codes = issueCodes(`
+policies = {
+    "display": {"error_embeds": {"auto_delete": "yes", "timeout_seconds": 0}},
+}
+`);
+
+  assert.ok(codes.includes('policies.display.error_auto_delete_type'));
+  assert.ok(codes.includes('policies.display.error_timeout_seconds'));
+});
+
 test('deferred policy flags report validation issues when enabled', () => {
   const codes = issueCodes(`
 policies = {

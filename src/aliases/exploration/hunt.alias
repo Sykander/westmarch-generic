@@ -15,7 +15,7 @@ get_embed = display.get_display(COMMAND)
 cmd_name = COMMAND
 
 if not ok:
-    return get_embed(desc=msg)
+    return get_embed(desc=msg, error=True)
 
 args = argparse(&ARGS&)
 argslist = &ARGS&
@@ -43,19 +43,19 @@ if len(argslist) > 0 and argslist[0] in ["help", "?"]:
 try:
     ch = character()
 except:
-    return get_embed(desc = f"{cmd_name} requires a character")
+    return get_embed(desc = f"{cmd_name} requires a character", error=True)
 
 cfg = config.get_config()
 
 if len(argslist) == 0:
-    return get_embed(desc=f"Provide a **creature** to hunt. Run `{ctx.prefix}{cmd_name} help` to see hunt help.")
+    return get_embed(desc=f"Provide a **creature** to hunt. Run `{ctx.prefix}{cmd_name} help` to see hunt help.", error=True)
 
 try:
     party_size = args.last("p", 1, int)
 except:
-    return get_embed(desc=f"Party size must be a positive whole number, e.g. `{ctx.prefix}{cmd_name} Wolf -p 2`.")
+    return get_embed(desc=f"Party size must be a positive whole number, e.g. `{ctx.prefix}{cmd_name} Wolf -p 2`.", error=True)
 if party_size < 1:
-    return get_embed(desc=f"Party size must be a positive whole number, e.g. `{ctx.prefix}{cmd_name} Wolf -p 2`.")
+    return get_embed(desc=f"Party size must be a positive whole number, e.g. `{ctx.prefix}{cmd_name} Wolf -p 2`.", error=True)
 
 creature_parts = []
 skip_next = False
@@ -76,11 +76,11 @@ for arg in argslist:
 
 creature_name = " ".join(creature_parts).strip()
 if creature_name == "":
-    return get_embed(desc=f"Provide a **creature** to hunt. Use `{ctx.prefix}{cmd_name} help` for options.")
+    return get_embed(desc=f"Provide a **creature** to hunt. Use `{ctx.prefix}{cmd_name} help` for options.", error=True)
 
 monster, matches, resolve_err = monsters.resolve(cfg, creature_name)
 if monster == None:
-    return get_embed(desc=resolve_err)
+    return get_embed(desc=resolve_err, error=True)
 
 cr = monsters.monster_cr(monster)
 try:

@@ -1965,6 +1965,10 @@ function PoliciesView({
           value={String(readPath(config, 'policies.display.footer_behaviour') ?? 'balanced')}
           onChange={(value) => updateConfig('policies.display.footer_behaviour', value)}
         />
+        <ErrorEmbedPolicyEditor
+          value={readPath(config, 'policies.display.error_embeds')}
+          onChange={(value) => updateConfig('policies.display.error_embeds', value)}
+        />
         <PlayerSetupEditor
           value={asRecord(
             readPath(config, 'policies.player_setup') ?? {
@@ -1978,6 +1982,52 @@ function PoliciesView({
         />
       </div>
     </section>
+  );
+}
+
+function ErrorEmbedPolicyEditor({
+  value,
+  onChange,
+}: {
+  value: unknown;
+  onChange: (value: AnyRecord) => void;
+}) {
+  const raw = typeof value === 'boolean' ? { auto_delete: value } : asRecord(value);
+  const autoDelete = raw.auto_delete !== false;
+  const timeoutValue = raw.timeout_seconds ?? 60;
+
+  function update(patch: AnyRecord) {
+    const next = {
+      auto_delete: autoDelete,
+      timeout_seconds: timeoutValue,
+      ...raw,
+      ...patch,
+    };
+    onChange(next);
+  }
+
+  return (
+    <>
+      <SelectField
+        label="Error embeds"
+        value={autoDelete ? 'delete' : 'keep'}
+        values={['delete', 'keep']}
+        onChange={(mode) => update({ auto_delete: mode === 'delete' })}
+        help="Delete removes command error embeds after the configured timeout. Keep leaves them in chat."
+      />
+      <TextField
+        label="Error timeout seconds"
+        value={String(timeoutValue)}
+        onChange={(text) => {
+          const trimmed = text.trim();
+          const numeric = Number(trimmed);
+          update({
+            timeout_seconds: trimmed === '' ? '' : Number.isFinite(numeric) ? numeric : trimmed,
+          });
+        }}
+        help="Used when Error embeds is delete. Default is 60 seconds."
+      />
+    </>
   );
 }
 

@@ -395,6 +395,7 @@ The **Westmarch config editor** is the source of truth for config validation. It
 | Enabled crafting command with missing or malformed required catalogue source | Error |
 | Invalid crafting `recipe_mode`, `require_known_spell`, check mode/DC, or tool policy mode/list | Error |
 | Invalid crafting resource or item-output policy mode | Error |
+| Invalid **`policies.display.error_embeds`** shape or timeout | Error |
 | **`policies.quest.self_assign`** true but **`misc.commands.quest`** off | Error |
 | **`policies.inventory.enforce_*`** true | Warning |
 | **`policies.combat.scale_encounters_to_level`** true before engine supports scaling | Warning |

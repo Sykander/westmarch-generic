@@ -361,6 +361,10 @@ policies = {
     "display": {
         "footer_behaviour": "balanced",
         "command_thumbnail": "default",  # "default" | "character"
+        "error_embeds": {
+            "auto_delete": True,      # delete error embeds after timeout_seconds
+            "timeout_seconds": 60,    # set auto_delete False to keep errors in chat
+        },
         "helpful_tips": [],
         "credits": None,
     },

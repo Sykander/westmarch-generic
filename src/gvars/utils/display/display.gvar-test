@@ -13,6 +13,50 @@ re:-title Westmarch
 ---
 name: default branding produces embed with westmarch title
 
+get_embed = display.get_display()
+return "-t " in get_embed(desc="hello")
+---
+False
+---
+name: default non-error embed has no timeout
+
+get_embed = display.get_display()
+return "-t 60" in get_embed(desc="hello", error=True)
+---
+True
+---
+name: default error embed times out after sixty seconds
+
+get_embed = display.get_display()
+return "-t " in get_embed(desc="hello", error=True)
+---
+False
+---
+name: configured error embeds can stay in chat
+vars:
+  svars:
+    westmarch_config: "22226666-6666-6666-6666-666666666666"
+  gvars:
+    22226666-6666-6666-6666-666666666666: |
+      policies = {
+          "display": {"error_embeds": {"auto_delete": False}},
+      }
+
+get_embed = display.get_display()
+return "-t 5" in get_embed(desc="hello", error=True)
+---
+True
+---
+name: configured error embed timeout is used
+vars:
+  svars:
+    westmarch_config: "22227777-7777-7777-7777-777777777777"
+  gvars:
+    22227777-7777-7777-7777-777777777777: |
+      policies = {
+          "display": {"error_embeds": {"timeout_seconds": 5}},
+      }
+
 get_embed = display.get_display("hunt")
 return get_embed(desc="hello")
 ---

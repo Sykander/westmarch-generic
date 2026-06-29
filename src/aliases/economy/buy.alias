@@ -100,7 +100,7 @@ get_embed = display.get_display(COMMAND)
 cmd_name = COMMAND
 
 if not ok:
-    return get_embed(desc=msg)
+    return get_embed(desc=msg, error=True)
 
 args = argparse(&ARGS&)
 argslist = &ARGS&
@@ -108,7 +108,7 @@ argslist = &ARGS&
 try:
     ch = character()
 except:
-    return get_embed(desc = f"{cmd_name} requires a character")
+    return get_embed(desc = f"{cmd_name} requires a character", error=True)
 
 cfg = config.get_config()
 
@@ -125,16 +125,16 @@ if len(argslist) == 0 or argslist[0] in ["help", "?"]:
 
 shop, item_query, qty, confirmed, used_shop_arg, err_msg = _resolve_purchase(cfg, ch, argslist)
 if err_msg != None:
-    return get_embed(desc=err_msg)
+    return get_embed(desc=err_msg, error=True)
 
 preview, preview_err = shops.buy_preview(ch, cfg, shop, item_query, qty)
 if preview_err != None:
-    return get_embed(desc=preview_err)
+    return get_embed(desc=preview_err, error=True)
 
 if shops.ask_to_confirm_purchases(cfg) and not confirmed:
     command_text = _confirm_command(shop, preview["item_name"], preview["qty"], used_shop_arg)
     return get_embed(desc=_confirm_message(preview, command_text))
 
 ok_buy, msg_buy = shops.buy(ch, cfg, shop, preview["item_name"], preview["qty"])
-return get_embed(desc=msg_buy)
+return get_embed(desc=msg_buy, error=(ok_buy != True))
 </drac2>

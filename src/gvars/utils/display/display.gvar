@@ -318,6 +318,96 @@ def _command_thumbnail_mode(cfg):
     return "default"
 
 
+def _read_policy_field(policy, key):
+    if policy == None:
+        return None
+    if _is_dict(policy):
+        try:
+            if key in policy:
+                return policy[key]
+        except:
+            pass
+    try:
+        return policy[key]
+    except:
+        pass
+    attrs = {
+        "error_embeds": lambda o: o.error_embeds,
+        "auto_delete": lambda o: o.auto_delete,
+        "timeout_seconds": lambda o: o.timeout_seconds,
+        "timeout": lambda o: o.timeout,
+        "delete_after_seconds": lambda o: o.delete_after_seconds,
+        "delete_after": lambda o: o.delete_after,
+        "desc": lambda o: o.desc,
+        "title": lambda o: o.title,
+        "footer": lambda o: o.footer,
+        "image": lambda o: o.image,
+        "thumb": lambda o: o.thumb,
+        "color": lambda o: o.color,
+    }
+    if key in attrs:
+        try:
+            return attrs[key](policy)
+        except:
+            pass
+    return None
+
+
+def _bool_or_default(raw, default):
+    if raw == None:
+        return default
+    if raw == True:
+        return True
+    if raw == False:
+        return False
+    text = str(raw).strip().lower()
+    if text in ["true", "yes", "on", "1", "delete", "auto_delete"]:
+        return True
+    if text in ["false", "no", "off", "0", "keep", "never"]:
+        return False
+    return default
+
+
+def _int_or_default(raw, default):
+    if raw == None:
+        return default
+    try:
+        return int(raw)
+    except:
+        return default
+
+
+def _error_embed_timeout(cfg):
+    policy = _display_policy(cfg)
+    block = _read_policy_field(policy, "error_embeds")
+    if block == None:
+        return 60
+    if block == False:
+        return None
+    if not _is_dict(block):
+        auto_delete = _bool_or_default(block, True)
+        if not auto_delete:
+            return None
+        seconds = _int_or_default(block, 60)
+        if seconds <= 0:
+            return None
+        return seconds
+    auto_delete = _bool_or_default(_read_policy_field(block, "auto_delete"), True)
+    if not auto_delete:
+        return None
+    seconds = _read_policy_field(block, "timeout_seconds")
+    if seconds == None:
+        seconds = _read_policy_field(block, "timeout")
+    if seconds == None:
+        seconds = _read_policy_field(block, "delete_after_seconds")
+    if seconds == None:
+        seconds = _read_policy_field(block, "delete_after")
+    seconds = _int_or_default(seconds, 60)
+    if seconds <= 0:
+        return None
+    return seconds
+
+
 def _character_image():
     ch = None
     try:
@@ -470,6 +560,26 @@ def _branding_kwargs(subsystem, command):
     return out
 
 
+def _configured_embed_callable(branding, error_timeout):
+    desc_default = _read_policy_field(branding, "desc")
+    title_default = _read_policy_field(branding, "title")
+    fields_default = []
+    footer_default = _read_policy_field(branding, "footer")
+    image_default = _read_policy_field(branding, "image")
+    thumb_default = _read_policy_field(branding, "thumb")
+    color_default = _read_policy_field(branding, "color")
+    return lambda desc = desc_default, title = title_default, fields = fields_default, footer = footer_default, image = image_default, thumb = thumb_default, color = color_default, timeout = None, error = False: embeds.get_embed(
+        desc = desc,
+        title = title,
+        fields = fields,
+        footer = footer,
+        image = image,
+        thumb = thumb,
+        color = color,
+        timeout = timeout if timeout != None or error != True else error_timeout,
+    )
+
+
 def get_display(command_override=None):
     key = ""
     if command_override != None:
@@ -483,6 +593,6 @@ def get_display(command_override=None):
         subsystem = "admin"
         command = None
     branding = _branding_kwargs(subsystem, command)
-    built = embeds.configure_get_embed(**branding)
+    built = _configured_embed_callable(branding, _error_embed_timeout(config.cfg))
     _display_cache[key] = built
     return built

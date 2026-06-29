@@ -69,7 +69,7 @@ get_embed = display.get_display(COMMAND)
 cmd_name = COMMAND
 
 if not ok:
-    return get_embed(desc=msg)
+    return get_embed(desc=msg, error=True)
 
 args = argparse(&ARGS&)
 argslist = &ARGS&
@@ -77,7 +77,7 @@ argslist = &ARGS&
 try:
     ch = character()
 except:
-    return get_embed(desc = f"{cmd_name} requires a character")
+    return get_embed(desc = f"{cmd_name} requires a character", error=True)
 
 cfg = config.get_config()
 
@@ -94,8 +94,8 @@ if len(argslist) == 0 or argslist[0] in ["help", "?"]:
 
 shop, item_query, qty, err_msg = _resolve_sale(cfg, ch, argslist)
 if err_msg != None:
-    return get_embed(desc=err_msg)
+    return get_embed(desc=err_msg, error=True)
 
 ok_sell, msg_sell = shops.sell(ch, cfg, shop, item_query, qty)
-return get_embed(desc=msg_sell)
+return get_embed(desc=msg_sell, error=(ok_sell != True))
 </drac2>

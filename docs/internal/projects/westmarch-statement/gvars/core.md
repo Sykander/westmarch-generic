@@ -127,6 +127,8 @@ return get_embed(desc=body)
 return get_embed(title="Custom", desc=body)  # per-call overrides
 ```
 
+**`embeds.get_embed(..., timeout=seconds)`** emits Avrae's **`-t`** embed argument. westmarch-generic uses this through **`display.get_display(...)(error=True)`** for configurable error-message auto-delete.
+
 **Inside `pc.gvar`:**
 
 ```py

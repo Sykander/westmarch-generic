@@ -15,7 +15,7 @@ get_embed = display.get_display(COMMAND)
 cmd_name = COMMAND
 
 if not ok:
-    return get_embed(desc=msg)
+    return get_embed(desc=msg, error=True)
 
 args = argparse(&ARGS&)
 argslist = &ARGS&
@@ -23,7 +23,7 @@ argslist = &ARGS&
 try:
     ch = character()
 except:
-    return get_embed(desc = f"{cmd_name} requires a character")
+    return get_embed(desc = f"{cmd_name} requires a character", error=True)
 
 help_text = f"""Read a configured volume in depth.
 
@@ -44,7 +44,7 @@ except:
 matches = library.search_by_name(cfg, name_query, author_query)
 if len(matches) == 0:
     suffix = f" by **{author_query}**" if author_query != "" else ""
-    return get_embed(desc=f"No book matches **{name_query}**{suffix}.")
+    return get_embed(desc=f"No book matches **{name_query}**{suffix}.", error=True)
 if len(matches) > 1:
     lines = []
     for book in matches[0:10]:
@@ -52,12 +52,12 @@ if len(matches) > 1:
     extra = len(matches) - 10
     if extra > 0:
         lines.append(f"...and {extra} more.")
-    return get_embed(desc="Several works match. Narrow with `-author`.\n\n" + "\n".join(lines))
+    return get_embed(desc="Several works match. Narrow with `-author`.\n\n" + "\n".join(lines), error=True)
 
 allowed, remaining = pc.check_cooldown(ch, COMMAND, cfg)
 if not allowed:
     ready = int(floor(time())) + int(remaining)
-    return get_embed(desc=f"You can read again <t:{ready}><t:{ready}:R>.")
+    return get_embed(desc=f"You can read again <t:{ready}><t:{ready}:R>.", error=True)
 
 book = matches[0]
 read_result = library.read_book(book, ch, args, "deep_read", argslist)

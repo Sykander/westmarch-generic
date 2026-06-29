@@ -310,6 +310,10 @@ Configure those checks with `policies.player_setup`:
 policies = {
     "display": {
         "command_thumbnail": "character",  # optional: command embeds use the selected PC image when available
+        "error_embeds": {
+            "auto_delete": True,           # default: command error embeds delete themselves
+            "timeout_seconds": 60,         # use 5, 120, etc.; set auto_delete False to keep them
+        },
     },
     "player_setup": {
         "enabled": True,
@@ -353,7 +357,7 @@ rules_version = "2014"   # or "2024"
 
 If **`rules_version`** disagrees with Avrae’s setting, the config value wins at runtime. The editor Check page is where validation guidance should live.
 
-Also set **`display.name`** and related fields for world branding — per-subsystem **`display`** / **`command_display`** and **`policies.display.footer_behaviour`** optional — [data-shapes § display](internal/projects/westmarch-statement/data-shapes.md#display) · [§ Embed display inheritance](internal/projects/westmarch-statement/data-shapes.md#embed-display-inheritance).
+Also set **`display.name`** and related fields for world branding — per-subsystem **`display`** / **`command_display`**, **`policies.display.footer_behaviour`**, and **`policies.display.error_embeds`** optional — [data-shapes § display](internal/projects/westmarch-statement/data-shapes.md#display) · [§ Embed display inheritance](internal/projects/westmarch-statement/data-shapes.md#embed-display-inheritance).
 
 ---
 

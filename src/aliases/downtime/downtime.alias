@@ -13,7 +13,7 @@ get_embed = display.get_display(COMMAND)
 cmd_name = COMMAND
 
 if not ok:
-    return get_embed(desc=msg)
+    return get_embed(desc=msg, error=True)
 
 args = argparse(&ARGS&)
 argslist = &ARGS&
@@ -173,11 +173,11 @@ if len(argslist) > 0 and argslist[0] in ["help", "?"]:
 try:
     ch = character()
 except:
-    return get_embed(desc = f"{cmd_name} requires a character")
+    return get_embed(desc = f"{cmd_name} requires a character", error=True)
 
 mode = _mode(cfg)
 if mode == "off":
-    return get_embed(desc="Downtime tracking is off on this server.")
+    return get_embed(desc="Downtime tracking is off on this server.", error=True)
 
 if len(argslist) == 0:
     return get_embed(desc=_status(ch, cfg))
@@ -188,7 +188,7 @@ if subcommand == "setup":
     current = pc.get_downtime(ch, cfg)
     ok_set, msg_set = pc.set_downtime(ch, current, cfg)
     if not ok_set:
-        return get_embed(desc=msg_set)
+        return get_embed(desc=msg_set, error=True)
     return get_embed(desc=_status(ch, cfg, "Downtime setup complete.\n\n"))
 
 if subcommand == "reset":
@@ -200,15 +200,15 @@ if subcommand == "reset":
         return get_embed(desc=f"This will reset your downtime balance to 0. Confirm with `{ctx.prefix}{cmd_name} reset yes`.")
     ok_reset, msg_reset = pc.set_downtime(ch, 0, cfg)
     if not ok_reset:
-        return get_embed(desc=msg_reset)
+        return get_embed(desc=msg_reset, error=True)
     return get_embed(desc=_status(ch, cfg, "Downtime balance reset.\n\n"))
 
 delta, amount_err = _parse_amount(argslist)
 if amount_err != None:
-    return get_embed(desc=amount_err)
+    return get_embed(desc=amount_err, error=True)
 
 ok_mod, msg_mod = pc.modify_downtime(ch, delta, cfg)
 if not ok_mod:
-    return get_embed(desc=msg_mod)
+    return get_embed(desc=msg_mod, error=True)
 return get_embed(desc=f"{msg_mod}\n\n{_status(ch, cfg)}")
 </drac2>

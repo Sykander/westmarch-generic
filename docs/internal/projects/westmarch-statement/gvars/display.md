@@ -36,10 +36,13 @@ def get_display(command_override=None):
             image=...,
             thumb=...,      # logo URL
             color=...,      # normalised for core/embeds
+            timeout=...,    # only when caller explicitly sets timeout or error=True
         )
 
     Aliases use the return value like embeds.get_embed — pass desc/title/etc. per
-    exit point; unset kwargs keep the configured defaults.
+    exit point; unset kwargs keep the configured defaults. Pass error=True for
+    command error exits so policies.display.error_embeds can apply the Avrae
+    embed timeout flag.
 
     Cached per alias invocation — safe to call multiple times; same callable returned.
     """
@@ -54,13 +57,14 @@ Vendored **`embeds.configure_get_embed`** ([core.md](core.md)) partial-applies d
 ```py
 # drac2-tools pattern — returns lambda with baked-in -title, -footer, -color, …
 get_embed = embeds.configure_get_embed(title="Encounter", footer="Tip: …", color="5865F2")
-return get_embed(desc=body)                    # branded defaults
-return get_embed(title="Override", desc=body)  # per-call title override
+return get_embed(desc=body)                       # branded defaults
+return get_embed(title="Override", desc=body)     # per-call title override
+return get_embed(desc=msg, error=True)            # error policy may add -t
 ```
 
-**`display.get_display(command_override=None)`** is the westmarch-generic wrapper that **computes** those defaults from config + the canonical command key, then delegates to **`configure_get_embed`**.
+**`display.get_display(command_override=None)`** is the westmarch-generic wrapper that **computes** those defaults from config + the canonical command key, then delegates to **`core/embeds.get_embed`** with an error-policy aware wrapper.
 
-Permission-denied and other pre-branding exits should use **`embeds.get_embed(...)`** directly (no server display merge).
+Permission-denied and other command error exits should use **`get_embed(..., error=True)`** after resolving **`display.get_display()`**. Truly pre-display exits can still use **`embeds.get_embed(...)`** directly, but they will not receive server branding or error timeout policy.
 
 ## Resolution *(internal)*
 
@@ -71,6 +75,7 @@ Permission-denied and other pre-branding exits should use **`embeds.get_embed(..
 | Admin commands | Subsystem **`admin`** — base **`display`** only (no subsystem layer) |
 | Footer | **`policies.display.footer_behaviour`** — see [Display policy](../data-shapes.md#display-policy) |
 | Thumbnail | **`policies.display.command_thumbnail`** can keep the configured logo/default logo or use the selected PC image |
+| Error timeout | **`policies.display.error_embeds`** controls whether `error=True` embeds add Avrae **`-t <seconds>`** |
 | Fallbacks | Humanized command/subsystem names, **`display.name`**, guild name, engine default colour |
 
 Engine constants in this gvar (not owner config):
@@ -80,6 +85,27 @@ Engine constants in this gvar (not owner config):
 - **`DEFAULT_COLOUR`** — passed to **`configure_get_embed`** when no merged hex
 
 The web config editor validates config shapes; **`display.gvar`** trusts merged config at runtime.
+
+### Error timeout policy
+
+The vendored **`core/embeds.get_embed`** supports **`timeout`** and emits Avrae's **`-t`** embed argument. **`display.get_display()`** exposes this through **`error=True`** so normal output does not disappear:
+
+```py
+if not ok:
+    return get_embed(desc=msg, error=True)
+```
+
+Default policy:
+
+```py
+policies = {
+    "display": {
+        "error_embeds": {"auto_delete": True, "timeout_seconds": 60},
+    },
+}
+```
+
+Set **`auto_delete`** to **`False`** to keep error embeds, or set **`timeout_seconds`** to a positive whole number such as **`5`** or **`120`**.
 
 ### Footer policy
 

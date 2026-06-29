@@ -136,24 +136,26 @@ def run_activity(activity, argslist, get_embed):
     try:
         ch = character()
     except:
-        return get_embed(desc=f"**{cmd}** requires a character.")
+        return get_embed(desc=f"**{cmd}** requires a character.", error=True)
 
     allowed, remaining = pc.check_cooldown(ch, cmd, cfg)
     if not allowed:
         return get_embed(
-            desc=f"On **cooldown** — wait **{remaining}** seconds before using `!{cmd}` again."
+            desc=f"On **cooldown** — wait **{remaining}** seconds before using `!{cmd}` again.",
+            error=True,
         )
 
     resolve_context = biomes.resolve_biome_context(activity, argslist, ch, cfg)
     biome = _field(resolve_context, "biome")
     resolve_err = _field(resolve_context, "error")
     if resolve_err != None:
-        return get_embed(desc=resolve_err)
+        return get_embed(desc=resolve_err, error=True)
 
     pick = encounter_lists.get_encounter_pick(biome, activity, ch, cfg)
     if pick == None:
         return get_embed(
-            desc=_missing_pool_message(biome, activity, resolve_context)
+            desc=_missing_pool_message(biome, activity, resolve_context),
+            error=True,
         )
 
     kind = _field(pick, "kind")
@@ -183,7 +185,7 @@ def run_activity(activity, argslist, get_embed):
         command_key=cmd,
     )
     if not ok_log:
-        return get_embed(desc=log_msg if log_msg != "" else "Could not record command usage.")
+        return get_embed(desc=log_msg if log_msg != "" else "Could not record command usage.", error=True)
 
     journey_progressed, journey_messages = journeys.complete_activity_step(ch, cfg, activity, biome)
 

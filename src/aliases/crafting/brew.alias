@@ -13,7 +13,7 @@ get_embed = display.get_display(COMMAND)
 cmd_name = COMMAND
 
 if not ok:
-    return get_embed(desc=msg)
+    return get_embed(desc=msg, error=True)
 
 args = argparse(&ARGS&)
 argslist = &ARGS&
@@ -24,10 +24,10 @@ if len(argslist) == 0 or argslist[0] in ["help", "?"]:
 try:
     ch = character()
 except:
-    return get_embed(desc = f"{cmd_name} requires a character")
+    return get_embed(desc = f"{cmd_name} requires a character", error=True)
 
 cfg = config.get_config()
 subject = crafting.subject_from_args(argslist)
 ok_run, msg_run = crafting.run_command(ch, cfg, COMMAND, subject, args, ctx.prefix)
-return get_embed(desc=msg_run)
+return get_embed(desc=msg_run, error=(ok_run != True))
 </drac2>

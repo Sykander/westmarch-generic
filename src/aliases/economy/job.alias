@@ -164,7 +164,7 @@ get_embed = display.get_display(COMMAND)
 cmd_name = COMMAND
 
 if not ok:
-    return get_embed(desc=msg)
+    return get_embed(desc=msg, error=True)
 
 args = argparse(&ARGS&)
 argslist = &ARGS&
@@ -182,29 +182,29 @@ if len(argslist) == 0 or argslist[0] in ["help", "?"]:
 try:
     ch = character()
 except:
-    return get_embed(desc = f"{cmd_name} requires a character")
+    return get_embed(desc = f"{cmd_name} requires a character", error=True)
 
 cfg = config.get_config()
 allowed, remaining = pc.check_cooldown(ch, COMMAND, cfg)
 if not allowed:
     ready = int(floor(time())) + int(remaining)
-    return get_embed(desc=f"Jobs cannot be rerun until <t:{ready}><t:{ready}:R>.")
+    return get_embed(desc=f"Jobs cannot be rerun until <t:{ready}><t:{ready}:R>.", error=True)
 
 skill_name, ambiguous = _resolve_skill(cfg, argslist[0])
 if skill_name == None:
     if len(ambiguous) > 1:
-        return get_embed(desc=f"Be more specific: **{argslist[0]}** matched {', '.join(ambiguous[0:5])}.")
-    return get_embed(desc=f"Skill **{argslist[0]}** was not recognised.")
+        return get_embed(desc=f"Be more specific: **{argslist[0]}** matched {', '.join(ambiguous[0:5])}.", error=True)
+    return get_embed(desc=f"Skill **{argslist[0]}** was not recognised.", error=True)
 
 ok_job_loc, job_loc_msg = _job_location_check(cfg, ch, skill_name)
 if not ok_job_loc:
-    return get_embed(desc=job_loc_msg)
+    return get_embed(desc=job_loc_msg, error=True)
 
 workdays = _workdays_cost(cfg)
 if workdays > 0:
     ok_dt, msg_dt = pc.modify_downtime(ch, -1 * workdays, cfg)
     if not ok_dt:
-        return get_embed(desc=msg_dt)
+        return get_embed(desc=msg_dt, error=True)
 
 roll_result = rolls.get_roll(
     character=ch,
