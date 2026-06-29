@@ -356,6 +356,14 @@ Optional table extras:
 | **Emotes** | [workshop](https://avrae.io/dashboard/workshop/692625378316717c4a511557) |
 | **Drinking** | [workshop](https://avrae.io/dashboard/workshop/6378f00016eb2e36c259169a) |
 
+If you subscribe to **Riptide Shortcuts**, that workshop also provides a `!quest` alias. Rename the Riptide copy so westmarch-generic keeps the clean quest command:
+
+```text
+!servalias rename quest quest-deprecated
+```
+
+When Avrae asks which alias to rename, select the one marked as Riptide. This step is only needed on servers that added Riptide Shortcuts.
+
 In Discord, run:
 
 ```text

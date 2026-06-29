@@ -106,6 +106,90 @@ character:
   cvars:
     bags: '[["Equipment", {}]]'
 
+!buy stabling
+---
+re:Bought \*\*1x Stabling \(1 day\)\*\*[\s\S]*no item was added
+---
+name: buy purchases service stock without reporting a bag item add
+vars:
+  svars:
+    westmarch_config: "eeee1000-1000-1000-1000-100000000010"
+  gvars:
+    eeee1000-1000-1000-1000-100000000010: |
+      subsystems = {
+          "economy": {
+              "enabled": True,
+              "commands": {"buy": True},
+              "config": {"ask_to_confirm_purchases": False},
+          },
+      }
+      shops = {
+          "stables": {
+              "id": "stables",
+              "name": "Stable Yard",
+              "stock": [{"item": "Stabling (1 day)", "price": {"gold": 0}, "fulfillment": "service"}],
+          },
+      }
+character:
+  cvars:
+    bags: '[["Equipment", {}]]'
+
+!buy shiny
+---
+re:Buying \*\*1x Shiny Ring\*\*[\s\S]*`!buy "Shiny Ring" yes`
+---
+name: buy confirmation uses stock display name
+vars:
+  svars:
+    westmarch_config: "eeee1000-1000-1000-1000-100000000011"
+  gvars:
+    eeee1000-1000-1000-1000-100000000011: |
+      subsystems = {
+          "economy": {
+              "enabled": True,
+              "commands": {"buy": True},
+              "config": {"ask_to_confirm_purchases": True},
+          },
+      }
+      shops = {
+          "jeweller": {
+              "id": "jeweller",
+              "name": "Quiet Jeweller",
+              "stock": [{"display_name": "Shiny Ring", "item": "Ring of Protection", "price": {"gold": 0}}],
+          },
+      }
+character:
+  cvars:
+    bags: '[["Equipment", {}]]'
+
+!buy "Shiny Ring" yes
+---
+re:Bought \*\*1x Shiny Ring\*\*[\s\S]*Ring of Protection added
+---
+name: buy confirmation display name delivers configured bag item
+vars:
+  svars:
+    westmarch_config: "eeee1000-1000-1000-1000-100000000012"
+  gvars:
+    eeee1000-1000-1000-1000-100000000012: |
+      subsystems = {
+          "economy": {
+              "enabled": True,
+              "commands": {"buy": True},
+              "config": {"ask_to_confirm_purchases": True},
+          },
+      }
+      shops = {
+          "jeweller": {
+              "id": "jeweller",
+              "name": "Quiet Jeweller",
+              "stock": [{"display_name": "Shiny Ring", "item": "Ring of Protection", "price": {"gold": 0}}],
+          },
+      }
+character:
+  cvars:
+    bags: '[["Equipment", {}]]'
+
 !buy not-a-real-item
 ---
 re:Found no stock matches

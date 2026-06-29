@@ -18,6 +18,7 @@ Mirror **buy** argument shape ([US-6.4](../../user-stories.md)).
 
 - **Help:** shops with **`accepts_sells: True`**, usage, examples.
 - **Acceptance:** shop must allow sell; item must match a stock row (MVP — no generic fence vendor).
+- **Services:** stock rows with **`fulfillment: "service"`** or stock-row **`type: "service"`** cannot be sold from bags.
 - **Price:** shop **`buyback`** × list **`price`**, unless row **`sell_price`** override ([data-shapes § StockEntry](../../data-shapes.md#stockentry)).
 - **Inventory:** **`shops.sell`** → **`pc.modify_bag`** remove; verify player holds enough qty.
 

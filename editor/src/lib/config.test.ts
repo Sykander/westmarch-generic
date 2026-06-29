@@ -1165,6 +1165,8 @@ shops = {
             {"price": {"gold": 1}},
             {"item": "Rope, Hemp (50 ft)"},
             {"item": "Dagger", "price": []},
+            {"item": "Stabling (1 day)", "price": {"gold": 1}, "fulfillment": "receipt"},
+            {"item": "Ring of Protection", "display_name": 7, "price": {"gold": 20}},
         ],
     },
 }
@@ -1173,6 +1175,8 @@ shops = {
   assert.ok(codes.includes('economy.stock_item'));
   assert.ok(codes.includes('economy.stock_price_missing'));
   assert.ok(codes.includes('economy.stock_price_shape'));
+  assert.ok(codes.includes('economy.stock_fulfillment'));
+  assert.ok(codes.includes('economy.stock_display_name'));
 });
 
 test('crafting command rules override must be a supported edition', () => {

@@ -23,6 +23,31 @@ character:
   cvars:
     bags: '[["Equipment", {"Rope, Hemp (50 ft)": 1}]]'
 
+!sell stabling
+---
+re:is a service and cannot be sold
+---
+name: sell rejects service stock rows
+vars:
+  svars:
+    westmarch_config: "eeee1000-1000-1000-1000-100000000006"
+  gvars:
+    eeee1000-1000-1000-1000-100000000006: |
+      subsystems = {
+          "economy": {"enabled": True, "commands": {"sell": True}},
+      }
+      shops = {
+          "stables": {
+              "id": "stables",
+              "name": "Stable Yard",
+              "accepts_sells": True,
+              "stock": [{"item": "Stabling (1 day)", "price": {"gold": 0}, "fulfillment": "service"}],
+          },
+      }
+character:
+  cvars:
+    bags: '[["Equipment", {"Stabling (1 day)": 1}]]'
+
 !sell general rope
 ---
 re:not buying items

@@ -34,6 +34,8 @@ shops = {
         "buyback": 0.5,
         "stock": [
             { "item": "Rope", "price": { "gold": 1 } },
+            { "item": "Stabling (1 day)", "price": { "gold": 0.5 }, "fulfillment": "service" },
+            { "display_name": "Shiny Ring", "item": "Ring of Protection", "price": { "gold": 20 } },
         ],
     },
 }
@@ -41,7 +43,7 @@ shops = {
 
 Shapes: [data-shapes.md § Currency](../../data-shapes.md#currency), [Shop](../../data-shapes.md#shop).
 
-Shared engines: **[shops.gvar](../../gvars/shops.md)** (transactions via **`pc`**), **[pc.gvar](../../gvars/pc.md)** (gp, wallet, bags). Job payouts: **`JOB`** config block.
+Shared engines: **[shops.gvar](../../gvars/shops.md)** (transactions via **`pc`**), **[pc.gvar](../../gvars/pc.md)** (gp, wallet, bags). Shop stock can use **`display_name`** for shop-facing labels and **`fulfillment: "service"`** for purchases that should not add bag items. Job payouts: **`JOB`** config block.
 
 Planned aliases: `src/aliases/economy/`.
 

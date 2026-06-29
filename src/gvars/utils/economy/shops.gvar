@@ -39,6 +39,8 @@ def _read_field(obj, key):
         "buyback": lambda o: o.buyback,
         "stock": lambda o: o.stock,
         "item": lambda o: o.item,
+        "display_name": lambda o: o.display_name,
+        "display": lambda o: o.display,
         "catalogue": lambda o: o.catalogue,
         "price": lambda o: o.price,
         "sell_price": lambda o: o.sell_price,
@@ -46,6 +48,13 @@ def _read_field(obj, key):
         "count": lambda o: o.count,
         "gold": lambda o: o.gold,
         "bag": lambda o: o.bag,
+        "type": lambda o: o.type,
+        "kind": lambda o: o.kind,
+        "fulfillment": lambda o: o.fulfillment,
+        "delivery": lambda o: o.delivery,
+        "message": lambda o: o.message,
+        "effect_text": lambda o: o.effect_text,
+        "effect": lambda o: o.effect,
         "policies": lambda o: o.policies,
         "inventory": lambda o: o.inventory,
         "item_handling": lambda o: o.item_handling,
@@ -291,6 +300,47 @@ def stock_item_name(stock_entry):
     return _stock_item_name(stock_entry)
 
 
+def _stock_display_name(stock_entry):
+    for key in ["display_name", "display", "name"]:
+        value = _read_field(stock_entry, key)
+        if value != None and str(value).strip() != "":
+            return str(value).strip()
+    return _stock_item_name(stock_entry)
+
+
+def stock_display_name(stock_entry):
+    return _stock_display_name(stock_entry)
+
+
+def _stock_fulfillment(stock_entry):
+    for key in ["fulfillment", "delivery", "kind", "type"]:
+        value = _read_field(stock_entry, key)
+        if value != None and str(value).strip() != "":
+            return str(value).strip().lower()
+    return ""
+
+
+def _stock_is_service(config_override, stock_entry):
+    explicit = _stock_fulfillment(stock_entry)
+    if explicit in ["item", "inventory", "bag", "physical"]:
+        return False
+    if explicit in ["service", "services"]:
+        return True
+    return False
+
+
+def stock_is_service(config_override, stock_entry):
+    return _stock_is_service(config_override, stock_entry)
+
+
+def _stock_service_message(stock_entry):
+    for key in ["message", "effect_text", "effect"]:
+        value = _read_field(stock_entry, key)
+        if value != None and str(value).strip() != "":
+            return str(value).strip()
+    return "Service purchased; no item was added to bags."
+
+
 def _stock_qty(stock_entry):
     qty = _read_field(stock_entry, "qty")
     if qty == None:
@@ -354,7 +404,7 @@ def find_stock_item(shop, item_query, config_override=None):
     labels = []
     label_to_stock = {}
     for row in _stock_entries(shop):
-        label = _stock_item_name(row)
+        label = _stock_display_name(row)
         if label == "":
             continue
         labels.append(label)
@@ -366,7 +416,7 @@ def find_stock_item(shop, item_query, config_override=None):
     seen = {}
     for label in matched:
         for row in label_to_stock[label]:
-            key = _stock_item_name(row).lower()
+            key = _stock_display_name(row).lower()
             if key in seen:
                 continue
             seen[key] = True
@@ -380,9 +430,9 @@ def find_stock_item(shop, item_query, config_override=None):
     if len(rows) > 1:
         names = []
         for row in rows:
-            names.append(_stock_item_name(row))
+            names.append(_stock_display_name(row))
         return None, names, f"Be more specific: **{text}** matched {items.format_match_names(names)}."
-    return rows[0], [_stock_item_name(rows[0])], None
+    return rows[0], [_stock_display_name(rows[0])], None
 
 
 def _parse_value_to_price(value):
@@ -520,9 +570,10 @@ def trade_text(config_override=None, character_location_id=None, max_lines=80):
             pending.append("; buy")
         item_lines = []
         for stock_entry in _stock_entries(shop):
-            name = _stock_item_name(stock_entry)
+            name = _stock_display_name(stock_entry)
             if name == "":
                 continue
+            service = _stock_is_service(cfg, stock_entry)
             buy_price = price_for_buy(shop, stock_entry, 1, cfg)
             buy_text = "-"
             sell_text = None
@@ -530,9 +581,10 @@ def trade_text(config_override=None, character_location_id=None, max_lines=80):
                 buy_text = format_price(cfg, buy_price)
             if show_sell:
                 sell_text = "-"
-                sell_price = price_for_sell(shop, stock_entry, 1, cfg)
-                if len(sell_price) > 0:
-                    sell_text = format_price(cfg, sell_price)
+                if not service:
+                    sell_price = price_for_sell(shop, stock_entry, 1, cfg)
+                    if len(sell_price) > 0:
+                        sell_text = format_price(cfg, sell_price)
             item_lines.append(_trade_row(name, buy_text, sell_text))
         if len(item_lines) == 0:
             continue
@@ -610,17 +662,19 @@ def _prepare_buy(ch, config_override, shop, item_query, qty=1):
         return False, None, err_msg
     available = _stock_qty(stock_entry)
     if available != None and amount > available:
-        return False, None, f"Only **{available}** {_stock_item_name(stock_entry)} are listed in stock."
+        return False, None, f"Only **{available}** {_stock_display_name(stock_entry)} are listed in stock."
     price = price_for_buy(shop, stock_entry, amount, cfg)
     if len(price) == 0:
-        return False, None, f"**{_stock_item_name(stock_entry)}** has no configured price or catalogue value."
+        return False, None, f"**{_stock_display_name(stock_entry)}** has no configured price or catalogue value."
     ok, msg = _validate_price(cfg, ch, price, True)
     if not ok:
         return False, None, msg
     return True, {
         "qty": amount,
         "stock_entry": stock_entry,
-        "item_name": _stock_item_name(stock_entry),
+        "item_name": _stock_display_name(stock_entry),
+        "bag_item_name": _stock_item_name(stock_entry),
+        "is_service": _stock_is_service(cfg, stock_entry),
         "shop_name": shop_name(shop),
         "price": price,
         "price_text": format_price(cfg, price),
@@ -645,11 +699,15 @@ def buy(ch, config_override, shop, item_query, qty=1):
     ok, spend_msg = _apply_price(cfg, ch, price, -1)
     if not ok:
         return False, spend_msg
+    display_name = _stock_display_name(stock_entry)
+    if details["is_service"]:
+        note = _stock_service_message(stock_entry)
+        return True, f"Bought **{amount}x {display_name}** from **{shop_name(shop)}** for **{format_price(cfg, price)}**.\n-# {spend_msg}\n-# {note}"
     bag = _inventory_bag(cfg, stock_entry)
     ok, bag_msg = pc.modify_bag(ch, _stock_item_name(stock_entry), amount, bag)
     if not ok:
         return False, bag_msg
-    return True, f"Bought **{amount}x {_stock_item_name(stock_entry)}** from **{shop_name(shop)}** for **{format_price(cfg, price)}**.\n-# {spend_msg}\n-# {bag_msg}"
+    return True, f"Bought **{amount}x {display_name}** from **{shop_name(shop)}** for **{format_price(cfg, price)}**.\n-# {spend_msg}\n-# {bag_msg}"
 
 
 def sell(ch, config_override, shop, item_query, qty=1):
@@ -665,13 +723,16 @@ def sell(ch, config_override, shop, item_query, qty=1):
     stock_entry, _matches, err_msg = find_stock_item(shop, item_query, cfg)
     if err_msg != None:
         return False, err_msg
+    display_name = _stock_display_name(stock_entry)
+    if _stock_is_service(cfg, stock_entry):
+        return False, f"**{display_name}** is a service and cannot be sold from your bags."
     bag = _inventory_bag(cfg, stock_entry)
     have = pc.get_bag_count(ch, _stock_item_name(stock_entry), bag)
     if have < amount:
         return False, f"{ch.name} has **{have}/{amount}** {_stock_item_name(stock_entry)} in **{bag}**."
     price = price_for_sell(shop, stock_entry, amount, cfg)
     if len(price) == 0:
-        return False, f"**{_stock_item_name(stock_entry)}** has no sell price."
+        return False, f"**{display_name}** has no sell price."
     ok, msg = _validate_price(cfg, ch, price, False)
     if not ok:
         return False, msg
@@ -681,7 +742,7 @@ def sell(ch, config_override, shop, item_query, qty=1):
     ok, gain_msg = _apply_price(cfg, ch, price, 1)
     if not ok:
         return False, gain_msg
-    return True, f"Sold **{amount}x {_stock_item_name(stock_entry)}** to **{shop_name(shop)}** for **{format_price(cfg, price)}**.\n-# {bag_msg}\n-# {gain_msg}"
+    return True, f"Sold **{amount}x {display_name}** to **{shop_name(shop)}** for **{format_price(cfg, price)}**.\n-# {bag_msg}\n-# {gain_msg}"
 
 
 def character_location_id(ch, config_override=None):
@@ -704,7 +765,7 @@ def find_shop_for_item(config_override, item_query, character_location_id=None, 
     label_to_pairs = {}
     for shop in visible_shops:
         for row in _stock_entries(shop):
-            label = _stock_item_name(row)
+            label = _stock_display_name(row)
             if label == "":
                 continue
             labels.append(label)
@@ -724,7 +785,7 @@ def find_shop_for_item(config_override, item_query, character_location_id=None, 
         for pair in label_to_pairs[label]:
             shop = pair[0]
             row = pair[1]
-            pair_key = _normalize(_shop_id(shop, shop_name(shop))) + "::" + _normalize(_stock_item_name(row))
+            pair_key = _normalize(_shop_id(shop, shop_name(shop))) + "::" + _normalize(_stock_display_name(row))
             if pair_key in pair_seen:
                 continue
             pair_seen[pair_key] = True

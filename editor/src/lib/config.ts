@@ -3564,7 +3564,7 @@ function validateEconomy(model: ConfigModel, issues: ConfigIssue[]) {
           'World',
           `${path}.stock`,
           'Shop stock must be a list',
-          'Each stock row should be an object with item, price, and optional qty.',
+          'Each stock row should be an object with item, price, optional qty, display_name, and fulfillment.',
         ),
       );
       continue;
@@ -3596,6 +3596,37 @@ function validateEconomy(model: ConfigModel, issues: ConfigIssue[]) {
             'The item should match a configured item catalogue entry.',
           ),
         );
+      }
+      for (const displayKey of ['display_name', 'display', 'name']) {
+        const displayValue = stock[displayKey];
+        if (displayValue != null && typeof displayValue !== 'string') {
+          issues.push(
+            issue(
+              'error',
+              'economy.stock_display_name',
+              'World',
+              `${stockPath}.${displayKey}`,
+              'Stock display name must be text',
+              'Use text when the shop-facing name should differ from the delivered item.',
+            ),
+          );
+        }
+      }
+      const fulfillment = stock.fulfillment;
+      if (fulfillment != null) {
+        const normalized = String(fulfillment).trim().toLowerCase();
+        if (typeof fulfillment !== 'string' || !['item', 'service'].includes(normalized)) {
+          issues.push(
+            issue(
+              'error',
+              'economy.stock_fulfillment',
+              'World',
+              `${stockPath}.fulfillment`,
+              'Stock fulfillment must be item or service',
+              'Use "item" for inventory purchases or "service" for purchases that should not add a bag item.',
+            ),
+          );
+        }
       }
       if (!hasConfiguredPrice(stock)) {
         issues.push(

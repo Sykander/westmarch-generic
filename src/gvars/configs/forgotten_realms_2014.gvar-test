@@ -122,15 +122,23 @@ True
 ---
 name: Forgotten Realms 2014 library searches Waterdeep inferred topics under statement budget
 
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(shops = env.gvars.shops)
 waterdeep_docks = forgotten_realms_2014.shops["waterdeep_docks"]
 waterdeep_market = forgotten_realms_2014.shops["waterdeep_general_market"]
+waterdeep_stables = forgotten_realms_2014.shops["waterdeep_stables"]
 item_overlay = forgotten_realms_2014.subsystems["crafting"]["config"]["catalogues"]["items"]
+cfg = {
+    "subsystems": forgotten_realms_2014.subsystems,
+    "shops": forgotten_realms_2014.shops,
+}
 return (
     waterdeep_docks["location_id"] == "waterdeep"
     and waterdeep_docks["stock"][0]["item"] == "Ship Passage"
     and waterdeep_market["accepts_sells"] == True
     and item_overlay["include_engine"] == True
     and item_overlay["entries"][0]["name"] == "Ship Passage"
+    and shops.stock_is_service(cfg, waterdeep_stables["stock"][7]) == True
 )
 ---
 True

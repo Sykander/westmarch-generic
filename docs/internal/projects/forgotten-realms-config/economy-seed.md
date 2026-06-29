@@ -12,7 +12,7 @@ First runtime economy slice for `src/gvars/configs/forgotten_realms_2014.gvar`.
 
 ## Service Items
 
-The item overlay adds non-equipment services that shops can sell as bag-tracked tickets or receipts:
+The item overlay adds non-equipment services, and the matching stock rows use `fulfillment: "service"`. `!buy` charges for them without adding a bag item, and `!sell` treats them as non-sellable services:
 
 - `Ship Passage`
 - `River Passage`

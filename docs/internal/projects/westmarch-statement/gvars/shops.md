@@ -19,7 +19,7 @@ def list_stock(shop, config):
     """Stock rows with resolved buy prices for embeds."""
 
 def find_stock_item(shop, item_query, config):
-    """Prefix / exact name match on stock entries."""
+    """Prefix / exact name match on stock display names."""
 
 def price_for_buy(shop, stock_entry, qty):
     """Total price dict — { gold, wallet_id, … }."""
@@ -32,7 +32,8 @@ def trade_text(config, character_location_id=None):
 
 def buy(ch, config, shop, item_query, qty=1):
     """
-    Validate funds, debit via pc.modify_gold / pc.modify_wallet, pc.modify_bag add.
+    Validate funds, debit via pc.modify_gold / pc.modify_wallet, then add item rows
+    through pc.modify_bag or complete service rows without bag mutation.
     Returns (success, message).
     """
 
@@ -56,8 +57,10 @@ shops = {
         "accepts_sells": True,
         "buyback": 0.5,
         "stock": [
-    { "item": "Rope", "price": { "gold": 1 } },
+            { "item": "Rope", "price": { "gold": 1 } },
             { "item": "Potion of Healing", "price": { "shards": 2 }, "qty": 5 },
+            { "item": "Stabling (1 day)", "price": { "gold": 0.5 }, "fulfillment": "service" },
+            { "display_name": "Shiny Ring", "item": "Ring of Protection", "price": { "gold": 20 } },
         ],
     },
 }
@@ -69,8 +72,10 @@ shops = {
 | **`price.<wallet_id>`** | Config **`currencies`** — **`pc.modify_wallet`** |
 | **`accepts_sells`** | Gate for **`!sell`** |
 | **`buyback`** | Default sell fraction when **`sell_price`** omitted on row |
+| **`display_name`** | Optional stock-row name players see/search; **`item`** stays the delivered bag/catalogue target |
+| **`fulfillment`** | Optional stock-row mode; **`service`** charges without adding a bag item |
 
-Stock item names are matched with the shared `lists.search_list` behavior: exact, case-insensitive exact, then substring. Explicit `price` rows do not need catalogue validation during lookup; when `price` is omitted, the engine falls back to the bundled item/potion/magic item catalogues plus owner entries from `world_data.items`, `world_data.catalogues.items`, or `extensions.items` to infer value.
+Stock display names are matched with the shared `lists.search_list` behavior: exact, case-insensitive exact, then substring. Explicit `price` rows do not need catalogue validation during lookup; when `price` is omitted, the engine falls back to the bundled item/potion/magic item catalogues plus owner entries from `world_data.items`, `world_data.catalogues.items`, or `extensions.items` to infer value. Rows whose `fulfillment`, `kind`, or `type` is `service` are treated as services: `!buy` charges for them and does not add a bag item, while `!sell` rejects them.
 
 ## Related
 

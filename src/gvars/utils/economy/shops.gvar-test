@@ -148,6 +148,93 @@ True
 ---
 name: trade_text summarizes visible buy and sell prices in compact shop code blocks
 
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(pc = env.gvars.pc)
+cfg_fixture = {
+    "shops": {
+        "stables": {
+            "id": "stables",
+            "name": "Stable Yard",
+            "accepts_sells": True,
+            "stock": [
+                {"item": "Stabling (1 day)", "price": {"gold": 0}, "fulfillment": "service"},
+            ],
+        },
+    },
+}
+shop, matches, error = shops.find_shop(cfg_fixture, "stables")
+ch = character()
+ok, msg = shops.buy(ch, cfg_fixture, shop, "stabling", 1)
+have = pc.get_bag_count(ch, "Stabling (1 day)", "Equipment")
+sell_ok, sell_msg = shops.sell(ch, cfg_fixture, shop, "stabling", 1)
+return ok == True and have == 0 and "no item was added" in msg and sell_ok == False and "service" in sell_msg
+---
+True
+---
+name: shops can sell services without adding bag items or allowing sellback
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(pc = env.gvars.pc)
+cfg_fixture = {
+    "shops": {
+        "jeweller": {
+            "id": "jeweller",
+            "name": "Quiet Jeweller",
+            "accepts_sells": True,
+            "stock": [
+                {"display_name": "Shiny Ring", "item": "Ring of Protection", "price": {"gold": 0}},
+            ],
+        },
+    },
+}
+shop, matches, error = shops.find_shop(cfg_fixture, "jeweller")
+stock, item_matches, item_error = shops.find_stock_item(shop, "shiny", cfg_fixture)
+preview, preview_error = shops.buy_preview(character(), cfg_fixture, shop, "shiny", 1)
+ch = character()
+ok, msg = shops.buy(ch, cfg_fixture, shop, preview["item_name"], preview["qty"])
+ring_count = pc.get_bag_count(ch, "Ring of Protection", "Equipment")
+shiny_count = pc.get_bag_count(ch, "Shiny Ring", "Equipment")
+trade = shops.trade_text(cfg_fixture)
+return (
+    stock != None
+    and item_error == None
+    and shops.stock_display_name(stock) == "Shiny Ring"
+    and shops.stock_item_name(stock) == "Ring of Protection"
+    and preview_error == None
+    and preview["item_name"] == "Shiny Ring"
+    and ok == True
+    and "Bought **1x Shiny Ring**" in msg
+    and ring_count == 1
+    and shiny_count == 0
+    and "Shiny Ring = free / free" in trade
+    and "Ring of Protection =" not in trade
+)
+---
+True
+---
+name: shops can display one stock name while delivering another bag item
+
+cfg_fixture = {
+    "shops": {
+        "temple": {
+            "id": "temple",
+            "name": "Shrine",
+            "accepts_sells": True,
+            "stock": [
+                {"item": "Remove Curse", "price": {"gold": 0}, "type": "service"},
+            ],
+        },
+    },
+}
+shop, matches, error = shops.find_shop(cfg_fixture, "temple")
+stock, item_matches, item_error = shops.find_stock_item(shop, "curse", cfg_fixture)
+trade = shops.trade_text(cfg_fixture)
+return shops.stock_is_service(cfg_fixture, stock) == True and "Remove Curse = free / -" in trade
+---
+True
+---
+name: shops treat stock rows with type service as service fulfillment
+
 shop, stock, error = shops.find_shop_for_item({"shops": {}}, "Dagger")
 return "No shops are configured" in error
 ---

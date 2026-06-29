@@ -103,6 +103,7 @@ const WESTMARCH_VERSION = westmarchPackage.version;
 const CRAFTING_RESOURCE_MODES = ['manual', 'check', 'deduct'];
 const ITEM_HANDLING_MODES = ['manual', 'bags'];
 const CRAFTING_RECIPE_MODES = ['mixed', 'raw', 'recipes'];
+const STOCK_FULFILLMENT_MODES = ['item', 'service'];
 const ITEM_HANDLING_DEFAULTS = {
   mode: 'manual',
   default_bag: 'Equipment',
@@ -2979,6 +2980,11 @@ function StockRowEditor({
   onChange: (value: AnyRecord) => void;
   onRemove: () => void;
 }) {
+  const fulfillment = String(stock.fulfillment ?? 'item').trim() || 'item';
+  const fulfillmentValues = STOCK_FULFILLMENT_MODES.includes(fulfillment)
+    ? STOCK_FULFILLMENT_MODES
+    : [fulfillment, ...STOCK_FULFILLMENT_MODES];
+
   return (
     <div className="collection-item stock-row-editor">
       <div className="form-grid compact">
@@ -2986,6 +2992,19 @@ function StockRowEditor({
           label="Item"
           value={String(stock.item ?? '')}
           onChange={(value) => onChange({ ...stock, item: value })}
+        />
+        <TextField
+          label="Display name"
+          value={String(stock.display_name ?? '')}
+          onChange={(value) => onChange({ ...stock, display_name: value || undefined })}
+        />
+        <SelectField
+          label="Fulfillment"
+          value={fulfillment}
+          values={fulfillmentValues}
+          onChange={(value) =>
+            onChange({ ...stock, fulfillment: value === 'item' ? undefined : value })
+          }
         />
         <TextField
           label="Quantity"

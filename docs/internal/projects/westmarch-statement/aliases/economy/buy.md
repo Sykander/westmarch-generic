@@ -24,6 +24,8 @@ Purchase items from a configured shop; debit gp or wallet currencies; add items 
 - **Help:** list shops available at current location (or all shops if no travel gate), usage, examples.
 - **Location gate:** when **travel** is on, restrict by shop **`location_id`** vs character location; **MVP fallback:** ignore location or require explicit shop id.
 - **Stock:** optional finite **`qty`** on [StockEntry](../../data-shapes.md#stockentry); unlimited when omitted.
+- **Display vs delivery:** stock **`display_name`** is the player-facing search/list name; **`item`** is the delivered bag/catalogue item.
+- **Services:** stock rows with **`fulfillment: "service"`** or stock-row **`type: "service"`** charge normally and do not add a bag item.
 - **Price:** **`stock[].price`** — `{ "gold": N }` and/or wallet ids ([data-shapes § Shop](../../data-shapes.md#shop)).
 - **Confirmation:** **`subsystems.economy.config.ask_to_confirm_purchases`** defaults to `True`; the first invocation previews the resolved stock item and total price and asks the player to re-run the command with trailing `yes`. Set it to `False` to allow immediate purchases.
 
@@ -34,7 +36,7 @@ None. Closest patterns:
 | Pattern | Source | Generic |
 |---------|--------|---------|
 | gp debit | job, loot | **`shops.buy`** → **`pc.modify_gold`** |
-| Bag add | loot | **`shops.buy`** → **`pc.modify_bag`** |
+| Bag add | loot | **`shops.buy`** → **`pc.modify_bag`** for item rows only |
 | Wallet debit | — | **`shops.buy`** → **`pc.modify_wallet`** |
 
 ## Generic architecture

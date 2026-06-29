@@ -214,12 +214,19 @@ shop = {
 
 ```py
 stock_entry = {
-    "item": "Rope",                  # required — Avrae sheet / shop stock display name
+    "item": "Rope",                  # required — delivered bag/catalogue item
+    "display_name": "Rope",          # optional — shop-facing/search label; defaults to item
+    "fulfillment": "item",           # optional — "item" (default) or "service"
     "price": { "gold": 1 },          # optional — buy price; see price keys below
     "qty": 10,                       # optional — finite stock; omit = unlimited (MVP default)
     "sell_price": { "gold": 1 },     # optional — sell payout; default buyback × list **`price`**
+    "message": "Stable fees paid.",  # optional — service purchase note
 }
 ```
+
+`display_name` is what players see and search for in shop listings. `item` is the actual catalogue/bag target. They usually match, but can differ for reveal-style purchases, such as a shop listing **Shiny Ring** while the bag receives **Ring of Protection**.
+
+Service rows set `fulfillment: "service"` or stock-row `type: "service"`. Buying a service charges the price and reports the purchase, but does not add an item to the character's bags. Services are not sellable through `!sell`.
 
 **Price keys:**
 
@@ -230,7 +237,7 @@ stock_entry = {
 
 **Transactions** — [shops.gvar](gvars/shops.md) **`buy`** / **`sell`** call **`pc`** mutators only; aliases do not touch coinpurse or bags directly.
 
-Stock lookup uses `lists.search_list` over visible shop stock names. Explicit `price` rows are resolved directly from shop config; rows without `price` may fall back to catalogue value and therefore need an exact catalogue display-name match.
+Stock lookup uses `lists.search_list` over visible shop stock display names. Explicit `price` rows are resolved directly from shop config; rows without `price` may fall back to catalogue value and therefore need an exact catalogue match for the delivered `item`.
 
 Example:
 
@@ -245,6 +252,8 @@ shops = {
         "stock": [
             { "item": "Rope", "price": { "gold": 1 } },
             { "item": "Potion of Healing", "price": { "gold": 50, "shards": 1 }, "qty": 5 },
+            { "item": "Stabling (1 day)", "price": { "gold": 0.5 }, "fulfillment": "service" },
+            { "display_name": "Shiny Ring", "item": "Ring of Protection", "price": { "gold": 20 } },
         ],
     },
 }

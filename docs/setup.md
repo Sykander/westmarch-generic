@@ -273,7 +273,7 @@ shops = {
 }
 ```
 
-`!wallet` needs `currencies`. `!buy` and `!sell` need `shops`, and `!sell` needs at least one shop with `accepts_sells: True`. Leave `ask_to_confirm_purchases` true to require a preview first and a trailing `yes` confirmation before `!buy` spends currency; set it false only if immediate purchases are desired. Location rows still use boolean availability (`"commands": {"job": True, "buy": True, "sell": True}`); named job rows live under `subsystems.economy.config.jobs`.
+`!wallet` needs `currencies`. `!buy` and `!sell` need `shops`, and `!sell` needs at least one shop with `accepts_sells: True`. Leave `ask_to_confirm_purchases` true to require a preview first and a trailing `yes` confirmation before `!buy` spends currency; set it false only if immediate purchases are desired. Stock rows can use `display_name` when the shop-facing name differs from the delivered `item`, and `fulfillment: "service"` when a purchase should charge without adding a bag item. Location rows still use boolean availability (`"commands": {"job": True, "buy": True, "sell": True}`); named job rows live under `subsystems.economy.config.jobs`.
 
 Quest setup is mostly data-driven. To try quest-flavoured exploration, add quest-tagged encounter rows to a biome pool such as `enc.quest`; to use `policies.quest.self_assign`, also enable `subsystems.misc.commands.quest` so the quest journal command is available.
 
@@ -375,6 +375,14 @@ Good companions for many westmarch-generic servers:
 | **Tools** | Subscribe when crafting is configured to require tools ([workshop](https://avrae.io/dashboard/workshop/630b0e39b85ea38890666c08)) |
 | **Optional flow helpers** | [Combat Options 2014](https://avrae.io/dashboard/workshop/64000c538b440f92d9975fab), [Auto](https://avrae.io/dashboard/workshop/617805d1137cd863517bc42c), [Initiative Utilities](https://avrae.io/dashboard/workshop/5f88d637f2d59b2718721a9a), [!qb](https://avrae.io/dashboard/workshop/600c00b9a2be999cfcb21a85) |
 | **Optional table extras** | [Potions](https://avrae.io/dashboard/workshop/65adf56c81896a704c651239), [Resting Revised](https://avrae.io/dashboard/workshop/66dcb7c52d6128334efd1c43), [Play Games](https://avrae.io/dashboard/workshop/605cb7331e2241970bbf0f30), [Riptide Shortcuts](https://avrae.io/dashboard/workshop/60069282052554a14d397617), [Bard Workshop](https://avrae.io/dashboard/workshop/638f5e434dbab671607f33a5), [Emotes](https://avrae.io/dashboard/workshop/692625378316717c4a511557), [Drinking](https://avrae.io/dashboard/workshop/6378f00016eb2e36c259169a) |
+
+If you add **Riptide Shortcuts**, rename its `!quest` alias so it does not collide with westmarch-generic:
+
+```text
+!servalias rename quest quest-deprecated
+```
+
+When Avrae prompts for a selection, choose the one marked as Riptide. This is only necessary for servers using Riptide Shortcuts.
 
 ---
 
