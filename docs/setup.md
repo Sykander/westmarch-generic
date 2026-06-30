@@ -142,7 +142,7 @@ subsystems = {
                 "potions": "engine:catalogues/potions",
                 "spells": "engine:catalogues/spells",
                 "magic_items": "engine:catalogues/magic_items",
-                "recipes": None,
+                "recipes": "engine:configs/recipes/recipes_list",
             },
             "checks": {
                 "scribe": {"mode": "none", "skill": "arcana", "dc": None},

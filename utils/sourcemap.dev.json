@@ -640,6 +640,11 @@
       "id": "20ba9bae-6183-4b81-82e1-09b8363ee617"
     },
     {
+      "name": "recipes_list",
+      "file": "src/gvars/configs/recipes/recipes_list.gvar.json",
+      "id": "dae3bef4-02f9-4d12-b7bb-828b1647700f"
+    },
+    {
       "name": "regex",
       "file": "src/gvars/utils/core/regex.gvar",
       "id": "6d94f7ea-cc59-484c-8c04-63ff01ec7ee9"

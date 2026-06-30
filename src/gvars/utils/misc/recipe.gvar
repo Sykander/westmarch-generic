@@ -7,6 +7,8 @@ using(
     lists = env.gvars.lists,
 )
 
+ENGINE_SLUG = "engine:configs/recipes/recipes_list"
+
 
 def _read_field(obj, key):
     if obj == None:
@@ -89,6 +91,13 @@ def _load_json_entries(body):
         return []
 
 
+def _load_engine():
+    try:
+        return _load_json_entries(get_gvar(env.gvars.recipes_list))
+    except:
+        return []
+
+
 def _recipe_config(cfg):
     subs = _read_field(cfg, "subsystems")
     crafting = _read_field(subs, "crafting")
@@ -127,7 +136,9 @@ def _entries_from_source(source):
                         entries += _entries_from_source(str(next_id).strip())
         return entries
     text = str(source).strip()
-    if text == "" or text.startswith("engine:"):
+    if text == "" or text == ENGINE_SLUG:
+        return _load_engine()
+    if text.startswith("engine:"):
         return []
     return _load_json_entries(get_gvar(text))
 

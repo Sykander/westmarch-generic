@@ -107,6 +107,7 @@ const VALID_CRAFTING_ENGINE_CATALOGUES: Record<string, string> = {
   potions: 'engine:catalogues/potions',
   spells: 'engine:catalogues/spells',
   magic_items: 'engine:catalogues/magic_items',
+  recipes: 'engine:configs/recipes/recipes_list',
 };
 const CRAFTING_REQUIRED_CATALOGUES: Record<string, string> = {
   craft: 'items',
@@ -3026,7 +3027,7 @@ function catalogueSourceStatus(
         valid: Boolean(expected && text === expected),
         detail: expected
           ? `Use ${expected} for this catalogue, or provide a custom gvar UUID.`
-          : 'Recipes do not have a built-in engine catalogue source.',
+          : 'Use a supported engine catalogue slug or provide a custom gvar UUID.',
       };
     }
     return {
@@ -3329,7 +3330,7 @@ function validateCrafting(model: ConfigModel, issues: ConfigIssue[]) {
   validateCatalogueSource(
     catalogues.recipes,
     'subsystems.crafting.config.catalogues.recipes',
-    null,
+    'recipes',
     false,
     issues,
   );

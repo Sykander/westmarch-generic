@@ -36,8 +36,7 @@ return (
     and crafting["commands"]["enchant"] == True
     and crafting["commands"]["scribe"] == True
     and crafting["config"]["resources"]["downtime"] == "deduct"
-    and len(crafting["config"]["catalogues"]["recipes"]) == 26
-    and crafting["config"]["catalogues"]["recipes"][0]["name"] == "Potion of Healing"
+    and crafting["config"]["catalogues"]["recipes"] == "engine:configs/recipes/recipes_list"
     and economy["enabled"] == True
     and economy["commands"]["job"] == True
     and economy["commands"]["buy"] == True

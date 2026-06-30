@@ -1117,7 +1117,7 @@ extensions = {
     "potions": "<workshop-uuid>",
     "magic_items": "<workshop-uuid>",
     "spells": "<workshop-uuid>",
-    "recipes": "<workshop-uuid>",
+    "recipes": "<workshop-uuid>",  # or "engine:configs/recipes/recipes_list"
     "books": "<workshop-uuid>",
 }
 ```
@@ -1427,7 +1427,7 @@ Crafting subsystem wiring: rules override, recipe strategy, catalogue sources, o
             "potions": "engine:catalogues/potions",
             "spells": "engine:catalogues/spells",
             "magic_items": "engine:catalogues/magic_items",
-            "recipes": None,
+            "recipes": "engine:configs/recipes/recipes_list",
         },
         "checks": {
             "craft": {"mode": "none", "skill": None, "dc": None},

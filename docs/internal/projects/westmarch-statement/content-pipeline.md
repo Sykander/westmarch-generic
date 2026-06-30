@@ -58,7 +58,7 @@ Large lists are **never** one monolithic gvar. Split rules:
 | [books-real.tsv](../../../../assets/books-real.tsv) | `configs/books/real_all.gvar.json` or `real_{a-z}.gvar.json` when count grows | Same | library |
 
 Book rows include optional **`content_link`** (full text URL) — see [data-shapes.md § Book](data-shapes.md#book). **`description`** is embed excerpt only; **`content_link`** is shown in-game only at **100%** comprehension when set.
-| [recipes.tsv](../../../../assets/recipes.tsv) | **`configs/recipes/recipes_list.gvar.json`** — merge into owner config **`recipes`** or reference as extension | **`kind`** or single file | [recipe.gvar](gvars/recipe.md) |
+| [recipes.tsv](../../../../assets/recipes.tsv) | **`configs/recipes/recipes_list.gvar.json`** — engine source **`engine:configs/recipes/recipes_list`**, owner inline **`recipes`**, or extension UUID | **`kind`** or single file | [recipe.gvar](gvars/recipe.md) |
 
 **Biomes** — not TSV-driven for MVP; hand-authored or ported raw JSON row-list modules under [src/gvars/configs/biomes/](../../../src/gvars/configs/biomes/README.md), referenced from **`world_data.biomes.*.gvar_id`**.
 

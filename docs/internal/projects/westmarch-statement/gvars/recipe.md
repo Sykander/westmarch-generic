@@ -2,7 +2,7 @@
 
 **Path:** `src/gvars/utils/misc/recipe.gvar`
 
-Optional recipe catalogue facade used by crafting commands and `!recipe`. Recipes can be inline under `subsystems.crafting.config.catalogues.recipes` or `world_data.recipes`, or loaded by UUID through `extensions.recipes`.
+Optional recipe catalogue facade used by crafting commands and `!recipe`. Recipes can use the engine source `engine:configs/recipes/recipes_list`, live inline under `subsystems.crafting.config.catalogues.recipes` or `world_data.recipes`, or load by UUID through `extensions.recipes`.
 
 ## API
 

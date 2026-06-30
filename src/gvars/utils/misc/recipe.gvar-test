@@ -76,3 +76,21 @@ return len(entries) > 0 and recipe.recipe_name(entries[0]) != ""
 True
 ---
 name: recipe source loader accepts multiple gvar ids
+
+cfg_fixture = {
+    "subsystems": {
+        "crafting": {
+            "config": {
+                "catalogues": {
+                    "recipes": "engine:configs/recipes/recipes_list",
+                },
+            },
+        },
+    },
+}
+matches = recipe.name_matches(cfg_fixture, "Potion of Healing", "brew")
+return len(matches) > 0 and "Potion of Healing" in matches
+---
+True
+---
+name: recipe source loader accepts engine recipe catalogue

@@ -116,6 +116,10 @@ test('forgotten realms starter has travel, economy, content, and media baseline'
   const craftingConfig = crafting.config as Record<string, unknown>;
   assert.equal(crafting.enabled, true);
   assert.equal((craftingConfig.resources as Record<string, unknown>).downtime, 'deduct');
+  assert.equal(
+    (craftingConfig.catalogues as Record<string, unknown>).recipes as string,
+    'engine:configs/recipes/recipes_list',
+  );
 
   const content = model.subsystems.content as Record<string, unknown>;
   const contentCommands = content.commands as Record<string, unknown>;
