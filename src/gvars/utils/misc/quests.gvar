@@ -6,6 +6,7 @@ using(
     dicts = env.gvars.dicts,
     lists = env.gvars.lists,
     strings = env.gvars.strings,
+    time_utils = env.gvars.time,
 )
 
 CVAR_QUESTS = "wg_quests"
@@ -372,6 +373,6 @@ def format_quest(quest):
         at = _read_field(entry, "at")
         stamp = ""
         if at != None:
-            stamp = f"<t:{int(at)}:d> "
+            stamp = time_utils.get_discord_date_timestamp(at) + " "
         lines.append(f"- {stamp}{_read_field(entry, 'text')}")
     return "\n".join(lines)

@@ -9,6 +9,7 @@ using(
     pc = env.gvars.pc,
     rolls = env.gvars.rolls,
     stats = env.gvars.stats,
+    time_utils = env.gvars.time,
 )
 
 COMMAND = "job"
@@ -187,8 +188,9 @@ except:
 cfg = config.get_config()
 allowed, remaining = pc.check_cooldown(ch, COMMAND, cfg)
 if not allowed:
-    ready = int(floor(time())) + int(remaining)
-    return get_embed(desc=f"Jobs cannot be rerun until <t:{ready}><t:{ready}:R>.", error=True)
+    ready = time_utils.get_unix_timestamp() + int(remaining)
+    ready_text = time_utils.get_discord_timestamp(ready) + time_utils.get_discord_relative_timestamp(ready)
+    return get_embed(desc=f"Jobs cannot be rerun until {ready_text}.", error=True)
 
 skill_name, ambiguous = _resolve_skill(cfg, argslist[0])
 if skill_name == None:

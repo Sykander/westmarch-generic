@@ -675,6 +675,11 @@
       "id": "1094cf3c-8b5f-4ea7-b5d6-ae18bc66680a"
     },
     {
+      "name": "time",
+      "file": "src/gvars/utils/core/time.gvar",
+      "id": "fbf9e239-21e4-4de3-a4f1-251e677fa5ea"
+    },
+    {
       "name": "tools",
       "file": "src/gvars/utils/core/tools.gvar",
       "id": "d1e91227-938b-4c65-a8fd-b3d98ed32fb7"

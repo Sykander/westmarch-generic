@@ -382,7 +382,7 @@ policies = {{
             "fields": ["coinpurse", "wallet", "location"],
         }},
         "checks": [
-            {{"type": "cvar", "key": "wg_downtime", "label": "Downtime", "message": "Run `{prefix}downtime setup`.", "when_subsystem": "downtime"}},
+            {{"type": "cvar", "key": "wg_downtime", "label": "Downtime", "message": "Run `{prefix}downtime`.", "when_subsystem": "downtime"}},
             {{"type": "cvar", "key": "vsheet", "label": "vSheet", "message": "Run your server's `!vsheet` setup command."}},
         ],
     }},

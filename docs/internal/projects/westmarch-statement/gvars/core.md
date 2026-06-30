@@ -39,6 +39,7 @@ This satisfies the intent of [US-7.3](../user-stories.md) — reuse community li
 | **languages** | drac2-tools `utils/languages` | library read (2014-aligned) |
 | **bags** | drac2-tools `utils/bags` | **`pc.gvar`** only — not aliases directly |
 | **random** | drac2-tools `utils/random` | seeded / deterministic rolls in tests |
+| **time** | drac2-tools `utils/time` | downtime accrual, cooldown messages, quest/library timestamps |
 | **tools** | drac2-tools `utils/tools` | shared small helpers |
 
 **Do not copy into `core/`:**

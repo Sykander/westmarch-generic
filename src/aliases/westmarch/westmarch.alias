@@ -8,6 +8,7 @@ using(
     display = env.gvars.display,
     journeys = env.gvars.journeys,
     lists = env.gvars.lists,
+    pc = env.gvars.pc,
     weather = env.gvars.weather,
 )
 
@@ -673,6 +674,13 @@ def _configured_status(prefix, cfg):
             ch = character()
         except:
             ch = None
+
+    if ch != None:
+        try:
+            if _subsystem_enabled(cfg, "downtime") and pc.downtime_mode(cfg) == "tracked":
+                pc.get_downtime(ch, cfg)
+        except:
+            pass
 
     passed, missing = _evaluate_checks(cfg, ch)
     name = "your character"

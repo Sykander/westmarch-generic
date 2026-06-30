@@ -1,0 +1,95 @@
+"""time.gvar - timestamp helpers.
+
+Vendored from drac2-tools src/gvars/utils/time/time.gvar and adapted for
+westmarch-generic.
+"""
+
+SECOND = 1
+MINUTE = 60 * SECOND
+HOUR = 60 * MINUTE
+DAY = 24 * HOUR
+
+ROUND = 6 * SECOND
+
+
+def get_unix_timestamp(ts=None):
+    """Normalize a timestamp to whole unix seconds, or use now when omitted."""
+    if ts == None:
+        try:
+            ts = time()
+        except:
+            return 0
+    return int(floor(ts))
+
+
+def get_ts_from_combat():
+    """Seconds offset from combat round count, or 0 if no combat is active."""
+    try:
+        com_rounds = combat().round_num
+    except:
+        com_rounds = 0
+    return float(com_rounds * ROUND)
+
+
+def get_time(ts=None):
+    """Break seconds into days, hours, minutes, and seconds."""
+    if ts == None:
+        ts = get_unix_timestamp()
+    days = floor(ts / DAY)
+    hours = floor((ts % DAY) / HOUR)
+    minutes = floor((ts % HOUR) / MINUTE)
+    seconds = floor(ts % MINUTE)
+
+    return {
+        "days": days,
+        "hours": hours,
+        "minutes": minutes,
+        "seconds": seconds,
+    }
+
+
+def get_readable_time(ts=None):
+    """Human-readable duration string from get_time."""
+    parts = get_time(ts)
+    days_part = str(parts.days) + " days " if parts.days != 0 else ""
+    hours_part = str(parts.hours) + " hours " if parts.hours != 0 else ""
+    minutes_part = str(parts.minutes) + " minutes " if parts.minutes != 0 else ""
+    seconds_part = str(parts.seconds) + " seconds " if parts.seconds != 0 else ""
+
+    if days_part == "" and hours_part == "" and minutes_part == "":
+        seconds_part = str(parts.seconds) + " seconds "
+
+    return f"{days_part}{hours_part}{minutes_part}{seconds_part}".strip()
+
+
+def get_discord_timestamp(ts=None):
+    """Absolute Discord timestamp marker."""
+    stamp = get_unix_timestamp(ts)
+    return f"<t:{stamp}>"
+
+
+def get_discord_relative_timestamp(ts=None):
+    """Relative Discord timestamp marker."""
+    stamp = get_unix_timestamp(ts)
+    return f"<t:{stamp}:R>"
+
+
+def get_discord_date_timestamp(ts=None):
+    """Short-date Discord timestamp marker."""
+    stamp = get_unix_timestamp(ts)
+    return f"<t:{stamp}:d>"
+
+
+def utc_midnight(ts=None):
+    """Unix timestamp for midnight UTC at the start of the timestamp's day."""
+    stamp = get_unix_timestamp(ts)
+    return int(floor(stamp / DAY)) * DAY
+
+
+def elapsed_utc_days(start_ts, end_ts=None):
+    """Whole UTC days elapsed since start_ts."""
+    start = get_unix_timestamp(start_ts)
+    end = get_unix_timestamp(end_ts)
+    if end <= start:
+        return 0
+    return int(floor((end - start) / DAY))

@@ -102,8 +102,7 @@ Cvar keys for non-stats sheet state:
 
 ```py
 CVAR_DOWNTIME = "wg_downtime"
-CVAR_DOWNTIME_START = "wg_downtime_start"  # legacy compatibility
-CVAR_DOWNTIME_USED = "wg_downtime_used"    # legacy compatibility
+CVAR_DOWNTIME_TRACKING = "wg_downtime_tracking"
 CVAR_WALLET_PREFIX = "wg_wallet_"   # + currency id
 CVAR_TOOL_PROF = "wg_ptools"
 CVAR_TOOL_EXP = "wg_etools"

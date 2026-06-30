@@ -7,6 +7,7 @@ using(
     library = env.gvars.library,
     pc = env.gvars.pc,
     stats = env.gvars.stats,
+    time_utils = env.gvars.time,
 )
 
 COMMAND = "read"
@@ -56,8 +57,9 @@ if len(matches) > 1:
 
 allowed, remaining = pc.check_cooldown(ch, COMMAND, cfg)
 if not allowed:
-    ready = int(floor(time())) + int(remaining)
-    return get_embed(desc=f"You can read again <t:{ready}><t:{ready}:R>.", error=True)
+    ready = time_utils.get_unix_timestamp() + int(remaining)
+    ready_text = time_utils.get_discord_timestamp(ready) + time_utils.get_discord_relative_timestamp(ready)
+    return get_embed(desc=f"You can read again {ready_text}.", error=True)
 
 book = matches[0]
 read_result = library.read_book(book, ch, args, "deep_read", argslist)

@@ -48,6 +48,9 @@ subsystems = {
             },
             "avoid_repeat_encounters": "off",
             "repeat_exclude_window": 5,
+            # Optional hunt location policy: "off", "location", or "monsters".
+            # "monsters" requires location.huntable_monsters.
+            "hunt_location_policy": "off",
             # Optional — hunt/loot monster art: "thumbnail", "image", or "off"
             "monster_images": {
                 "hunt": "thumbnail",
@@ -98,8 +101,10 @@ subsystems = {
         "enabled": False,
         "commands": {"downtime": False},
         "config": {
+            # In tracked mode, characters gain 1 workday per IRL day from their first westmarch or downtime check.
             "mode": "off",
             "max_workdays": None,
+            # Reserved for future non-IRL accrual integrations.
             "acquisition": "manual",
             # "workday_hours": 8,
             # "workweek_days": 5,

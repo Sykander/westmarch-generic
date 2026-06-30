@@ -5,6 +5,7 @@ using(
     display = env.gvars.display,
     config = env.gvars.config,
     pc = env.gvars.pc,
+    time_utils = env.gvars.time,
 )
 
 COMMAND = "downtime"
@@ -85,6 +86,16 @@ def _label(cfg, count):
         return str(plural)
 
 
+def _amount_text(value):
+    try:
+        num = float(value)
+        if num == int(num):
+            return str(int(num))
+        return str(num)
+    except:
+        return str(value)
+
+
 def _schedule_text(cfg):
     dt_cfg = _downtime_config(cfg)
     hours = _field(dt_cfg, "workday_hours")
@@ -105,11 +116,11 @@ def _help_text(cfg):
         f"`{cmd}` - show your downtime balance.",
         f"`{cmd} <amount>` - add or spend workdays. Dice expressions are allowed.",
         f"`{cmd} spend <amount>` - spend workdays.",
-        f"`{cmd} setup` - create the downtime cvar if needed.",
-        f"`{cmd} reset yes` - reset your downtime balance to 0.",
         "",
         f"Mode: **{_mode(cfg)}**.",
     ]
+    if _mode(cfg) == "tracked":
+        lines.append(f"Tracked accrual: **1 workday per IRL day** from your first `{ctx.prefix}westmarch` or `{cmd}` check, up to the configured cap.")
     if schedule != "":
         lines.append(schedule + ".")
     return "\n".join(lines)
@@ -131,7 +142,9 @@ def _parse_amount(argslist):
     if text == "":
         return None, "Provide an amount, e.g. `1`, `-1`, or `1d4`."
     try:
-        amount = int(text)
+        amount = float(text)
+        if amount == int(amount):
+            amount = int(amount)
         if sign == -1:
             amount = -1 * abs(amount)
         return amount, None
@@ -153,7 +166,7 @@ def _status(ch, cfg, prefix=""):
         return "Downtime tracking is off on this server."
     balance = pc.get_downtime(ch, cfg)
     label = _label(cfg, balance)
-    lines = [f"{prefix}**{balance} {label}** available."]
+    lines = [f"{prefix}**{_amount_text(balance)} {label}** available."]
     cap = pc.downtime_cap(cfg)
     if cap != None:
         lines.append(f"Cap: **{cap} {_label(cfg, cap)}**.")
@@ -163,7 +176,12 @@ def _status(ch, cfg, prefix=""):
     if mode == "manual":
         lines.append("Manual mode: this ledger is for player and GM bookkeeping; other commands do not enforce it.")
     elif mode == "tracked":
-        lines.append("Tracked mode: commands can spend this balance when their subsystem enables downtime enforcement.")
+        lines.append(f"Tracked mode: you gain **1 workday per IRL day** from your first `{ctx.prefix}westmarch` or `{ctx.prefix}{cmd_name}` check, and commands can spend this balance when their subsystem enables downtime enforcement.")
+        next_at = pc.downtime_next_at(ch, cfg)
+        if next_at != None:
+            lines.append(f"Next workday: {time_utils.get_discord_relative_timestamp(next_at)}.")
+        else:
+            lines.append("Next workday: at cap.")
     return "\n".join(lines)
 
 
@@ -181,27 +199,6 @@ if mode == "off":
 
 if len(argslist) == 0:
     return get_embed(desc=_status(ch, cfg))
-
-subcommand = str(argslist[0]).strip().lower()
-
-if subcommand == "setup":
-    current = pc.get_downtime(ch, cfg)
-    ok_set, msg_set = pc.set_downtime(ch, current, cfg)
-    if not ok_set:
-        return get_embed(desc=msg_set, error=True)
-    return get_embed(desc=_status(ch, cfg, "Downtime setup complete.\n\n"))
-
-if subcommand == "reset":
-    confirmed = False
-    for arg in argslist:
-        if str(arg).strip().lower() == "yes":
-            confirmed = True
-    if not confirmed:
-        return get_embed(desc=f"This will reset your downtime balance to 0. Confirm with `{ctx.prefix}{cmd_name} reset yes`.")
-    ok_reset, msg_reset = pc.set_downtime(ch, 0, cfg)
-    if not ok_reset:
-        return get_embed(desc=msg_reset, error=True)
-    return get_embed(desc=_status(ch, cfg, "Downtime balance reset.\n\n"))
 
 delta, amount_err = _parse_amount(argslist)
 if amount_err != None:

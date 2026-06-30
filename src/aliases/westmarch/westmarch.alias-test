@@ -128,3 +128,28 @@ vars:
               ],
           },
       }
+
+!westmarch
+---
+re:ready for this server[\s\S]*Ready[\s\S]*Downtime
+---
+name: configured parent initializes tracked downtime before setup checks
+vars:
+  svars:
+    westmarch_config: "ffff4444-4444-4444-4444-444444444444"
+  gvars:
+    ffff4444-4444-4444-4444-444444444444: |
+      subsystems = {
+          "downtime": {
+              "enabled": True,
+              "commands": {"downtime": True},
+              "config": {"mode": "tracked", "max_workdays": 30},
+          },
+      }
+      policies = {
+          "player_setup": {
+              "checks": [
+                  {"type": "cvar", "key": "wg_downtime", "label": "Downtime", "message": "Run `!downtime`.", "when_subsystem": "downtime"},
+              ],
+          },
+      }

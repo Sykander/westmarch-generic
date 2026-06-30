@@ -2,14 +2,149 @@
 using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(
     auth = env.gvars.auth,
+    biomes = env.gvars.biomes,
     config = env.gvars.config,
     display = env.gvars.display,
+    dicts = env.gvars.dicts,
     exploration = env.gvars.exploration,
+    journeys = env.gvars.journeys,
+    lists = env.gvars.lists,
     monsters = env.gvars.monsters,
     rolls = env.gvars.rolls,
 )
 
 COMMAND = "hunt"
+
+
+def _read_field(obj, key):
+    if obj == None:
+        return None
+    try:
+        if key in obj:
+            return obj[key]
+    except:
+        pass
+    try:
+        return obj.get(key)
+    except:
+        pass
+    attrs = {
+        "activities": lambda o: o.activities,
+        "biome": lambda o: o.biome,
+        "commands": lambda o: o.commands,
+        "creature": lambda o: o.creature,
+        "enemies": lambda o: o.enemies,
+        "hunt": lambda o: o.hunt,
+        "huntable_creatures": lambda o: o.huntable_creatures,
+        "huntable_monsters": lambda o: o.huntable_monsters,
+        "available_creatures": lambda o: o.available_creatures,
+        "available_monsters": lambda o: o.available_monsters,
+        "aliases": lambda o: o.aliases,
+        "monster": lambda o: o.monster,
+        "monsters": lambda o: o.monsters,
+        "name": lambda o: o.name,
+    }
+    if key in attrs:
+        try:
+            return attrs[key](obj)
+        except:
+            pass
+    return None
+
+
+def _location_name(loc, loc_id):
+    name = _read_field(loc, "name")
+    if name != None and str(name).strip() != "":
+        return str(name).strip()
+    return str(loc_id).strip()
+
+
+def _as_list(value):
+    if value == None:
+        return []
+    if lists.is_list(value):
+        return value
+    return [value]
+
+
+def _location_hunt_context(cfg, ch):
+    if not biomes.uses_location_mode(cfg):
+        return {"ok": False, "error": "Hunting by location requires travel/location data."}
+    loc_id, loc = journeys.get_location(ch, cfg)
+    if loc_id == None:
+        return {"ok": False, "error": "Set your **location** before hunting."}
+    if loc == None:
+        return {"ok": False, "error": f"Unknown location **{loc_id}**."}
+    act_list = None
+    cmds = _read_field(loc, "commands")
+    if cmds != None:
+        act_list = _read_field(cmds, "hunt")
+    if act_list == None:
+        acts = _read_field(loc, "activities")
+        if acts != None:
+            act_list = _read_field(acts, "hunt")
+    huntables = _read_field(loc, "huntable_monsters")
+    if huntables == None:
+        huntables = _read_field(loc, "huntable_creatures")
+    if huntables == None:
+        huntables = _read_field(loc, "available_monsters")
+    if huntables == None:
+        huntables = _read_field(loc, "available_creatures")
+    if act_list == True:
+        return {"ok": True, "location_id": loc_id, "location_name": _location_name(loc, loc_id), "biomes": [], "huntables": huntables}
+    if lists.is_list(act_list) and len(act_list) > 0:
+        return {"ok": True, "location_id": loc_id, "location_name": _location_name(loc, loc_id), "biomes": act_list, "huntables": huntables}
+    return {"ok": False, "error": f"`{ctx.prefix}{COMMAND}` is not available at **{_location_name(loc, loc_id)}**."}
+
+
+def _huntable_labels(entry):
+    labels = []
+    if not dicts.is_dict(entry):
+        labels.append(str(entry).strip())
+        return labels
+    for key in ["name", "monster", "creature"]:
+        text = _read_field(entry, key)
+        if text != None and str(text).strip() != "":
+            labels.append(str(text).strip())
+    aliases = _read_field(entry, "aliases")
+    if lists.is_list(aliases):
+        for alias in aliases:
+            if alias != None and str(alias).strip() != "":
+                labels.append(str(alias).strip())
+    return labels
+
+
+def _monster_is_huntable_at_location(huntables, creature_name):
+    wanted = str(creature_name).strip().lower()
+    labels = []
+    for entry in _as_list(huntables):
+        for label in _huntable_labels(entry):
+            labels.append(label)
+            if str(label).strip().lower() == wanted:
+                return True
+    if len(labels) == 0:
+        return False
+    matches = lists.search_list(labels, creature_name)
+    return len(matches) == 1
+
+
+def _hunt_location_error(cfg, ch, monster):
+    policy = exploration.hunt_location_policy(cfg)
+    if policy == "off":
+        return None
+    context = _location_hunt_context(cfg, ch)
+    if context["ok"] != True:
+        return context["error"]
+    if policy != "monsters":
+        return None
+    huntables = _read_field(context, "huntables")
+    creature_name = monsters.monster_name(monster)
+    if _monster_is_huntable_at_location(huntables, creature_name):
+        return None
+    loc_name = _read_field(context, "location_name")
+    return f"**{creature_name}** is not listed as huntable at **{loc_name}**."
+
+
 ok, msg = auth.is_allowed(COMMAND)
 get_embed = display.get_display(COMMAND)
 cmd_name = COMMAND
@@ -81,6 +216,10 @@ if creature_name == "":
 monster, matches, resolve_err = monsters.resolve(cfg, creature_name)
 if monster == None:
     return get_embed(desc=resolve_err, error=True)
+
+location_error = _hunt_location_error(cfg, ch, monster)
+if location_error != None:
+    return get_embed(desc=location_error, error=True)
 
 cr = monsters.monster_cr(monster)
 try:

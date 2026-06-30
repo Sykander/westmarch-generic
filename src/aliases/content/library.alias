@@ -7,6 +7,7 @@ using(
     library = env.gvars.library,
     pc = env.gvars.pc,
     stats = env.gvars.stats,
+    time_utils = env.gvars.time,
 )
 
 COMMAND = "library"
@@ -82,8 +83,9 @@ if len(argslist) > 0 and argslist[0] in ["help", "?"]:
 
 allowed, remaining = pc.check_cooldown(ch, COMMAND, cfg)
 if not allowed:
-    ready = int(floor(time())) + int(remaining)
-    return get_embed(desc=f"You can search again <t:{ready}><t:{ready}:R>.", error=True)
+    ready = time_utils.get_unix_timestamp() + int(remaining)
+    ready_text = time_utils.get_discord_timestamp(ready) + time_utils.get_discord_relative_timestamp(ready)
+    return get_embed(desc=f"You can search again {ready_text}.", error=True)
 
 topics, topic_error = library.resolve_search_topics(cfg, ch, args, argslist)
 if topic_error != None:

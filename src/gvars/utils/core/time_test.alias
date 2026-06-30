@@ -1,0 +1,28 @@
+<drac2>
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(time_utils = env.gvars.time)
+
+argslist = &ARGS&
+case = str(argslist[0]).strip().lower() if len(argslist) > 0 else ""
+
+ok = False
+if case == "constants":
+    ok = time_utils.MINUTE // time_utils.SECOND == 60 and time_utils.HOUR // time_utils.MINUTE == 60 and time_utils.DAY // time_utils.HOUR == 24
+elif case == "unix":
+    ok = time_utils.get_unix_timestamp(1700000000.9) == 1700000000 and time_utils.get_unix_timestamp(-0.1) == -1
+elif case == "parts":
+    parts = time_utils.get_time(3661)
+    ok = parts.days == 0 and parts.hours == 1 and parts.minutes == 1 and parts.seconds == 1
+elif case == "readable":
+    ok = time_utils.get_readable_time(3661) == "1 hours 1 minutes 1 seconds"
+elif case == "discord":
+    ok = (
+        time_utils.get_discord_timestamp(1700000000) == "<t:1700000000>"
+        and time_utils.get_discord_relative_timestamp(1700000000) == "<t:1700000000:R>"
+        and time_utils.get_discord_date_timestamp(1700000000) == "<t:1700000000:d>"
+    )
+elif case == "utc":
+    ok = time_utils.utc_midnight(1700086401) == 1700006400 and time_utils.utc_midnight(-1) == -86400 and time_utils.elapsed_utc_days(1700006400, 1700179200) == 2
+
+return "ok" if ok else "fail"
+</drac2>

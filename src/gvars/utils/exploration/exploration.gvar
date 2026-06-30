@@ -84,6 +84,21 @@ def show_check_dcs(cfg, command):
     return raw == True
 
 
+def hunt_location_policy(cfg):
+    exp_cfg = _exploration_config(cfg)
+    raw = _field(exp_cfg, "hunt_location_policy")
+    if raw == None:
+        return "off"
+    value = str(raw).strip().lower()
+    if value in ["off", "none", "any", "anywhere", "false", "disabled"]:
+        return "off"
+    if value in ["location", "available", "availability", "check"]:
+        return "location"
+    if value in ["creature", "creatures", "monster", "monsters", "huntable", "huntables"]:
+        return "monsters"
+    return "off"
+
+
 def monster_image_mode(cfg, command):
     raw = _exploration_command_value(cfg, "monster_images", command, "thumbnail")
     if raw == None:

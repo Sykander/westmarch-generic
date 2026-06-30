@@ -1,0 +1,35 @@
+!time_test constants
+---
+ok
+---
+name: time constants load
+
+!time_test unix
+---
+ok
+---
+name: get_unix_timestamp normalizes provided timestamps
+
+!time_test parts
+---
+ok
+---
+name: get_time breaks down seconds
+
+!time_test readable
+---
+ok
+---
+name: get_readable_time formats nonzero parts
+
+!time_test discord
+---
+ok
+---
+name: discord timestamp helpers format absolute relative and date markers
+
+!time_test utc
+---
+ok
+---
+name: utc day helpers use whole day boundaries

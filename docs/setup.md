@@ -111,11 +111,20 @@ Example — exploration only:
         "enc_biome_source": "auto",
         "distribution_policy": "random",
         "distribution": {"combat": 25, "quest": 25, "gather": 50},
+        "hunt_location_policy": "off",
     },
 },
 ```
 
-Downtime uses a single toggle: `"downtime": {"enabled": True}`.
+Downtime uses a single toggle plus its mode. In `tracked` mode, each character gains **1 workday per IRL day** from their first `!westmarch` or `!downtime` check, up to `max_workdays`; crafting can check or deduct that ledger when configured.
+
+```py
+"downtime": {
+    "enabled": True,
+    "commands": {"downtime": True},
+    "config": {"mode": "tracked", "max_workdays": 30, "acquisition": "manual"},
+},
+```
 
 Crafting needs command toggles plus catalogue wiring. Engine catalogues are available as generic defaults; replace them with your own gvar UUIDs or inline lists when your server has custom items, potions, spells, magic items, or recipes.
 
@@ -324,7 +333,7 @@ policies = {
         },
         "checks": [
             {"type": "cvar", "key": "vsheet", "label": "vSheet", "message": "Run `!vsheet setup`."},
-            {"type": "cvar", "key": "wg_downtime", "label": "Downtime", "message": "Run `!downtime setup`.", "when_subsystem": "downtime"},
+            {"type": "cvar", "key": "wg_downtime", "label": "Downtime", "message": "Run `!downtime`.", "when_subsystem": "downtime"},
         ],
     },
 }

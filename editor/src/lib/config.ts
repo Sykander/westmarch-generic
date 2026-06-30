@@ -52,6 +52,7 @@ export function commandSupportsCooldown(_subsystem: string, command: string): bo
 const SUBSYSTEMS = Object.keys(DEFAULT_SUBSYSTEM_COMMANDS);
 
 const VALID_ENC_BIOME = ['auto', 'argument', 'location'];
+const VALID_HUNT_LOCATION_POLICY = ['off', 'location', 'monsters'];
 const VALID_PATH_BIOME_POLICY = ['from_location', 'off'];
 const VALID_JOB_LOCATION_POLICY = ['off', 'warn', 'check'];
 const VALID_RULES_VERSION = ['2014', '2024'];
@@ -516,6 +517,7 @@ function createDefaultSubsystems(): Record<string, AnyRecord> {
         distribution: { combat: 25, quest: 25, gather: 50 },
         avoid_repeat_encounters: 'off',
         repeat_exclude_window: 5,
+        hunt_location_policy: 'off',
         monster_images: { hunt: 'thumbnail', loot: 'thumbnail' },
         show_check_dcs: { hunt: true, loot: true },
       },
@@ -1894,8 +1896,68 @@ function validateWorld(model: ConfigModel, issues: ConfigIssue[]) {
   }
 
   const locations = asRecord(model.world_data.locations);
+  const explorationConfig = asRecord(asRecord(model.subsystems.exploration).config);
+  const huntPolicy = String(explorationConfig.hunt_location_policy ?? 'off');
   for (const [id, value] of Object.entries(locations)) {
     const location = asRecord(value);
+    const huntables =
+      location.huntable_monsters ??
+      location.huntable_creatures ??
+      location.available_monsters ??
+      location.available_creatures;
+    if (huntables != null && !Array.isArray(huntables)) {
+      issues.push(
+        issue(
+          'error',
+          'world.location.huntables_list',
+          'World',
+          `world_data.locations.${id}.huntable_monsters`,
+          `${id} huntable monsters must be a list`,
+          'Use a list of monster names or objects with a name, monster, or creature field.',
+        ),
+      );
+    }
+    if (Array.isArray(huntables)) {
+      huntables.forEach((entry, index) => {
+        if (typeof entry === 'string') return;
+        const record = asRecord(entry);
+        if (
+          typeof record.name === 'string' ||
+          typeof record.monster === 'string' ||
+          typeof record.creature === 'string'
+        ) {
+          return;
+        }
+        issues.push(
+          issue(
+            'error',
+            'world.location.huntable_entry',
+            'World',
+            `world_data.locations.${id}.huntable_monsters.${index}`,
+            `${id} has an invalid huntable monster entry`,
+            'Each entry must be a monster name or an object with name, monster, or creature.',
+          ),
+        );
+      });
+    }
+    const huntRaw =
+      asRecord(location.commands).hunt ??
+      asRecord(location.activities).hunt ??
+      asRecord(location.encs).hunt;
+    const huntAvailable = huntRaw === true || locationAllowedBiomes(location, 'hunt').length > 0;
+    if (huntPolicy === 'monsters' && huntAvailable && huntables == null) {
+      issues.push(
+        issue(
+          'warning',
+          'world.location.huntables_missing',
+          'World',
+          `world_data.locations.${id}.huntable_monsters`,
+          `${id} has hunt enabled but no huntable monsters`,
+          '`hunt_location_policy: monsters` checks this list before allowing !hunt.',
+          'Add huntable_monsters or switch the policy to location/off.',
+        ),
+      );
+    }
     const calendarId = location.calendar_id;
     if (
       typeof calendarId === 'string' &&
@@ -1988,6 +2050,23 @@ function validateExploration(model: ConfigModel, issues: ConfigIssue[]) {
         ),
       );
     }
+  }
+
+  const huntLocationPolicy = config.hunt_location_policy;
+  if (
+    typeof huntLocationPolicy === 'string' &&
+    !VALID_HUNT_LOCATION_POLICY.includes(huntLocationPolicy)
+  ) {
+    issues.push(
+      issue(
+        'error',
+        'exploration.hunt_location_policy',
+        'Subsystems',
+        'subsystems.exploration.config.hunt_location_policy',
+        'Invalid hunt location policy',
+        '`hunt_location_policy` must be off, location, or monsters.',
+      ),
+    );
   }
 
   const distribution = asRecord(config.distribution);

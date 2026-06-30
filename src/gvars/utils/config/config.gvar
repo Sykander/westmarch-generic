@@ -34,6 +34,7 @@ DEFAULTS = {
                 },
                 "avoid_repeat_encounters": "off",
                 "repeat_exclude_window": 5,
+                "hunt_location_policy": "off",
                 "monster_images": {
                     "hunt": "thumbnail",
                     "loot": "thumbnail",

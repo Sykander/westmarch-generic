@@ -8,6 +8,7 @@ using(
     languages = env.gvars.languages,
     lists = env.gvars.lists,
     rolls = env.gvars.rolls,
+    time_utils = env.gvars.time,
 )
 
 CVAR_BOOK_COMPREHENSION = "wg_book_comprehension"
@@ -1018,7 +1019,7 @@ def read_display(read_result):
     if prev_read <= 0:
         prev_text = "--"
     else:
-        prev_text = "<t:" + str(prev_read) + ">"
+        prev_text = time_utils.get_discord_timestamp(prev_read)
     lines = []
     lines.append(title)
     lines.append(meta)

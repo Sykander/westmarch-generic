@@ -68,15 +68,64 @@ vars:
   cvars:
     wg_downtime: "4"
 
-return pc.get_downtime(character(), {}) == 7
+return pc.get_downtime(character(), {}) == 0
 ---
 True
 ---
-name: get_downtime reads legacy downtime start and used cvars
+name: get_downtime ignores legacy downtime start and used cvars
 vars:
   cvars:
     wg_downtime_start: "10"
     wg_downtime_used: "3"
+
+ch = character()
+now = int(time())
+epoch = now - (2 * 24 * 60 * 60) - 60
+ch.set_cvar("wg_downtime", "3")
+ch.set_cvar("wg_downtime_tracking", dump_json({"registered_at": epoch + 60, "accrual_epoch": epoch, "credited_days": 0}))
+cfg_fixture = {"subsystems": {"downtime": {"config": {"mode": "tracked", "max_workdays": None}}}}
+return pc.get_downtime(ch, cfg_fixture) == 5
+---
+True
+---
+name: tracked downtime accrues one workday per elapsed irl day
+
+ch = character()
+now = int(time())
+epoch = now - (3 * 24 * 60 * 60) - 60
+ch.set_cvar("wg_downtime", "29")
+ch.set_cvar("wg_downtime_tracking", dump_json({"registered_at": epoch + 60, "accrual_epoch": epoch, "credited_days": 0}))
+cfg_fixture = {"subsystems": {"downtime": {"config": {"mode": "tracked", "max_workdays": 30}}}}
+return pc.get_downtime(ch, cfg_fixture) == 30
+---
+True
+---
+name: tracked downtime accrual respects max_workdays cap
+
+ch = character()
+now = int(time())
+epoch = now - (2 * 24 * 60 * 60)
+ch.set_cvar("wg_downtime", "3")
+ch.set_cvar("wg_downtime_tracking", dump_json({"registered_at": epoch + 60, "accrual_epoch": epoch, "credited_days": 0}))
+cfg_fixture = {"subsystems": {"downtime": {"config": {"mode": "manual", "max_workdays": None}}}}
+return pc.get_downtime(ch, cfg_fixture) == 3
+---
+True
+---
+name: manual downtime does not accrue from elapsed irl days
+
+ch = character()
+now = int(time())
+epoch = now - (2 * 24 * 60 * 60) - 60
+ch.set_cvar("wg_downtime", "0")
+ch.set_cvar("wg_downtime_tracking", dump_json({"registered_at": epoch + 60, "accrual_epoch": epoch, "credited_days": 0}))
+cfg_fixture = {"subsystems": {"downtime": {"config": {"mode": "tracked", "max_workdays": None}}}}
+ok, msg = pc.modify_downtime(ch, -1, cfg_fixture)
+return ok and pc.get_downtime(ch, cfg_fixture) == 1 and "spent **1**" in msg
+---
+True
+---
+name: modify_downtime spends from accrued tracked downtime
 
 cfg_fixture = {"subsystems": {"downtime": {"config": {"mode": "tracked", "max_workdays": None}}}}
 ok, msg = pc.modify_downtime(character(), 3, cfg_fixture)
@@ -101,6 +150,17 @@ vars:
     wg_downtime: "5"
 
 cfg_fixture = {"subsystems": {"downtime": {"config": {"mode": "tracked", "max_workdays": None}}}}
+ok, msg = pc.modify_downtime(character(), -0.5, cfg_fixture)
+return ok and pc.get_downtime(character(), cfg_fixture) == 0.5 and "spent **0.5**" in msg
+---
+True
+---
+name: modify_downtime spends fractional workdays
+vars:
+  cvars:
+    wg_downtime: "1"
+
+cfg_fixture = {"subsystems": {"downtime": {"config": {"mode": "tracked", "max_workdays": None}}}}
 ok, msg = pc.modify_downtime(character(), -2, cfg_fixture)
 return not ok and pc.get_downtime(character(), cfg_fixture) == 1 and "only has **1**" in msg
 ---
@@ -121,6 +181,31 @@ name: modify_downtime respects max_workdays cap
 vars:
   cvars:
     wg_downtime: "4"
+
+ch = character()
+cfg_fixture = {"subsystems": {"downtime": {"config": {"mode": "tracked", "max_workdays": None}}}}
+balance = pc.get_downtime(ch, cfg_fixture)
+tracking = load_json(ch.cvars["wg_downtime_tracking"])
+return balance == 0 and ch.cvars["wg_downtime"] == "0" and tracking.registered_at > 0 and tracking.accrual_epoch <= tracking.registered_at
+---
+True
+---
+name: tracked downtime initializes registration metadata
+
+ch = character()
+now = int(time())
+epoch = now - (24 * 60 * 60) + 100
+ch.set_cvar("wg_downtime", "0")
+ch.set_cvar("wg_downtime_tracking", dump_json({"registered_at": epoch + 1, "accrual_epoch": epoch, "credited_days": 0}))
+cfg_fixture = {"subsystems": {"downtime": {"config": {"mode": "tracked", "max_workdays": None}}}}
+first = pc.get_downtime(ch, cfg_fixture)
+tracking = load_json(ch.cvars["wg_downtime_tracking"])
+next_at = pc.downtime_next_at(ch, cfg_fixture)
+return first == 0 and tracking.accrual_epoch == epoch and tracking.credited_days == 0 and next_at == epoch + (24 * 60 * 60)
+---
+True
+---
+name: tracked downtime checks do not reset the accrual epoch
 
 cfg_fixture = {"subsystems": {"downtime": {"config": {"mode": "off", "max_workdays": None}}}}
 ok, msg = pc.modify_downtime(character(), 1, cfg_fixture)

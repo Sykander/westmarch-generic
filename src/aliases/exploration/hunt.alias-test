@@ -89,6 +89,126 @@ vars:
           },
       }
 
+!hunt Wolf
+---
+re:Survival|DC
+---
+name: "hunt runs at location with hunt list"
+vars:
+  svars:
+    westmarch_config: "eeee7710-7710-7710-7710-777777777710"
+  gvars:
+    eeee7710-7710-7710-7710-777777777710: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"hunt": True},
+              "config": {"hunt_location_policy": "location"},
+          },
+          "travel": {
+              "enabled": True,
+              "commands": {"location": True},
+          },
+      }
+      world_data = {
+          "default_location": "forest_camp",
+          "locations": {
+              "forest_camp": {"name": "Forest Camp", "commands": {"hunt": ["forest"]}},
+          },
+      }
+
+!hunt Wolf
+---
+re:not available at \*\*Waterdeep\*\*
+---
+name: "hunt rejects location without hunt list"
+vars:
+  svars:
+    westmarch_config: "eeee7711-7711-7711-7711-777777777711"
+  gvars:
+    eeee7711-7711-7711-7711-777777777711: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"hunt": True},
+              "config": {"hunt_location_policy": "location"},
+          },
+          "travel": {
+              "enabled": True,
+              "commands": {"location": True},
+          },
+      }
+      world_data = {
+          "default_location": "waterdeep",
+          "locations": {
+              "waterdeep": {"name": "Waterdeep", "commands": {"enc": ["urban"]}},
+          },
+      }
+
+!hunt Wolf
+---
+re:Survival|DC
+---
+name: "hunt monsters policy allows listed local creature"
+vars:
+  svars:
+    westmarch_config: "eeee7712-7712-7712-7712-777777777712"
+  gvars:
+    eeee7712-7712-7712-7712-777777777712: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"hunt": True},
+              "config": {"hunt_location_policy": "monsters"},
+          },
+          "travel": {
+              "enabled": True,
+              "commands": {"location": True},
+          },
+      }
+      world_data = {
+          "default_location": "forest_camp",
+          "locations": {
+              "forest_camp": {
+                  "name": "Forest Camp",
+                  "commands": {"hunt": ["forest"]},
+                  "huntable_monsters": ["Wolf"],
+              },
+          },
+      }
+
+!hunt Goblin
+---
+re:Goblin[\s\S]*not listed as huntable at \*\*Forest Camp\*\*
+---
+name: "hunt monsters policy rejects unlisted local creature"
+vars:
+  svars:
+    westmarch_config: "eeee7713-7713-7713-7713-777777777713"
+  gvars:
+    eeee7713-7713-7713-7713-777777777713: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"hunt": True},
+              "config": {"hunt_location_policy": "monsters"},
+          },
+          "travel": {
+              "enabled": True,
+              "commands": {"location": True},
+          },
+      }
+      world_data = {
+          "default_location": "forest_camp",
+          "locations": {
+              "forest_camp": {
+                  "name": "Forest Camp",
+                  "commands": {"hunt": ["forest"]},
+                  "huntable_monsters": ["Wolf"],
+              },
+          },
+      }
+
 !hunt NonexistentBeast
 ---
 re:Found no monster matches

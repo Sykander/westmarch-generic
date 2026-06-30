@@ -11,6 +11,7 @@ Shared **engine workshop** modules under `src/gvars/`. Aliases `using()` these v
 | **core/** *(commands, embeds, rolls, …)* | [core.md](core.md) | 0–1 | Vendored drac2-tools helpers — one workshop, no external `env` UUIDs |
 | **config** | [config.md](config.md) | 0 | `get_config()` — lazy cache + defaults merge |
 | **display** | [display.md](display.md) | 0 | `get_display(command)` → configured **`embeds.get_embed`** for a command key |
+| **time** | [time.md](time.md) | 0 | Unix, UTC-day, and Discord timestamp helpers |
 | **world_data** | [world_data.md](world_data.md) | — | Config shape doc (owner gvar, not engine module) |
 | **auth** | [auth.md](auth.md) | 0 | `is_allowed(command)` — roles, `subsystems`, channel policy |
 | **pc** | [pc.md](pc.md) | 0–1 | Player character state — gp, wallet, bags, downtime; cooldown reads from stats |

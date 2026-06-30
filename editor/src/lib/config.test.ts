@@ -68,6 +68,13 @@ test('forgotten realms starter has travel, economy, content, and media baseline'
   assert.equal(model.display.name, 'Forgotten Realms');
   assert.equal(model.display.footer, 'Forgotten Realms');
 
+  const exploration = model.subsystems.exploration as Record<string, unknown>;
+  const explorationCommands = exploration.commands as Record<string, unknown>;
+  const explorationConfig = exploration.config as Record<string, unknown>;
+  assert.equal(explorationCommands.hunt, true);
+  assert.equal(explorationCommands.loot, true);
+  assert.equal(explorationConfig.hunt_location_policy, 'monsters');
+
   const travel = model.subsystems.travel as Record<string, unknown>;
   const commands = travel.commands as Record<string, unknown>;
   const travelConfig = travel.config as Record<string, unknown>;
@@ -87,15 +94,28 @@ test('forgotten realms starter has travel, economy, content, and media baseline'
   assert.equal(economyCommands.job, true);
   assert.equal(economyCommands.buy, true);
   assert.equal(economyCommands.sell, true);
-  assert.equal(economyCommands.wallet, false);
+  assert.equal(economyCommands.wallet, true);
   assert.equal(economyConfig.job_location_policy, 'check');
   assert.equal(economyConfig.ask_to_confirm_purchases, true);
   assert.ok((economyConfig.jobs as unknown[]).length >= 4);
   assert.ok(Object.keys(model.shops ?? {}).length > 30);
+  assert.equal((model.currencies?.astral_diamonds as Record<string, unknown>).symbol, 'AD');
+  assert.equal((model.currencies?.soul_coins as Record<string, unknown>).symbol, 'SC');
   assert.equal(
     (model.shops?.waterdeep_general_market as Record<string, unknown>).location_id,
     'waterdeep',
   );
+
+  const downtime = model.subsystems.downtime as Record<string, unknown>;
+  const downtimeConfig = downtime.config as Record<string, unknown>;
+  assert.equal(downtime.enabled, true);
+  assert.equal(downtimeConfig.mode, 'tracked');
+  assert.equal(downtimeConfig.max_workdays, 30);
+
+  const crafting = model.subsystems.crafting as Record<string, unknown>;
+  const craftingConfig = crafting.config as Record<string, unknown>;
+  assert.equal(crafting.enabled, true);
+  assert.equal((craftingConfig.resources as Record<string, unknown>).downtime, 'deduct');
 
   const content = model.subsystems.content as Record<string, unknown>;
   const contentCommands = content.commands as Record<string, unknown>;
@@ -297,6 +317,20 @@ subsystems = {
   );
 });
 
+test('exploration hunt location policy validates configured modes', () => {
+  assert.ok(
+    issueCodes(`
+subsystems = {
+    "exploration": {
+        "enabled": True,
+        "commands": {"hunt": True},
+        "config": {"hunt_location_policy": "region"},
+    },
+}
+`).includes('exploration.hunt_location_policy'),
+  );
+});
+
 test('subsystem config issues are reported under subsystem section', () => {
   const issues = issuesFor(`
 subsystems = {
@@ -369,6 +403,26 @@ world_data = {
   assert.equal(codes.includes('world.default_location'), false);
   assert.equal(codes.includes('world.locations.empty'), false);
   assert.equal(codes.includes('world.path.endpoint_unknown'), false);
+});
+
+test('hunt monsters policy warns when location huntables are missing', () => {
+  assert.ok(
+    issueCodes(`
+subsystems = {
+    "exploration": {
+        "enabled": True,
+        "commands": {"hunt": True},
+        "config": {"hunt_location_policy": "monsters"},
+    },
+}
+
+world_data = {
+    "locations": {
+        "forest_camp": {"name": "Forest Camp", "commands": {"hunt": ["forest"]}},
+    },
+}
+`).includes('world.location.huntables_missing'),
+  );
 });
 
 test('enabled travel/location commands require world location data', () => {

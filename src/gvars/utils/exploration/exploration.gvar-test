@@ -24,3 +24,10 @@ return exploration.monster_image_slot({}, "loot")
 "thumb"
 ---
 name: monster_image_slot defaults to thumbnail
+
+cfg = {"subsystems": {"exploration": {"config": {"hunt_location_policy": "creatures"}}}}
+return exploration.hunt_location_policy({}) == "off" and exploration.hunt_location_policy(cfg) == "monsters"
+---
+True
+---
+name: hunt_location_policy normalizes defaults and creature aliases

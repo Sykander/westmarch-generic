@@ -12,6 +12,7 @@ Survival check to track a creature before combat. westmarch expects **`!enc`** i
 
 - **Help:** enc prerequisite note, usage, group hunt `-n` chaining. No-arg `!hunt` asks for a creature and points to `!hunt help`.
 - **Creature:** shared `lists.search_list` semantics over owner rows plus targeted monster shards; no matches, one match, or ask for a more specific name with up to five matches.
+- **Location policy:** `subsystems.exploration.config.hunt_location_policy` controls location enforcement. `off` allows any resolved catalogue creature, `location` requires the current location to expose `commands.hunt`, and `monsters` also requires the creature to be listed in `location.huntable_monsters`.
 - **Party size:** optional named `-p <party_size>` flag. Positional numbers remain part of the creature query.
 - **DC:** `floor((10 if party_size==1 else 8*party_size) + cr)`.
 - **Roll:** Survival check.
@@ -33,10 +34,17 @@ Survival check to track a creature before combat. westmarch expects **`!enc`** i
 flowchart TD
   A[!hunt alias] --> B{get_config}
   B --> C{exploration.commands.hunt?}
-  C --> D[monsters.resolve cfg]
-  D --> E[compute DC from CR + party]
-  E --> F[survival check]
-  F --> G[success / group / fail embed]
+  C --> D{location mode?}
+  D -->|yes| E{hunt_location_policy?}
+  D -->|no| F[monsters.resolve cfg]
+  E -->|off| F
+  E -->|location| J{current location commands.hunt?}
+  E -->|monsters| K{current location huntable_monsters?}
+  J -->|yes| F
+  K -->|yes| F
+  F --> G[compute DC from CR + party]
+  G --> H[survival check]
+  H --> I[success / group / fail embed]
 ```
 
 ### Engine vs config split

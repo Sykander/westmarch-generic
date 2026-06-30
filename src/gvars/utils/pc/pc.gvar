@@ -7,6 +7,7 @@ using(
     dicts = env.gvars.dicts,
     lists = env.gvars.lists,
     stats = env.gvars.stats,
+    time_utils = env.gvars.time,
 )
 
 EXPLORATION_COMMANDS = ["enc", "forage", "mine", "fish", "lumber", "hunt", "loot"]
@@ -17,8 +18,7 @@ DEFAULT_JOB_COOLDOWN = 28800
 DEFAULT_LIBRARY_COOLDOWN = 120
 DEFAULT_READ_COOLDOWN = 28800
 CVAR_DOWNTIME = "wg_downtime"
-CVAR_DOWNTIME_START = "wg_downtime_start"
-CVAR_DOWNTIME_USED = "wg_downtime_used"
+CVAR_DOWNTIME_TRACKING = "wg_downtime_tracking"
 CVAR_WALLET_PREFIX = "wg_wallet_"
 
 COIN_VALUES = {
@@ -163,6 +163,16 @@ def _int_value(value, fallback=0):
             return fallback
 
 
+def _now():
+    try:
+        return time_utils.get_unix_timestamp()
+    except:
+        try:
+            return int(time())
+        except:
+            return 0
+
+
 def _float_value(value, fallback=0):
     if value == None or str(value).strip() == "":
         return fallback
@@ -170,6 +180,33 @@ def _float_value(value, fallback=0):
         return float(value)
     except:
         return fallback
+
+
+def _workday_value(value, fallback=0):
+    if value == None or str(value).strip() == "":
+        return fallback
+    try:
+        return float(value)
+    except:
+        return fallback
+
+
+def _normalize_workdays(value):
+    num = _round_workdays(value)
+    if num < 0:
+        num = 0
+    return num
+
+
+def _round_workdays(value):
+    num = round(_workday_value(value, 0), 3)
+    if num == int(num):
+        return int(num)
+    return num
+
+
+def _workday_text(value):
+    return _number_text(value)
 
 
 def _character_name(ch):
@@ -272,29 +309,147 @@ def downtime_cap(config_override=None):
     return None
 
 
-def _legacy_downtime_balance(ch):
-    start = _read_cvar(ch, CVAR_DOWNTIME_START, None)
-    used = _read_cvar(ch, CVAR_DOWNTIME_USED, None)
-    if start == None and used == None:
+def _downtime_raw(ch):
+    raw = _read_cvar(ch, CVAR_DOWNTIME, None)
+    if raw != None and str(raw).strip() != "":
+        value = _workday_value(raw, 0)
+        if value < 0:
+            return 0, True
+        return _normalize_workdays(value), True
+    return 0, False
+
+
+def _cap_downtime(value, cfg):
+    cap = downtime_cap(cfg)
+    amount = _normalize_workdays(value)
+    if cap != None and amount > cap:
+        return cap
+    return amount
+
+
+def _utc_midnight(epoch_seconds):
+    try:
+        return time_utils.utc_midnight(epoch_seconds)
+    except:
+        current = _int_value(epoch_seconds, 0)
+        return int(floor(current / 86400)) * 86400
+
+
+def _read_tracking(ch):
+    raw = _read_cvar(ch, CVAR_DOWNTIME_TRACKING, None)
+    if raw == None or str(raw).strip() == "":
         return None
-    balance = _int_value(start, 0) - _int_value(used, 0)
-    if balance < 0:
+    try:
+        if dicts.is_dict(raw):
+            return raw
+    except:
+        pass
+    try:
+        parsed = load_json(raw)
+        if dicts.is_dict(parsed):
+            return parsed
+    except:
+        pass
+    return None
+
+
+def _tracking_value(tracking, key, fallback=None):
+    if tracking == None:
+        return fallback
+    try:
+        if key in tracking:
+            return tracking[key]
+    except:
+        pass
+    try:
+        return tracking[key]
+    except:
+        return fallback
+
+
+def _elapsed_downtime_days(tracking, now=None):
+    if now == None:
+        now = _now()
+    epoch = _int_value(_tracking_value(tracking, "accrual_epoch", now), now)
+    if epoch <= 0 or epoch > now:
+        epoch = _utc_midnight(now)
+    try:
+        days = time_utils.elapsed_utc_days(epoch, now)
+    except:
+        days = int((now - epoch) / 86400)
+    if days < 0:
         return 0
-    return balance
+    return days
+
+
+def _write_tracking(ch, tracking):
+    return _set_cvar(ch, CVAR_DOWNTIME_TRACKING, dump_json(tracking))
+
+
+def _ensure_tracking(ch):
+    now = _now()
+    tracking = _read_tracking(ch)
+    changed = False
+    if tracking == None:
+        registered = now
+        tracking = {
+            "registered_at": registered,
+            "accrual_epoch": _utc_midnight(registered),
+            "credited_days": 0,
+        }
+        changed = True
+    registered = _int_value(_tracking_value(tracking, "registered_at", now), now)
+    if registered <= 0 or registered > now:
+        registered = now
+        tracking["registered_at"] = registered
+        changed = True
+    epoch = _int_value(_tracking_value(tracking, "accrual_epoch", _utc_midnight(registered)), _utc_midnight(registered))
+    if epoch <= 0 or epoch > registered:
+        epoch = _utc_midnight(registered)
+        tracking["accrual_epoch"] = epoch
+        changed = True
+    credited = _int_value(_tracking_value(tracking, "credited_days", 0), 0)
+    elapsed = _elapsed_downtime_days(tracking, now)
+    if credited < 0:
+        credited = 0
+        tracking["credited_days"] = credited
+        changed = True
+    if credited > elapsed:
+        credited = elapsed
+        tracking["credited_days"] = credited
+        changed = True
+    if changed:
+        _write_tracking(ch, tracking)
+    return tracking
+
+
+def _settle_tracked_downtime(ch, cfg, value, has_balance):
+    if downtime_mode(cfg) != "tracked":
+        return _cap_downtime(value, cfg)
+    tracking = _ensure_tracking(ch)
+    now = _now()
+    current = _cap_downtime(value, cfg)
+    if not has_balance:
+        _set_cvar(ch, CVAR_DOWNTIME, current)
+    elapsed = _elapsed_downtime_days(tracking, now)
+    credited = _int_value(_tracking_value(tracking, "credited_days", 0), 0)
+    days = elapsed - credited
+    if days <= 0:
+        if current != value:
+            _set_cvar(ch, CVAR_DOWNTIME, current)
+        return current
+    next_value = _cap_downtime(current + days, cfg)
+    tracking["credited_days"] = elapsed
+    _write_tracking(ch, tracking)
+    _set_cvar(ch, CVAR_DOWNTIME, next_value)
+    return next_value
 
 
 def get_downtime(ch, config_override=None):
     """Return the character's available downtime workdays."""
-    raw = _read_cvar(ch, CVAR_DOWNTIME, None)
-    if raw != None and str(raw).strip() != "":
-        value = _int_value(raw, 0)
-        if value < 0:
-            return 0
-        return value
-    legacy = _legacy_downtime_balance(ch)
-    if legacy != None:
-        return legacy
-    return 0
+    cfg = _cfg(config_override)
+    value, has_balance = _downtime_raw(ch)
+    return _settle_tracked_downtime(ch, cfg, value, has_balance)
 
 
 def set_downtime(ch, workdays, config_override=None):
@@ -303,15 +458,38 @@ def set_downtime(ch, workdays, config_override=None):
     mode = downtime_mode(cfg)
     if mode == "off":
         return False, "Downtime tracking is off on this server."
-    value = _int_value(workdays, 0)
+    value = _round_workdays(workdays)
     if value < 0:
         return False, "Downtime cannot be below 0 workdays."
     cap = downtime_cap(cfg)
     if cap != None and value > cap:
         return False, f"Downtime is capped at **{cap}** workdays."
+    if mode == "tracked":
+        tracking = _ensure_tracking(ch)
+        tracking["credited_days"] = _elapsed_downtime_days(tracking)
+        _write_tracking(ch, tracking)
     if not _set_cvar(ch, CVAR_DOWNTIME, value):
         return False, "Could not update downtime cvar."
-    return True, f"{_character_name(ch)} has **{value}** workdays available."
+    return True, f"{_character_name(ch)} has **{_workday_text(value)}** workdays available."
+
+
+def downtime_next_at(ch, config_override=None):
+    """Return the next unix timestamp that can add a tracked workday, or None at cap/off."""
+    cfg = _cfg(config_override)
+    if downtime_mode(cfg) != "tracked":
+        return None
+    current = get_downtime(ch, cfg)
+    cap = downtime_cap(cfg)
+    if cap != None and current >= cap:
+        return None
+    tracking = _ensure_tracking(ch)
+    credited = _int_value(_tracking_value(tracking, "credited_days", 0), 0)
+    epoch = _int_value(_tracking_value(tracking, "accrual_epoch", _now()), _now())
+    at = epoch + ((credited + 1) * time_utils.DAY)
+    now = _now()
+    if at <= now:
+        at = epoch + ((_elapsed_downtime_days(tracking, now) + 1) * time_utils.DAY)
+    return at
 
 
 def get_bag_count(ch, item, bag="Equipment"):
@@ -596,23 +774,24 @@ def modify_downtime(ch, workdays, config_override=None):
     mode = downtime_mode(cfg)
     if mode == "off":
         return False, "Downtime tracking is off on this server."
-    delta = _int_value(workdays, 0)
+    delta = _round_workdays(workdays)
     current = get_downtime(ch, cfg)
-    next_value = current + delta
-    if next_value < 0:
-        return False, f"Could not spend **{-1 * delta}** workdays - {_character_name(ch)} only has **{current}**."
+    raw_next = _round_workdays(current + delta)
+    if raw_next < 0:
+        return False, f"Could not spend **{_workday_text(-1 * delta)}** workdays - {_character_name(ch)} only has **{_workday_text(current)}**."
+    next_value = _normalize_workdays(raw_next)
     cap = downtime_cap(cfg)
     if delta > 0 and cap != None and next_value > cap:
-        return False, f"Could not add **{delta}** workdays - downtime is capped at **{cap}**."
+        return False, f"Could not add **{_workday_text(delta)}** workdays - downtime is capped at **{cap}**."
     if not _set_cvar(ch, CVAR_DOWNTIME, next_value):
         return False, "Could not update downtime cvar."
     if delta > 0:
-        action = f"gained **{delta}** workdays"
+        action = f"gained **{_workday_text(delta)}** workdays"
     elif delta < 0:
-        action = f"spent **{-1 * delta}** workdays"
+        action = f"spent **{_workday_text(-1 * delta)}** workdays"
     else:
         action = "changed downtime by **0** workdays"
-    return True, f"{_character_name(ch)} {action}. **{current}** -> **{next_value}** workdays available."
+    return True, f"{_character_name(ch)} {action}. **{_workday_text(current)}** -> **{_workday_text(next_value)}** workdays available."
 
 
 def _exploration_enforce(cfg):

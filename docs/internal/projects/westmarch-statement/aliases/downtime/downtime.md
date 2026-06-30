@@ -2,7 +2,7 @@
 
 **Subsystem:** downtime · **Toggle:** `subsystems.downtime.enabled` · **Phase:** 1 (Tier D)
 
-Single subsystem toggle (no per-command flags). westmarch tracks **workdays** in character cvars; crafting aliases assume players spend downtime manually before rolling.
+Single subsystem toggle (no per-command flags). westmarch tracks **workdays** in character cvars; westmarch-generic can automatically accrue tracked downtime and let crafting commands check or spend it.
 
 ## Player-facing behaviour
 
@@ -10,13 +10,11 @@ Single subsystem toggle (no per-command flags). westmarch tracks **workdays** in
 !downtime              # show available workdays
 !downtime <amount>     # add/subtract workdays; signed numbers and dice allowed
 !downtime spend <amt>  # spend workdays
-!downtime setup        # initialise wg_downtime if needed
-!downtime reset yes    # reset balance to 0
 ```
 
 - **Help:** usage + workday/workweek explanation field.
 - **Modify:** `vroll` on expression; **`pc.modify_downtime(ch, delta)`**.
-- **State:** `wg_downtime` cvar stores the current available workday balance. Legacy `wg_downtime_start` / `wg_downtime_used` are read as a fallback.
+- **State:** `wg_downtime` cvar stores the current available workday balance. In tracked mode, `wg_downtime_tracking` stores `registered_at`, the UTC-midnight `accrual_epoch`, and `credited_days`; legacy downtime cvars are ignored.
 
 ## westmarch reference
 
@@ -43,9 +41,9 @@ flowchart TD
 
 | Key | MVP |
 |-----|-----|
-| **`mode`** | **`tracked`** — cvar enforcement; **`manual`** — player-editable cvar ledger but no cross-command enforcement; **`off`** — no cvar use |
+| **`mode`** | **`tracked`** — cvar enforcement plus 1 workday per IRL day accrual; **`manual`** — player-editable cvar ledger but no cross-command enforcement; **`off`** — no cvar use |
 | **`max_workdays`** | Cap on accumulated workdays per character; **`None`** = unlimited |
-| **`acquisition`** | **`manual`** only in MVP — **`!downtime <amount>`** or GM grants |
+| **`acquisition`** | Reserved source label; tracked mode currently accrues by IRL days regardless |
 
 **Requires:** when **`mode == "tracked"`**, **`subsystems.downtime.enabled`** must be **`True`** — the web config editor reports an error otherwise.
 
@@ -68,16 +66,16 @@ Optional **`command_config.downtime.cooldown_seconds`** (usually **0**).
 
 ## Implementation checklist
 
-- [x] Port downtime into **`pc.gvar`** — `get_downtime` / `modify_downtime`
+- [x] Port downtime into **`pc.gvar`** — `get_downtime` / `modify_downtime` / tracked accrual
 - [x] **`downtime.alias`** — loader, `require_subsystem(cfg, "downtime")`
 - [x] Config downtime labels in help/status embed text
-- [x] **`downtime.alias-test`** — help, check balance, modify, reset, off mode
+- [x] **`downtime.alias-test`** — help, check balance, modify, fractional spend, off mode
 - [x] Editor checks for downtime/crafting policy dependencies
 - [x] Document link from [crafting/README.md](../crafting/README.md)
 
 ## Exit criteria
 
-Check/show/modify workdays; toggle off; CI green.
+Check/show/modify workdays; tracked mode accrues daily up to cap; toggle off; CI green.
 
 ## Related
 

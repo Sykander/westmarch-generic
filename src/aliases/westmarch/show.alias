@@ -98,6 +98,7 @@ def _read_field(obj, key):
         "gvar_id": lambda o: o.gvar_id,
         "monster_images": lambda o: o.monster_images,
         "show_check_dcs": lambda o: o.show_check_dcs,
+        "hunt_location_policy": lambda o: o.hunt_location_policy,
         "catalogues": lambda o: o.catalogues,
         "recipe_mode": lambda o: o.recipe_mode,
         "require_known_spell": lambda o: o.require_known_spell,
@@ -344,6 +345,13 @@ def _enabled_commands_summary(cfg):
         for cmd in _dict_keys(commands):
             command_on = _read_field(commands, cmd) == True
             lines.append(f"    {cmd}: {_bool_text(command_on)}")
+        if key == "exploration":
+            cfg_block = _read_field(block, "config")
+            if _is_dict(cfg_block):
+                hunt_policy = _read_field(cfg_block, "hunt_location_policy")
+                if hunt_policy != None:
+                    lines.append("  config:")
+                    lines.append(f"    hunt_location_policy: {hunt_policy}")
         if key == "travel":
             cfg_block = _read_field(block, "config")
             if _is_dict(cfg_block):

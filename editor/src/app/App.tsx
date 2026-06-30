@@ -1476,6 +1476,15 @@ function SubsystemAdvancedEditor({
             }
             help="Controls whether recent encounters are excluded from future rolls."
           />
+          <SelectField
+            label="Hunt location policy"
+            value={String(config.hunt_location_policy ?? 'off')}
+            values={['off', 'location', 'monsters']}
+            onChange={(value) =>
+              updateConfig(`subsystems.${subsystemKey}.config.hunt_location_policy`, value)
+            }
+            help="Controls whether hunt ignores location, checks hunt availability, or requires location.huntable_monsters."
+          />
           <TextField
             label="Repeat exclude window"
             value={String(config.repeat_exclude_window ?? '')}
@@ -1672,7 +1681,7 @@ function SubsystemAdvancedEditor({
             value={String(config.mode ?? 'off')}
             values={['off', 'manual', 'tracked']}
             onChange={(value) => updateConfig(`subsystems.${subsystemKey}.config.mode`, value)}
-            help="off disables the ledger; manual is player bookkeeping; tracked lets commands check or spend workdays."
+            help="off disables the ledger; manual is player bookkeeping; tracked accrues 1 workday per IRL day and lets commands check or spend workdays."
           />
           <SelectField
             label="Downtime acquisition"
@@ -1681,7 +1690,7 @@ function SubsystemAdvancedEditor({
             onChange={(value) =>
               updateConfig(`subsystems.${subsystemKey}.config.acquisition`, value)
             }
-            help="How downtime is granted. Manual is implemented now; world_clock and journey are validation-only hooks."
+            help="Reserved source label for future integrations. Tracked mode currently accrues by IRL days."
           />
           <TextField
             label="Max workdays"

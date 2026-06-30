@@ -860,6 +860,7 @@ location = {
 | `biome` | no | Default when an exploration command omits biome list |
 | `commands` | no | **Preferred** — per-command availability at this location (see below) |
 | `activities` | no | **Legacy** — exploration subset of `commands`; omit when using `commands` |
+| `huntable_monsters` | no | Monster names huntable at this location when `hunt_location_policy` is `"monsters"` |
 | `services` | no | Shop / service ids — vendors, crafting benches ([Shop](#shop) **`location_id`**) |
 | `library_topics` | no | Topics for **`!library`** when **`library_topic_source`** is **`inferred`** or **`balanced`** |
 | `encounters_gvar_id` | no | Workshop UUID — lazy-loaded [location encounter module](#location-encounter-module-separate-workshop-gvar) |
@@ -875,6 +876,8 @@ location = {
 | **`True`** | Command is available here (no extra args on the location) |
 
 **Exploration keys** (value must be a biome list): `enc`, `forage`, `fish`, `mine`, `lumber`, `hunt`, `loot`.
+
+When `subsystems.exploration.config.hunt_location_policy` is `"monsters"`, `commands.hunt` controls whether hunting is available at the location and `huntable_monsters` controls which resolved catalogue creatures may be hunted there.
 
 **Economy keys** (value `True` when offered): `job`, `buy`, `sell` — these are boolean availability flags. Wire **`shops`** / payout config to this **`location_id`**; named job rows live under **`subsystems.economy.config.jobs`**.
 
@@ -1309,6 +1312,7 @@ cfg.subsystems.exploration.config.enc_biome_source
 | `enc_biome_source` | `"auto"` \| `"argument"` \| `"location"` | `"auto"` | How **all exploration activity commands** pick the biome code |
 | `distribution_policy` | `"random"` \| `"balanced"` | `"random"` | How to pick **encounter kind** (combat / quest / gather) before rolling a specific encounter |
 | `distribution` | `{ combat, quest, gather }` | see below | Target **percentages** for each kind — must sum to **100** |
+| `hunt_location_policy` | `"off"` \| `"location"` \| `"monsters"` | `"off"` | How `!hunt` uses current location data: unrestricted, availability-gated, or explicit `location.huntable_monsters` gated |
 | `monster_images` | `{ hunt, loot }` | `{ "hunt": "thumbnail", "loot": "thumbnail" }` | Where hunt embeds and initial loot-session embeds put available monster art: `"thumbnail"`, `"image"`, or `"off"` |
 | `show_check_dcs` | `{ hunt, loot }` | `{ "hunt": True, "loot": True }` | Whether hunt/loot reveal the DC number in public check text |
 
@@ -1393,12 +1397,14 @@ When **`False`**, the command still rolls against the same DC but prints generic
 
 ### `downtime.config`
 
-Downtime tracking, acquisition, caps, labels, and schedule copy live here.
+Downtime tracking, daily accrual, caps, labels, and schedule copy live here.
 
 ```py
 "downtime": {
     "enabled": True,
     "config": {
+        "mode": "tracked",
+        "max_workdays": 30,
         "workday_hours": 8,
         "workweek_days": 5,
         "labels": { "singular": "workday", "plural": "workdays" },
@@ -1698,7 +1704,7 @@ House rules and **what the engine enforces** vs what stays narrative/manual. Sto
 | **`languages`** | ✓ | `allowed` | unknown names → warn |
 | **`content`** | partial | `enforce_read_cooldowns`, `enforce_library_cooldowns` | uses **`command_config.read`** / **`library`** |
 
-**Deferred post-MVP (schema reserved):** downtime **`acquisition: world_clock`** / **`journey`**, encumbrance / attunement **enforcement** implementation, combat CR scaling engine.
+**Deferred post-MVP (schema reserved):** downtime **`acquisition: world_clock`** / **`journey`** beyond the implemented IRL-day accrual, encumbrance / attunement **enforcement** implementation, combat CR scaling engine.
 
 ```py
 policies = {
@@ -1882,7 +1888,7 @@ policies = {
         "hud": {"enabled": True, "fields": ["coinpurse", "wallet", "location"]},
         "checks": [
             {"type": "cvar", "key": "vsheet", "label": "vSheet", "message": "Run `!vsheet setup`."},
-            {"type": "cvar", "key": "wg_downtime", "label": "Downtime", "message": "Run `!downtime setup`.", "when_subsystem": "downtime"},
+            {"type": "cvar", "key": "wg_downtime", "label": "Downtime", "message": "Run `!downtime`.", "when_subsystem": "downtime"},
         ],
     },
 }
@@ -1906,19 +1912,19 @@ When both cost flags are **`False`**, routes are planning/display only — westm
 |-----|------|---------|---------|
 | `mode` | `"tracked"` \| `"manual"` \| `"off"` | `"off"` | Workday tracking |
 | `max_workdays` | int \| `None` | `None` | Cap on accumulated workdays per character; **`None`** = unlimited |
-| `acquisition` | `"manual"` \| `"world_clock"` \| `"journey"` | `"manual"` | How workdays are **granted** *(MVP: manual only; others reserved)* |
+| `acquisition` | `"manual"` \| `"world_clock"` \| `"journey"` | `"manual"` | Reserved source label for future non-IRL accrual integrations |
 
 | `mode` | Behaviour |
 |--------|-------------|
-| **`tracked`** | **`!downtime`** + **`pc`** cvars active; commands with **`workdays_cost`** or recipes with **`workdays`** may debit when policies allow. Requires **`subsystems.downtime.enabled`**. |
+| **`tracked`** | **`!downtime`** + **`pc`** cvars active; characters gain **1 workday per IRL day** from their first **`!westmarch`** or **`!downtime`** check, capped by **`max_workdays`**; commands with **`workdays_cost`** or recipes with **`workdays`** may debit when policies allow. Requires **`subsystems.downtime.enabled`**. |
 | **`manual`** | **`!downtime`** can still show and adjust the player ledger, but other commands treat it as honour-system bookkeeping and do not block on cvar balance. |
 | **`off`** | No downtime messaging or cvar use even if **`subsystems.downtime.enabled`**. |
 
-| `acquisition` | Behaviour *(MVP)* |
-|---------------|-------------------|
-| **`manual`** | Only **`!downtime <amount>`** (or GM) changes balance. |
-| **`world_clock`** | *(Deferred)* Grant workdays when in-world time advances by **`workday_hours`**. |
-| **`journey`** | *(Deferred)* Grant workdays on journey step completion per path config. |
+| `acquisition` | Behaviour |
+|---------------|-----------|
+| **`manual`** | Tracked mode still grants **1 workday per IRL day**; **`!downtime <amount>`** or GM edits can also adjust the balance. |
+| **`world_clock`** | *(Reserved)* Future source for granting workdays when in-world time advances by **`workday_hours`**. |
+| **`journey`** | *(Reserved)* Future source for granting workdays on journey step completion per path config. |
 
 Labels and flavour (**`workday_hours`**, **`workweek_days`**) live in **`subsystems.downtime.config`** — [downtime.config](#downtimeconfig).
 
