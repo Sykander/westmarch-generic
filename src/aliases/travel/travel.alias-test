@@ -153,9 +153,9 @@ vars:
 
 !travel Oakwood unicorn
 ---
-re:Unknown transport \*\*unicorn\*\*
+re:Oakwood Forest[\s\S]*!enc forest[\s\S]*track this journey
 ---
-name: trailing unknown transport is reported clearly
+name: trailing unknown argument is ignored
 vars:
   svars:
     westmarch_config: "aaaa2002-2002-2002-2002-200000000023"
@@ -174,7 +174,9 @@ vars:
               "river_town": {"name": "River Town"},
               "oakwood": {"name": "Oakwood Forest"},
           },
-          "paths": [],
+          "paths": [
+              {"from": "river_town", "to": "oakwood", "steps": [{"type": "encounter", "biome": "forest"}]},
+          ],
       }
 
 !travel Island

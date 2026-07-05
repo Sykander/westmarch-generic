@@ -135,6 +135,38 @@ vars:
           },
       }
 
+!travel Phandalin ship fly
+---
+re:Luskan[\s\S]*Phandalin[\s\S]*track this journey
+---
+name: Forgotten Realms travel handles ship and fly transport flags from Luskan to Phandalin
+vars:
+  cvars:
+    wg_location: "luskan"
+  svars:
+    westmarch_config: "aaaa2f14-2014-2014-2014-000000000009"
+  gvars:
+    aaaa2f14-2014-2014-2014-000000000009: |
+      using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+      rules_version = "2014"
+      display = {"name": "Forgotten Realms", "footer": "Forgotten Realms"}
+      policies = {"display": {"footer_behaviour": "string"}}
+      subsystems = {"travel": {"enabled": True, "commands": {"travel": True, "location": True}, "config": {"show_shops_on_travel": False}}}
+      world_data = {
+          "default_location": "waterdeep",
+          "locations_gvar_id": env.gvars.forgotten_realms_2014_locations,
+          "paths_gvar_id": env.gvars.forgotten_realms_2014_paths,
+          "transport": {
+              "walk": {"name": "Walking", "default": True},
+              "horse": {"name": "Horse or mount"},
+              "boat": {"name": "Boat"},
+              "ship": {"name": "Ship"},
+              "fly": {"name": "Flying"},
+              "portal": {"name": "Portal"},
+              "teleportation_circle": {"name": "Teleportation circle"},
+          },
+      }
+
 !location
 ---
 re:Waterdeep[\s\S]*Activities

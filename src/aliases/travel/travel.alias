@@ -159,6 +159,10 @@ def transport_error(query, matches):
     return f"Be more specific: **{query}** matched transports {journeys.format_transport_matches(matches)}."
 
 
+def transport_error_for_ids(query, transport_ids):
+    return transport_error(query, journeys.transports_for_ids(cfg, transport_ids))
+
+
 def add_transport_id(items, transport_id):
     text = str(transport_id).strip().lower()
     if text == "":
@@ -178,12 +182,12 @@ def split_route_query(start_index=0):
             continue
         if text.lower() in CONTROL_TOKENS:
             continue
-        matches = journeys.search_transport_exact(cfg, text)
-        if len(matches) == 1:
-            add_transport_id(selected_transports, journeys.get_transport_id(matches[0]))
+        transport_ids = journeys.search_transport_ids_exact(cfg, text)
+        if len(transport_ids) == 1:
+            add_transport_id(selected_transports, transport_ids[0])
             continue
-        if len(matches) > 1:
-            return "", None, transport_error(text, matches), []
+        if len(transport_ids) > 1:
+            return "", None, transport_error_for_ids(text, transport_ids), []
         parts.append(text)
     return " ".join(parts).strip(), selected_transports, None, parts
 
@@ -195,16 +199,13 @@ def resolve_route_destination(start_index=0):
     dest, dest_err = resolve_destination(query)
     if dest_err == None:
         return dest, selected_transports, None
-    if len(selected_transports) == 0 and len(parts) > 1:
-        maybe_transport = parts[len(parts) - 1]
-        prefix_query = " ".join(parts[:len(parts) - 1]).strip()
+    prefix_len = len(parts) - 1
+    while prefix_len > 0:
+        prefix_query = " ".join(parts[:prefix_len]).strip()
         prefix_dest, prefix_err = resolve_destination(prefix_query)
         if prefix_err == None:
-            matches = journeys.search_transport(cfg, maybe_transport)
-            if len(matches) != 1:
-                return None, None, transport_error(maybe_transport, matches)
-            add_transport_id(selected_transports, journeys.get_transport_id(matches[0]))
             return prefix_dest, selected_transports, None
+        prefix_len -= 1
     return None, None, dest_err
 
 

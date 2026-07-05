@@ -145,12 +145,19 @@ text = shops.trade_text(cfg_fixture, "oakwood")
 esc = "\x1b"
 return (
     "```ansi" in text
-    and "[General Store]" in text
-    and "buy" in text
-    and "sell" in text
+    and "General Store" in text
+    and "[General Store]" not in text
+    and "; " not in text
+    and " = " not in text
+    and "Buy" in text
+    and "Sell" in text
     and "Rope, Hemp (50 ft)" in text
-    and esc + "[2;33m2 gp" + esc + "[0m" in text
-    and esc + "[2;33m1 gp" + esc + "[0m" in text
+    and esc + "[1;34mGeneral Store" + esc + "[0m" in text
+    and esc + "[1;36mRope, Hemp (50 ft)" + esc + "[0m" in text
+    and esc + "[1;32mBuy" + esc + "[0m" in text
+    and esc + "[1;35mSell" + esc + "[0m" in text
+    and esc + "[1;33m2 gp" + esc + "[0m" in text
+    and esc + "[1;33m1 gp" + esc + "[0m" in text
     and "buy_from_shop" not in text
 )
 ---
@@ -240,7 +247,7 @@ cfg_fixture = {
 shop, matches, error = shops.find_shop(cfg_fixture, "temple")
 stock, item_matches, item_error = shops.find_stock_item(shop, "curse", cfg_fixture)
 trade = shops.trade_text(cfg_fixture)
-return shops.stock_is_service(cfg_fixture, stock) == True and "Remove Curse" in trade and "free" in trade and " / -" in trade
+return shops.stock_is_service(cfg_fixture, stock) == True and "Remove Curse" in trade and "free" in trade and "Sell" in trade and " / -" not in trade
 ---
 True
 ---

@@ -13,6 +13,7 @@ CVAR_LOCATION = "wg_location"
 CVAR_JOURNEY = "wg_journey"
 CVAR_LOCATIONS_DATA = "wg_locations_data"
 CVAR_TRANSPORT = "westmarch_travel_transport"
+_transport_lookup_cache = {}
 
 
 def _read_field(obj, key):
@@ -118,6 +119,31 @@ def _transport_map(cfg):
     return _fallback_transport_map()
 
 
+def _transport_cache_key(cfg):
+    try:
+        source = get_svar(config.SVAR_NAME)
+        if source != None and str(source).strip() != "":
+            return "svar:" + str(source).strip()
+    except:
+        pass
+    transports = _transport_map(cfg)
+    parts = []
+    for trans_id in transports:
+        parts.append(str(trans_id))
+        entry = _read_field(transports, trans_id)
+        name = _read_field(entry, "name")
+        if name != None:
+            parts.append(str(name))
+        default = _read_field(entry, "default")
+        if default != None:
+            parts.append(str(default))
+        aliases = _read_field(entry, "aliases")
+        if lists.is_list(aliases):
+            for alias in aliases:
+                parts.append(str(alias))
+    return "inline:" + "|".join(parts)
+
+
 def _copy_transport(transport, transport_id):
     out = {}
     if transport != None and dicts.is_dict(transport):
@@ -157,21 +183,93 @@ def _transport_labels(transport, transport_id):
     return labels
 
 
-def _transport_default_id(cfg):
+def _add_id(items, value):
+    text = _normalize_id(value)
+    if text == None:
+        return False
+    for item in items:
+        if item == text:
+            return False
+    items.append(text)
+    return True
+
+
+def _add_label_id(map_obj, label, transport_id):
+    key = _normalize_id(label)
+    if key == None:
+        return
+    if key not in map_obj:
+        map_obj[key] = []
+    _add_id(map_obj[key], transport_id)
+
+
+def _transport_lookup(cfg):
+    cache_key = _transport_cache_key(cfg)
+    if cache_key in _transport_lookup_cache:
+        return _transport_lookup_cache[cache_key]
     transports = _transport_map(cfg)
+    by_id = {}
+    exact = {}
+    labels = []
+    label_to_ids = {}
+    default_id = None
+    first_id = None
     for key in transports:
+        trans_id = _normalize_id(key)
+        if trans_id == None:
+            continue
+        if first_id == None:
+            first_id = trans_id
         entry = _read_field(transports, key)
-        if _read_field(entry, "default") == True:
-            default_id = _normalize_id(key)
-            if default_id != None:
-                return default_id
-    if "walk" in transports:
-        return "walk"
-    for key in transports:
-        default_id = _normalize_id(key)
-        if default_id != None:
-            return default_id
-    return "walk"
+        by_id[trans_id] = _copy_transport(entry, trans_id)
+        if default_id == None and _read_field(entry, "default") == True:
+            default_id = trans_id
+        for label in _transport_labels(entry, key):
+            text = str(label)
+            labels.append(text)
+            if text not in label_to_ids:
+                label_to_ids[text] = []
+            _add_id(label_to_ids[text], trans_id)
+            _add_label_id(exact, text, trans_id)
+    if default_id == None:
+        if "walk" in by_id:
+            default_id = "walk"
+        elif first_id != None:
+            default_id = first_id
+        else:
+            default_id = "walk"
+    lookup = {
+        "by_id": by_id,
+        "exact": exact,
+        "labels": labels,
+        "label_to_ids": label_to_ids,
+        "default_id": default_id,
+    }
+    _transport_lookup_cache[cache_key] = lookup
+    return lookup
+
+
+def _copy_transport_ids(ids):
+    out = []
+    if not lists.is_list(ids):
+        return out
+    for trans_id in ids:
+        _add_id(out, trans_id)
+    return out
+
+
+def _transports_for_ids(lookup, ids):
+    out = []
+    by_id = _read_field(lookup, "by_id")
+    for trans_id in ids:
+        entry = _read_field(by_id, trans_id)
+        if entry != None:
+            out.append(_copy_transport(entry, trans_id))
+    return out
+
+
+def _transport_default_id(cfg):
+    return _read_field(_transport_lookup(cfg), "default_id")
 
 
 def _transport_from_legacy_flags(horse=False, boat=False):
@@ -191,64 +289,49 @@ def search_transport(config_override, query):
     search = str(query).strip() if query != None else ""
     if search == "":
         return []
-    transports = _transport_map(cfg)
+    lookup = _transport_lookup(cfg)
+    by_id = _read_field(lookup, "by_id")
     exact_key = _normalize_id(search)
-    if exact_key != None:
-        for trans_id in transports:
-            if _normalize_id(trans_id) == exact_key:
-                return [_copy_transport(transports[trans_id], trans_id)]
-        for trans_id in transports:
-            entry = _read_field(transports, trans_id)
-            aliases = _read_field(entry, "aliases")
-            if lists.is_list(aliases):
-                for alias in aliases:
-                    if _normalize_id(alias) == exact_key:
-                        return [_copy_transport(entry, trans_id)]
-
-    labels = []
-    label_to_ids = {}
-    for trans_id in transports:
-        entry = _read_field(transports, trans_id)
-        for label in _transport_labels(entry, trans_id):
-            labels.append(label)
-            if label not in label_to_ids:
-                label_to_ids[label] = []
-            label_to_ids[label].append(str(trans_id))
-
+    direct = _read_field(by_id, exact_key)
+    if direct != None:
+        return [_copy_transport(direct, exact_key)]
+    exact_ids = _read_field(_read_field(lookup, "exact"), exact_key)
+    if exact_ids != None and len(exact_ids) > 0:
+        return _transports_for_ids(lookup, exact_ids)
+    labels = _read_field(lookup, "labels")
+    label_to_ids = _read_field(lookup, "label_to_ids")
     matched_labels = lists.search_list(labels, search)
     found = []
     seen = {}
     for label in matched_labels:
         ids = label_to_ids[label]
         for trans_id in ids:
-            norm = _normalize_id(trans_id)
-            if norm in seen:
+            if trans_id in seen:
                 continue
-            found.append(_copy_transport(transports[trans_id], trans_id))
-            seen[norm] = True
+            found.append(_copy_transport(by_id[trans_id], trans_id))
+            seen[trans_id] = True
     return found
+
+
+def search_transport_ids_exact(config_override, query):
+    """Canonical transport ids matching an exact id, name, or alias."""
+    cfg = _cfg(config_override)
+    exact_key = _normalize_id(query)
+    if exact_key == None:
+        return []
+    return _copy_transport_ids(_read_field(_read_field(_transport_lookup(cfg), "exact"), exact_key))
+
+
+def transports_for_ids(config_override, transport_ids):
+    """Transport dicts for already canonical ids, preserving display helpers."""
+    cfg = _cfg(config_override)
+    return _transports_for_ids(_transport_lookup(cfg), _copy_transport_ids(transport_ids))
 
 
 def search_transport_exact(config_override, query):
     """Match transport by exact id, name, or alias only."""
     cfg = _cfg(config_override)
-    exact_key = _normalize_id(query)
-    if exact_key == None:
-        return []
-    transports = _transport_map(cfg)
-    found = []
-    seen = {}
-    for trans_id in transports:
-        entry = _read_field(transports, trans_id)
-        for label in _transport_labels(entry, trans_id):
-            if _normalize_id(label) != exact_key:
-                continue
-            norm = _normalize_id(trans_id)
-            if norm in seen:
-                continue
-            found.append(_copy_transport(entry, trans_id))
-            seen[norm] = True
-    return found
+    return _transports_for_ids(_transport_lookup(cfg), search_transport_ids_exact(cfg, query))
 
 
 def format_transport_matches(matches, limit=5):
@@ -272,22 +355,21 @@ def resolve_transport_id(config_override=None, transport_id=None, horse=False, b
         requested = _transport_from_legacy_flags(horse, boat)
     if requested == None:
         return _transport_default_id(cfg)
-    matches = search_transport(cfg, requested)
-    if len(matches) == 1:
-        return get_transport_id(matches[0])
+    exact_ids = search_transport_ids_exact(cfg, requested)
+    if len(exact_ids) == 1:
+        return exact_ids[0]
     return requested
 
 
 def _transport_ids(cfg):
-    transports = _transport_map(cfg)
     default_id = _transport_default_id(cfg)
+    by_id = _read_field(_transport_lookup(cfg), "by_id")
     out = []
     seen = {}
     if default_id != None:
         out.append(default_id)
         seen[default_id] = True
-    for key in transports:
-        trans_id = _normalize_id(key)
+    for trans_id in by_id:
         if trans_id == None or trans_id in seen:
             continue
         out.append(trans_id)
