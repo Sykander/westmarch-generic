@@ -18,11 +18,12 @@ if not ok:
 argslist = &ARGS&
 
 if len(argslist) > 0 and argslist[0] in ["help", "?"]:
-    help_text = f"""Summarize the loaded westmarch configuration.
+    help_text = f"""Show loaded westmarch config status or a detailed section.
 
 Usage:
 `{ctx.prefix}westmarch show`
 `{ctx.prefix}westmarch show <section>`
+`{ctx.prefix}westmarch show -page <section>`
 Sections: wiring, subsystems, policies, crafting, display, runtime, data, biomes, player_setup
 """
     return get_embed(desc=help_text)
@@ -38,6 +39,30 @@ SUBSYSTEM_KEYS = [
     "content",
     "misc",
 ]
+SECTION_KEYS = [
+    "wiring",
+    "world",
+    "subsystems",
+    "policies",
+    "crafting",
+    "runtime",
+    "data",
+    "display",
+    "biomes",
+    "player_setup",
+]
+PUBLIC_SECTION_KEYS = [
+    "wiring",
+    "subsystems",
+    "policies",
+    "crafting",
+    "display",
+    "runtime",
+    "data",
+    "biomes",
+    "player_setup",
+]
+SECTION_LIST = "wiring, subsystems, policies, crafting, display, runtime, data, biomes, player_setup"
 _json_cache = {}
 
 
@@ -328,6 +353,27 @@ def _read_subsystem(cfg, key):
 
 def _subsystem_enabled(block):
     return _read_field(block, "enabled") == True
+
+
+def _subsystem_counts(cfg):
+    enabled_subsystems = 0
+    total_subsystems = 0
+    enabled_commands = 0
+    total_commands = 0
+    enabled_names = []
+    for key in SUBSYSTEM_KEYS:
+        total_subsystems += 1
+        block = _read_subsystem(cfg, key)
+        if _subsystem_enabled(block):
+            enabled_subsystems += 1
+            enabled_names.append(key)
+        commands = _read_field(block, "commands")
+        if _is_dict(commands):
+            for cmd in _dict_keys(commands):
+                total_commands += 1
+                if _read_field(commands, cmd) == True:
+                    enabled_commands += 1
+    return [enabled_subsystems, total_subsystems, enabled_commands, total_commands, enabled_names]
 
 
 def _enabled_commands_summary(cfg):
@@ -645,6 +691,116 @@ def _world_name(cfg):
     return "Westmarch"
 
 
+def _uuid_text(uuid):
+    if uuid != None and str(uuid).strip() != "":
+        return str(uuid).strip()
+    return "-"
+
+
+def _wiring_summary(cfg, uuid):
+    wiring_lines = [
+        f"config_gvar: {_uuid_text(uuid)}",
+        "load: OK",
+    ]
+    cv = _read_field(cfg, "config_version")
+    if cv != None and str(cv).strip() != "":
+        wiring_lines.append(f"config_version: {cv}")
+    return (
+        _codeblock("yaml", wiring_lines)
+        + f"\n**Editor:** {_editor_link(uuid)}\n"
+        + f"**Dashboard:** {_dashboard_link(uuid)}"
+    )
+
+
+def _runtime_summary(cfg):
+    runtime_lines = [f"rules_edition: {config.get_rules_edition()}"]
+    rv = _read_field(cfg, "rules_version")
+    if rv != None and str(rv).strip() != "":
+        runtime_lines.append(f"config_override: {rv}")
+    return _codeblock("yaml", runtime_lines)
+
+
+def _compact_status_summary(cfg, uuid):
+    lines = [
+        f"config_gvar: {_uuid_text(uuid)}",
+        "load: OK",
+    ]
+    cv = _read_field(cfg, "config_version")
+    if cv != None and str(cv).strip() != "":
+        lines.append(f"config_version: {cv}")
+    lines.append(f"rules_edition: {config.get_rules_edition()}")
+    rv = _read_field(cfg, "rules_version")
+    if rv != None and str(rv).strip() != "":
+        lines.append(f"config_override: {rv}")
+    lines.append(f"world: {_world_name(cfg)}")
+
+    counts = _subsystem_counts(cfg)
+    lines.append(f"subsystems_enabled: {counts[0]}/{counts[1]}")
+    lines.append(f"commands_enabled: {counts[2]}/{counts[3]}")
+    enabled_names = counts[4]
+    if len(enabled_names) > 0:
+        lines.append(f"enabled_subsystems: {', '.join(enabled_names)}")
+    else:
+        lines.append("enabled_subsystems: none")
+
+    wd = _world_data(cfg)
+    if wd == None:
+        lines.append("world_data: none")
+    else:
+        lines.append(f"locations: {_location_count(wd)}")
+        lines.append(f"paths: {_total_path_count(wd)}")
+        lines.append(f"transport: {_count_dict(_read_field(wd, 'transport'))}")
+        lines.append(f"biomes: {_count_dict(_read_field(wd, 'biomes'))}")
+    return _codeblock("yaml", lines)
+
+
+def _section_details_text():
+    names = []
+    for key in PUBLIC_SECTION_KEYS:
+        names.append(f"`{ctx.prefix}westmarch show {key}`")
+    return ", ".join(names)
+
+
+def _section_label(section_key):
+    labels = {
+        "wiring": "Wiring",
+        "world": "Data overview",
+        "subsystems": "Subsystems",
+        "player_setup": "Player setup",
+        "policies": "Policies",
+        "crafting": "Crafting",
+        "display": "Display",
+        "runtime": "Runtime",
+        "data": "Data overview",
+        "biomes": "Biome registry",
+    }
+    return _read_field(labels, section_key)
+
+
+def _render_section(section_key, cfg, uuid):
+    if section_key == "wiring":
+        return _wiring_summary(cfg, uuid)
+    if section_key == "world":
+        return _world_summary(cfg)
+    if section_key == "subsystems":
+        return _enabled_commands_summary(cfg)
+    if section_key == "policies":
+        return _policy_summary(cfg)
+    if section_key == "crafting":
+        return _crafting_summary(cfg)
+    if section_key == "runtime":
+        return _runtime_summary(cfg)
+    if section_key == "data":
+        return _world_summary(cfg)
+    if section_key == "display":
+        return _display_summary(cfg)
+    if section_key == "biomes":
+        return _biomes_summary(cfg)
+    if section_key == "player_setup":
+        return _player_setup_summary(cfg)
+    return None
+
+
 def summarize_config(section=None):
     section_key = None
     if section != None and str(section).strip() != "":
@@ -662,80 +818,36 @@ def summarize_config(section=None):
             ),
         }
     world_name = _world_name(cfg)
-    uuid_text = "-"
-    if uuid != None and str(uuid).strip() != "":
-        uuid_text = str(uuid).strip()
-    wiring_lines = [
-        f"config_gvar: {uuid_text}",
-        "load: OK",
-    ]
-    cv = _read_field(cfg, "config_version")
-    if cv != None and str(cv).strip() != "":
-        wiring_lines.append(f"config_version: {cv}")
-    wiring = (
-        _codeblock("yaml", wiring_lines)
-        + f"\n**Editor:** {_editor_link(uuid)}\n"
-        + f"**Dashboard:** {_dashboard_link(uuid)}"
-    )
-    runtime_lines = [f"rules_edition: {config.get_rules_edition()}"]
-    rv = _read_field(cfg, "rules_version")
-    if rv != None and str(rv).strip() != "":
-        runtime_lines.append(f"config_override: {rv}")
-    runtime = _codeblock("yaml", runtime_lines)
-    sections = {
-        "wiring": wiring,
-        "world": _world_summary(cfg),
-        "subsystems": _enabled_commands_summary(cfg),
-        "policies": _policy_summary(cfg),
-        "crafting": _crafting_summary(cfg),
-        "runtime": runtime,
-        "data": _world_summary(cfg),
-        "display": _display_summary(cfg),
-        "biomes": _biomes_summary(cfg),
-        "player_setup": _player_setup_summary(cfg),
-    }
-    if section_key != None and section_key not in sections:
+    if section_key != None and section_key not in SECTION_KEYS:
         return None
-    if section_key != None and section_key in sections:
+    if section_key != None:
         return {
-            "title": f"{world_name} — {section_key}",
-            "desc": sections[section_key],
+            "title": f"{world_name} — {_section_label(section_key)}",
+            "desc": _render_section(section_key, cfg, uuid),
         }
-    desc_parts = []
-    order = [
-        "wiring",
-        "subsystems",
-        "player_setup",
-        "policies",
-        "crafting",
-        "display",
-        "runtime",
-        "data",
-        "biomes",
+
+    desc_parts = [
+        f"**Status**\n{_compact_status_summary(cfg, uuid)}",
+        f"**Details**\n{_section_details_text()}",
+        f"**Editor:** {_editor_link(uuid)}\n**Dashboard:** {_dashboard_link(uuid)}",
     ]
-    labels = {
-        "wiring": "Wiring",
-        "subsystems": "Subsystems",
-        "player_setup": "Player setup",
-        "policies": "Policies",
-        "crafting": "Crafting",
-        "display": "Display",
-        "runtime": "Runtime",
-        "data": "Data overview",
-        "biomes": "Biome registry",
-    }
-    for key in order:
-        desc_parts.append(f"**{labels[key]}**\n{sections[key]}")
     desc_parts.append(
         "Use the [Westmarch config editor](https://sykander.github.io/westmarch-generic/) "
         "for validation before publishing config changes."
     )
-    return {"title": f"{world_name} — configuration", "desc": "\n\n".join(desc_parts)}
+    return {"title": f"{world_name} — configuration status", "desc": "\n\n".join(desc_parts)}
 
 
 section = None
 if len(argslist) > 0 and argslist[0] not in ["help", "?"]:
-    section = argslist[0]
+    first_arg = str(argslist[0]).strip().lower()
+    if first_arg in ["-page", "--page", "page"]:
+        if len(argslist) > 1:
+            section = argslist[1]
+        else:
+            section = "missing_section"
+    else:
+        section = argslist[0]
 
 summary = summarize_config(section)
 if summary == None:
@@ -743,7 +855,7 @@ if summary == None:
         title="Unknown section",
         desc=(
             f"Unknown section `{section}`. "
-            f"Try: wiring, subsystems, policies, crafting, display, runtime, data, biomes, player_setup"
+            f"Try: {SECTION_LIST}"
         ),
         error=True,
     )

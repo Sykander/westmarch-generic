@@ -1,13 +1,18 @@
 # westmarch show
 
-Summarizes the loaded `westmarch_config` for server configurers.
+Shows the loaded `westmarch_config` for server configurers.
 
 ```text
 !westmarch show
 !westmarch show <section>
+!westmarch show -page <section>
 ```
 
 Sections: `wiring`, `subsystems`, `policies`, `crafting`, `display`, `runtime`, `data`, `biomes`, `player_setup`.
+
+Bare `show` is a compact runtime status card: gvar wiring, load status, rules
+edition, world name, enabled subsystem/command counts, high-level data counts,
+editor/dashboard links, and the available detail sections.
 
 The `data` section summarizes `world_data` counts, including locations, paths,
 transport modes, and biome registry entries. The subsystem summary includes

@@ -6,9 +6,9 @@ name: unwired shows missing config message
 
 !show
 ---
-re:My Demo Realm
+"re:My Demo Realm[\\s\\S]*subsystems_enabled[\\s\\S]*Details"
 ---
-name: wired config shows world name
+name: wired config shows compact status card
 vars:
   svars:
     westmarch_config: "ffff3333-3333-3333-3333-333333333333"
@@ -16,11 +16,11 @@ vars:
     ffff3333-3333-3333-3333-333333333333: |
       display = {"name": "My Demo Realm"}
 
-!show
+!show subsystems
 ---
 "re:```ansi[\\s\\S]*exploration:[\\s\\S]*enabled[\\s\\S]*false[\\s\\S]*enc[\\s\\S]*false[\\s\\S]*forage[\\s\\S]*false"
 ---
-name: show lists subsystem status
+name: show subsystem section lists subsystem status
 vars:
   svars:
     westmarch_config: "ffff3333-3333-3333-3333-333333333333"
@@ -28,11 +28,11 @@ vars:
     ffff3333-3333-3333-3333-333333333333: |
       display = {"name": "My Demo Realm"}
 
-!show
+!show subsystems
 ---
 "re:travel:[\\s\\S]*route_priority[\\s\\S]*least_encs[\\s\\S]*show_arrival_time[\\s\\S]*true[\\s\\S]*show_arrival_weather[\\s\\S]*true[\\s\\S]*combat_add_prompt[\\s\\S]*madd_commands[\\s\\S]*economy:[\\s\\S]*job_location_policy[\\s\\S]*warn[\\s\\S]*ask_to_confirm_purchases[\\s\\S]*true[\\s\\S]*jobs[\\s\\S]*1"
 ---
-name: show lists travel arrival and economy job config
+name: show subsystem section lists travel arrival and economy job config
 vars:
   svars:
     westmarch_config: "ffff3434-3434-3434-3434-343434343434"
@@ -57,9 +57,9 @@ vars:
 
 !show
 ---
-re:Data overview
+"re:Details[\\s\\S]*westmarch show data"
 ---
-name: show includes data overview section
+name: bare show points to detailed data section
 vars:
   svars:
     westmarch_config: "ffff1111-1111-1111-1111-111111111111"
@@ -142,11 +142,11 @@ vars:
     ffff1111-1111-1111-1111-111111111111: |
       # empty owner body
 
-!show
+!show subsystems
 ---
 "re:exploration:[\\s\\S]*enabled[\\s\\S]*true[\\s\\S]*enc[\\s\\S]*true[\\s\\S]*forage[\\s\\S]*false"
 ---
-name: show marks enabled subsystem in ansi block
+name: show subsystem section marks enabled subsystem in ansi block
 vars:
   svars:
     westmarch_config: "ffff4444-4444-4444-4444-444444444444"
@@ -168,11 +168,11 @@ vars:
         [["enc.gather"], "flavour", "Herbs", "", "gather"]
       ]
 
-!show
+!show subsystems
 ---
 "re:exploration:[\\s\\S]*enabled[\\s\\S]*true[\\s\\S]*enc[\\s\\S]*true"
 ---
-name: show does not validate enabled subsystem data
+name: show subsystem section does not validate enabled subsystem data
 vars:
   svars:
     westmarch_config: "ffff5555-5555-5555-5555-555555555555"
@@ -275,6 +275,21 @@ vars:
     westmarch_config: "ffffaaaa-aaaa-aaaa-aaaa-ffffffffaaaa"
   gvars:
     ffffaaaa-aaaa-aaaa-aaaa-ffffffffaaaa: |
+      policies = {
+          "travel": {"consume_rations": True},
+          "economy": {"enforce_wallet_caps": True},
+      }
+
+!show -page policies
+---
+"re:```ansi[\\s\\S]*travel.consume_rations[\\s\\S]*true[\\s\\S]*economy.enforce_wallet_caps[\\s\\S]*true"
+---
+name: show page flag selects a section
+vars:
+  svars:
+    westmarch_config: "ffffabab-abab-abab-abab-ffffffffabab"
+  gvars:
+    ffffabab-abab-abab-abab-ffffffffabab: |
       policies = {
           "travel": {"consume_rations": True},
           "economy": {"enforce_wallet_caps": True},

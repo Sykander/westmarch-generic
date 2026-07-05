@@ -234,7 +234,7 @@ def _general_configuration(prefix, svar_name, uuid, cfg):
 **After editing**
 Use the editor **Check** page before publishing, then run `{prefix}westmarch show` in Discord to confirm what the engine loads.
 
-`show` summarizes what the engine loaded so you can confirm changes without reading the whole gvar.
+`show` confirms the loaded gvar, rules edition, enabled counts, and links. Use `{prefix}westmarch show <section>` for detailed views.
 
 Most edits apply on the next command run; you do not need to redeploy the engine workshop.
 

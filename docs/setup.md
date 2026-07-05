@@ -310,7 +310,7 @@ After publishing, run:
 !westmarch show
 ```
 
-`show` summarizes the config that the engine loaded; it does not validate. Then try a smoke command for an enabled subsystem (e.g. `!forage` once pools exist).
+`show` confirms the config gvar, load status, rules edition, enabled subsystem/command counts, and editor/dashboard links. It does not validate. Use `!westmarch show <section>` for detail views such as `subsystems`, `policies`, or `data`, then try a smoke command for an enabled subsystem (e.g. `!forage` once pools exist).
 
 Players can run:
 
