@@ -7,6 +7,7 @@ using(
     display = env.gvars.display,
     journeys = env.gvars.journeys,
     locations = env.gvars.locations,
+    paths = env.gvars.paths,
     shops = env.gvars.shops,
     weather = env.gvars.weather,
 )
@@ -75,6 +76,10 @@ def read_field(obj, key):
         "commands": lambda o: o.commands,
         "time": lambda o: o.time,
         "weather": lambda o: o.weather,
+        "paths": lambda o: o.paths,
+        "steps": lambda o: o.steps,
+        "path_index": lambda o: o.path_index,
+        "step_index": lambda o: o.step_index,
         "show_arrival_time": lambda o: o.show_arrival_time,
         "show_arrival_weather": lambda o: o.show_arrival_weather,
         "show_shops_on_travel": lambda o: o.show_shops_on_travel,
@@ -226,15 +231,83 @@ def show_shops_on_travel():
     return travel_config_value("show_shops_on_travel", True) == True
 
 
+def first_step_from_journey_text(journey_text):
+    for line in str(journey_text).split("\n"):
+        text = str(line).strip()
+        if "Run `" not in text or "~~" in text:
+            continue
+        if text.startswith("*"):
+            text = text[1:].strip()
+        return text
+    return ""
+
+
+def next_step_from_cvar():
+    raw = None
+    try:
+        raw = get("wg_journey")
+    except:
+        pass
+    if raw == None:
+        try:
+            raw = ch.get_cvar("wg_journey", None)
+        except:
+            pass
+    if raw == None or str(raw).strip() == "":
+        return ""
+    try:
+        journey = load_json(raw)
+    except:
+        return ""
+    legs = read_field(journey, "paths")
+    if legs == None or len(legs) == 0:
+        return ""
+    path_index = read_field(journey, "path_index")
+    step_index = read_field(journey, "step_index")
+    if path_index == None:
+        path_index = 0
+    if step_index == None:
+        step_index = 0
+    if int(path_index) >= len(legs):
+        return ""
+    path = legs[int(path_index)]
+    steps = read_field(path, "steps")
+    if steps == None or int(step_index) >= len(steps):
+        return ""
+    return paths.display_step(steps[int(step_index)], path, ctx.prefix, False)
+
+
+def first_step_from_route(route, transport):
+    if route == None or len(route) == 0:
+        return ""
+    path = route[0]
+    steps = read_field(path, "steps")
+    if steps == None:
+        steps = paths.get_path_steps(path, transport)
+    if steps == None or len(steps) == 0:
+        return ""
+    return paths.display_step(steps[0], path, ctx.prefix, False)
+
+
 def response_for_current(messages=[]):
     loc_id, loc, err_msg = current_location_or_error()
     if err_msg != None:
         return get_embed(desc=err_msg, error=True)
     desc = location_description(loc_id, loc, True, show_shops_on_travel())
     journey_text = journeys.active_journey_text(cfg, ch, ctx.prefix)
+    next_step = journeys.next_step_text(cfg, ch, ctx.prefix)
+    if next_step == "":
+        next_step = journeys.next_step_text(cfg, None, ctx.prefix)
+    if next_step == "":
+        next_step = next_step_from_cvar()
     if journey_text != "":
         desc += "\n\n" + journey_text
-        desc += f"\n\nOnce a step is complete, run `{ctx.prefix}travel next`."
+        if next_step == "":
+            next_step = first_step_from_journey_text(journey_text)
+    if next_step != "":
+        desc += f"\n\n-# Next step: {next_step}"
+    if journey_text != "" or next_step != "":
+        desc += f"\n-# Once a step is complete, run `{ctx.prefix}travel next`."
     message_lines = []
     for message in messages:
         message_lines.append(str(message))
@@ -355,7 +428,13 @@ else:
     messages.append(f"To track this journey, run `{ctx.prefix}travel \"{locations.location_name(dest)}\"{suffix} track`.")
 
 desc = location_description(current_id, current_loc, True, False)
-desc += "\n\n" + journeys.display_journey(cfg, journey, "detailed", prefix=ctx.prefix)
+route_text = journeys.display_journey(cfg, journey, "detailed", prefix=ctx.prefix)
+desc += "\n\n" + route_text
+preview_next_step = first_step_from_route(route, selected_transport)
+if preview_next_step == "":
+    preview_next_step = first_step_from_journey_text(route_text)
+if preview_next_step != "":
+    desc += f"\n\n-# Next step: {preview_next_step}"
 desc += "\n\n-# " + "\n-# ".join(messages)
 return get_embed(desc=desc, image=locations.location_image(current_loc))
 </drac2>

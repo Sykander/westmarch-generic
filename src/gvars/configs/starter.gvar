@@ -79,6 +79,9 @@ subsystems = {
         "config": {
             "location_biome_override": True,
             "path_biome_policy": "from_location",
+            # Route priority: "least_encs", "least_travel_time", "least_cost", or "custom".
+            # For custom, add route_weights such as {"encounter": 1, "travel_hours": 0.1, "gold": 0.01}.
+            "route_priority": "least_encs",
             # Optional — append current clock/weather notes when travel arrives somewhere.
             "show_arrival_time": False,
             "show_arrival_weather": False,

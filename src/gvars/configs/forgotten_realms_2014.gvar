@@ -50,6 +50,7 @@ subsystems = {
         "config": {
             "location_biome_override": True,
             "path_biome_policy": "from_location",
+            "route_priority": "least_encs",
             "show_arrival_time": True,
             "show_arrival_weather": True,
             "show_shops_on_travel": False,

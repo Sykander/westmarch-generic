@@ -1600,6 +1600,15 @@ function SubsystemAdvancedEditor({
               }
               help="Checks whether path encounter biomes are listed on the origin location."
             />
+            <SelectField
+              label="Route priority"
+              value={String(config.route_priority ?? 'least_encs')}
+              values={['least_encs', 'least_travel_time', 'least_cost', 'custom']}
+              onChange={(value) =>
+                updateConfig(`subsystems.${subsystemKey}.config.route_priority`, value)
+              }
+              help="Controls whether travel routes prefer fewer encounters, less travel time, lower cost, or custom weights."
+            />
             <div className="field">
               <span>
                 Arrival time

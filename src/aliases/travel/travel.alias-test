@@ -406,7 +406,31 @@ name: next advances one-step journey to arrival
 vars:
   cvars:
     wg_location: "river_town"
-    wg_journey: '{"title":"River Town -> Oakwood Forest","from":"river_town","to":"oakwood","paths":[{"from":"river_town","to":"oakwood","steps":[{"type":"encounter","biome":"forest"}]}],"path_index":0,"step_index":0,"horse":false,"boat":false}'
+    wg_journey: '{"title":"River Town -> Oakwood Forest","from":"river_town","to":"oakwood","paths":[{"from":"river_town","to":"oakwood","steps":[{"type":"encounter","biome":"forest"}]}],"path_index":0,"step_index":0,"transport":"walk","transports":["walk"],"horse":false,"boat":false}'
+  svars:
+    westmarch_config: "aaaa2002-2002-2002-2002-200000000002"
+  gvars:
+    aaaa2002-2002-2002-2002-200000000002: |
+      subsystems = {
+          "travel": {"enabled": True, "commands": {"travel": True, "location": True}},
+      }
+      world_data = {
+          "default_location": "river_town",
+          "locations": {
+              "river_town": {"name": "River Town"},
+              "oakwood": {"name": "Oakwood Forest"},
+          },
+          "paths": [
+              {"from": "river_town", "to": "oakwood", "steps": [{"type": "encounter", "biome": "forest"}]},
+          ],
+      }
+
+!travel Oakwood
+---
+'re:Next step: Run `!enc forest`[\s\S]*track this journey'
+---
+name: route preview shows the next step at the bottom
+vars:
   svars:
     westmarch_config: "aaaa2002-2002-2002-2002-200000000002"
   gvars:

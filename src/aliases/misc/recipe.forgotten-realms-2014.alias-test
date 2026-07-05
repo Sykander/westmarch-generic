@@ -1,0 +1,16 @@
+!recipe "Potion of Healing"
+---
+re:Potion of Healing[\s\S]*Workdays
+---
+name: Forgotten Realms recipe command loads engine recipe catalogue
+vars:
+  svars:
+    westmarch_config: "aaaa2f14-2014-2014-2014-000000000008"
+  gvars:
+    aaaa2f14-2014-2014-2014-000000000008: |
+      display = {"name": "Forgotten Realms", "footer": "Forgotten Realms"}
+      policies = {"display": {"footer_behaviour": "string"}}
+      subsystems = {
+          "misc": {"enabled": True, "commands": {"recipe": True}},
+          "crafting": {"enabled": True, "config": {"catalogues": {"recipes": "engine:configs/recipes/recipes_list"}}},
+      }

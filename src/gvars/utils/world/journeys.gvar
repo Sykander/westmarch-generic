@@ -711,6 +711,94 @@ def clear_journey(ch):
     return set_journey(ch, {})
 
 
+def _copy_route_with(route, path):
+    out = []
+    for item in route:
+        out.append(item)
+    out.append(path)
+    return out
+
+
+def _copy_seen_with(seen, loc_id):
+    out = []
+    for item in seen:
+        out.append(item)
+    out.append(loc_id)
+    return out
+
+
+def _find_journey_by_fewest_legs(cfg, start, dest, transport, selected_ids, max_legs=8):
+    frontier = [{"id": start, "route": [], "seen": [start]}]
+    depth = 0
+    while len(frontier) > 0 and depth < max_legs:
+        next_frontier = []
+        for state in frontier:
+            state_id = _read_field(state, "id")
+            route = _read_field(state, "route")
+            seen = _read_field(state, "seen")
+            for edge in paths.get_edge_entries_from(cfg, state_id, transport, selected_ids, None, None, False):
+                path_to = _read_field(edge, "to")
+                if path_to in seen:
+                    continue
+                new_route = _copy_route_with(route, _read_field(edge, "path"))
+                if path_to == dest:
+                    return True, new_route
+                next_frontier.append({
+                    "id": path_to,
+                    "route": new_route,
+                    "seen": _copy_seen_with(seen, path_to),
+                })
+        frontier = next_frontier
+        depth += 1
+    return False, []
+
+
+def _find_journey_reverse_dijkstra(cfg, start, dest, transport, selected_ids, route_weights):
+    costs = {dest: 0}
+    searched = {}
+    open_costs = {dest: 0}
+    next_node = {}
+    via_path = {}
+
+    while len(open_costs) > 0:
+        next_id = None
+        next_cost = None
+        for candidate in open_costs:
+            candidate_cost = open_costs[candidate]
+            if next_cost == None or candidate_cost < next_cost:
+                next_id = candidate
+                next_cost = candidate_cost
+        open_costs.pop(next_id, None)
+        if next_id == start:
+            break
+        searched[next_id] = True
+
+        edges = paths.get_edge_entries_to(cfg, next_id, transport, selected_ids, None, route_weights)
+        for edge in edges:
+            path_from = edge["from"]
+            path = edge["path"]
+            new_cost = next_cost + edge["cost"]
+            if path_from in searched:
+                continue
+            if path_from in costs and new_cost >= costs[path_from]:
+                continue
+            costs[path_from] = new_cost
+            next_node[path_from] = next_id
+            via_path[path_from] = path
+            open_costs[path_from] = new_cost
+
+    if start not in costs:
+        return False, []
+    route = []
+    cursor = start
+    while cursor != dest:
+        if cursor not in via_path:
+            return False, []
+        route.append(via_path[cursor])
+        cursor = next_node[cursor]
+    return True, route
+
+
 def find_journey(config_override, from_id, to_id, horse=False, boat=False, transport_id=None, transport_ids=None):
     """Shortest route between location ids using Dijkstra over world_data.paths."""
     cfg = _cfg(config_override)
@@ -725,7 +813,18 @@ def find_journey(config_override, from_id, to_id, horse=False, boat=False, trans
 
     available_transports = _available_transport_ids(cfg, transport_ids, transport_id, horse, boat)
     transport = _primary_transport_id(cfg, transport_ids, transport_id, horse, boat)
-    selected_ids = paths.get_available_transport_match_ids(cfg, available_transports)
+    if len(available_transports) > 4:
+        selected_ids = available_transports
+    else:
+        selected_ids = paths.get_available_transport_match_ids(cfg, available_transports)
+    route_weights = paths.get_route_weights(cfg)
+    if len(selected_ids) > 4 and _read_field(route_weights, "fast_step_score") == 1:
+        return _find_journey_by_fewest_legs(cfg, start, dest, transport, selected_ids)
+    if _read_field(route_weights, "fast_step_score") == 1:
+        return _find_journey_reverse_dijkstra(cfg, start, dest, transport, selected_ids, route_weights)
+    if _read_field(route_weights, "fast_step_score") != 1 and not paths.has_edge_to(cfg, dest, transport, selected_ids):
+        return False, []
+
     costs = {start: 0}
     searched = {}
     open_costs = {start: 0}
@@ -740,12 +839,15 @@ def find_journey(config_override, from_id, to_id, horse=False, boat=False, trans
             if next_cost == None or candidate_cost < next_cost:
                 next_id = candidate
                 next_cost = candidate_cost
+        if dest in costs and next_cost >= costs[dest]:
+            break
         open_costs.pop(next_id, None)
         if next_id == dest:
             break
         searched[next_id] = True
 
-        for edge in paths.get_edge_entries_from(cfg, next_id, transport, selected_ids):
+        edges = paths.get_edge_entries_from(cfg, next_id, transport, selected_ids, None, route_weights)
+        for edge in edges:
             path_to = edge["to"]
             path = edge["path"]
             new_cost = next_cost + edge["cost"]
@@ -945,7 +1047,7 @@ def next_step(ch, config_override=None):
     return True, messages
 
 
-def get_next_step(ch=None):
+def get_next_step(ch=None, config_override=None):
     if ch == None:
         try:
             ch = character()
@@ -963,8 +1065,9 @@ def get_next_step(ch=None):
         step_index = 0
     if int(path_index) >= len(legs):
         return None
+    cfg = _cfg(config_override)
     transport = _primary_transport_id(
-        _cfg(None),
+        cfg,
         _read_field(journey, "transports"),
         _read_field(journey, "transport"),
         _read_field(journey, "horse") == True,
@@ -974,6 +1077,13 @@ def get_next_step(ch=None):
     if int(step_index) >= len(steps):
         return None
     return steps[int(step_index)]
+
+
+def next_step_text(config_override=None, ch=None, prefix="!"):
+    step = get_next_step(ch, config_override)
+    if step == None:
+        return ""
+    return paths.display_step(step, None, prefix, False)
 
 
 def step_matches_activity(step, activity="enc", biome=None):
@@ -1001,7 +1111,7 @@ def step_matches_activity(step, activity="enc", biome=None):
 
 def complete_activity_step(ch, config_override=None, activity="enc", biome=None):
     """Advance the active journey only when the next step matches this activity."""
-    step = get_next_step(ch)
+    step = get_next_step(ch, config_override)
     if not step_matches_activity(step, activity, biome):
         return False, []
     progressed, messages = next_step(ch, config_override)

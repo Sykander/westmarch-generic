@@ -73,6 +73,72 @@ True
 name: find_journey uses distance metadata instead of action step count when present
 
 cfg_fixture = {
+    "subsystems": {"travel": {"config": {"route_priority": "least_travel_time"}}},
+    "world_data": {
+        "locations": {
+            "river_town": {"name": "River Town"},
+            "oakwood": {"name": "Oakwood Forest"},
+            "crossroads": {"name": "Crossroads"},
+        },
+        "paths": [
+            {"from": "river_town", "to": "oakwood", "travel_hours": 100, "steps": [{"type": "encounter", "biome": "road"}]},
+            {"from": "river_town", "to": "crossroads", "travel_hours": 1, "steps": [{"type": "encounter", "biome": "road"}]},
+            {"from": "crossroads", "to": "oakwood", "travel_hours": 1, "steps": [{"type": "encounter", "biome": "road"}]},
+        ],
+    },
+}
+found, legs = journeys.find_journey(cfg_fixture, "river_town", "oakwood")
+return found and len(legs) == 2 and legs[0]["to"] == "crossroads"
+---
+True
+---
+name: route priority least_travel_time chooses faster route over fewer encounters
+
+cfg_fixture = {
+    "subsystems": {"travel": {"config": {"route_priority": "least_cost"}}},
+    "world_data": {
+        "locations": {
+            "river_town": {"name": "River Town"},
+            "oakwood": {"name": "Oakwood Forest"},
+            "crossroads": {"name": "Crossroads"},
+        },
+        "paths": [
+            {"from": "river_town", "to": "oakwood", "travel_hours": 1, "gold": 100, "steps": [{"type": "encounter", "biome": "road"}]},
+            {"from": "river_town", "to": "crossroads", "travel_hours": 10, "steps": [{"type": "encounter", "biome": "road"}]},
+            {"from": "crossroads", "to": "oakwood", "travel_hours": 10, "steps": [{"type": "encounter", "biome": "road"}]},
+        ],
+    },
+}
+found, legs = journeys.find_journey(cfg_fixture, "river_town", "oakwood")
+return found and len(legs) == 2 and legs[0]["to"] == "crossroads"
+---
+True
+---
+name: route priority least_cost chooses cheaper route over faster route
+
+cfg_fixture = {
+    "subsystems": {"travel": {"config": {"route_priority": "custom", "route_weights": {"encounter": 10, "proceed": 1, "travel_hours": 0, "leg": 0}}}},
+    "world_data": {
+        "locations": {
+            "river_town": {"name": "River Town"},
+            "oakwood": {"name": "Oakwood Forest"},
+            "crossroads": {"name": "Crossroads"},
+        },
+        "paths": [
+            {"from": "river_town", "to": "oakwood", "steps": [{"type": "encounter", "biome": "road"}]},
+            {"from": "river_town", "to": "crossroads", "steps": [{"type": "proceed", "description": "Follow the lane."}]},
+            {"from": "crossroads", "to": "oakwood", "steps": [{"type": "proceed", "description": "Follow the lane."}]},
+        ],
+    },
+}
+found, legs = journeys.find_journey(cfg_fixture, "river_town", "oakwood")
+return found and len(legs) == 2 and legs[0]["to"] == "crossroads"
+---
+True
+---
+name: custom route weights can prioritize step types
+
+cfg_fixture = {
     "world_data": {
         "transport": {
             "walk": {"name": "Walking", "default": True, "aliases": ["walking"]},
@@ -256,6 +322,54 @@ realms_cfg = {
         },
     },
 }
+found, legs = journeys.find_journey(realms_cfg, "waterdeep", "high_road", transport_ids=["walk", "ship"])
+return found and len(legs) == 1 and legs[0]["to"] == "high_road"
+---
+True
+---
+name: Realms graph does not let ship detour beat a nearby land route
+
+realms_cfg = {
+    "world_data": {
+        "locations_gvar_id": "fde0dbeb-d2e3-42fd-8f56-2d94bdf3ac58",
+        "paths_gvar_id": "19623e1a-3a23-49a0-9d40-986fdd26d7e7",
+        "transport": {
+            "walk": {"name": "Walking", "default": True},
+            "horse": {"name": "Horse or mount"},
+            "cart": {"name": "Cart or wagon"},
+            "boat": {"name": "Boat"},
+            "ship": {"name": "Ship"},
+            "fly": {"name": "Flying"},
+            "swim": {"name": "Swimming"},
+            "portal": {"name": "Portal"},
+            "teleportation_circle": {"name": "Teleportation circle"},
+        },
+    },
+}
+found, legs = journeys.find_journey(realms_cfg, "phandalin", "silverymoon", transport_ids=["walk", "horse", "fly", "boat", "ship", "portal"])
+return found and len(legs) <= 6 and legs[len(legs) - 1]["to"] == "silverymoon"
+---
+True
+---
+name: Realms graph handles broad transport availability from Phandalin to Silverymoon
+
+realms_cfg = {
+    "world_data": {
+        "locations_gvar_id": "fde0dbeb-d2e3-42fd-8f56-2d94bdf3ac58",
+        "paths_gvar_id": "19623e1a-3a23-49a0-9d40-986fdd26d7e7",
+        "transport": {
+            "walk": {"name": "Walking", "default": True},
+            "horse": {"name": "Horse or mount"},
+            "cart": {"name": "Cart or wagon"},
+            "boat": {"name": "Boat"},
+            "ship": {"name": "Ship"},
+            "fly": {"name": "Flying"},
+            "swim": {"name": "Swimming"},
+            "portal": {"name": "Portal"},
+            "teleportation_circle": {"name": "Teleportation circle"},
+        },
+    },
+}
 found, legs = journeys.find_journey(realms_cfg, "waterdeep", "forest_of_tethir")
 return not found and len(legs) == 0
 ---
@@ -303,6 +417,25 @@ return progressed and loc_id == "oakwood" and "Arrived" in " ".join(messages)
 True
 ---
 name: next_step arrives and updates location cvar
+
+cfg_fixture = {
+    "world_data": {
+        "locations": {
+            "river_town": {"name": "River Town"},
+            "oakwood": {"name": "Oakwood Forest"},
+        },
+        "paths": [
+            {"from": "river_town", "to": "oakwood", "steps": [{"type": "encounter", "biome": "forest"}]},
+        ],
+    },
+}
+journey = journeys.build_journey(cfg_fixture, "river_town", "oakwood", [{"from": "river_town", "to": "oakwood", "steps": [{"type": "encounter", "biome": "forest"}]}])
+journeys.set_journey(character(), journey)
+return journeys.next_step_text(cfg_fixture, character(), "!") == "Run `!enc forest`"
+---
+True
+---
+name: next_step_text formats the active journey step
 
 cfg_fixture = {
     "world_data": {

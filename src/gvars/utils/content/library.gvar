@@ -19,6 +19,7 @@ _MAX_CV_CHARS = 10000
 _POOL_TARGET = 20
 _TOPIC_SCAN_LIMIT = 60
 _QUICK_BODY_LEN = 120
+_KNOWN_QUICK_BODY_LEN = 240
 _CENSOR_WORD_LIMIT = 36
 _MAX_TOPIC_WORDS = 8
 _MAX_TOPIC_EXPANDED = 14
@@ -871,6 +872,11 @@ def read_book(book, character, args, mode, argslist=None):
         skill_comp = int(skill_comp // 2)
     blended = int(memory) + int(lang_bonus) + int(skill_comp)
     final = int(max(0, min(100, blended)))
+    if int(lang_score) >= 100:
+        floor_score = 70
+        if str(mode).lower() != "quick_read":
+            floor_score = 80
+        final = int(max(final, floor_score))
     new_attempts = prev_attempts + 1
     row["read_attempts"] = int(new_attempts)
     row["last_read_at"] = int(now)
@@ -887,6 +893,8 @@ def read_book(book, character, args, mode, argslist=None):
     body_for_censor = raw_desc
     if str(mode).lower() == "quick_read":
         cap = int(_QUICK_BODY_LEN)
+        if int(lang_score) >= 100 and not impossible:
+            cap = int(_KNOWN_QUICK_BODY_LEN)
         if len(body_for_censor) > cap:
             body_for_censor = body_for_censor[0:cap]
     if impossible:
@@ -905,8 +913,12 @@ def read_book(book, character, args, mode, argslist=None):
             msg += " The language still feels partly foreign."
         if roll_obj != None and roll_obj.passed != True:
             msg += " The arguments and allusions strain you."
-    if str(mode).lower() == "quick_read" and (not impossible) and len(body_disp) > int(_QUICK_BODY_LEN):
-        body_disp = body_disp[0:int(_QUICK_BODY_LEN)] + "..."
+    if str(mode).lower() == "quick_read" and (not impossible):
+        cap = int(_QUICK_BODY_LEN)
+        if int(lang_score) >= 100:
+            cap = int(_KNOWN_QUICK_BODY_LEN)
+        if len(body_disp) > cap:
+            body_disp = body_disp[0:cap] + "..."
     cb = {
         "name": title_disp,
         "metadata_line": _metadata_line(book, meta_c, final),

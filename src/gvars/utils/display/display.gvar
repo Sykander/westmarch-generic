@@ -15,7 +15,7 @@ DEFAULT_COLOUR = "5865F2"
 DEFAULT_CREDITS = "Powered by westmarch-generic."
 DEFAULT_THUMBNAIL = "https://sykander.github.io/westmarch-generic/westmarch-assets/brand/logo.png"
 DEFAULT_HELPFUL_TIPS = [
-    "Tip: Run !westmarch show to see which commands are enabled on this server.",
+    "Tip: Run !westmarch to review your character setup.",
     "Tip: Use !location before rolling exploration commands when travel is on.",
 ]
 

@@ -23,6 +23,7 @@ return (
     and travel["enabled"] == True
     and travel["commands"]["travel"] == True
     and travel["commands"]["location"] == True
+    and travel["config"]["route_priority"] == "least_encs"
     and travel["config"]["show_arrival_time"] == True
     and travel["config"]["show_arrival_weather"] == True
     and travel["config"]["show_shops_on_travel"] == False

@@ -86,6 +86,7 @@ test('forgotten realms starter has travel, economy, content, and media baseline'
   assert.equal(travelConfig.show_arrival_time, true);
   assert.equal(travelConfig.show_arrival_weather, true);
   assert.equal(travelConfig.show_shops_on_travel, false);
+  assert.equal(travelConfig.route_priority, 'least_encs');
 
   const economy = model.subsystems.economy as Record<string, unknown>;
   const economyCommands = economy.commands as Record<string, unknown>;
@@ -697,6 +698,8 @@ subsystems = {
         "config": {
             "location_biome_override": "yes",
             "path_biome_policy": "strict",
+            "route_priority": "fastest",
+            "route_weights": {"encounter": "low"},
         },
     },
 }
@@ -704,6 +707,8 @@ subsystems = {
 
   assert.ok(codes.includes('travel.location_biome_override'));
   assert.ok(codes.includes('travel.path_biome_policy'));
+  assert.ok(codes.includes('travel.route_priority'));
+  assert.ok(codes.includes('travel.route_weight_number'));
 });
 
 test('travel path biomes must be allowed by the origin location when policy is on', () => {

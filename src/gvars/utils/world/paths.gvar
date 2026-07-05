@@ -23,8 +23,34 @@ DEFAULT_TRANSPORT_ICONS = {
     "teleportation_circle": "🌀",
 }
 INDEXED_PATHS_FIELD = "paths_by_from"
+DEFAULT_ROUTE_PRIORITY = "least_encs"
+ROUTE_WEIGHT_PRESETS = {
+    "least_encs": {
+        "encounter": 1,
+        "travel_hours": 0.1,
+        "gold": 0.01,
+        "rations": 0.01,
+        "leg": 0.001,
+        "fast_step_score": 1,
+    },
+    "least_travel_time": {
+        "travel_hours": 1,
+        "encounter": 0.1,
+        "gold": 0.01,
+        "rations": 0.01,
+        "leg": 0.001,
+    },
+    "least_cost": {
+        "gold": 1,
+        "rations": 1,
+        "encounter": 0.1,
+        "travel_hours": 0.01,
+        "leg": 0.001,
+    },
+}
 _path_payload_cache = {}
 _paths_cache = {}
+_reverse_paths_cache = {}
 
 
 def _read_field(obj, key):
@@ -70,6 +96,8 @@ def _read_field(obj, key):
         "travel": lambda o: o.travel,
         "config": lambda o: o.config,
         "transport_icons": lambda o: o.transport_icons,
+        "route_priority": lambda o: o.route_priority,
+        "route_weights": lambda o: o.route_weights,
         "exploration": lambda o: o.exploration,
         "enc_biome_source": lambda o: o.enc_biome_source,
     }
@@ -89,6 +117,12 @@ def _cfg(config_override=None):
 
 def _world_data(cfg):
     return _read_field(cfg, "world_data")
+
+
+def _travel_config(cfg):
+    subs = _read_field(cfg, "subsystems")
+    travel = _read_field(subs, "travel")
+    return _read_field(travel, "config")
 
 
 def _coerce_path_list(raw):
@@ -172,6 +206,40 @@ def _load_paths_gvar(cfg):
     return path_list
 
 
+def _append_reverse_path(out, path):
+    dest = _normalize_id(_read_field(path, "to"))
+    if dest == None:
+        return
+    if dest not in out:
+        out[dest] = []
+    out[dest].append(path)
+
+
+def _reverse_index_from(raw):
+    out = {}
+    indexed = _indexed_path_map(raw)
+    if dicts.is_dict(indexed) and len(indexed) > 0:
+        for origin in indexed:
+            for path in _coerce_path_list(indexed[origin]):
+                _append_reverse_path(out, path)
+        return out
+    for path in _coerce_path_list(raw):
+        _append_reverse_path(out, path)
+    return out
+
+
+def _load_reverse_paths_gvar(cfg):
+    wd = _world_data(cfg)
+    gvar_id = _read_field(wd, "paths_gvar_id")
+    addr = str(gvar_id).strip() if gvar_id != None else ""
+    if addr != "" and addr in _reverse_paths_cache:
+        return _reverse_paths_cache[addr]
+    reverse = _reverse_index_from(_load_paths_gvar_payload(cfg))
+    if addr != "":
+        _reverse_paths_cache[addr] = reverse
+    return reverse
+
+
 def _indexed_paths_from(raw, origin):
     indexed = _indexed_path_map(raw)
     if not dicts.is_dict(indexed) or len(indexed) == 0:
@@ -205,6 +273,17 @@ def _path_list_from(cfg, origin):
     else:
         for path in inline:
             out.append(path)
+    return out
+
+
+def _path_list_to(cfg, dest):
+    out = []
+    external_reverse = _load_reverse_paths_gvar(cfg)
+    for path in _coerce_path_list(_read_field(external_reverse, dest)):
+        out.append(path)
+    inline_reverse = _reverse_index_from(_read_field(_world_data(cfg), "paths"))
+    for path in _coerce_path_list(_read_field(inline_reverse, dest)):
+        out.append(path)
     return out
 
 
@@ -346,9 +425,7 @@ def _transport_icons(cfg):
     icons = {}
     for key in DEFAULT_TRANSPORT_ICONS:
         icons[key] = DEFAULT_TRANSPORT_ICONS[key]
-    subs = _read_field(cfg, "subsystems")
-    travel = _read_field(subs, "travel")
-    travel_config = _read_field(travel, "config")
+    travel_config = _travel_config(cfg)
     configured = _read_field(travel_config, "transport_icons")
     if dicts.is_dict(configured):
         for key in configured:
@@ -364,6 +441,64 @@ def _transport_icon(cfg, transport_id="walk"):
     if selected in icons:
         return icons[selected]
     return ""
+
+
+def _normalize_route_priority(value):
+    text = str(value or "").strip().lower().replace("-", "_").replace(" ", "_")
+    if text in ["", "default"]:
+        return DEFAULT_ROUTE_PRIORITY
+    if text in ["least_encounter", "least_encounters", "encounters", "encs"]:
+        return "least_encs"
+    if text in ["least_time", "least_travel", "travel_time", "time"]:
+        return "least_travel_time"
+    if text in ["cost", "cheapest", "least_gold"]:
+        return "least_cost"
+    if text in ROUTE_WEIGHT_PRESETS or text == "custom":
+        return text
+    return DEFAULT_ROUTE_PRIORITY
+
+
+def _route_priority(cfg):
+    return _normalize_route_priority(_read_field(_travel_config(cfg), "route_priority"))
+
+
+def _copy_route_weights(priority):
+    source = _read_field(ROUTE_WEIGHT_PRESETS, priority)
+    if source == None:
+        source = _read_field(ROUTE_WEIGHT_PRESETS, DEFAULT_ROUTE_PRIORITY)
+    out = {}
+    for key in source:
+        out[key] = source[key]
+    return out
+
+
+def _merge_route_weights(out, custom):
+    if not dicts.is_dict(custom):
+        return out
+    for key in custom:
+        num = _as_number(custom[key])
+        if num != None:
+            out[str(key).strip().lower()] = num
+    return out
+
+
+def get_route_weights(config_override=None):
+    cfg = _cfg(config_override)
+    travel_config = _travel_config(cfg)
+    priority = _route_priority(cfg)
+    if priority == "custom":
+        weights = _copy_route_weights(DEFAULT_ROUTE_PRIORITY)
+        weights["fast_step_score"] = 0
+    else:
+        weights = _copy_route_weights(priority)
+    return _merge_route_weights(weights, _read_field(travel_config, "route_weights"))
+
+
+def _route_weight(weights, key, fallback=0):
+    try:
+        return weights[key]
+    except:
+        return fallback
 
 
 def _copy_path(path):
@@ -473,7 +608,15 @@ def get_nearby_locations(config_override, from_id, limit=None):
     return out
 
 
-def get_edge_entries_from(config_override, from_id, transport_id="walk", selected_ids=None, limit=None):
+def get_edge_entries_from(
+    config_override,
+    from_id,
+    transport_id="walk",
+    selected_ids=None,
+    limit=None,
+    route_weights=None,
+    include_cost=True,
+):
     """Route-planning edge entries from one origin with normalized dest and cost."""
     cfg = _cfg(config_override)
     origin = _normalize_id(from_id)
@@ -489,9 +632,48 @@ def get_edge_entries_from(config_override, from_id, transport_id="walk", selecte
         dest = _normalize_id(_read_field(path, "to"))
         if dest == None:
             continue
-        cost = get_path_cost(path, transport_id)
+        cost = 1
+        if include_cost:
+            cost = get_route_search_cost(path, transport_id, False, False, cfg, route_weights)
         out.append({
             "to": dest,
+            "cost": cost,
+            "path": path,
+        })
+        if max_edges != None and len(out) >= max_edges:
+            return out
+    return out
+
+
+def get_edge_entries_to(
+    config_override,
+    to_id,
+    transport_id="walk",
+    selected_ids=None,
+    limit=None,
+    route_weights=None,
+    include_cost=True,
+):
+    """Route-planning incoming edge entries ending at one destination id."""
+    cfg = _cfg(config_override)
+    dest = _normalize_id(to_id)
+    out = []
+    if dest == None:
+        return out
+    max_edges = _max_count(limit)
+    if selected_ids == None:
+        selected_ids = _transport_match_ids(cfg, transport_id)
+    for path in _path_list_to(cfg, dest):
+        if not _path_matches_transport_ids(path, selected_ids):
+            continue
+        origin = _normalize_id(_read_field(path, "from"))
+        if origin == None:
+            continue
+        cost = 1
+        if include_cost:
+            cost = get_route_search_cost(path, transport_id, False, False, cfg, route_weights)
+        out.append({
+            "from": origin,
             "cost": cost,
             "path": path,
         })
@@ -733,6 +915,184 @@ def get_path_cost(path, transport_id="walk", horse=False, boat=False):
         if item < best:
             best = item
     return best
+
+
+def get_path_step_count(path, transport_id="walk", horse=False, boat=False):
+    selected = _transport_id(transport_id, horse, boat)
+    raw = _read_field(path, "steps")
+    if raw != None:
+        return max(1, _compact_step_count(raw))
+    if selected == "horse" and _read_field(path, "horse") != None:
+        return max(1, len(_read_field(path, "horse")))
+    if selected == "boat" and _read_field(path, "boat") != None:
+        return max(1, len(_read_field(path, "boat")))
+    if _read_field(path, "encs") != None:
+        return max(1, len(_read_field(path, "encs")))
+    if len(_cost_steps(path)) > 0:
+        return 1
+    return 1
+
+
+def _fast_route_search_cost(path, transport_id="walk", horse=False, boat=False, weights=None):
+    selected = _transport_id(transport_id, horse, boat)
+    enc_weight = _route_weight(weights, "encounter")
+    cost_weight = _route_weight(weights, "cost")
+    travel_weight = _route_weight(weights, "travel_hours")
+    gold_weight = _route_weight(weights, "gold")
+    rations_weight = _route_weight(weights, "rations")
+    leg_weight = _route_weight(weights, "leg")
+
+    raw = _read_field(path, "steps")
+    step_count = 1
+    score = 0
+    if raw != None:
+        step_count = max(1, len(raw))
+        first = raw[0] if len(raw) > 0 else None
+        first_type = _read_field(first, "type")
+        if step_count == 1 and first_type == "cost":
+            score += cost_weight
+        else:
+            score += step_count * enc_weight
+    elif selected == "horse" and _read_field(path, "horse") != None:
+        step_count = max(1, len(_read_field(path, "horse")))
+        score += step_count * enc_weight
+    elif selected == "boat" and _read_field(path, "boat") != None:
+        step_count = max(1, len(_read_field(path, "boat")))
+        score += step_count * enc_weight
+    elif _read_field(path, "encs") != None:
+        step_count = max(1, len(_read_field(path, "encs")))
+        score += step_count * enc_weight
+    elif len(_cost_steps(path)) > 0:
+        score += cost_weight
+    else:
+        score += _route_weight(weights, "proceed")
+
+    travel_hours = _as_number(_read_field(path, "travel_hours"))
+    if travel_hours == None:
+        travel_steps = _as_number(_read_field(path, "travel_steps"))
+        if travel_steps != None:
+            travel_hours = travel_steps * 4
+    if travel_hours == None:
+        distance_miles = _as_number(_read_field(path, "distance_miles"))
+        if distance_miles != None:
+            travel_hours = distance_miles / 3
+    if travel_hours == None:
+        route_cost = _as_number(_read_field(path, "route_cost"))
+        if route_cost != None:
+            travel_hours = route_cost * 4
+    if travel_hours == None:
+        travel_hours = max(1, step_count) * 4
+    score += travel_hours * travel_weight
+
+    cost = _read_field(path, "cost")
+    if cost != None and dicts.is_dict(cost):
+        gold = _as_number(_read_field(cost, "gold"))
+        if gold != None:
+            score += gold * gold_weight
+        rations = _as_number(_read_field(cost, "rations"))
+        if rations != None:
+            score += rations * rations_weight
+    gold = _as_number(_read_field(path, "gold"))
+    if gold != None:
+        score += gold * gold_weight
+    rations = _as_number(_read_field(path, "rations"))
+    if rations != None:
+        score += rations * rations_weight
+    return score + leg_weight
+
+
+def get_route_search_cost(path, transport_id="walk", horse=False, boat=False, config_override=None, route_weights=None):
+    weights = route_weights
+    if weights == None:
+        weights = get_route_weights(config_override)
+    if _route_weight(weights, "fast_step_score") == 1:
+        return _fast_route_search_cost(path, transport_id, horse, boat, weights)
+    selected = _transport_id(transport_id, horse, boat)
+    score = 0
+    step_count = 0
+    raw = _read_field(path, "steps")
+    if raw != None:
+        has_description = False
+        for raw_step in raw:
+            if not dicts.is_dict(raw_step):
+                score += _route_weight(weights, "step")
+                step_count += 1
+                continue
+            step_type = _read_field(raw_step, "type")
+            biome = _read_field(raw_step, "biome")
+            if biome == None:
+                biome = _read_field(raw_step, "code")
+            gold = _as_number(_read_field(raw_step, "gold"))
+            rations = _as_number(_read_field(raw_step, "rations"))
+            if step_type == "encounter" or biome != None:
+                score += _route_weight(weights, "encounter")
+                step_count += 1
+            elif step_type == "cost" or gold != None or rations != None:
+                score += _route_weight(weights, "cost")
+                step_count += 1
+            elif step_type != None and str(step_type).strip() != "":
+                score += _route_weight(weights, str(step_type).strip().lower(), _route_weight(weights, "step"))
+                step_count += 1
+            elif _read_field(raw_step, "description") != None:
+                has_description = True
+            else:
+                score += _route_weight(weights, "step")
+                step_count += 1
+            if gold != None:
+                score += gold * _route_weight(weights, "gold")
+            if rations != None:
+                score += rations * _route_weight(weights, "rations")
+        if step_count == 0 and has_description:
+            score += _route_weight(weights, "proceed")
+            step_count = 1
+    elif selected == "horse" and _read_field(path, "horse") != None:
+        step_count = len(_read_field(path, "horse"))
+        score += step_count * _route_weight(weights, "encounter")
+    elif selected == "boat" and _read_field(path, "boat") != None:
+        step_count = len(_read_field(path, "boat"))
+        score += step_count * _route_weight(weights, "encounter")
+    elif _read_field(path, "encs") != None:
+        step_count = len(_read_field(path, "encs"))
+        score += step_count * _route_weight(weights, "encounter")
+    elif len(_cost_steps(path)) > 0:
+        step_count = 1
+        score += _route_weight(weights, "cost")
+    else:
+        step_count = 1
+        score += _route_weight(weights, "proceed")
+
+    travel_hours = _as_number(_read_field(path, "travel_hours"))
+    if travel_hours == None:
+        travel_steps = _as_number(_read_field(path, "travel_steps"))
+        if travel_steps != None:
+            travel_hours = travel_steps * 4
+    if travel_hours == None:
+        distance_miles = _as_number(_read_field(path, "distance_miles"))
+        if distance_miles != None:
+            travel_hours = distance_miles / 3
+    if travel_hours == None:
+        route_cost = _as_number(_read_field(path, "route_cost"))
+        if route_cost != None:
+            travel_hours = route_cost * 4
+    if travel_hours == None:
+        travel_hours = max(1, step_count) * 4
+    score += travel_hours * _route_weight(weights, "travel_hours")
+
+    cost = _read_field(path, "cost")
+    if cost != None and dicts.is_dict(cost):
+        gold = _as_number(_read_field(cost, "gold"))
+        if gold != None:
+            score += gold * _route_weight(weights, "gold")
+        rations = _as_number(_read_field(cost, "rations"))
+        if rations != None:
+            score += rations * _route_weight(weights, "rations")
+    gold = _as_number(_read_field(path, "gold"))
+    if gold != None:
+        score += gold * _route_weight(weights, "gold")
+    rations = _as_number(_read_field(path, "rations"))
+    if rations != None:
+        score += rations * _route_weight(weights, "rations")
+    return score + _route_weight(weights, "leg")
 
 
 def _step_parts(step, cfg=None, prefix="!", completed=False):

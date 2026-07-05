@@ -192,6 +192,9 @@ subsystems = {
         "config": {
             "location_biome_override": True,
             "path_biome_policy": "from_location",
+            "route_priority": "least_encs",
+            # Optional for route_priority="custom":
+            # "route_weights": {"encounter": 1, "travel_hours": 0.1, "gold": 0.01, "rations": 0.01},
             "show_arrival_time": True,
             "show_arrival_weather": True,
             "show_shops_on_travel": True,
@@ -231,6 +234,8 @@ world_data = {
 Travel combines the default transport with any transport args on `!travel <destination> ...`. Players can set persistent availability with a JSON cvar, for example `!cvar westmarch_travel_transport ["fly", "walk", "swim"]`.
 
 Use `distance_miles` or `travel_hours` for route length. Keep `steps` for meaningful things players resolve, such as encounters, costs, hazards, or special activities; `proceed` is mainly an edge-case fallback.
+
+Route selection is controlled by `subsystems.travel.config.route_priority`: `least_encs` (default), `least_travel_time`, `least_cost`, or `custom`. For `custom`, set numeric `route_weights` keys such as `encounter`, `proceed`, `travel_hours`, `gold`, `rations`, and `leg`.
 
 Large maps can be split into JSON gvars and referenced from the config:
 

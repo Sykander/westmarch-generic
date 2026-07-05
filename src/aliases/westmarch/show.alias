@@ -357,15 +357,18 @@ def _enabled_commands_summary(cfg):
             if _is_dict(cfg_block):
                 override = _read_field(cfg_block, "location_biome_override")
                 path_policy = _read_field(cfg_block, "path_biome_policy")
+                route_priority = _read_field(cfg_block, "route_priority")
                 arrival_time = _read_field(cfg_block, "show_arrival_time")
                 arrival_weather = _read_field(cfg_block, "show_arrival_weather")
                 show_shops = _read_field(cfg_block, "show_shops_on_travel")
-                if override != None or path_policy != None or arrival_time != None or arrival_weather != None or show_shops != None:
+                if override != None or path_policy != None or route_priority != None or arrival_time != None or arrival_weather != None or show_shops != None:
                     lines.append("  config:")
                     if override != None:
                         lines.append(f"    location_biome_override: {_bool_text(override == True)}")
                     if path_policy != None:
                         lines.append(f"    path_biome_policy: {path_policy}")
+                    if route_priority != None:
+                        lines.append(f"    route_priority: {route_priority}")
                     if arrival_time != None:
                         lines.append(f"    show_arrival_time: {_bool_text(arrival_time == True)}")
                     if arrival_weather != None:

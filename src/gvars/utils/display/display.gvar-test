@@ -72,6 +72,21 @@ re:-thumb https://sykander.github.io/westmarch-generic/westmarch-assets/brand/lo
 name: default branding uses deployed logo thumbnail
 
 get_embed = display.get_display()
+return "westmarch show" not in get_embed(desc="hello")
+---
+True
+---
+name: default helpful footer does not suggest admin-only show command
+vars:
+  svars:
+    westmarch_config: "22228888-8888-8888-8888-888888888888"
+  gvars:
+    22228888-8888-8888-8888-888888888888: |
+      policies = {
+          "display": {"footer_behaviour": "helpful_tips"},
+      }
+
+get_embed = display.get_display()
 return get_embed(desc="hello")
 ---
 re:My Test World

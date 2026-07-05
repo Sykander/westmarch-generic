@@ -42,6 +42,7 @@ subsystems = {
         "enabled": True,
         "commands": {"travel": True, "location": True, "time": True, "weather": True},
         "config": {
+            "route_priority": "least_encs",
             "show_arrival_time": True,
             "show_arrival_weather": True,
             "show_shops_on_travel": True,
@@ -54,6 +55,10 @@ Requires `world_data.default_location`, `world_data.locations`, and
 `world_data.paths` for route planning. `world_data.transport` is optional for
 old configs, but recommended for named travel modes. Paths may use the generic
 shape:
+
+`route_priority` controls route scoring: `least_encs` (default),
+`least_travel_time`, `least_cost`, or `custom` with numeric `route_weights`
+such as `encounter`, `proceed`, `travel_hours`, `gold`, `rations`, and `leg`.
 
 ```py
 {

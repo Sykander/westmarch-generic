@@ -1,0 +1,183 @@
+!travel help
+---
+re:Optional route flags[\s\S]*horse[\s\S]*ship[\s\S]*portal[\s\S]*westmarch_travel_transport
+---
+name: Forgotten Realms travel help lists transport flags
+vars:
+  svars:
+    westmarch_config: "aaaa2f14-2014-2014-2014-000000000001"
+  gvars:
+    aaaa2f14-2014-2014-2014-000000000001: |
+      using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+      rules_version = "2014"
+      display = {"name": "Forgotten Realms", "footer": "Forgotten Realms"}
+      policies = {
+          "display": {"footer_behaviour": "string"},
+          "content": {"enforce_library_cooldowns": False, "enforce_read_cooldowns": False},
+      }
+      subsystems = {
+          "travel": {"enabled": True, "commands": {"travel": True, "location": True, "time": True, "weather": True}, "config": {"show_arrival_time": True, "show_arrival_weather": True, "show_shops_on_travel": False}},
+          "content": {"enabled": True, "commands": {"library": True, "read": True}, "config": {"library_topic_source": "balanced", "allowed_topics": []}},
+          "misc": {"enabled": True, "commands": {"quest": True, "recipe": True}},
+          "crafting": {"enabled": True, "commands": {"craft": True, "brew": True, "enchant": True, "scribe": True}, "config": {"catalogues": {"recipes": "engine:configs/recipes/recipes_list"}}},
+      }
+      world_data = {
+          "default_location": "waterdeep",
+          "locations_gvar_id": env.gvars.forgotten_realms_2014_locations,
+          "paths_gvar_id": env.gvars.forgotten_realms_2014_paths,
+          "book_gvar_ids": [env.gvars.forgotten_realms_a, env.gvars.forgotten_realms_b, env.gvars.forgotten_realms_c, env.gvars.forgotten_realms_d, env.gvars.forgotten_realms_e, env.gvars.forgotten_realms_f, env.gvars.forgotten_realms_g, env.gvars.forgotten_realms_h, env.gvars.forgotten_realms_i, env.gvars.forgotten_realms_j, env.gvars.forgotten_realms_k, env.gvars.forgotten_realms_l, env.gvars.forgotten_realms_m, env.gvars.forgotten_realms_n, env.gvars.forgotten_realms_o, env.gvars.forgotten_realms_pq, env.gvars.forgotten_realms_r, env.gvars.forgotten_realms_s, env.gvars.forgotten_realms_t, env.gvars.forgotten_realms_v, env.gvars.forgotten_realms_w],
+          "transport": {
+              "walk": {"name": "Walking", "default": True, "aliases": ["walking", "foot", "on_foot"]},
+              "horse": {"name": "Horse or mount", "aliases": ["riding_horse", "warhorse", "pony"]},
+              "cart": {"name": "Cart or wagon", "aliases": ["wagon", "carriage"]},
+              "boat": {"name": "Boat", "aliases": ["rowboat", "keelboat"]},
+              "ship": {"name": "Ship", "aliases": ["passage", "sailing_ship"]},
+              "fly": {"name": "Flying", "aliases": ["flying", "flight"]},
+              "swim": {"name": "Swimming", "aliases": ["swimming"]},
+              "portal": {"name": "Portal", "aliases": ["gate"]},
+              "teleportation_circle": {"name": "Teleportation circle", "aliases": ["teleport", "circle"]},
+          },
+          "calendars": {"primary": {"id": "primary", "name": "Calendar of Harptos", "epoch_unix": 0, "tick_rate": 0, "seconds_per_day": 86400, "start_year": 1492, "months": [{"name": "Hammer", "days": 30}], "weekdays": ["First-day"], "display_format": "{weekday}, {day} {month} {year} DR {hour}:{minute}"}},
+          "weather": {"by_area": {"coast": {"default": ["Salt wind rolls in from the Sea of Swords."]}, "plains": {"default": ["Open wind combs the grasslands."]}}},
+      }
+
+!travel "High Road" ship
+---
+re:Waterdeep[\s\S]*High Road(?![\s\S]*Neverwinter)
+---
+name: Forgotten Realms ship transport does not detour to a distant port for nearby land routes
+vars:
+  svars:
+    westmarch_config: "aaaa2f14-2014-2014-2014-000000000002"
+  gvars:
+    aaaa2f14-2014-2014-2014-000000000002: |
+      using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+      rules_version = "2014"
+      display = {"name": "Forgotten Realms", "footer": "Forgotten Realms"}
+      policies = {"display": {"footer_behaviour": "string"}}
+      subsystems = {"travel": {"enabled": True, "commands": {"travel": True, "location": True, "time": True, "weather": True}, "config": {"show_shops_on_travel": False}}}
+      world_data = {
+          "default_location": "waterdeep",
+          "locations_gvar_id": env.gvars.forgotten_realms_2014_locations,
+          "paths_gvar_id": env.gvars.forgotten_realms_2014_paths,
+          "transport": {
+              "walk": {"name": "Walking", "default": True},
+              "horse": {"name": "Horse or mount"},
+              "boat": {"name": "Boat"},
+              "ship": {"name": "Ship"},
+              "fly": {"name": "Flying"},
+              "portal": {"name": "Portal"},
+              "teleportation_circle": {"name": "Teleportation circle"},
+          },
+      }
+
+!travel Silverymoon horse fly walk ship boat portal
+---
+re:Triboar[\s\S]*Silverymoon
+---
+name: Forgotten Realms travel handles broad transport list from Triboar to Silverymoon
+vars:
+  cvars:
+    wg_location: "triboar"
+  svars:
+    westmarch_config: "aaaa2f14-2014-2014-2014-000000000003"
+  gvars:
+    aaaa2f14-2014-2014-2014-000000000003: |
+      using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+      rules_version = "2014"
+      display = {"name": "Forgotten Realms", "footer": "Forgotten Realms"}
+      policies = {"display": {"footer_behaviour": "string"}}
+      subsystems = {"travel": {"enabled": True, "commands": {"travel": True, "location": True}, "config": {"show_shops_on_travel": False}}}
+      world_data = {
+          "default_location": "waterdeep",
+          "locations_gvar_id": env.gvars.forgotten_realms_2014_locations,
+          "paths_gvar_id": env.gvars.forgotten_realms_2014_paths,
+          "transport": {
+              "walk": {"name": "Walking", "default": True},
+              "horse": {"name": "Horse or mount"},
+              "boat": {"name": "Boat"},
+              "ship": {"name": "Ship"},
+              "fly": {"name": "Flying"},
+              "portal": {"name": "Portal"},
+              "teleportation_circle": {"name": "Teleportation circle"},
+          },
+      }
+
+!travel Silverymoon horse fly walk ship boat portal
+---
+re:Phandalin[\s\S]*Silverymoon
+---
+name: Forgotten Realms travel handles broad transport list from Phandalin to Silverymoon
+vars:
+  cvars:
+    wg_location: "phandalin"
+  svars:
+    westmarch_config: "aaaa2f14-2014-2014-2014-000000000004"
+  gvars:
+    aaaa2f14-2014-2014-2014-000000000004: |
+      using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+      rules_version = "2014"
+      display = {"name": "Forgotten Realms", "footer": "Forgotten Realms"}
+      policies = {"display": {"footer_behaviour": "string"}}
+      subsystems = {"travel": {"enabled": True, "commands": {"travel": True, "location": True}, "config": {"show_shops_on_travel": False}}}
+      world_data = {
+          "default_location": "waterdeep",
+          "locations_gvar_id": env.gvars.forgotten_realms_2014_locations,
+          "paths_gvar_id": env.gvars.forgotten_realms_2014_paths,
+          "transport": {
+              "walk": {"name": "Walking", "default": True},
+              "horse": {"name": "Horse or mount"},
+              "boat": {"name": "Boat"},
+              "ship": {"name": "Ship"},
+              "fly": {"name": "Flying"},
+              "portal": {"name": "Portal"},
+              "teleportation_circle": {"name": "Teleportation circle"},
+          },
+      }
+
+!location
+---
+re:Waterdeep[\s\S]*Activities
+---
+name: Forgotten Realms location command loads starter locations
+vars:
+  svars:
+    westmarch_config: "aaaa2f14-2014-2014-2014-000000000005"
+  gvars:
+    aaaa2f14-2014-2014-2014-000000000005: |
+      using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+      display = {"name": "Forgotten Realms", "footer": "Forgotten Realms"}
+      policies = {"display": {"footer_behaviour": "string"}}
+      subsystems = {"travel": {"enabled": True, "commands": {"travel": True, "location": True}, "config": {"show_shops_on_travel": False}}}
+      world_data = {"default_location": "waterdeep", "locations_gvar_id": env.gvars.forgotten_realms_2014_locations, "paths_gvar_id": env.gvars.forgotten_realms_2014_paths}
+
+!time
+---
+re:Calendar of Harptos[\s\S]*1492 DR
+---
+name: Forgotten Realms time command loads starter calendar
+vars:
+  svars:
+    westmarch_config: "aaaa2f14-2014-2014-2014-000000000006"
+  gvars:
+    aaaa2f14-2014-2014-2014-000000000006: |
+      display = {"name": "Forgotten Realms", "footer": "Forgotten Realms"}
+      policies = {"display": {"footer_behaviour": "string"}}
+      subsystems = {"travel": {"enabled": True, "commands": {"time": True}}}
+      world_data = {"calendars": {"primary": {"id": "primary", "name": "Calendar of Harptos", "epoch_unix": 0, "tick_rate": 0, "seconds_per_day": 86400, "start_year": 1492, "months": [{"name": "Hammer", "days": 30}], "weekdays": ["First-day"], "display_format": "{weekday}, {day} {month} {year} DR {hour}:{minute}"}}}
+
+!weather
+---
+re:coast[\s\S]*Sea of Swords
+---
+name: Forgotten Realms weather command resolves Waterdeep coast weather
+vars:
+  svars:
+    westmarch_config: "aaaa2f14-2014-2014-2014-000000000007"
+  gvars:
+    aaaa2f14-2014-2014-2014-000000000007: |
+      using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+      display = {"name": "Forgotten Realms", "footer": "Forgotten Realms"}
+      policies = {"display": {"footer_behaviour": "string"}}
+      subsystems = {"travel": {"enabled": True, "commands": {"weather": True}}}
+      world_data = {"default_location": "waterdeep", "locations_gvar_id": env.gvars.forgotten_realms_2014_locations, "weather": {"by_area": {"coast": {"default": ["Salt wind rolls in from the Sea of Swords."]}}}}

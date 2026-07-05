@@ -1547,6 +1547,8 @@ Travel reads shared **`world_data.default_location`**, the configured location s
 |-----|------|---------|-------|
 | `location_biome_override` | `bool` | `True` | In location-inferred exploration mode, an exact registered biome code as the first arg overrides the location biome. |
 | `path_biome_policy` | `"from_location"` \| `"off"` | `"from_location"` | When enabled, path encounter step biomes should be listed on the path's origin location for that activity. |
+| `route_priority` | `"least_encs"` \| `"least_travel_time"` \| `"least_cost"` \| `"custom"` | `"least_encs"` | Controls route scoring. Default routing favours fewer player-facing journey steps/encounters. |
+| `route_weights` | `{ key: number }` | preset weights | Optional custom route weights for dimensions or step types such as `encounter`, `proceed`, `travel_hours`, `gold`, `rations`, and `leg`. Used with `route_priority: "custom"` and may override preset weights. |
 | `show_arrival_time` | `bool` | `False` | When `travel.commands.time` is enabled, append the formatted world time after `!travel next` arrives. |
 | `show_arrival_weather` | `bool` | `False` | When `travel.commands.weather` is enabled, append the resolved weather after `!travel next` arrives. |
 | `show_shops_on_travel` | `bool` | `True` | Include local shop price tables in bare `!travel` / arrival output. `!location` still shows shops when the location supports trade. |

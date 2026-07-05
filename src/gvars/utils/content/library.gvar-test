@@ -120,3 +120,63 @@ return result["impossible"] == True and len(desc) <= 123
 True
 ---
 name: quick library read censors long undeciphered text under statement budget
+
+long_body = " ".join([
+    "Elven",
+    "silverwork",
+    "notes",
+    "describe",
+    "warded",
+    "bridges",
+    "moonlit",
+    "archives",
+    "patient",
+    "copyists",
+    "careful",
+    "ink",
+    "ritual",
+    "measurements",
+    "and",
+    "older",
+    "songs",
+    "carried",
+    "between",
+    "towers",
+    "by",
+    "scholars",
+    "who",
+    "know",
+    "which",
+    "names",
+    "must",
+    "never",
+    "be",
+    "spoken",
+    "under",
+    "open",
+    "stars",
+    "without",
+    "permission",
+    "from",
+    "the",
+    "wardens",
+])
+book = {
+    "name": "Moonbridge Marginalia",
+    "author": "Aerendyl",
+    "written": "1368 DR",
+    "rarity": "common",
+    "language": "Elvish",
+    "description": long_body,
+    "tags": ["elves", "arcane"],
+}
+result = library.read_book(book, character(), argparse(""), "quick_read", [])
+desc = result["comprehended_book"]["description"]
+return result["language_comprehension_score"] == 100 and result["comprehension_score"] >= 70 and len(desc) > 120
+---
+True
+---
+name: quick library read gives known-language readers a useful excerpt
+character:
+  cvars:
+    languages: "Elvish"

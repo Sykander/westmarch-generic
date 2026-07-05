@@ -54,6 +54,7 @@ const SUBSYSTEMS = Object.keys(DEFAULT_SUBSYSTEM_COMMANDS);
 const VALID_ENC_BIOME = ['auto', 'argument', 'location'];
 const VALID_HUNT_LOCATION_POLICY = ['off', 'location', 'monsters'];
 const VALID_PATH_BIOME_POLICY = ['from_location', 'off'];
+const VALID_ROUTE_PRIORITY = ['least_encs', 'least_travel_time', 'least_cost', 'custom'];
 const VALID_JOB_LOCATION_POLICY = ['off', 'warn', 'check'];
 const VALID_RULES_VERSION = ['2014', '2024'];
 const VALID_FOOTER = ['helpful_tips', 'string', 'help', 'credits', 'balanced'];
@@ -529,6 +530,7 @@ function createDefaultSubsystems(): Record<string, AnyRecord> {
       config: {
         location_biome_override: true,
         path_biome_policy: 'from_location',
+        route_priority: 'least_encs',
         show_arrival_time: false,
         show_arrival_weather: false,
         show_shops_on_travel: true,
@@ -2276,6 +2278,52 @@ function validateTravel(model: ConfigModel, issues: ConfigIssue[]) {
         '`path_biome_policy` must be from_location or off.',
       ),
     );
+  }
+  const routePriority = String(travelConfig.route_priority ?? 'least_encs')
+    .trim()
+    .toLowerCase();
+  if (!VALID_ROUTE_PRIORITY.includes(routePriority)) {
+    issues.push(
+      issue(
+        'error',
+        'travel.route_priority',
+        'Subsystems',
+        'subsystems.travel.config.route_priority',
+        'Invalid route priority',
+        '`route_priority` must be least_encs, least_travel_time, least_cost, or custom.',
+      ),
+    );
+  }
+  const routeWeights = travelConfig.route_weights;
+  if (routeWeights != null) {
+    if (!isPlainRecord(routeWeights)) {
+      issues.push(
+        issue(
+          'error',
+          'travel.route_weights',
+          'Subsystems',
+          'subsystems.travel.config.route_weights',
+          'Route weights must be a mapping',
+          '`route_weights` must map route dimensions or step types to numbers.',
+        ),
+      );
+    }
+    if (isPlainRecord(routeWeights)) {
+      for (const key of Object.keys(routeWeights)) {
+        if (typeof routeWeights[key] !== 'number' || !Number.isFinite(routeWeights[key])) {
+          issues.push(
+            issue(
+              'error',
+              'travel.route_weight_number',
+              'Subsystems',
+              `subsystems.travel.config.route_weights.${key}`,
+              'Route weight must be numeric',
+              'Each custom route weight must be a finite number.',
+            ),
+          );
+        }
+      }
+    }
   }
   for (const key of ['show_arrival_time', 'show_arrival_weather', 'show_shops_on_travel']) {
     const value = travelConfig[key];
