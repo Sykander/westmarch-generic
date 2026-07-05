@@ -11,7 +11,7 @@ rules_version = "2014"
 
 display = {
     "name": "Forgotten Realms",
-    "description": "A Faerun campaign starter for travel, exploration, trade, and downtime across the Sword Coast and the North.",
+    "description": "A classic high-fantasy setting on Toril, centered on Faerun's kingdoms, city-states, ancient magic, active gods, and perilous frontiers.",
     "footer": "Forgotten Realms",
     "colour": "#2F6B4F",
 }

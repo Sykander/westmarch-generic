@@ -1,4 +1,11 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type HTMLInputTypeAttribute,
+  type InputHTMLAttributes,
+  type ReactNode,
+} from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { FOOTER_BEHAVIOUR_HELP, FOOTER_BEHAVIOUR_OPTIONS } from '../domain/display';
 import { HelpDialog } from './HelpDialog';
@@ -29,11 +36,21 @@ export function TextField({
   value,
   onChange,
   help,
+  placeholder,
+  inputType = 'text',
+  inputMode,
+  min,
+  step,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   help?: string;
+  placeholder?: string;
+  inputType?: HTMLInputTypeAttribute;
+  inputMode?: InputHTMLAttributes<HTMLInputElement>['inputMode'];
+  min?: InputHTMLAttributes<HTMLInputElement>['min'];
+  step?: InputHTMLAttributes<HTMLInputElement>['step'];
 }) {
   return (
     <label className="field">
@@ -41,7 +58,15 @@ export function TextField({
         {label}
         {help ? <HelpTip label={`${label} help`}>{help}</HelpTip> : null}
       </span>
-      <input value={value} onChange={(event) => onChange(event.target.value)} />
+      <input
+        value={value}
+        type={inputType}
+        inputMode={inputMode}
+        min={min}
+        step={step}
+        placeholder={placeholder}
+        onChange={(event) => onChange(event.target.value)}
+      />
     </label>
   );
 }

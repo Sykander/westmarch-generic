@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import westmarchPackage from '../../../package.json';
 import {
@@ -1140,6 +1140,8 @@ function DisplayView({
           label="Logo / thumbnail"
           value={String(config.display.logo ?? '')}
           onChange={(value) => updateConfig('display.logo', value || undefined)}
+          inputType="url"
+          placeholder="https://example.com/westmarch-logo.png"
           help="Overrides the default westmarch-generic GitHub Pages logo used as command embed thumbnails."
         />
         <SelectField
@@ -1212,27 +1214,36 @@ function SubsystemsView({
             ? definition.commands.map((command) => [command, commands[command]] as const)
             : Object.entries(commands);
           const isPlanned = !definition.implemented;
+          const dependencyCount = definition.dependencies?.length ?? 0;
 
           return (
             <div className={isPlanned ? 'subsystem-row planned' : 'subsystem-row'} key={key}>
               <div className="subsystem-head">
-                {isPlanned ? (
-                  <div className="switch-line">
-                    <input type="checkbox" checked={record.enabled === true} disabled readOnly />
-                    <span>{definition.label}</span>
-                  </div>
-                ) : (
-                  <label className="switch-line">
-                    <input
-                      type="checkbox"
-                      checked={record.enabled === true}
-                      onChange={(event) =>
-                        updateConfig(`subsystems.${key}.enabled`, event.target.checked)
-                      }
-                    />
-                    <span>{definition.label}</span>
-                  </label>
-                )}
+                <div className="subsystem-title-line">
+                  {isPlanned ? (
+                    <div className="switch-line">
+                      <input type="checkbox" checked={record.enabled === true} disabled readOnly />
+                      <span>{definition.label}</span>
+                    </div>
+                  ) : (
+                    <label className="switch-line">
+                      <input
+                        type="checkbox"
+                        checked={record.enabled === true}
+                        onChange={(event) =>
+                          updateConfig(`subsystems.${key}.enabled`, event.target.checked)
+                        }
+                      />
+                      <span>{definition.label}</span>
+                    </label>
+                  )}
+                  <SubsystemInfoDialog subsystem={definition} />
+                  {dependencyCount > 0 ? (
+                    <span className="quiet compact-note">
+                      {dependencyCount} integration{dependencyCount === 1 ? '' : 's'}
+                    </span>
+                  ) : null}
+                </div>
                 {isPlanned ? (
                   <button
                     type="button"
@@ -1244,32 +1255,6 @@ function SubsystemsView({
                 ) : null}
               </div>
               {isPlanned ? <p className="planned-summary">{definition.detail}</p> : null}
-              {definition.dependencies?.length ? (
-                <div className="dependency-list" aria-label={`${definition.label} dependencies`}>
-                  <span className="dependency-intro">
-                    This subsystem integrates with these other workshops. They are optional.
-                  </span>
-                  {definition.dependencies.map((dependency) => (
-                    <span
-                      className={`dependency-pill ${dependency.level}`}
-                      key={`${definition.key}:${dependency.label}`}
-                    >
-                      <strong>
-                        Integrates with{' '}
-                        {dependency.url ? (
-                          <a href={dependency.url} target="_blank" rel="noreferrer">
-                            {dependency.label}
-                            <ExternalLink size={12} aria-hidden="true" />
-                          </a>
-                        ) : (
-                          dependency.label
-                        )}
-                      </strong>
-                      {dependency.detail}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
               <div className="toggle-grid">
                 {commandEntries.map(([command, value]) => {
                   const checked = value === true;
@@ -1359,6 +1344,61 @@ function SubsystemsView({
         />
       ) : null}
     </section>
+  );
+}
+
+function SubsystemInfoDialog({ subsystem }: { subsystem: SubsystemDefinition }) {
+  return (
+    <HelpDialog
+      label={`${subsystem.label} subsystem details`}
+      title={`${subsystem.label} subsystem`}
+      description={subsystem.detail}
+    >
+      <div className="subsystem-info-grid">
+        <section className="subsystem-info-section">
+          <h3>Commands</h3>
+          {subsystem.commands.length ? (
+            <div className="toggle-grid">
+              {subsystem.commands.map((command) => (
+                <span className="check-chip disabled" key={command}>
+                  {command}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p>No command toggles are defined for this subsystem.</p>
+          )}
+        </section>
+        <section className="subsystem-info-section">
+          <h3>Integrations</h3>
+          {subsystem.dependencies?.length ? (
+            <div className="integration-list">
+              {subsystem.dependencies.map((dependency) => (
+                <article
+                  className={`integration-card ${dependency.level}`}
+                  key={`${subsystem.key}:${dependency.label}`}
+                >
+                  <strong>
+                    {dependency.url ? (
+                      <a href={dependency.url} target="_blank" rel="noreferrer">
+                        {dependency.label}
+                        <ExternalLink size={13} aria-hidden="true" />
+                      </a>
+                    ) : (
+                      dependency.label
+                    )}
+                  </strong>
+                  <span>{dependency.level}</span>
+                  <p>{dependency.detail}</p>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p>No optional workshop integrations are listed for this subsystem.</p>
+          )}
+        </section>
+      </div>
+    </HelpDialog>
   );
 }
 
@@ -1886,6 +1926,10 @@ function SubsystemAdvancedEditor({
                     numberOrUndefined(value),
                   )
                 }
+                inputType="number"
+                inputMode="numeric"
+                min={0}
+                step={1}
                 help="Optional cooldown in seconds."
                 key={command}
               />
@@ -2740,13 +2784,14 @@ function EconomyDataEditor({
   }
 
   return (
-    <section className="field span-2 guided-editor">
-      <span>
-        Economy data
+    <WorldEditorSection
+      title="Economy data"
+      actions={
         <HelpTip label="Economy data help">
           Optional wallet currencies and shops for economy commands.
         </HelpTip>
-      </span>
+      }
+    >
       <div className="collection-editor-head">
         <h3>Currencies</h3>
         <div className="inline-add-row">
@@ -2808,7 +2853,7 @@ function EconomyDataEditor({
           <p className="collection-empty">No shops configured.</p>
         ) : null}
       </div>
-    </section>
+    </WorldEditorSection>
   );
 }
 
@@ -2824,7 +2869,7 @@ function CurrencyEditor({
   onRemove: () => void;
 }) {
   return (
-    <details className="collection-item" open>
+    <details className="collection-item">
       <summary className="collection-item-head">
         <div>
           <strong>{String(currency.name ?? titleFromSlug(id))}</strong>
@@ -2906,7 +2951,7 @@ function ShopEditor({
   }
 
   return (
-    <details className="collection-item" open>
+    <details className="collection-item">
       <summary className="collection-item-head">
         <div>
           <strong>{String(shop.name ?? titleFromSlug(id))}</strong>
@@ -3448,6 +3493,36 @@ function WorldView({
   );
 }
 
+function WorldEditorSection({
+  title,
+  actions,
+  children,
+}: {
+  title: ReactNode;
+  actions?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <details className="world-editor world-editor-section">
+      <summary className="world-editor-summary">
+        <div className="collection-editor-head">
+          <h3>{title}</h3>
+          {actions ? (
+            <div
+              className="world-editor-actions"
+              onClick={(event) => event.stopPropagation()}
+              onKeyDown={(event) => event.stopPropagation()}
+            >
+              {actions}
+            </div>
+          ) : null}
+        </div>
+      </summary>
+      {children}
+    </details>
+  );
+}
+
 const EXPLORATION_LOCATION_COMMANDS = ['enc', 'forage', 'fish', 'mine', 'lumber', 'hunt', 'loot'];
 const SERVICE_LOCATION_COMMANDS = [
   'job',
@@ -3543,9 +3618,9 @@ function LocationEditor({
   }
 
   return (
-    <section className="world-editor">
-      <div className="collection-editor-head">
-        <h3>Locations</h3>
+    <WorldEditorSection
+      title="Locations"
+      actions={
         <div className="inline-add">
           <input
             value={newLocationId}
@@ -3558,9 +3633,10 @@ function LocationEditor({
             Add Location
           </button>
         </div>
-      </div>
+      }
+    >
       <div className="collection-list">
-        {Object.entries(locations).map(([id, value], index) => {
+        {Object.entries(locations).map(([id, value]) => {
           const isInline = hasRecordKey(inlineLocations, id);
           const isExternal = hasRecordKey(externalLocations, id);
           const readOnly = isExternal && !isInline && externalReadOnly;
@@ -3573,7 +3649,7 @@ function LocationEditor({
               : 'External gvar';
 
           return (
-            <details className="collection-item" open={index === 0} key={id}>
+            <details className="collection-item" key={id}>
               <summary className="collection-item-head">
                 <div>
                   <strong>{String(asRecord(value).name ?? titleFromSlug(id))}</strong>
@@ -3629,7 +3705,7 @@ function LocationEditor({
           </p>
         ) : null}
       </div>
-    </section>
+    </WorldEditorSection>
   );
 }
 
@@ -4148,9 +4224,9 @@ function CalendarEditor({
   }
 
   return (
-    <section className="world-editor">
-      <div className="collection-editor-head">
-        <h3>Calendars</h3>
+    <WorldEditorSection
+      title="Calendars"
+      actions={
         <div className="inline-add">
           <input
             value={newCalendarId}
@@ -4163,10 +4239,11 @@ function CalendarEditor({
             Add Calendar
           </button>
         </div>
-      </div>
+      }
+    >
       <div className="collection-list">
-        {Object.entries(calendars).map(([id, value], index) => (
-          <details className="collection-item" open={index === 0} key={id}>
+        {Object.entries(calendars).map(([id, value]) => (
+          <details className="collection-item" key={id}>
             <summary className="collection-item-head">
               <div>
                 <strong>{String(asRecord(value).name ?? titleFromSlug(id))}</strong>
@@ -4198,7 +4275,7 @@ function CalendarEditor({
           </p>
         ) : null}
       </div>
-    </section>
+    </WorldEditorSection>
   );
 }
 
@@ -4339,9 +4416,9 @@ function WeatherAreaEditor({
   }
 
   return (
-    <section className="world-editor">
-      <div className="collection-editor-head">
-        <h3>Weather Areas</h3>
+    <WorldEditorSection
+      title="Weather Areas"
+      actions={
         <div className="inline-add">
           <input
             value={newAreaId}
@@ -4354,12 +4431,13 @@ function WeatherAreaEditor({
             Add Area
           </button>
         </div>
-      </div>
+      }
+    >
       <div className="collection-list">
-        {Object.entries(areas).map(([id, value], index) => {
+        {Object.entries(areas).map(([id, value]) => {
           const area = asRecord(value);
           return (
-            <details className="collection-item" open={index === 0} key={id}>
+            <details className="collection-item" key={id}>
               <summary className="collection-item-head">
                 <div>
                   <strong>{String(area.name ?? titleFromSlug(id))}</strong>
@@ -4388,7 +4466,7 @@ function WeatherAreaEditor({
           </p>
         ) : null}
       </div>
-    </section>
+    </WorldEditorSection>
   );
 }
 
@@ -4494,9 +4572,9 @@ function TransportEditor({
   }
 
   return (
-    <section className="world-editor">
-      <div className="collection-editor-head">
-        <h3>Transport</h3>
+    <WorldEditorSection
+      title="Transport"
+      actions={
         <div className="inline-add">
           <input
             value={newTransportId}
@@ -4509,12 +4587,13 @@ function TransportEditor({
             Add Transport
           </button>
         </div>
-      </div>
+      }
+    >
       <div className="collection-list">
-        {Object.entries(transport).map(([id, value], index) => {
+        {Object.entries(transport).map(([id, value]) => {
           const entry = asRecord(value);
           return (
-            <details className="collection-item" open={index === 0} key={id}>
+            <details className="collection-item" key={id}>
               <summary className="collection-item-head">
                 <div>
                   <strong>{String(entry.name ?? titleFromSlug(id))}</strong>
@@ -4547,7 +4626,7 @@ function TransportEditor({
           </p>
         ) : null}
       </div>
-    </section>
+    </WorldEditorSection>
   );
 }
 
@@ -4689,14 +4768,15 @@ function PathBuilder({
   }
 
   return (
-    <section className="world-editor">
-      <div className="collection-editor-head">
-        <h3>Paths</h3>
+    <WorldEditorSection
+      title="Paths"
+      actions={
         <button type="button" onClick={addPath}>
           <Save size={16} aria-hidden="true" />
           Add Path
         </button>
-      </div>
+      }
+    >
       <div className="collection-list">
         {pathEntries.map((entry, index) => {
           const record = asRecord(entry.path);
@@ -4708,11 +4788,7 @@ function PathBuilder({
                 : 'External gvar'
               : 'Inline';
           return (
-            <details
-              className="collection-item"
-              open={index === 0}
-              key={`${entry.source}:${entry.index}`}
-            >
+            <details className="collection-item" key={`${entry.source}:${entry.index}`}>
               <summary className="collection-item-head">
                 <div>
                   <strong>
@@ -4760,7 +4836,7 @@ function PathBuilder({
           <p className="collection-empty">No paths yet. Add one to build travel routes.</p>
         ) : null}
       </div>
-    </section>
+    </WorldEditorSection>
   );
 }
 
