@@ -48,7 +48,35 @@ def get_display(command_override=None):
     """
 ```
 
-**One public function.** Merge, footer, and command resolution are private helpers — not part of the alias contract.
+The module also exposes the **Discord colour formatter** helpers for text that
+should be shown inside Discord's fenced **`ansi`** codeblocks:
+
+```py
+def ansi_span(text, style=None):
+    """Return text wrapped in Discord-supported ANSI SGR codes."""
+
+def discord_colour(text, style=None):
+    """Alias for ansi_span, using the project spelling."""
+
+def ansi_codeblock(lines):
+    """Wrap preformatted/styled lines in an ansi fence."""
+
+def discord_colour_block(lines):
+    """Alias for ansi_codeblock, using the project spelling."""
+
+def ansi_summary_block(lines):
+    """Highlight YAML-like key/value summary lines and wrap them in an ansi fence."""
+```
+
+Semantic styles used across the engine: **`item`**, **`shop`**, **`gold`**,
+**`buy`**, **`sell`**, **`key`**, **`section`**, **`value`**, **`ok`**,
+**`bad`**, **`muted`**, and **`id`**. Basic foreground/background names such as
+**`red`**, **`green`**, **`blue`**, **`cyan`**, **`bg_blue`**, and **`bg_gold`**
+are available for one-off formatting, but aliases should prefer semantic names
+when a concept repeats.
+
+Merge, footer, command resolution, and raw ANSI escape details are private
+helpers — not part of the alias contract.
 
 ### Relationship to `core/embeds`
 

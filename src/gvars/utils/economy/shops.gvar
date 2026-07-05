@@ -4,6 +4,7 @@ using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(
     config = env.gvars.config,
     dicts = env.gvars.dicts,
+    display = env.gvars.display,
     items = env.gvars["items"],
     journeys = env.gvars.journeys,
     lists = env.gvars.lists,
@@ -514,12 +515,15 @@ def _number_text(value):
     return str(num)
 
 
-def format_price(config_override, price):
+def _format_price(config_override, price, ansi=False):
     cfg = _cfg(config_override)
     parts = []
     gold = _read_field(price, "gold")
     if gold != None and float(gold) != 0:
-        parts.append(f"{_number_text(gold)} gp")
+        text = f"{_number_text(gold)} gp"
+        if ansi:
+            text = display.ansi_span(text, "gold")
+        parts.append(text)
     for key in price:
         if str(key) == "gold":
             continue
@@ -530,8 +534,18 @@ def format_price(config_override, price):
         prefix = f"{symbol} " if symbol != "" else ""
         parts.append(f"{prefix}{_number_text(amount)} {pc.currency_name(cfg, key, float(amount) != 1)}")
     if len(parts) == 0:
+        if ansi:
+            return display.ansi_span("free", "muted")
         return "free"
     return ", ".join(parts)
+
+
+def format_price(config_override, price):
+    return _format_price(config_override, price, False)
+
+
+def format_price_ansi(config_override, price):
+    return _format_price(config_override, price, True)
 
 
 def ask_to_confirm_purchases(config_override=None):
@@ -546,10 +560,14 @@ def _trade_code_text(value):
     return str(value).replace("`", "'").strip()
 
 
+def _trade_style(value, style):
+    return display.ansi_span(_trade_code_text(value), style)
+
+
 def _trade_row(item_name, buy_text, sell_text=None):
     if sell_text == None:
-        return f"{_trade_code_text(item_name)} = {_trade_code_text(buy_text)}"
-    return f"{_trade_code_text(item_name)} = {_trade_code_text(buy_text)} / {_trade_code_text(sell_text)}"
+        return f"{_trade_style(item_name, 'item')} = {_trade_code_text(buy_text)}"
+    return f"{_trade_style(item_name, 'item')} = {_trade_code_text(buy_text)} / {_trade_code_text(sell_text)}"
 
 
 def trade_text(config_override=None, character_location_id=None, max_lines=80):
@@ -563,11 +581,11 @@ def trade_text(config_override=None, character_location_id=None, max_lines=80):
         if not _has_stock(shop):
             continue
         show_sell = _accepts_sells(shop)
-        pending = ["```ini", f"[{_trade_code_text(shop_name(shop))}]"]
+        pending = [display.ansi_span(f"[{_trade_code_text(shop_name(shop))}]", "shop")]
         if show_sell:
-            pending.append("; buy / sell")
+            pending.append("; " + display.ansi_span("buy", "buy") + " / " + display.ansi_span("sell", "sell"))
         else:
-            pending.append("; buy")
+            pending.append("; " + display.ansi_span("buy", "buy"))
         item_lines = []
         for stock_entry in _stock_entries(shop):
             name = _stock_display_name(stock_entry)
@@ -578,19 +596,18 @@ def trade_text(config_override=None, character_location_id=None, max_lines=80):
             buy_text = "-"
             sell_text = None
             if len(buy_price) > 0:
-                buy_text = format_price(cfg, buy_price)
+                buy_text = format_price_ansi(cfg, buy_price)
             if show_sell:
                 sell_text = "-"
                 if not service:
                     sell_price = price_for_sell(shop, stock_entry, 1, cfg)
                     if len(sell_price) > 0:
-                        sell_text = format_price(cfg, sell_price)
+                        sell_text = format_price_ansi(cfg, sell_price)
             item_lines.append(_trade_row(name, buy_text, sell_text))
         if len(item_lines) == 0:
             continue
         for line in item_lines:
             pending.append(line)
-        pending.append("```")
         if len(lines) + len(pending) > max_lines:
             hidden += 1
             continue
@@ -600,7 +617,7 @@ def trade_text(config_override=None, character_location_id=None, max_lines=80):
         return ""
     if hidden > 0:
         lines.append(f"... {hidden} more shops hidden; use buy or sell with a shop name.")
-    return "**Shops**\n" + "\n".join(lines)
+    return "**Shops**\n" + display.ansi_codeblock(lines)
 
 
 def _inventory_bag(config_override, stock_entry=None):

@@ -60,6 +60,43 @@ SUBSYSTEM_TITLES = {
     "admin": "Westmarch",
 }
 
+ANSI_ESCAPE = "\x1b"
+ANSI_STYLES = {
+    "reset": "0",
+    "bold": "1",
+    "dim": "2",
+    "underline": "4",
+    "black": "2;30",
+    "red": "2;31",
+    "green": "2;32",
+    "gold": "2;33",
+    "yellow": "2;33",
+    "blue": "2;34",
+    "magenta": "2;35",
+    "cyan": "2;36",
+    "white": "2;37",
+    "bg_black": "40",
+    "bg_red": "41",
+    "bg_green": "42",
+    "bg_gold": "43",
+    "bg_yellow": "43",
+    "bg_blue": "44",
+    "bg_magenta": "45",
+    "bg_cyan": "46",
+    "bg_white": "47",
+    "item": "2;36",
+    "shop": "2;35",
+    "buy": "2;32",
+    "sell": "2;31",
+    "key": "2;34",
+    "section": "1;37",
+    "value": "2;37",
+    "ok": "2;32",
+    "bad": "2;31",
+    "muted": "2;30",
+    "id": "2;33",
+}
+
 _cached_get_embed = None
 _display_cache = {}
 
@@ -78,6 +115,144 @@ def _dict_copy(obj):
     for k in obj:
         out[k] = obj[k]
     return out
+
+
+def _ansi_safe_text(value):
+    return str(value).replace("`", "'").replace(ANSI_ESCAPE, "")
+
+
+def _ansi_codeblock_text(value):
+    return str(value).replace("`", "'")
+
+
+def _ansi_style_key(style):
+    if style == None:
+        return ""
+    return str(style).strip().lower().replace(" ", "_").replace("-", "_")
+
+
+def _ansi_style_codes(styles):
+    if styles == None:
+        return ""
+    codes = []
+    if lists.is_list(styles):
+        for style in styles:
+            key = _ansi_style_key(style)
+            if key in ANSI_STYLES and key != "reset":
+                codes.append(ANSI_STYLES[key])
+    else:
+        key = _ansi_style_key(styles)
+        if key in ANSI_STYLES and key != "reset":
+            codes.append(ANSI_STYLES[key])
+    return ";".join(codes)
+
+
+def ansi_span(text, style=None):
+    body = _ansi_safe_text(text)
+    codes = _ansi_style_codes(style)
+    if body == "" or codes == "":
+        return body
+    return f"{ANSI_ESCAPE}[{codes}m{body}{ANSI_ESCAPE}[0m"
+
+
+def discord_colour(text, style=None):
+    return ansi_span(text, style)
+
+
+def ansi_line(parts):
+    if not lists.is_list(parts):
+        return _ansi_safe_text(parts)
+    out = ""
+    for part in parts:
+        if lists.is_list(part) and len(part) >= 2:
+            out += ansi_span(part[1], part[0])
+        else:
+            out += _ansi_safe_text(part)
+    return out
+
+
+def _ansi_indent_and_body(text):
+    idx = 0
+    while idx < len(text) and text[idx] == " ":
+        idx += 1
+    return text[0:idx], text[idx:]
+
+
+def _ansi_summary_value(rest, key=None):
+    text = _ansi_safe_text(rest)
+    indent, body = _ansi_indent_and_body(text)
+    low = body.strip().lower()
+    style = "value"
+    if low in ["true", "ok", "yes", "on", "enabled"]:
+        style = "ok"
+    elif low in ["false", "no", "disabled"]:
+        style = "bad"
+    elif low in ["none", "default", "-", "off"]:
+        style = "muted"
+    elif key != None and "gvar" in str(key).lower():
+        style = "id"
+    elif low.endswith(" gp") or " gp" in low:
+        style = "gold"
+    return indent + ansi_span(body, style)
+
+
+def _ansi_summary_line_style(body):
+    low = body.strip().lower()
+    split_at = body.find(":")
+    key = body[0:split_at] if split_at >= 0 else ""
+    rest = body[split_at + 1:] if split_at >= 0 else body
+    value = rest.strip().lower()
+    if body == "":
+        return None
+    if split_at >= 0 and rest.strip() == "":
+        return "section"
+    if value in ["true", "ok", "yes", "on", "enabled"]:
+        return "ok"
+    if value in ["false", "no", "disabled"]:
+        return "bad"
+    if value in ["none", "default", "-", "off"]:
+        return "muted"
+    if key != "" and "gvar" in key.lower():
+        return "id"
+    if value.endswith(" gp") or " gp" in value:
+        return "gold"
+    return "value"
+
+
+def ansi_summary_line(line):
+    text = _ansi_safe_text(line)
+    indent, body = _ansi_indent_and_body(text)
+    if body == "":
+        return indent
+    if body.startswith("- "):
+        return indent + ansi_span(body, "value")
+    return indent + ansi_span(body, _ansi_summary_line_style(body))
+
+
+def ansi_summary_lines(lines):
+    out = []
+    for line in lines:
+        out.append(ansi_summary_line(line))
+    return out
+
+
+def ansi_codeblock(lines):
+    body_lines = []
+    if lists.is_list(lines):
+        for line in lines:
+            body_lines.append(_ansi_codeblock_text(line))
+    else:
+        for line in str(lines).split("\n"):
+            body_lines.append(_ansi_codeblock_text(line))
+    return "```ansi\n" + "\n".join(body_lines) + "\n```"
+
+
+def discord_colour_block(lines):
+    return ansi_codeblock(lines)
+
+
+def ansi_summary_block(lines):
+    return ansi_codeblock(ansi_summary_lines(lines))
 
 
 def _normalize_colour(raw):

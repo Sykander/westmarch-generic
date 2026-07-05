@@ -142,11 +142,21 @@ cfg_fixture = {
     },
 }
 text = shops.trade_text(cfg_fixture, "oakwood")
-return "```ini" in text and "[General Store]" in text and "; buy / sell" in text and "Rope, Hemp (50 ft) = 2 gp / 1 gp" in text and "buy_from_shop" not in text
+esc = "\x1b"
+return (
+    "```ansi" in text
+    and "[General Store]" in text
+    and "buy" in text
+    and "sell" in text
+    and "Rope, Hemp (50 ft)" in text
+    and esc + "[2;33m2 gp" + esc + "[0m" in text
+    and esc + "[2;33m1 gp" + esc + "[0m" in text
+    and "buy_from_shop" not in text
+)
 ---
 True
 ---
-name: trade_text summarizes visible buy and sell prices in compact shop code blocks
+name: trade_text summarizes visible buy and sell prices in compact ansi shop code blocks
 
 using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(pc = env.gvars.pc)
@@ -206,7 +216,8 @@ return (
     and "Bought **1x Shiny Ring**" in msg
     and ring_count == 1
     and shiny_count == 0
-    and "Shiny Ring = free / free" in trade
+    and "Shiny Ring" in trade
+    and "free" in trade
     and "Ring of Protection =" not in trade
 )
 ---
@@ -229,7 +240,7 @@ cfg_fixture = {
 shop, matches, error = shops.find_shop(cfg_fixture, "temple")
 stock, item_matches, item_error = shops.find_stock_item(shop, "curse", cfg_fixture)
 trade = shops.trade_text(cfg_fixture)
-return shops.stock_is_service(cfg_fixture, stock) == True and "Remove Curse = free / -" in trade
+return shops.stock_is_service(cfg_fixture, stock) == True and "Remove Curse" in trade and "free" in trade and " / -" in trade
 ---
 True
 ---

@@ -179,7 +179,7 @@ def _nonempty_str(value):
 
 
 def _codeblock(lang, lines):
-    return f"```{lang}\n" + "\n".join(lines) + "\n```"
+    return display.ansi_summary_block(lines)
 
 
 def _bool_text(value):

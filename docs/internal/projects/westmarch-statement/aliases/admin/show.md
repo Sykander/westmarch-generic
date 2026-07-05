@@ -22,7 +22,7 @@
 |---------|---------|
 | **Wiring** | Svar name, full config gvar UUID, named [Westmarch config editor](https://sykander.github.io/westmarch-generic/) link with `westmarch_config` query param when set, named Avrae dashboard lookup link, load status, optional **`config_version`** |
 | **World** | **`display.get_display()`** default title/footer/colour from base **`display`**; **`cfg.display`** fields for show copy ([display.gvar](../../gvars/display.md)) |
-| **Subsystems** | Diff codeblock: subsystem rows with indented command rows beneath; `+` enabled and neutral lines disabled |
+| **Subsystems** | ANSI codeblock: subsystem rows with indented command rows beneath; enabled/disabled values are colour-highlighted |
 | **Policies** | Summary of `policies.*` — auth, time, travel, downtime, crafting, economy, exploration, combat, quest, content, inventory, **`languages.allowed`**, **`display.footer_behaviour`** — [data-shapes.md § Server policies](../../data-shapes.md#server-policies) |
 | **Crafting** | Rules-edition override, recipe mode, known-spell scribing gate, item/potion/spell/magic-item/recipe catalogue sources, checks/tools, and item-output bag policy |
 | **Runtime** | **`get_rules_edition()`** — **`rules_version`** override, else Avrae, else 2014 |

@@ -143,7 +143,7 @@ vars:
 
 !location
 ---
-'re:Jobs[\s\S]*Caravan Guard[\s\S]*Shops[\s\S]*```ini[\s\S]*\[General Store\][\s\S]*; buy / sell[\s\S]*Rope, Hemp \(50 ft\) = 2 gp / 1 gp\n```\n## Nearby[\s\S]*Oakwood Forest'
+'re:Jobs[\s\S]*Caravan Guard[\s\S]*Shops[\s\S]*```ansi[\s\S]*\[General Store\][\s\S]*buy[\s\S]*sell[\s\S]*Rope, Hemp \(50 ft\)[\s\S]*2 gp[\s\S]*1 gp[\s\S]*```\n## Nearby[\s\S]*Oakwood Forest'
 ---
 name: shows configured jobs shop trade prices and nearby without extra section gap
 vars:

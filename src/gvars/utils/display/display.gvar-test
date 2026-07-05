@@ -13,6 +13,26 @@ re:-title Westmarch
 ---
 name: default branding produces embed with westmarch title
 
+esc = "\x1b"
+block = display.discord_colour_block([display.discord_colour("2 gp", "gold")])
+return block.startswith("```ansi\n") and esc + "[2;33m2 gp" + esc + "[0m" in block
+---
+True
+---
+name: discord colour formatter wraps styled text in ansi code blocks
+
+esc = "\x1b"
+block = display.ansi_summary_block(["enabled: true", "config_gvar: ffff1111-1111-1111-1111-111111111111"])
+return (
+    block.startswith("```ansi\n")
+    and esc + "[2;32menabled: true" + esc + "[0m" in block
+    and esc + "[2;33mconfig_gvar: ffff1111-1111-1111-1111-111111111111" + esc + "[0m" in block
+)
+---
+True
+---
+name: ansi summary block highlights booleans and gvar ids
+
 get_embed = display.get_display()
 return "-t " in get_embed(desc="hello")
 ---

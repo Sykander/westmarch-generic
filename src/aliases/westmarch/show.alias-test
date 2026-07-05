@@ -18,7 +18,7 @@ vars:
 
 !show
 ---
-"re:```yaml[\\s\\S]*exploration:[\\s\\S]*enabled: false[\\s\\S]*enc: false[\\s\\S]*forage: false"
+"re:```ansi[\\s\\S]*exploration:[\\s\\S]*enabled[\\s\\S]*false[\\s\\S]*enc[\\s\\S]*false[\\s\\S]*forage[\\s\\S]*false"
 ---
 name: show lists subsystem status
 vars:
@@ -30,7 +30,7 @@ vars:
 
 !show
 ---
-"re:travel:[\\s\\S]*route_priority: least_encs[\\s\\S]*show_arrival_time: true[\\s\\S]*show_arrival_weather: true[\\s\\S]*economy:[\\s\\S]*job_location_policy: warn[\\s\\S]*ask_to_confirm_purchases: true[\\s\\S]*jobs: 1"
+"re:travel:[\\s\\S]*route_priority[\\s\\S]*least_encs[\\s\\S]*show_arrival_time[\\s\\S]*true[\\s\\S]*show_arrival_weather[\\s\\S]*true[\\s\\S]*economy:[\\s\\S]*job_location_policy[\\s\\S]*warn[\\s\\S]*ask_to_confirm_purchases[\\s\\S]*true[\\s\\S]*jobs[\\s\\S]*1"
 ---
 name: show lists travel arrival and economy job config
 vars:
@@ -69,7 +69,7 @@ vars:
 
 !show data
 ---
-"re:```yaml[\\s\\S]*locations: 1[\\s\\S]*paths: 0[\\s\\S]*transport: 2"
+"re:```ansi[\\s\\S]*locations[\\s\\S]*1[\\s\\S]*paths[\\s\\S]*0[\\s\\S]*transport[\\s\\S]*2"
 ---
 name: show data includes transport count
 vars:
@@ -88,7 +88,7 @@ vars:
 
 !show data
 ---
-"re:```yaml[\\s\\S]*locations: 2[\\s\\S]*paths: 1[\\s\\S]*locations_gvar_id: ffff2424[\\s\\S]*paths_gvar_id: ffff2525"
+"re:```ansi[\\s\\S]*locations[\\s\\S]*2[\\s\\S]*paths[\\s\\S]*1[\\s\\S]*locations_gvar_id[\\s\\S]*ffff2424[\\s\\S]*paths_gvar_id[\\s\\S]*ffff2525"
 ---
 name: show data counts external location and path gvars
 vars:
@@ -119,9 +119,9 @@ vars:
 
 !show runtime
 ---
-"re:```yaml[\\s\\S]*rules_edition: 2014"
+"re:```ansi[\\s\\S]*rules_edition[\\s\\S]*2014"
 ---
-name: show section filter runtime uses yaml style
+name: show section filter runtime uses ansi style
 vars:
   svars:
     westmarch_config: "ffff1111-1111-1111-1111-111111111111"
@@ -131,7 +131,7 @@ vars:
 
 !show runtime
 ---
-"re:```yaml[\\s\\S]*rules_edition: 2024"
+"re:```ansi[\\s\\S]*rules_edition[\\s\\S]*2024"
 ---
 name: show section filter runtime reads server 2024 profile
 profile: server2024
@@ -144,9 +144,9 @@ vars:
 
 !show
 ---
-"re:exploration:[\\s\\S]*enabled: true[\\s\\S]*enc: true[\\s\\S]*forage: false"
+"re:exploration:[\\s\\S]*enabled[\\s\\S]*true[\\s\\S]*enc[\\s\\S]*true[\\s\\S]*forage[\\s\\S]*false"
 ---
-name: show marks enabled subsystem in yaml block
+name: show marks enabled subsystem in ansi block
 vars:
   svars:
     westmarch_config: "ffff4444-4444-4444-4444-444444444444"
@@ -170,7 +170,7 @@ vars:
 
 !show
 ---
-"re:exploration:[\\s\\S]*enabled: true[\\s\\S]*enc: true"
+"re:exploration:[\\s\\S]*enabled[\\s\\S]*true[\\s\\S]*enc[\\s\\S]*true"
 ---
 name: show does not validate enabled subsystem data
 vars:
@@ -199,7 +199,7 @@ vars:
 
 !show player_setup
 ---
-"re:```yaml[\\s\\S]*checks: 1[\\s\\S]*hud.fields"
+"re:```ansi[\\s\\S]*checks[\\s\\S]*1[\\s\\S]*hud.fields"
 ---
 name: show section filter player setup summarizes configured checks
 vars:
@@ -217,7 +217,7 @@ vars:
 
 !show display
 ---
-"re:```yaml[\\s\\S]*command_thumbnail: character[\\s\\S]*error_embeds.auto_delete: true[\\s\\S]*error_embeds.timeout_seconds: 60"
+"re:```ansi[\\s\\S]*command_thumbnail[\\s\\S]*character[\\s\\S]*error_embeds.auto_delete[\\s\\S]*true[\\s\\S]*error_embeds.timeout_seconds[\\s\\S]*60"
 ---
 name: show section filter display summarizes command thumbnail and error policy
 vars:
@@ -231,7 +231,7 @@ vars:
 
 !show policies
 ---
-"re:display.error_embeds.auto_delete: false[\\s\\S]*display.error_embeds.timeout_seconds: 5"
+"re:display.error_embeds.auto_delete[\\s\\S]*false[\\s\\S]*display.error_embeds.timeout_seconds[\\s\\S]*5"
 ---
 name: show policies summarizes custom error embed policy
 vars:
@@ -245,7 +245,7 @@ vars:
 
 !show crafting
 ---
-"re:```yaml[\\s\\S]*rules_version: 2024[\\s\\S]*recipe_mode: mixed[\\s\\S]*require_known_spell: true[\\s\\S]*spells: engine:catalogues/spells[\\s\\S]*scrolls_bag: Scroll Satchel"
+"re:```ansi[\\s\\S]*rules_version[\\s\\S]*2024[\\s\\S]*recipe_mode[\\s\\S]*mixed[\\s\\S]*require_known_spell[\\s\\S]*true[\\s\\S]*spells[\\s\\S]*engine:catalogues/spells[\\s\\S]*scrolls_bag[\\s\\S]*Scroll Satchel"
 ---
 name: show section filter crafting summarizes catalogues and item output
 vars:
@@ -267,7 +267,7 @@ vars:
 
 !show policies
 ---
-"re:```yaml[\\s\\S]*travel.consume_rations: true[\\s\\S]*economy.enforce_wallet_caps: true"
+"re:```ansi[\\s\\S]*travel.consume_rations[\\s\\S]*true[\\s\\S]*economy.enforce_wallet_caps[\\s\\S]*true"
 ---
 name: show section filter policies summarizes remaining policy fields
 vars:

@@ -21,7 +21,7 @@ tokens, step count, and the `!travel` command to start that route.
 
 When economy data is configured, `!location` lists local jobs from
 `subsystems.economy.config.jobs` when `location.commands.job` is `True`, and
-shows visible shop buy/sell prices in a fenced `yaml` block when
+shows visible shop buy/sell prices in a fenced `ansi` block when
 `location.commands.buy` or `location.commands.sell` is `True`.
 
 `!location journey` appends the active `wg_journey` summary when one is being
