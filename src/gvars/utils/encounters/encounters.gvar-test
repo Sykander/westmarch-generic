@@ -22,6 +22,65 @@ True
 ---
 name: process_encounter appends resolved combat text
 
+enc = {
+    "name": "Fight",
+    "description": "Steel flashes.",
+    "monsters": [{"name": "Spy"}],
+    "combat_text": "```ansi\nCombat Initiated!\n```\nEnemies:\n* 1x Spy",
+}
+cfg = {"subsystems": {"travel": {"config": {}}}}
+result = encounters.process_encounter(enc, character(), {"config": cfg})
+desc = result["description"]
+return "!i madd Spy" in desc and "!multiline" not in desc
+---
+True
+---
+name: process_encounter defaults combat prompt to single madd command
+
+enc = {
+    "name": "Fight",
+    "description": "Steel flashes.",
+    "monsters": [{"name": "Guard Captain", "count": 2}, {"name": "Mastiff", "count": 3}],
+    "combat_text": "```ansi\nCombat Initiated!\n```\nEnemies:\n* 2x Guard Captain\n* 3x Mastiff",
+}
+cfg = {"subsystems": {"travel": {"config": {"combat_add_prompt": "madd_commands"}}}}
+result = encounters.process_encounter(enc, character(), {"config": cfg})
+desc = result["description"]
+return "!multiline" in desc and '!i madd "Guard Captain" -n 2' in desc and "!i madd Mastiff -n 3" in desc
+---
+True
+---
+name: process_encounter uses multiline madd commands and quotes monsters
+
+enc = {
+    "name": "Fight",
+    "description": "Steel flashes.",
+    "monsters": [{"name": "Spy"}],
+    "combat_text": "```ansi\nCombat Initiated!\n```\nEnemies:\n* 1x Spy",
+}
+cfg = {"subsystems": {"travel": {"config": {"combat_add_prompt": "off"}}}}
+result = encounters.process_encounter(enc, character(), {"config": cfg})
+return "!i madd Spy" not in result["description"] and "!combat" not in result["description"]
+---
+True
+---
+name: process_encounter can hide combat add prompt
+
+enc = {
+    "name": "Fight",
+    "description": "Steel flashes.",
+    "monsters": [{"name": "Spy"}],
+    "combat_text": "```ansi\nCombat Initiated!\n```\nEnemies:\n* 1x Spy",
+}
+cfg = {"subsystems": {"travel": {"config": {"combat_add_prompt": "madd_commands"}}, "combat": {"commands": {"combat": True}}}}
+result = encounters.process_encounter(enc, character(), {"config": cfg})
+desc = result["description"]
+return "Run `!combat`" in desc and "!i madd Spy" not in desc
+---
+True
+---
+name: process_encounter prefers combat hint when combat command is enabled
+
 result = encounters.process_encounter(None, character())
 return result["name"] == "Encounter"
 ---
@@ -81,3 +140,35 @@ return result["name"] == "ok"
 True
 ---
 name: process_encounter includes unset context keys as none
+
+enc = {
+    "name": "Old ranger mark",
+    "description": "Three shallow cuts point toward a dry ford.",
+    "rolls": [{"type": "check", "name": "Wisdom (Survival)", "ability": "wis", "dc": 0}],
+}
+result = encounters.process_encounter(enc, character(), {"args": [], "parsed_args": argparse("")})
+return "Survival" in result["description"] and "Check" in result["description"] and "DC 0" in result["description"] and len(result["rolls"]) == 1
+---
+True
+---
+name: process_encounter displays skill check rolls
+
+enc = {
+    "name": "Leafmold sink",
+    "description": "A harmless-looking patch gives way.",
+    "rolls": [{"type": "save", "name": "Dexterity", "ability": "dex", "dc": 0}],
+}
+result = encounters.process_encounter(enc, character(), {"args": [], "parsed_args": argparse("")})
+return "Dexterity" in result["description"] and "Saving Throw" in result["description"] and "DC 0" in result["description"] and len(result["rolls"]) == 1
+---
+True
+---
+name: process_encounter displays saving throw rolls
+
+enc = {"name": "Lost charcoal burner", "description": "Tracks lead from the work site.", "reward": "Coin or supplies"}
+result = encounters.process_encounter(enc, character(), {"encounter_kind": "quest"})
+return "Quest hook" in result["description"] and "Coin or supplies" in result["description"]
+---
+True
+---
+name: process_encounter displays quest reward hints

@@ -59,6 +59,7 @@ DEFAULTS = {
                 "show_arrival_time": False,
                 "show_arrival_weather": False,
                 "show_shops_on_travel": True,
+                "combat_add_prompt": "madd_commands",
                 "transport_icons": {
                     "walk": "🚶",
                     "fly": "🪽",

@@ -194,10 +194,33 @@ def _display_roll(roll, show_dc=False, show_result=False):
         line += f" ({', '.join(details)})"
     return line
 
+def _surprise_text(target):
+    text = str(target or "").strip()
+    key = text.lower()
+    if key in ["you", "your party", "the party", "party", "adventurers"]:
+        return "You are surprised!"
+    if key in ["enemy", "enemies", "monster", "monsters", "foe", "foes", "hostile", "hostiles"]:
+        return "Enemies are surprised!"
+    if text == "":
+        return ""
+    return f"{text} is surprised!"
+
+def _combat_banner(surprised=None):
+    surprise_parts = []
+    if surprised is not None:
+        surprise_list = surprised if isinstance(surprised, list) else [surprised]
+        for target in surprise_list:
+            text = _surprise_text(target)
+            if text != "":
+                surprise_parts.append(text)
+    line = "\u001b[1;31mCombat Initiated!\u001b[0m"
+    if surprise_parts:
+        line += " \u001b[1;33m" + " ".join(surprise_parts) + "\u001b[0m"
+    ticks = chr(96) * 3
+    return ticks + "ansi\n" + line + "\n" + ticks
+
 def _display_combat(enemies=None, surprised=None, details=None):
-    lines = ["> Combat Initiated!"]
-    for target in surprised or []:
-        lines.append(f"{target} was **surprised**!")
+    lines = [_combat_banner(surprised)]
     for detail in details or []:
         lines.append(str(detail))
     lines.append("Enemies:")
@@ -308,7 +331,7 @@ def ambush(args):
     def combat_text(ectx):
         surprised = []
         if ectx["rolls"] and ectx["rolls"][0]["passed"] == False:
-            surprised.append(ectx["character"].name)
+            surprised.append("You")
         return _display_combat(enc["monsters"], surprised=surprised)
 
     enc["combat_text"] = combat_text

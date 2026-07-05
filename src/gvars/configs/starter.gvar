@@ -87,6 +87,9 @@ subsystems = {
             "show_arrival_weather": False,
             # Optional — include local shop prices in bare !travel / arrival output.
             "show_shops_on_travel": True,
+            # Combat encounter follow-up: "off", "combat_hint", or "madd_commands".
+            # madd_commands shows !i madd copy blocks unless a !combat command is enabled.
+            "combat_add_prompt": "madd_commands",
             "transport_icons": {
                 "walk": "🚶",
                 "fly": "🪽",

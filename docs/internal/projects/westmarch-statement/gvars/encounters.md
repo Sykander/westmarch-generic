@@ -16,12 +16,13 @@ def process_encounter(encounter, character, args):
 
 ## Pipeline
 
-1. **Rolls** — for each entry in `encounter["rolls"]`, call **`env.gvars.rolls`** **`get_roll(...)`** with `args` bonuses.
-2. **Build `ectx`** — `{ character, rolls, args, encounter }` ([Encounter context](../data-shapes.md#encounter-context--ectx)).
-3. **Resolve fields** — `name`, `description`, `combat_text`, `cr`, `difficulty`, `monsters`, media — str or `callable(ectx)`.
-4. **Combat** — append `combat_text` when provided; combat templates use `encounter_templates._display_combat(...)` for a standard block.
-5. **Outcomes** — resolve `outcomes` (static list or `callable(ectx)`), then **`_apply_outcomes(outcomes, character)`** internally.
-6. **Return** — [encounter_result](../data-shapes.md#encounter-result--encounter_result) dict (`outcome_text` included).
+1. **Build `ectx`** — `{ character, rolls, args, encounter, config, activity, biome, encounter_kind, location... }` ([Encounter context](../data-shapes.md#encounter-context--ectx)).
+2. **Rolls** — for each entry in `encounter["rolls"]`, call **`env.gvars.rolls`** **`get_roll(...)`** with `args` bonuses, then append the result to `ectx["rolls"]`.
+3. **Resolve fields** — `name`, `description`, `combat_text`, `reward`, media — str or `callable(ectx)`.
+4. **Combat** — append `combat_text` when provided; combat templates use `encounter_templates._display_combat(...)` for a standard ANSI-highlighted block. `subsystems.travel.config.combat_add_prompt` may append a `!combat` hint or copyable `!i madd` commands from `encounter["monsters"]`.
+5. **Quest hooks** — append a compact quest marker and reward hint when the picked kind is `quest` or the encounter has `reward` / `reward_hint`.
+6. **Outcomes** — resolve `outcomes` (static list or `callable(ectx)`), then **`_apply_outcomes(outcomes, character)`** internally.
+7. **Return** — [encounter_result](../data-shapes.md#encounter-result--encounter_result) dict (`roll_text`, `rolls`, and `outcome_text` included).
 
 ## Internal: `_apply_outcomes`
 

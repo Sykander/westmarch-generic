@@ -19,6 +19,8 @@ encounter = {
     "description": str | callable,
     "thumb": str | callable,       # optional embed thumbnail URL
     "image": str | callable,       # optional embed image URL
+    "reward": str | callable,      # optional quest reward hint
+    "reward_hint": str | callable, # accepted alias for reward
 
     # Rolls — optional; run in order before callables resolve
     "rolls": [ roll_spec, ... ],
@@ -39,9 +41,10 @@ encounter = {
 | `name` | yes | Embed title |
 | `description` | yes | Embed body (may include roll text appended by processor) |
 | `rolls` | no | Empty / omitted → skip straight to static fields + outcomes |
+| `reward` / `reward_hint` | no | Quest hook reward hint; rendered when present, or when the picked kind is `quest` |
 | `outcomes` | no | Omitted → no sheet changes; see [Outcome](#outcome) |
 | `combat_text` | no | Appended to description after callables resolve; templates use it for standardized combat announcements |
-| `cr`, `monsters`, … | no | Combat block when `cr > 0` |
+| `cr`, `monsters`, … | no | Combat block when `cr > 0`; `monsters` also drives configured `combat_add_prompt` follow-up commands |
 
 ### Roll spec *(entry in `encounter["rolls"]`)*
 
@@ -76,6 +79,7 @@ ectx = {
     "config": config,         # resolved server config, or None
     "activity": activity,     # enc / forage / mine / ..., or None
     "biome": biome,           # resolved biome code, or None
+    "encounter_kind": kind,    # combat / quest / gather, or None
     "location": location,     # current location dict, or None
     "location_id": location_id,
     "current_location": location,
@@ -105,6 +109,7 @@ def description(ectx):
 | `config` | When the processor can resolve or was passed the server config; else `None` |
 | `activity` | Exploration activity command such as `enc`, `forage`, `mine`; else `None` |
 | `biome` | Resolved biome code for the picked encounter; else `None` |
+| `encounter_kind` | Picked encounter branch such as `combat`, `quest`, or `gather`; else `None` |
 | `location`, `current_location` | Current location dict for the character; else `None` |
 | `location_id`, `current_location_id` | Current location id for the character; else `None` |
 
@@ -440,6 +445,8 @@ encounter_result = {
     "thumb": str | None,
     "image": str | None,
     "outcome_text": str,          # footer lines from applied outcomes (may be "")
+    "roll_text": str,             # formatted roll lines appended to description (may be "")
+    "rolls": [roll_result, ...],
     # combat tier — optional
     "combat_block": str | None,   # monster list + !i madd snippet when cr > 0
 }
@@ -1552,6 +1559,7 @@ Travel reads shared **`world_data.default_location`**, the configured location s
 | `show_arrival_time` | `bool` | `False` | When `travel.commands.time` is enabled, append the formatted world time after `!travel next` arrives. |
 | `show_arrival_weather` | `bool` | `False` | When `travel.commands.weather` is enabled, append the resolved weather after `!travel next` arrives. |
 | `show_shops_on_travel` | `bool` | `True` | Include local shop price tables in bare `!travel` / arrival output. `!location` still shows shops when the location supports trade. |
+| `combat_add_prompt` | `"off"` \| `"combat_hint"` \| `"madd_commands"` | `"madd_commands"` | Controls combat encounter follow-up. `madd_commands` emits copyable `!i madd` commands unless a `!combat` command is enabled, `combat_hint` points at `!combat`, and `off` hides the follow-up. |
 | `transport_icons` | `{ transport_id: emoji }` | engine defaults | Icons shown once per path beside the route label when that path has transport requirements. |
 
 ### `economy.config`

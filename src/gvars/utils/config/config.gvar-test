@@ -204,6 +204,18 @@ vars:
     aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1: |
       # owner body intentionally empty
 
+return config.cfg.subsystems.travel.config.combat_add_prompt
+---
+"madd_commands"
+---
+name: empty owner defaults combat add prompt to madd commands
+vars:
+  svars:
+    westmarch_config: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"
+  gvars:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1: |
+      # owner body intentionally empty
+
 return config.cfg.subsystems.economy.config.job_location_policy
 ---
 "off"

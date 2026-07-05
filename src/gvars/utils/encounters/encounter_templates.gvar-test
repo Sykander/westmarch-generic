@@ -11,11 +11,19 @@ True
 ---
 name: display_roll formats standard roll output
 
-return "Combat Initiated" in encounter_templates.display_combat(["Goblin"]) and "* 1x Goblin" in encounter_templates.display_combat(["Goblin"])
+text = encounter_templates.display_combat(["Goblin"])
+return "```ansi" in text and "Combat Initiated" in text and "* 1x Goblin" in text
 ---
 True
 ---
-name: display_combat formats standard combat output
+name: display_combat formats ansi combat output
+
+text = encounter_templates.display_combat(["Goblin"], surprised="Enemies")
+return "Combat Initiated" in text and "Enemies are surprised!" in text and "* 1x Goblin" in text
+---
+True
+---
+name: display_combat reports surprised enemies in banner
 
 enc = encounter_templates.expand_row([["enc.gather"], "gather_item", "Wild Herbs", "Damp hollow.", "Survival", 12, "Herbs", 2, "Forage"])
 return len(enc["outcomes"]({"rolls": [{"passed": False}]})) == 0 and enc["outcomes"]({"rolls": [{"passed": True}]})[0]["name"] == "Herbs"
@@ -54,7 +62,7 @@ name: ambush expands combat and ambush rolls
 
 enc = encounter_templates.expand_row([["enc.combat"], "ambush", "Forest ambush", "Shapes rush from the brush.", 1, "Wolf", "hard", 14])
 text = enc["combat_text"]({"rolls": [{"passed": False}], "character": character()})
-return "Combat Initiated" in text and "surprised" in text and "* 1x Wolf" in text
+return "Combat Initiated" in text and "You are surprised!" in text and "* 1x Wolf" in text
 ---
 True
 ---

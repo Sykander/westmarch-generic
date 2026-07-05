@@ -89,6 +89,7 @@ def _read_field(obj, key):
         "show_arrival_time": lambda o: o.show_arrival_time,
         "show_arrival_weather": lambda o: o.show_arrival_weather,
         "show_shops_on_travel": lambda o: o.show_shops_on_travel,
+        "combat_add_prompt": lambda o: o.combat_add_prompt,
         "biomes": lambda o: o.biomes,
         "currencies": lambda o: o.currencies,
         "economy": lambda o: o.economy,
@@ -361,7 +362,8 @@ def _enabled_commands_summary(cfg):
                 arrival_time = _read_field(cfg_block, "show_arrival_time")
                 arrival_weather = _read_field(cfg_block, "show_arrival_weather")
                 show_shops = _read_field(cfg_block, "show_shops_on_travel")
-                if override != None or path_policy != None or route_priority != None or arrival_time != None or arrival_weather != None or show_shops != None:
+                combat_add_prompt = _read_field(cfg_block, "combat_add_prompt")
+                if override != None or path_policy != None or route_priority != None or arrival_time != None or arrival_weather != None or show_shops != None or combat_add_prompt != None:
                     lines.append("  config:")
                     if override != None:
                         lines.append(f"    location_biome_override: {_bool_text(override == True)}")
@@ -375,6 +377,8 @@ def _enabled_commands_summary(cfg):
                         lines.append(f"    show_arrival_weather: {_bool_text(arrival_weather == True)}")
                     if show_shops != None:
                         lines.append(f"    show_shops_on_travel: {_bool_text(show_shops == True)}")
+                    if combat_add_prompt != None:
+                        lines.append(f"    combat_add_prompt: {combat_add_prompt}")
         if key == "economy":
             cfg_block = _read_field(block, "config")
             if _is_dict(cfg_block):

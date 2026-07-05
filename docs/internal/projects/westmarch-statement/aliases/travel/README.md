@@ -28,6 +28,7 @@ Movement, place, and world-state commands. Matches [mvp-commands.md](../../mvp-c
         "show_arrival_time": False,
         "show_arrival_weather": False,
         "show_shops_on_travel": True,
+        "combat_add_prompt": "madd_commands",
         "route_priority": "least_encs",
         "transport_icons": {"walk": "🚶", "fly": "🪽", "horse": "🐎", "boat": "⛵"},
     },
@@ -38,6 +39,7 @@ Shared engine: **[journeys.gvar](../../gvars/journeys.md)**, **[locations.gvar](
 
 Enable `time` only with calendar data and `weather` only with weather-area data. Arrival notes are controlled by `show_arrival_time` and `show_arrival_weather`; local shop price tables in travel output are controlled by `show_shops_on_travel`.
 Route choice is controlled by `route_priority`: `least_encs`, `least_travel_time`, `least_cost`, or `custom` with numeric `route_weights`.
+Combat encounter follow-up is controlled by `combat_add_prompt`: `madd_commands`, `combat_hint`, or `off`.
 
 ## Implementation order
 

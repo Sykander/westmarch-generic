@@ -2,10 +2,12 @@
 
 using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(
+    commands = env.gvars.commands,
     config = env.gvars.config,
     dicts = env.gvars.dicts,
     journeys = env.gvars.journeys,
     lists = env.gvars.lists,
+    rolls_lib = env.gvars.rolls,
     strings = env.gvars.strings,
 )
 
@@ -51,6 +53,21 @@ def _alias_args(args):
     return args
 
 
+def _parsed_args(args):
+    if args != None and dicts.is_dict(args):
+        parsed = _read_field(args, "parsed_args")
+        if parsed != None:
+            return parsed
+    try:
+        return argparse(_alias_args(args))
+    except:
+        pass
+    try:
+        return argparse("")
+    except:
+        return None
+
+
 def _encounter_context(encounter, character, args=None, rolls=None):
     if rolls == None:
         rolls = []
@@ -84,6 +101,7 @@ def _encounter_context(encounter, character, args=None, rolls=None):
         "config": cfg,
         "activity": _context_value(context, "activity"),
         "biome": _context_value(context, "biome"),
+        "encounter_kind": _context_value(context, "encounter_kind"),
         "location": current_location,
         "location_id": current_location_id,
         "current_location": current_location,
@@ -99,19 +117,322 @@ def _resolve_value(value, ectx):
     return value
 
 
+def _normal_ability(value):
+    if value == None:
+        return None
+    key = str(value).strip().lower().replace(" ", "").replace("_", "").replace("-", "")
+    ability_map = {
+        "str": "strength",
+        "strength": "strength",
+        "dex": "dexterity",
+        "dexterity": "dexterity",
+        "con": "constitution",
+        "constitution": "constitution",
+        "int": "intelligence",
+        "intelligence": "intelligence",
+        "wis": "wisdom",
+        "wisdom": "wisdom",
+        "cha": "charisma",
+        "charisma": "charisma",
+    }
+    if key in ability_map:
+        return ability_map[key]
+    return None
+
+
+def _int_or_none(value):
+    if value == None or value == "":
+        return None
+    try:
+        return int(value)
+    except:
+        return None
+
+
+def _roll_name(spec):
+    raw = _read_field(spec, "name")
+    if raw == None:
+        raw = _read_field(spec, "roll_name")
+    if raw == None:
+        return "Roll"
+    return str(raw)
+
+
+def _check_name(spec):
+    name = _roll_name(spec).strip()
+    if "(" in name and ")" in name:
+        try:
+            return name.split("(", 1)[1].split(")", 1)[0].strip()
+        except:
+            pass
+    return name
+
+
+def _character_mod(ch, ability):
+    if ch == None or ability == None:
+        return 0
+    try:
+        return ch.stats.get_mod(ability)
+    except:
+        return 0
+
+
+def _signed(value):
+    try:
+        amount = int(value)
+    except:
+        amount = 0
+    if amount >= 0:
+        return f"+{amount}"
+    return str(amount)
+
+
+def _fallback_roll(spec, ch):
+    rtype = str(_read_field(spec, "type")).strip().lower()
+    dc = _int_or_none(_read_field(spec, "dc"))
+    ability = _normal_ability(_read_field(spec, "ability"))
+    name = _roll_name(spec)
+    mod = _character_mod(ch, ability)
+    roll_result = vroll("1d20" + _signed(mod))
+    passed = None
+    if dc != None:
+        passed = roll_result.total >= dc
+    label = name
+    if rtype == "check" and not name.lower().endswith("check"):
+        label = f"{name} Check"
+    elif rtype == "save" and "saving" not in name.lower():
+        label = f"{name} Saving Throw"
+    return {
+        "roll": roll_result,
+        "total": roll_result.total,
+        "full": roll_result.full,
+        "name": label,
+        "roll_string": "1d20" + _signed(mod),
+        "dc": dc,
+        "passed": passed,
+    }
+
+
+def _run_roll(spec, ch, parsed_args):
+    if spec == None or not dicts.is_dict(spec):
+        return None
+    rtype = _read_field(spec, "type")
+    if rtype == None:
+        rtype = "roll"
+    rtype = str(rtype).strip().lower()
+    if rtype not in ["roll", "check", "passive", "save", "attack"]:
+        return None
+    dc = _int_or_none(_read_field(spec, "dc"))
+    ability = _normal_ability(_read_field(spec, "ability"))
+    name = _roll_name(spec)
+    if rtype in ["check", "passive"]:
+        name = _check_name(spec)
+    if parsed_args == None:
+        return _fallback_roll(spec, ch)
+    try:
+        return rolls_lib.get_roll(ch, name, parsed_args, rtype, ability, dc)
+    except:
+        return _fallback_roll(spec, ch)
+
+
+def _show_roll_dc(cfg, activity):
+    subs = _read_field(cfg, "subsystems")
+    exp = _read_field(subs, "exploration")
+    exp_cfg = _read_field(exp, "config")
+    values = _read_field(exp_cfg, "show_check_dcs")
+    raw = _read_field(values, activity)
+    if raw == None:
+        return True
+    return raw == True
+
+
+def _format_roll(roll_data, show_dc=True):
+    full = _read_field(roll_data, "full")
+    if full == None or str(full).strip() == "":
+        full = _read_field(roll_data, "total")
+    name = _read_field(roll_data, "name")
+    if name == None or str(name).strip() == "":
+        name = "Roll"
+    line = f"{full} **{name}**"
+    details = []
+    dc = _read_field(roll_data, "dc")
+    if show_dc and dc not in [None, ""]:
+        details.append(f"DC {dc}")
+    passed = _read_field(roll_data, "passed")
+    if passed != None:
+        details.append("Passed" if passed == True else "Failed")
+    if len(details) > 0:
+        line += f" ({', '.join(details)})"
+    return line
+
+
+def _process_rolls(encounter, ch, ectx, args=None):
+    specs = _resolve_value(_read_field(encounter, "rolls"), ectx)
+    if specs == None or not lists.is_list(specs):
+        return ""
+    parsed_args = _parsed_args(args)
+    show_dc = _show_roll_dc(_context_value(ectx, "config"), _context_value(ectx, "activity"))
+    lines = []
+    for spec in specs:
+        roll_data = _run_roll(spec, ch, parsed_args)
+        if roll_data == None:
+            continue
+        _context_value(ectx, "rolls").append(roll_data)
+        lines.append(_format_roll(roll_data, show_dc))
+    return "\n".join(lines)
+
+
+def _quest_text(encounter, ectx):
+    kind = _context_value(ectx, "encounter_kind")
+    reward = _resolve_str(_resolve_value(_read_field(encounter, "reward"), ectx))
+    if reward == "":
+        reward = _resolve_str(_resolve_value(_read_field(encounter, "reward_hint"), ectx))
+    if str(kind).strip().lower() != "quest" and reward == "":
+        return ""
+    if reward != "":
+        return f"-# Quest hook. Reward hint: **{reward}**."
+    return "-# Quest hook."
+
+
+def _travel_config(cfg):
+    return _read_field(_read_field(_read_field(cfg, "subsystems"), "travel"), "config")
+
+
+def _command_enabled_anywhere(cfg, command):
+    subs = _read_field(cfg, "subsystems")
+    if subs == None:
+        return False
+    keys = []
+    try:
+        for key in subs:
+            keys.append(key)
+    except:
+        keys = ["combat", "exploration", "travel", "misc"]
+    wanted = str(command).strip().lower()
+    for key in keys:
+        block = _read_field(subs, key)
+        commands_block = _read_field(block, "commands")
+        if _read_field(commands_block, wanted) == True:
+            return True
+    return False
+
+
+def _default_combat_add_prompt_mode(cfg):
+    if _command_enabled_anywhere(cfg, "combat"):
+        return "combat_hint"
+    return "madd_commands"
+
+
+def _combat_add_prompt_mode(cfg):
+    raw = _read_field(_travel_config(cfg), "combat_add_prompt")
+    if raw == None:
+        return _default_combat_add_prompt_mode(cfg)
+    value = str(raw).strip().lower().replace("-", "_").replace(" ", "_")
+    if value in ["", "off", "none", "false", "disabled", "hide", "hidden", "no"]:
+        return "off"
+    if value in ["auto", "default"]:
+        return _default_combat_add_prompt_mode(cfg)
+    if value in ["combat", "combat_hint", "hint", "use_combat", "command_hint", "!combat"]:
+        return "combat_hint"
+    if value in ["madd", "madd_commands", "imadd", "imadd_commands", "initiative", "initiative_commands", "commands", "show"]:
+        if _command_enabled_anywhere(cfg, "combat"):
+            return "combat_hint"
+        return "madd_commands"
+    return _default_combat_add_prompt_mode(cfg)
+
+
+def _monster_entry(enemy):
+    if enemy == None:
+        return None
+    count = 1
+    name = None
+    if dicts.is_dict(enemy):
+        raw_count = _read_field(enemy, "count")
+        if raw_count == None:
+            raw_count = _read_field(enemy, "qty")
+        if raw_count == None:
+            raw_count = _read_field(enemy, "quantity")
+        try:
+            count = int(raw_count)
+        except:
+            count = 1
+        name = _read_field(enemy, "name")
+        if name == None:
+            name = _read_field(enemy, "monster")
+    else:
+        name = enemy
+    text = _resolve_str(name).strip()
+    if text == "":
+        return None
+    if count < 1:
+        count = 1
+    return {"name": text, "count": count}
+
+
+def _monster_add_commands(enemies):
+    if enemies == None:
+        return []
+    enemy_list = enemies if lists.is_list(enemies) else [enemies]
+    lines = []
+    for enemy in enemy_list:
+        entry = _monster_entry(enemy)
+        if entry == None:
+            continue
+        args = None
+        if entry["count"] > 1:
+            args = [["-n", str(entry["count"])]]
+        lines.append(commands.get_command(["i", "madd", entry["name"]], args))
+    return lines
+
+
+def _codeblock(lang, text):
+    label = str(lang).strip()
+    if label != "":
+        label = label + "\n"
+    return "```" + label + str(text).strip() + "\n```"
+
+
+def _combat_add_prompt(encounter, cfg):
+    mode = _combat_add_prompt_mode(cfg)
+    if mode == "off":
+        return ""
+    if mode == "combat_hint":
+        combat_command = ctx.prefix + commands.get_command(["combat"])
+        return f"-# Run `{combat_command}` to add these enemies if your server has it enabled."
+    if mode != "madd_commands":
+        return ""
+    add_lines = _monster_add_commands(_read_field(encounter, "monsters"))
+    if len(add_lines) == 0:
+        return ""
+    if len(add_lines) == 1:
+        command_text = ctx.prefix + add_lines[0]
+    else:
+        command_text = ctx.prefix + commands.get_multiline(add_lines)
+    return _codeblock("text", command_text)
+
+
 def process_encounter(encounter, character, args=None):
     """Return {name, description, outcome_text, thumb, image}."""
     if encounter == None:
         return {"name": "Encounter", "description": "No encounter data.", "outcome_text": "", "thumb": None, "image": None}
     rolls = []
     ectx = _encounter_context(encounter, character, args, rolls)
+    roll_text = _process_rolls(encounter, character, ectx, args)
     name = _resolve_str(_resolve_value(_read_field(encounter, "name"), ectx))
     if name == "":
         name = "Encounter"
     desc = _resolve_str(_resolve_value(_read_field(encounter, "description"), ectx))
+    if roll_text != "":
+        desc = "\n\n".join([part for part in [desc, roll_text] if part != ""])
     combat_text = _resolve_str(_resolve_value(_read_field(encounter, "combat_text"), ectx))
     if combat_text != "":
+        prompt = _combat_add_prompt(encounter, _context_value(ectx, "config"))
+        if prompt != "":
+            combat_text = "\n\n".join([combat_text, prompt])
         desc = "\n\n".join([part for part in [desc, combat_text] if part != ""])
+    quest_text = _quest_text(encounter, ectx)
+    if quest_text != "":
+        desc = "\n\n".join([part for part in [desc, quest_text] if part != ""])
     outcomes = _resolve_value(_read_field(encounter, "outcomes"), ectx)
     outcome_text = ""
     if outcomes != None and lists.is_list(outcomes):
@@ -126,6 +447,8 @@ def process_encounter(encounter, character, args=None):
         "name": name,
         "description": desc,
         "outcome_text": outcome_text,
+        "roll_text": roll_text,
+        "rolls": rolls,
         "thumb": thumb,
         "image": image,
     }

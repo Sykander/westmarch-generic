@@ -89,6 +89,34 @@ vars:
         [["enc.gather"], "flavour", "Berries in the Wild", "Edible berries.", "gather"]
       ]
 
+!enc forest
+---
+re:Old ranger mark[\s\S]*Survival[\s\S]*Check[\s\S]*DC 0
+---
+name: "manual biome displays skill check encounter rolls"
+vars:
+  svars:
+    westmarch_config: "eeee3333-3333-3333-3333-333333333334"
+  gvars:
+    eeee3333-3333-3333-3333-333333333334: |
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+              "config": {
+                  "enc_biome_source": "argument",
+                  "distribution": {"combat": 0, "quest": 0, "gather": 100},
+              },
+          },
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555554", "name": "Forest"},
+          },
+      }
+    eeee5555-5555-5555-5555-555555555554: |
+      [[["enc.gather"], "skill_check", "Old ranger mark", "Three shallow cuts point toward a dry ford.", "Wisdom (Survival)", 0]]
+
 !enc
 ---
 re:biome
@@ -497,7 +525,7 @@ vars:
 
 !enc forest
 ---
-re:Lost traveller|quest
+re:Lost traveller[\s\S]*Quest hook
 ---
 name: balanced distribution favours underrepresented quest kind
 vars:

@@ -30,7 +30,7 @@ vars:
 
 !show
 ---
-"re:travel:[\\s\\S]*route_priority[\\s\\S]*least_encs[\\s\\S]*show_arrival_time[\\s\\S]*true[\\s\\S]*show_arrival_weather[\\s\\S]*true[\\s\\S]*economy:[\\s\\S]*job_location_policy[\\s\\S]*warn[\\s\\S]*ask_to_confirm_purchases[\\s\\S]*true[\\s\\S]*jobs[\\s\\S]*1"
+"re:travel:[\\s\\S]*route_priority[\\s\\S]*least_encs[\\s\\S]*show_arrival_time[\\s\\S]*true[\\s\\S]*show_arrival_weather[\\s\\S]*true[\\s\\S]*combat_add_prompt[\\s\\S]*madd_commands[\\s\\S]*economy:[\\s\\S]*job_location_policy[\\s\\S]*warn[\\s\\S]*ask_to_confirm_purchases[\\s\\S]*true[\\s\\S]*jobs[\\s\\S]*1"
 ---
 name: show lists travel arrival and economy job config
 vars:
@@ -42,7 +42,7 @@ vars:
           "travel": {
               "enabled": True,
               "commands": {"travel": True, "location": True, "time": True, "weather": True},
-              "config": {"route_priority": "least_encs", "show_arrival_time": True, "show_arrival_weather": True},
+              "config": {"route_priority": "least_encs", "show_arrival_time": True, "show_arrival_weather": True, "combat_add_prompt": "madd_commands"},
           },
           "economy": {
               "enabled": True,

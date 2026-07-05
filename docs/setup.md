@@ -198,6 +198,7 @@ subsystems = {
             "show_arrival_time": True,
             "show_arrival_weather": True,
             "show_shops_on_travel": True,
+            "combat_add_prompt": "madd_commands",
             "transport_icons": {
                 "walk": "🚶",
                 "fly": "🪽",
@@ -236,6 +237,8 @@ Travel combines the default transport with any transport args on `!travel <desti
 Use `distance_miles` or `travel_hours` for route length. Keep `steps` for meaningful things players resolve, such as encounters, costs, hazards, or special activities; `proceed` is mainly an edge-case fallback.
 
 Route selection is controlled by `subsystems.travel.config.route_priority`: `least_encs` (default), `least_travel_time`, `least_cost`, or `custom`. For `custom`, set numeric `route_weights` keys such as `encounter`, `proceed`, `travel_hours`, `gold`, `rations`, and `leg`.
+
+Combat encounter follow-up is controlled by `subsystems.travel.config.combat_add_prompt`: `madd_commands` shows copyable `!i madd` commands, `combat_hint` points players at `!combat`, and `off` hides the follow-up.
 
 Large maps can be split into JSON gvars and referenced from the config:
 

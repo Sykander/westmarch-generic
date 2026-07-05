@@ -651,15 +651,34 @@ function displayRoll(
   return details.length ? `${line} (${details.join(', ')})` : line;
 }
 
+function surpriseText(target: unknown) {
+  const value = text(target).trim();
+  const key = value.toLowerCase();
+  if (['you', 'your party', 'the party', 'party', 'adventurers'].includes(key)) {
+    return 'You are surprised!';
+  }
+  if (
+    ['enemy', 'enemies', 'monster', 'monsters', 'foe', 'foes', 'hostile', 'hostiles'].includes(key)
+  ) {
+    return 'Enemies are surprised!';
+  }
+  return value ? `${value} is surprised!` : '';
+}
+
+function combatBanner(surprised: unknown[]) {
+  const surpriseParts = surprised.map(surpriseText).filter(Boolean);
+  let line = '\u001b[1;31mCombat Initiated!\u001b[0m';
+  if (surpriseParts.length) {
+    line += ` \u001b[1;33m${surpriseParts.join(' ')}\u001b[0m`;
+  }
+  return `\`\`\`ansi\n${line}\n\`\`\``;
+}
+
 function displayCombat(
   enemies: unknown,
   { surprised = [], details = [] }: { surprised?: unknown[]; details?: unknown[] } = {},
 ) {
-  const lines = ['> Combat Initiated!'];
-  for (const target of surprised) {
-    const name = text(target).trim();
-    if (name) lines.push(`${name} was **surprised**!`);
-  }
+  const lines = [combatBanner(surprised)];
   for (const detail of details) {
     const line = text(detail).trim();
     if (line) lines.push(line);

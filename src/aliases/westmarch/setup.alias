@@ -287,6 +287,7 @@ Implemented now:
 `subsystems.travel.config.location_biome_override`: exact biome args can override location-inferred exploration.
 `subsystems.travel.config.path_biome_policy`: path step biomes should match the origin location's activity biomes, or use off to skip this check.
 `subsystems.travel.config.route_priority`: route scoring policy, usually least_encs, least_travel_time, least_cost, or custom with route_weights.
+`subsystems.travel.config.combat_add_prompt`: combat encounter follow-up, usually madd_commands, combat_hint, or off.
 `subsystems.travel.config.transport_icons`: route display icons keyed by transport category, such as walk, horse, cart, boat, ship, fly, swim, portal, and teleportation_circle.
 `monsters`: optional owner monster entries searched before the bundled engine catalogue.
 

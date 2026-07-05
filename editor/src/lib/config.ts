@@ -55,6 +55,7 @@ const VALID_ENC_BIOME = ['auto', 'argument', 'location'];
 const VALID_HUNT_LOCATION_POLICY = ['off', 'location', 'monsters'];
 const VALID_PATH_BIOME_POLICY = ['from_location', 'off'];
 const VALID_ROUTE_PRIORITY = ['least_encs', 'least_travel_time', 'least_cost', 'custom'];
+const VALID_COMBAT_ADD_PROMPT = ['off', 'combat_hint', 'madd_commands'];
 const VALID_JOB_LOCATION_POLICY = ['off', 'warn', 'check'];
 const VALID_RULES_VERSION = ['2014', '2024'];
 const VALID_FOOTER = ['helpful_tips', 'string', 'help', 'credits', 'balanced'];
@@ -534,6 +535,7 @@ function createDefaultSubsystems(): Record<string, AnyRecord> {
         show_arrival_time: false,
         show_arrival_weather: false,
         show_shops_on_travel: true,
+        combat_add_prompt: 'madd_commands',
         transport_icons: {
           walk: '🚶',
           fly: '🪽',
@@ -2339,6 +2341,21 @@ function validateTravel(model: ConfigModel, issues: ConfigIssue[]) {
         ),
       );
     }
+  }
+  const combatAddPrompt = String(travelConfig.combat_add_prompt ?? 'madd_commands')
+    .trim()
+    .toLowerCase();
+  if (!VALID_COMBAT_ADD_PROMPT.includes(combatAddPrompt)) {
+    issues.push(
+      issue(
+        'error',
+        'travel.combat_add_prompt',
+        'Subsystems',
+        'subsystems.travel.config.combat_add_prompt',
+        'Invalid combat add prompt',
+        '`combat_add_prompt` must be off, combat_hint, or madd_commands.',
+      ),
+    );
   }
   const transportIcons = asRecord(travelConfig.transport_icons);
   for (const key of REQUIRED_TRANSPORT_ICONS) {

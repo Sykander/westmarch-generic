@@ -568,12 +568,12 @@ def _trade_style(value, style):
 
 
 def _trade_row(item_name, buy_text, sell_text=None):
-    parts = [_trade_style(item_name, "item"), _trade_style("Buy", "buy"), _trade_code_text(buy_text)]
+    price_parts = [_trade_style("Buy", "buy"), _trade_code_text(buy_text)]
     if sell_text == None:
-        return "  ".join(parts)
-    parts.append(_trade_style("Sell", "sell"))
-    parts.append(_trade_code_text(sell_text))
-    return "  ".join(parts)
+        return [_trade_style(item_name, "item"), "  ".join(price_parts)]
+    price_parts.append(_trade_style("Sell", "sell"))
+    price_parts.append(_trade_code_text(sell_text))
+    return [_trade_style(item_name, "item"), "  ".join(price_parts)]
 
 
 def trade_text(config_override=None, character_location_id=None, max_lines=80):
@@ -605,7 +605,8 @@ def trade_text(config_override=None, character_location_id=None, max_lines=80):
                     sell_price = price_for_sell(shop, stock_entry, 1, cfg)
                     if len(sell_price) > 0:
                         sell_text = format_price_ansi(cfg, sell_price)
-            item_lines.append(_trade_row(name, buy_text, sell_text))
+            for line in _trade_row(name, buy_text, sell_text):
+                item_lines.append(line)
         if len(item_lines) == 0:
             continue
         for line in item_lines:

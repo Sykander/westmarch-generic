@@ -46,6 +46,7 @@ subsystems = {
             "show_arrival_time": True,
             "show_arrival_weather": True,
             "show_shops_on_travel": True,
+            "combat_add_prompt": "madd_commands",
         },
     },
 }
@@ -59,6 +60,9 @@ shape:
 `route_priority` controls route scoring: `least_encs` (default),
 `least_travel_time`, `least_cost`, or `custom` with numeric `route_weights`
 such as `encounter`, `proceed`, `travel_hours`, `gold`, `rations`, and `leg`.
+Combat encounter follow-up is controlled by `combat_add_prompt`: `madd_commands`
+prints copyable `!i madd` commands, `combat_hint` points at `!combat`, and `off`
+hides the follow-up.
 
 ```py
 {

@@ -1674,6 +1674,15 @@ function SubsystemAdvancedEditor({
                 <span>Show shops in travel</span>
               </label>
             </div>
+            <SelectField
+              label="Combat add prompt"
+              value={String(config.combat_add_prompt ?? 'madd_commands')}
+              values={['off', 'combat_hint', 'madd_commands']}
+              onChange={(value) =>
+                updateConfig(`subsystems.${subsystemKey}.config.combat_add_prompt`, value)
+              }
+              help="Controls whether combat encounters show no follow-up, a !combat hint, or copyable !i madd commands."
+            />
           </div>
           <TransportIconsEditor
             value={asRecord(config.transport_icons ?? TRANSPORT_ICON_DEFAULTS)}

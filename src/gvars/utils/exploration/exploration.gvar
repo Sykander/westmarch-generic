@@ -178,14 +178,17 @@ def run_activity(activity, argslist, get_embed):
         kind = "gather"
     enc = _field(pick, "encounter")
     loc_id, loc = journeys.get_location(ch, cfg)
+    parsed_args = argparse(argslist)
     result = encounters.process_encounter(
         enc,
         ch,
         {
             "args": argslist,
+            "parsed_args": parsed_args,
             "config": cfg,
             "activity": activity,
             "biome": biome,
+            "encounter_kind": kind,
             "location_id": loc_id,
             "location": loc,
             "current_location_id": loc_id,
