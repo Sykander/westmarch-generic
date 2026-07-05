@@ -636,3 +636,33 @@ vars:
       }
     eeee5555-5555-5555-5555-555555555555: |
       [[["enc.gather"], "gold", "Treasure cache", "Coins glint in the dirt.", 5]]
+
+!enc forest
+---
+re:Sealed letter in the drain[\s\S]*Quest hook[\s\S]*Activated quest
+---
+name: encounter quest outcome self-assigns when policy enabled
+vars:
+  svars:
+    westmarch_config: "eeee8893-8893-8893-8893-888888889393"
+  gvars:
+    eeee8893-8893-8893-8893-888888889393: |
+      policies = {"quest": {"self_assign": True}}
+      subsystems = {
+          "exploration": {
+              "enabled": True,
+              "commands": {"enc": True},
+              "config": {
+                  "enc_biome_source": "argument",
+                  "distribution": {"combat": 0, "quest": 100, "gather": 0},
+              },
+          },
+          "misc": {"enabled": True, "commands": {"quest": True}},
+      }
+      world_data = {
+          "biomes": {
+              "forest": {"gvar_id": "eeee5555-5555-5555-5555-555555555556"},
+          },
+      }
+    eeee5555-5555-5555-5555-555555555556: |
+      [[["enc.quest"], "raw", {"name": "Sealed letter in the drain", "description": "A wax-sealed letter has lodged in a street drain.", "outcomes": [{"type": "quest", "quest_id": "sealed-letter", "title": "Sealed letter in the drain"}]}]]

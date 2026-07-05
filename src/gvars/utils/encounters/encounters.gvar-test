@@ -6,6 +6,42 @@ True
 ---
 name: process_encounter applies gold outcome
 
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(quests = env.gvars.quests)
+
+cfg = {"policies": {"quest": {"self_assign": True}}}
+enc = {
+    "name": "Sealed letter in the drain",
+    "description": "A wax-sealed letter has lodged in a street drain.",
+    "outcomes": [{"type": "quest", "quest_id": "sealed-letter", "title": "Sealed letter in the drain"}],
+}
+result = encounters.process_encounter(enc, character(), {"config": cfg, "encounter_kind": "quest"})
+journal = quests.load_journal(character())
+matches = quests.find_quests(journal, "sealed")
+return "Activated quest" in result["outcome_text"] and len(matches) == 1 and "active" in quests.format_quest(matches[0])
+---
+True
+---
+name: process_encounter self-assigns quest outcomes when enabled
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(quests = env.gvars.quests)
+
+cfg = {"policies": {"quest": {"self_assign": False}}}
+enc = {
+    "name": "Sealed letter in the drain",
+    "description": "A wax-sealed letter has lodged in a street drain.",
+    "outcomes": [{"type": "quest", "quest_id": "sealed-letter", "title": "Sealed letter in the drain"}],
+}
+result = encounters.process_encounter(enc, character(), {"config": cfg, "encounter_kind": "quest"})
+journal = quests.load_journal(character())
+matches = quests.find_quests(journal, "sealed")
+return result["outcome_text"] == "" and len(matches) == 0
+---
+True
+---
+name: process_encounter leaves quest outcomes narrative when self assign is off
+
 enc = {"name": "Empty", "description": "Nothing happens."}
 result = encounters.process_encounter(enc, character())
 return result["description"] == "Nothing happens." and result["outcome_text"] == ""

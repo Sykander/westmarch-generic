@@ -21,3 +21,12 @@ return ok and ok2 and "completed" in msg2
 True
 ---
 name: quests can mark quest completed
+
+cfg = {"policies": {"quest": {"max_active": 1}}}
+ok, msg = quests.activate_from_encounter(character(), cfg, "first", "First")
+ok2, msg2 = quests.activate_from_encounter(character(), cfg, "second", "Second")
+return ok and not ok2 and "capped" in msg2
+---
+True
+---
+name: quests activate_from_encounter respects active cap

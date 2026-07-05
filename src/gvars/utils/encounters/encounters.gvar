@@ -7,6 +7,7 @@ using(
     dicts = env.gvars.dicts,
     journeys = env.gvars.journeys,
     lists = env.gvars.lists,
+    quests = env.gvars.quests,
     rolls_lib = env.gvars.rolls,
     strings = env.gvars.strings,
 )
@@ -436,7 +437,7 @@ def process_encounter(encounter, character, args=None):
     outcomes = _resolve_value(_read_field(encounter, "outcomes"), ectx)
     outcome_text = ""
     if outcomes != None and lists.is_list(outcomes):
-        outcome_text = _apply_outcomes(outcomes, character)
+        outcome_text = _apply_outcomes(outcomes, character, _context_value(ectx, "config"))
     thumb = _resolve_value(_read_field(encounter, "thumb"), ectx)
     if thumb == None:
         thumb = _resolve_value(_read_field(encounter, "thumbnail"), ectx)
@@ -471,7 +472,31 @@ def _roll_total(value):
         return 0
 
 
-def _apply_outcomes(outcomes, character):
+def _quest_self_assign_enabled(cfg):
+    policies = _read_field(cfg, "policies")
+    quest_policy = _read_field(policies, "quest")
+    return _read_field(quest_policy, "self_assign") == True
+
+
+def _apply_quest_outcome(outcome, character, cfg):
+    if not _quest_self_assign_enabled(cfg):
+        return ""
+    quest_id = _read_field(outcome, "quest_id")
+    if quest_id == None or str(quest_id).strip() == "":
+        return ""
+    title = _read_field(outcome, "title")
+    if title == None or str(title).strip() == "":
+        title = _read_field(outcome, "name")
+    category = _read_field(outcome, "category")
+    ok, msg = quests.activate_from_encounter(character, cfg, quest_id, title, category)
+    if msg == None or str(msg).strip() == "":
+        if ok:
+            return "-# Quest added to journal."
+        return "-# Quest could not be added to journal."
+    return "-# " + str(msg)
+
+
+def _apply_outcomes(outcomes, character, cfg=None):
     lines = []
     for outcome in outcomes:
         if outcome == None or not dicts.is_dict(outcome):
@@ -501,6 +526,10 @@ def _apply_outcomes(outcomes, character):
                 lines.append(f"-# Recovered **{total}** HP.")
             except:
                 lines.append(f"-# Recovered **{total}** HP (HP not updated).")
+        elif otype == "quest":
+            quest_line = _apply_quest_outcome(outcome, character, cfg)
+            if quest_line != "":
+                lines.append(quest_line)
     if len(lines) == 0:
         return ""
     return "\n".join(lines)

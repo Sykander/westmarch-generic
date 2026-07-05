@@ -33,10 +33,11 @@ Not exported to aliases. MVP types:
 | `damage` | `total` | **`pc.modify_hp(ch, -total)`** |
 | `healing` | `total` | **`pc.modify_hp(ch, +total)`** |
 | `gold` | `total` | **`pc.modify_gold(ch, total)`** |
+| `quest` | `quest_id`, optional `title`, `category` | **`quests.activate_from_encounter(...)`** when **`policies.quest.self_assign`** is true |
 | `item` | `name`, `total`, optional `bag` | **`pc.modify_bag(...)`** |
 | `currency` | `id`, `total` | **`pc.modify_wallet(ch, id, total)`** |
 
-Defer: `recipe`. **`quest`** — when outcome includes **`quest_id`**, call **`quests.activate_from_encounter`** if **`policies.quest.self_assign`** ([quests.md](quests.md)). All mutators return **`(success, message)`** — see [pc.md](pc.md).
+Defer: `recipe`. All mutators return **`(success, message)`** where supported — see [pc.md](pc.md).
 
 ## Dependencies
 

@@ -328,6 +328,11 @@ def activate_from_encounter(ch, config_override, quest_id, title=None, category=
     quests = _quest_map(journal)
     qid = _slugify(quest_id)
     quest = _read_field(quests, qid)
+    already_active = quest != None and _quest_status(quest) == "active"
+    if not already_active:
+        cap = _max_active(config_override)
+        if cap != None and _active_count(journal) >= cap:
+            return False, f"Active quests are capped at **{cap}**."
     if quest == None:
         quest = {
             "id": qid,
@@ -339,7 +344,9 @@ def activate_from_encounter(ch, config_override, quest_id, title=None, category=
     quest["status"] = "active"
     quests[qid] = quest
     journal["quests"] = quests
-    return save_journal(ch, journal)
+    if not save_journal(ch, journal):
+        return False, "Could not save quest journal."
+    return True, f"Activated quest **{_quest_title(quest, qid)}**."
 
 
 def format_list(journal, config_override=None, status="active"):

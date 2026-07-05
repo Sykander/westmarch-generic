@@ -121,7 +121,7 @@ Resolved from `encounter["outcomes"]` (static list or `callable(ectx)`). Applied
 
 ```py
 outcome = {
-    "type": "damage" | "healing" | "gold" | "item" | ...,  # MVP types below
+    "type": "damage" | "healing" | "gold" | "quest" | ...,  # MVP types below
     # type-specific fields
 }
 ```
@@ -133,10 +133,11 @@ outcome = {
 | `damage` | `total` (dice str or int) | **`pc.modify_hp(ch, -total)`** |
 | `healing` | `total` | **`pc.modify_hp(ch, +total)`** |
 | `gold` | `total` | **`pc.modify_gold(ch, total)`** |
+| `quest` | `quest_id`, optional `title`, `category` | When `policies.quest.self_assign` is true, **`quests.activate_from_encounter(ch, config, quest_id, title, category)`** |
 | `item` | `name`, `total`, optional `bag` | **`pc.modify_bag(ch, name, total, bag)`** |
 | `currency` | `id`, `total` | **`pc.modify_wallet(ch, id, total)`** — `id` must exist in config `currencies` |
 
-Later: `recipe`, `quest` (need notes/quests gvars).
+Later: `recipe`.
 
 ---
 
@@ -2077,7 +2078,7 @@ Quest and gather kinds ignore scaling.
 | `self_assign` | Behaviour |
 |---------------|-----------|
 | **`False`** *(default)* | Quest encounters are narrative hooks only — GM or player uses **`!quest add`** manually |
-| **`True`** | **[encounters.gvar](gvars/encounters.md)** outcome handler calls **`quests.activate_from_encounter`** when outcome includes **`quest_id`** |
+| **`True`** | **[encounters.gvar](gvars/encounters.md)** outcome handler calls **`quests.activate_from_encounter`** for `type: "quest"` outcomes with **`quest_id`** |
 
 Requires **`subsystems.misc.commands.quest`** enabled when **`self_assign`** is **`True`** — the editor reports an error otherwise.
 
