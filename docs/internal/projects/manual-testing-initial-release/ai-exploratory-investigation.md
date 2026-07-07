@@ -6,6 +6,10 @@ No code changes and no test runs were performed.
 
 ## Finding 1: Generic Cooldown Fields Are Exposed For Commands That Do Not Use Cooldowns
 
+Status: resolved for the current 1.0.0 release-candidate scope.
+
+Resolution: `commandSupportsCooldown` defines the supported command set, guided editor cooldown fields are filtered to that set, and validation warns on unsupported raw cooldown config.
+
 Evidence:
 
 - `editor/src/app/App.tsx` renders cooldown fields for every `commandEntries` item in `SubsystemAdvancedEditor`.
@@ -30,6 +34,10 @@ Same issue may be present in:
 - `editor/src/lib/config.ts` validation, which validates cooldown fields for some subsystems without proving runtime support.
 
 ## Finding 2: Economy Setup Is Hard To Discover In The Editor
+
+Status: partially resolved for the current 1.0.0 release-candidate scope.
+
+Resolution: runtime shop diagnostics and editor validation now cover missing shops/currencies and malformed stock. A fully guided shop/currency editor remains a future usability improvement.
 
 Evidence:
 
@@ -56,6 +64,10 @@ Same issue may be present in:
 - `westmarch show`, which counts currencies but does not guide missing shop/currency setup.
 
 ## Finding 3: Path Editor Can Export Empty Encounter Steps
+
+Status: resolved for the current 1.0.0 release-candidate scope.
+
+Resolution: path display handles blank biome values without malformed commands, and validation reports incomplete encounter steps when location inference is not configured.
 
 Evidence:
 
@@ -100,7 +112,11 @@ Same issue may be present in:
 
 ## Finding 5: Planned Time/Weather Features Leak Into Active UX
 
-Evidence:
+Status: resolved for the current 1.0.0 release-candidate scope.
+
+Resolution: `time` and `weather` are implemented as config-backed travel commands. The release surface now treats them as active command toggles, with editor validation for required calendar/weather data.
+
+Original evidence:
 
 - `auth.gvar` maps `time` and `weather` as travel commands.
 - `editor/src/lib/config.ts` includes both in default travel commands and warns when enabled.
@@ -108,13 +124,12 @@ Evidence:
 - `clock.gvar` and `weather.gvar` are placeholders.
 - `westmarch.alias` default HUD fields include `time` and `weather`; time can fall back to the policy mode string.
 
-What went wrong: planned features are represented as normal command toggles.
+What went wrong: planned features were represented as normal command toggles.
 
-Best fix:
+Implemented fix:
 
-- In the editor, mark time/weather as planned and prevent enabling them until implemented, or make validation an error.
-- Remove placeholder `.md` help docs or replace with honest planned-feature text.
-- Avoid displaying `Time: manual` in the HUD; show nothing or a configured world time string.
+- Implement time/weather as config-backed commands.
+- Validate the required calendar/weather data when owners enable those toggles.
 
 Same issue may be present in:
 
@@ -122,6 +137,10 @@ Same issue may be present in:
 - `westmarch show`, which can summarize policy modes that are not backed by implemented commands.
 
 ## Finding 6: The Web Editor Starter Snippet Is Hand-Maintained And Can Drift
+
+Status: resolved for the current 1.0.0 release-candidate scope.
+
+Resolution: editor starter sources are imported from config source files and covered by parser/drift tests.
 
 Evidence:
 
@@ -144,6 +163,10 @@ Same issue may be present in:
 - Docs snippets in `server-config.md`.
 
 ## Finding 7: Reserved/Deferred Policy Flags Have Uneven Validation
+
+Status: resolved for the current 1.0.0 release-candidate scope.
+
+Resolution: editor validation warns for deferred policy flags and checks dependency-sensitive options such as quest self-assign and wallet caps.
 
 Evidence:
 
@@ -169,6 +192,10 @@ Same issue may be present in:
 - Starter comments that mention future behavior without an editor warning.
 
 ## Finding 8: Process Docs Still Mention `westmarch check`, But The Command Is Retired
+
+Status: resolved for the current 1.0.0 release-candidate scope.
+
+Resolution: active repo instructions now point config validation at the web editor and `westmarch show`. Remaining mentions are historical notes in this manual-testing project.
 
 Evidence:
 

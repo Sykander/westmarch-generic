@@ -1,8 +1,13 @@
-Sells an item to a configured shop at your current location.
+Sells an item to a configured shop.
 
-Usage: `!sell <item> [quantity]`
+Usage:
 
-The shop must be visible at your current location and must allow buying from players with `accepts_sells: True`. Item names are matched against shop stock using the shared lookup behavior.
+```text
+!sell <item> [quantity]
+!sell <shop> <item> [quantity]
+```
+
+With no shop argument, the command searches shops visible at your current location. With a shop argument, it searches that shop directly. The resolved shop must allow buying from players with `accepts_sells: True`. Item names are matched against shop stock using the shared lookup behavior.
 
 Use `!sell help` for server-aware runtime help.
 

@@ -88,6 +88,10 @@ Testing plan:
 
 ### 3. Time And Weather Are Exposed Before Implementation
 
+Status: resolved for the current 1.0.0 release-candidate scope.
+
+Resolution: implement the clock/weather path rather than blocking the controls. `!time` reads configured calendars, `!weather` reads configured weather areas, and editor validation requires the relevant world data when those commands are enabled.
+
 Observed issue: `time` and `weather` are visible in command toggles, auth mappings, help docs, and HUD fields, but the aliases and utility modules are placeholders.
 
 Recommended change for initial release:

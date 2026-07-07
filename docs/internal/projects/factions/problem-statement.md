@@ -18,22 +18,22 @@ Forgotten Realms has obvious examples such as the Harpers, the Order of the Gaun
 
 Without a shared factions subsystem, each feature that wants faction behavior would invent its own small rule. That would make configs harder to validate and would encourage server-specific constants in aliases.
 
-The first public release should stay focused on the current command surface and release hardening. Factions are useful, but they are not required for `1.0.0`. They should be planned as an additive 1.x.x feature after the public baseline is stable.
+The first public release should stay focused on the current command surface and release hardening. Factions are useful, but they are not required for `1.0.0`. They are tracked on the `2.x.x` roadmap until the final target version is decided.
 
 ## Users
 
-| User | Needs |
-|------|-------|
-| Server owner | Define factions, join policies, ranks, rewards, and visibility without editing engine aliases |
-| Player | See available factions, understand join requirements, track membership, and view standing |
-| GM/content author | Gate quests, shops, libraries, services, and rewards by faction membership or rank |
-| Maintainer | One generic schema and helper API that other systems can reuse |
-| Reviewer | Clear boundaries between faction data, character state, and server-specific lore |
+| User              | Needs                                                                                         |
+| ----------------- | --------------------------------------------------------------------------------------------- |
+| Server owner      | Define factions, join policies, ranks, rewards, and visibility without editing engine aliases |
+| Player            | See available factions, understand join requirements, track membership, and view standing     |
+| GM/content author | Gate quests, shops, libraries, services, and rewards by faction membership or rank            |
+| Maintainer        | One generic schema and helper API that other systems can reuse                                |
+| Reviewer          | Clear boundaries between faction data, character state, and server-specific lore              |
 
 ## Constraints
 
 - Do not include factions in the `1.0.0` first public release scope.
-- Implement factions in a later `1.x.x` release, higher than `1.0.0`.
+- Implement factions in a later release, currently tracked on the `2.x.x` roadmap.
 - Keep all faction lore in config gvars, not generic aliases.
 - Use `lists.search_list` style lookup behavior for user-entered faction names: 0 matches, 1 match, many matches.
 - Avoid requiring a mutable server database. Character-specific membership should use character state unless a later storage design is deliberately added.

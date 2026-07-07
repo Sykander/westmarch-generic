@@ -23,6 +23,66 @@ When behavior or user-facing surfaces change, update prose as needed in:
 
 Treat **`README.md`**, **`DEVELOPMENT.md`**, **`.cursor/README.md`**, and **`.cursor/reference-cache.json`** (when Cursor tooling, upstream URLs, or tracked versions change) as first-class alongside **`docs/`**, not “out of scope” for edits when the change warrants it.
 
+## Release planning and GitHub releases
+
+Release docs under **`docs/internal/releases/`** are the source of truth for planned public release contents. Keep the next concrete release doc current as work lands:
+
+- Versioning follows SemVer-style **`MAJOR.MINOR.PATCH`** numbers from **`package.json`**.
+- Backwards compatibility starts at **`1.0.0`**. Patch and minor releases in the **`1.x`** line should preserve documented command names, documented argument layouts, and documented config keys. Breaking changes should be held for **`2.0.0`** unless the old behavior continues to work with a deprecation notice.
+- Use **`docs/internal/releases/<version>.md`** for a concrete tag such as **`1.0.0`**, **`1.1.0`**, or **`2.0.0`**.
+- Use roadmap files such as **`2.x.md`** only while the exact version is undecided.
+- Move completed work out of "planned" language before tagging; move deferred work to a later release doc or roadmap section.
+- When changing behavior intended for the next public release, update the matching release doc in the same change. Do not leave release-note cleanup as a separate follow-up.
+- The CI workflow creates a GitHub Release only when the production tag has a matching **`docs/internal/releases/<tag>.md`** file. Tags without a matching doc remain tag-only.
+- Release docs are for server owners, config maintainers, and developers adopting a release. Do not put maintainer runbook steps, such as "run `make build` before tagging", in **`Upgrade Steps`**; keep those in **`DEVELOPMENT.md`**.
+- Version-specific release docs must use this exact section order:
+  1. **`## [<tag>](https://github.com/Sykander/westmarch-generic/releases/tag/<tag>) (YYYY-MM-DD)`** as the first line. Use **`TBD`** only for unreleased planning docs.
+  2. A blockquote high-level release description.
+  3. Optional release artwork. Prefer GitHub Pages URLs for assets under **`editor/public`**, for example **`https://sykander.github.io/westmarch-generic/westmarch-assets/releases/<tag>/banner.png`**.
+  4. **`### Upgrade Steps`**
+  5. **`### Breaking Changes`**
+  6. **`### New Features`**
+  7. **`### Bug Fixes`**
+  8. **`### Performance Improvements`**
+  9. **`### Other Changes`**
+
+Release doc template:
+
+```md
+## [<tag>](https://github.com/Sykander/westmarch-generic/releases/tag/<tag>) (YYYY-MM-DD)
+
+> High-level release description.
+
+<!-- Optional release artwork. -->
+
+### Upgrade Steps
+
+These steps are for server owners, config maintainers, and developers adopting the release.
+
+* [ACTION REQUIRED] Required compatibility or rollout step for adopters.
+* Optional migration or validation step.
+
+### Breaking Changes
+
+* Breaking change, or `None`.
+
+### New Features
+
+* New feature.
+
+### Bug Fixes
+
+* Bug fix.
+
+### Performance Improvements
+
+* Performance improvement.
+
+### Other Changes
+
+* Documentation, CI, roadmap, release-process, or other non-feature change.
+```
+
 ## `docs/` style
 
 - **Forward-looking only:** describe what exists and how to use it. **Do not** document removed APIs, old names, or “we used to …” history—noise for readers.

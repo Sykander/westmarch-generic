@@ -405,3 +405,25 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git tag "${PACKAGE_VERSION}" "${GITHUB_SHA}"
           git push origin "refs/tags/${PACKAGE_VERSION}"
+
+      - name: Create GitHub release when notes exist
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PACKAGE_VERSION: ${{ needs.version.outputs.package_version }}
+        run: |
+          RELEASE_NOTES="docs/internal/releases/${PACKAGE_VERSION}.md"
+
+          if [ ! -f "${RELEASE_NOTES}" ]; then
+            echo "No release notes at ${RELEASE_NOTES}; skipping GitHub release."
+            exit 0
+          fi
+
+          if gh release view "${PACKAGE_VERSION}" >/dev/null 2>&1; then
+            echo "GitHub release ${PACKAGE_VERSION} already exists; skipping."
+            exit 0
+          fi
+
+          gh release create "${PACKAGE_VERSION}" \
+            --verify-tag \
+            --title "westmarch-generic ${PACKAGE_VERSION}" \
+            --notes-file "${RELEASE_NOTES}"

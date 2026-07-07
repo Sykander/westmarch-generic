@@ -2,7 +2,7 @@
 
 ## Recommendation
 
-Add a config-owned `factions` catalogue and one player-facing `!faction` hub command in a post-1.0.0 release.
+Add a config-owned `factions` catalogue and one player-facing `!faction` hub command in a later release.
 
 The first implementation should be deliberately small:
 
@@ -11,7 +11,7 @@ The first implementation should be deliberately small:
 - membership state is stored on the character;
 - other systems can read a shared requirement shape later.
 
-Do not ship this in `1.0.0`. Target the first suitable 1.x.x minor release after `1.0.0`.
+Do not ship this in `1.0.0`. Track the work on the `2.x.x` roadmap unless the final design is strictly additive.
 
 ## Target config shape
 
@@ -53,15 +53,15 @@ This shape is illustrative. Final implementation should follow the repo's config
 
 Prefer one top-level alias at first:
 
-| Command | Behavior |
-|---------|----------|
-| `!faction` | Show the character's faction status and brief help |
-| `!faction list` | List visible factions |
-| `!faction <name>` | Show one faction by id/name/alias search |
-| `!faction join <name>` | Join directly or create a pending membership based on join policy |
-| `!faction leave <name>` | Leave a faction when allowed |
-| `!faction renown <name>` | Show standing, rank, and next threshold |
-| `!faction help` | Explain configured behavior |
+| Command                  | Behavior                                                          |
+| ------------------------ | ----------------------------------------------------------------- |
+| `!faction`               | Show the character's faction status and brief help                |
+| `!faction list`          | List visible factions                                             |
+| `!faction <name>`        | Show one faction by id/name/alias search                          |
+| `!faction join <name>`   | Join directly or create a pending membership based on join policy |
+| `!faction leave <name>`  | Leave a faction when allowed                                      |
+| `!faction renown <name>` | Show standing, rank, and next threshold                           |
+| `!faction help`          | Explain configured behavior                                       |
 
 Admin or moderator actions can be added behind the same alias once the state model is proven:
 

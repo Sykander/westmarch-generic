@@ -35,15 +35,11 @@ If the biome was inferred from the location then we should say that here `No enc
 
 in the case the user picked the biome then the current text is fine
 
-## (Time and Weather)
+## Time and Weather
 
-### time is not implemented
+Resolved for the current 1.0.0 release-candidate scope.
 
-it's not implemented yet
-
-### Weather is not implemented
-
-it's not implemented
+`!time` now reads configured `world_data.calendars`, and `!weather` reads configured `world_data.weather.by_area`. Alias coverage includes the generic commands and the Forgotten Realms starter calendar/weather path.
 
 ## Economy
 
@@ -150,4 +146,3 @@ brew is for potions and tonics and poisons etc.
 craft is for making physical mundane items or vehicle or objects or etc.
 enchant is for making magic items by enchanting a mundane item with some magic process to make a cloak of protection or bag of beans or goggles of the night etc.
 scribe is for making spell scrolls (not the same as wizards copying spells into a spellbook)
-

@@ -2,11 +2,11 @@
 
 ## Environments
 
-| Environment | Sourcemap | Purpose |
-|-------------|-----------|---------|
-| Local | — | Edit and test on your machine with `avrae-ls` |
-| Development | `utils/sourcemap.dev.json` | Deploy target for dev workshop |
-| Production | `utils/sourcemap.prod.json` | Deploy target for production workshop |
+| Environment | Sourcemap                   | Purpose                                       |
+| ----------- | --------------------------- | --------------------------------------------- |
+| Local       | —                           | Edit and test on your machine with `avrae-ls` |
+| Development | `utils/sourcemap.dev.json`  | Deploy target for dev workshop                |
+| Production  | `utils/sourcemap.prod.json` | Deploy target for production workshop         |
 
 Template sourcemaps use **real workshop UUIDs** from `unused_gvars.md`. The **`workshop.environment`** field must always match the **`env`** gvar slot id in that sourcemap (`env.dev.gvar` in dev, `env.prod.gvar` in prod). Aliases `using(env="…")` reference the **dev** env id for local work.
 
@@ -89,13 +89,45 @@ make deploy      # Development
 npm run deploy:prod
 ```
 
-The unified CI workflow (`.github/workflows/ci.yml`) runs on pushes to `main` only. It runs lint, sourcemap checks, `avrae-ls` tests, and a live version check against the dev/prod `env` gvars. If checks pass, CI deploys Development. If `package.json` is higher than the deployed Production `version`, CI deploys Production and tags the commit with that package version.
-
 Before first deploy:
 
 1. Create Avrae workshop slots and paste real UUIDs into sourcemaps.
 2. Run `make build`.
 3. Confirm `make test` passes.
+
+## Versioning and releases
+
+This project uses SemVer-style `MAJOR.MINOR.PATCH` versions from `package.json`.
+
+| Version line          | Meaning                                                                         |
+| --------------------- | ------------------------------------------------------------------------------- |
+| `1.0.0`               | First public release baseline                                                   |
+| `1.0.x`               | Public patch releases: bug fixes, docs, validation fixes, and safe data updates |
+| `1.x.0` where `x > 0` | Additive feature releases after the public baseline                             |
+| `2.0.0`               | Reserved for breaking config or command contract changes                        |
+
+Release planning lives in `docs/internal/releases/`. Keep the next concrete release doc updated as work lands. Version-specific release docs must follow the template in `docs/internal/releases/README.md`: release tag/link/date, overview, upgrade steps, breaking changes, new features, bug fixes, performance improvements, and other changes.
+
+Release notes are for server owners, config maintainers, and developers adopting a release. Maintainer-only runbook steps belong in `DEVELOPMENT.md`, not in release-note `Upgrade Steps`.
+
+Backwards compatibility starts at `1.0.0`. Patch and minor releases in the `1.x` line should preserve documented command names, documented argument layouts, and documented config keys. Breaking changes should be held for `2.0.0` unless the old behavior continues to work with a deprecation notice.
+
+CI creates a GitHub Release only when the production tag has a matching `docs/internal/releases/<tag>.md` file. Tags without a matching release doc remain tag-only.
+
+## CI release flow
+
+The unified CI workflow (`.github/workflows/ci.yml`) runs on pushes to `main` only. It does not expose a manual `workflow_dispatch` trigger.
+
+CI runs lint, sourcemap checks, editor typecheck/tests, `avrae-ls` shards, and a live version check against the dev/prod `env` gvars. If checks pass, CI deploys Development.
+
+If `package.json` is higher than the deployed Production `version`, CI then:
+
+1. Deploys Production through `npm run deploy:prod`.
+2. Builds and deploys the editor to GitHub Pages.
+3. Tags the commit with the package version.
+4. Creates a GitHub Release from `docs/internal/releases/<version>.md` when that file exists.
+
+Before tagging a release, replace any `TBD` date in the matching release doc, run `make build`, run `make test`, and commit generated files only from the build pipeline.
 
 ## Sourcemaps
 
@@ -107,20 +139,13 @@ Use `docs_file` for Avrae help text. Alias docs live beside their alias sources 
 
 **Generated (do not hand-edit):**
 
-| Output | Command |
-|--------|---------|
-| `src/gvars/env.dev.gvar`, `src/gvars/env.prod.gvar` | `npm run generate-env` |
-| `.varfile.json` | `npm run generate-vars` |
+| Output                                              | Command                 |
+| --------------------------------------------------- | ----------------------- |
+| `src/gvars/env.dev.gvar`, `src/gvars/env.prod.gvar` | `npm run generate-env`  |
+| `.varfile.json`                                     | `npm run generate-vars` |
 
 See `.cursor/rules/drac2-tools-maintainer.mdc` for UUID hygiene, doc sync, and `.cursor/` reference refresh.
 
-## CI
+## Project roadmap
 
-CI runs from `.github/workflows/ci.yml` on commits to `main`. It does not expose a manual `workflow_dispatch` trigger.
-
-## Next steps (project roadmap)
-
-- [ ] Define standard svar names and config gvar schema
-- [ ] Port westmarch systems behind svar-gated config loading
-- [ ] Document server-owner setup in `docs/`
-- [ ] Replace placeholder sourcemap UUIDs with real workshop ids
+Use `docs/internal/releases/` for public release planning, `docs/internal/projects/` for larger design tracks, and `docs/internal/research/` for compatibility reviews and implementation audits. The current next-major roadmap is `docs/internal/releases/2.x.md`.
