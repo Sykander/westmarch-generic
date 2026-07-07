@@ -1,0 +1,139 @@
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+actions = ["i", "a", "shortbow"]
+args = [["-t", "GO1"], ["-d", "1d4"]]
+expected_command = " ".join(actions) + " " + args[0][0] + " " + args[0][1] + " " + args[1][0] + " " + args[1][1]
+
+command = commands.get_command(actions, args)
+
+expect(command).to.be(expected_command)
+
+return "ok"
+---
+"ok"
+---
+name: get_command should give a command string
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+actions = ['i"', "a'", "shortbow 12"]
+args = [["-t", "GO1"], ["-d", "1d4"]]
+expected_command = """'i"' "a'" "shortbow 12" """ + args[0][0] + " " + args[0][1] + " " + args[1][0] + " " + args[1][1]
+
+command = commands.get_command(actions, args)
+
+expect(command).to.be(expected_command)
+
+return "ok"
+---
+"ok"
+---
+name: get_command should wrap args in appropriate quote marks
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+arg_a = "no_quotes"
+arg_b = "use quotes"
+arg_c = 'use single quotes"'
+arg_d = "use double quotes"
+arg_e = "use special quotes'" + '"'
+expected_a = arg_a
+expected_b = f'"{arg_b}"'
+expected_c = f"'{arg_c}'"
+expected_d = f'"{arg_d}"'
+expected_e = f'《{arg_e}》'
+
+quoted_a = commands.get_quotes(arg_a)
+quoted_b = commands.get_quotes(arg_b)
+quoted_c = commands.get_quotes(arg_c)
+quoted_d = commands.get_quotes(arg_d)
+quoted_e = commands.get_quotes(arg_e)
+
+expect(quoted_a).to.be(expected_a)
+expect(quoted_b).to.be(expected_b)
+expect(quoted_c).to.be(expected_c)
+expect(quoted_d).to.be(expected_d)
+expect(quoted_e).to.be(expected_e)
+
+return "ok"
+---
+"ok"
+---
+name: get_quotes should wrap args in appropriate quote marks
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+list_of_commands = ["i a shortsword", "g hp +1"]
+expected_command = "multiline !i a shortsword\n!g hp +1"
+
+command = commands.get_multiline(list_of_commands)
+
+expect(command).to.be(expected_command)
+
+return "ok"
+---
+"ok"
+---
+name: get_multiline should give a multiline command string
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+actions = ["roll", "1d20"]
+
+command = commands.get_command(actions, None)
+
+expect(command).to.be("roll 1d20")
+
+return "ok"
+---
+"ok"
+---
+name: get_command should omit args when args is None
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+tab_value = "a\tb"
+newline_value = "a\nb"
+expected_tab = '"a\tb"'
+expected_newline = '"a\nb"'
+
+quoted_tab = commands.get_quotes(tab_value)
+quoted_newline = commands.get_quotes(newline_value)
+
+expect(quoted_tab).to.be(expected_tab)
+expect(quoted_newline).to.be(expected_newline)
+
+return "ok"
+---
+"ok"
+---
+name: get_quotes should wrap values containing tab or newline
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+list_of_commands = []
+expected_command = commands.MULTILINE_BASE + ctx.prefix
+
+command = commands.get_multiline(list_of_commands)
+
+expect(command).to.be(expected_command)
+
+return "ok"
+---
+"ok"
+---
+name: get_multiline should handle an empty command list

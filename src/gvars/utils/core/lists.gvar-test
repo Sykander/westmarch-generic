@@ -1,0 +1,395 @@
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+first_item = {"id": "a", "val": "b"}
+second_item = {"id": "c", "val": "d"}
+input = [first_item, second_item]
+key = "id"
+
+result = lists.to_dict(input, key)
+
+expect(result).to.have.property(first_item[key]).which.has.property("val", first_item.val).and_to.have.property(key, first_item[key])
+expect(result).to.have.property(second_item[key]).which.has.property("val", second_item.val).and_to.have.property(key, second_item[key])
+
+return "ok"
+---
+"ok"
+---
+name: to_dict should convert the given list of objects into a dictionary
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+input = []
+key = "id"
+expected = {}
+
+result = lists.to_dict(input, key)
+
+expect(result).to.be(expected)
+
+return "ok"
+---
+"ok"
+---
+name: to_dict should return empty dict for empty list
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+input = [{"id": "ok"}, {"no_id": True}]
+key = "id"
+
+expect(lambda _ = None: lists.to_dict(input, key)).to.raise_exception()
+
+return "ok"
+---
+"ok"
+---
+name: to_dict should err when an item lacks the key
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+first = {"id": "dup", "v": 1}
+second = {"id": "dup", "v": 2}
+input = [first, second]
+key = "id"
+
+result = lists.to_dict(input, key)
+
+expect(result).to.have.property("dup").which.has.property("v", 2)
+
+return "ok"
+---
+"ok"
+---
+name: to_dict should keep the last item when duplicate keys appear
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+items = [1, 2, 3]
+count = 0
+expected = []
+
+result = lists.get_random_from_list(items, count)
+
+expect(result).to.be(expected)
+
+return "ok"
+---
+"ok"
+---
+name: get_random_from_list should return empty list when count is zero
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+items = [10, 20, 30, 40]
+
+result = lists.get_random_from_list(items)
+
+expect(result).to.have.length(1)
+expect(result[0]).to.is_in(items)
+
+return "ok"
+---
+"ok"
+---
+name: get_random_from_list should default count to one
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+items = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+count = 3
+
+result = lists.get_random_from_list(items, count)
+
+expect(result).to.have.length(count)
+
+return "ok"
+---
+"ok"
+---
+name: get_random_from_list should return distinct items of requested length
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+items = ["a", "b", "c"]
+count = 3
+
+result = lists.get_random_from_list(items, count)
+
+expect(result).to.have.length(count)
+expect(result).to.have_element("a")
+expect(result).to.have_element("b")
+expect(result).to.have_element("c")
+
+return "ok"
+---
+"ok"
+---
+name: get_random_from_list should return a permutation when count equals list length
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+items = [1, 2]
+count = 5
+
+expect(lambda _ = None: lists.get_random_from_list(items, count)).to.raise_exception()
+
+return "ok"
+---
+"ok"
+---
+name: get_random_from_list should err when count exceeds list length
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+items = [1, 2, 3]
+count = -1
+
+expect(lambda _ = None: lists.get_random_from_list(items, count)).to.raise_exception()
+
+return "ok"
+---
+"ok"
+---
+name: get_random_from_list should err when count is negative
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+items = []
+count = 1
+
+expect(lambda _ = None: lists.get_random_from_list(items, count)).to.raise_exception()
+
+return "ok"
+---
+"ok"
+---
+name: get_random_from_list should err when list is empty and count is positive
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+input_a = "a"
+input_b = 1
+input_c = {}
+input_d = []
+input_e = (1, 2)
+
+result_a = lists.is_list(input_a)
+result_b = lists.is_list(input_b)
+result_c = lists.is_list(input_c)
+result_d = lists.is_list(input_d)
+result_e = lists.is_list(input_e)
+
+expect(result_a).to.be(False)
+expect(result_b).to.be(False)
+expect(result_c).to.be(False)
+expect(result_d).to.be(True)
+expect(result_e).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: is_list should give True if its a list and False otherwise
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+items = ["apple", "pineapple"]
+search = "apple"
+
+result = lists.search_list(items, search)
+
+expect(result).to.have.length(1)
+expect(result[0]).to.be("apple")
+
+return "ok"
+---
+"ok"
+---
+name: search_list should prefer exact matches over substring matches
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+items = ["FooBar", "baz"]
+search = "foo"
+
+result = lists.search_list(items, search)
+
+expect(result).to.have.length(1)
+expect(result[0]).to.be("FooBar")
+
+return "ok"
+---
+"ok"
+---
+name: search_list should find case insensitive substring matches
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+items = ["Apple", "apple pie"]
+search = "apple"
+
+result = lists.search_list(items, search)
+
+expect(result).to.have.length(1)
+expect(result[0]).to.be("Apple")
+
+return "ok"
+---
+"ok"
+---
+name: search_list should prefer case insensitive full matches over substring matches
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+items = ["a", "b", "c"]
+search = "xyz"
+
+result = lists.search_list(items, search)
+
+expect(result).to.be([])
+
+return "ok"
+---
+"ok"
+---
+name: search_list should return empty list when nothing matches
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+items = []
+search = "anything"
+
+result = lists.search_list(items, search)
+
+expect(result).to.be([])
+
+return "ok"
+---
+"ok"
+---
+name: search_list should return empty list for empty items
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+items = [{"name": "ring"}, {"name": "ring of fire"}]
+key = "name"
+search = "ring"
+
+result = lists.search_list_by_key(items, key, search)
+
+expect(result).to.have.length(1)
+expect(result[0]).to.have.property("name", "ring")
+
+return "ok"
+---
+"ok"
+---
+name: search_list_by_key should prefer exact matches on the key
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+items = [{"code": "AbCd"}, {"code": "zz"}]
+key = "code"
+search = "bc"
+
+result = lists.search_list_by_key(items, key, search)
+
+expect(result).to.have.length(1)
+expect(result[0]).to.have.property("code", "AbCd")
+
+return "ok"
+---
+"ok"
+---
+name: search_list_by_key should find case insensitive substring on key values
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+items = [{"name": "Ring"}, {"name": "ring mail"}]
+key = "name"
+search = "ring"
+
+result = lists.search_list_by_key(items, key, search)
+
+expect(result).to.have.length(1)
+expect(result[0]).to.have.property("name", "Ring")
+
+return "ok"
+---
+"ok"
+---
+name: search_list_by_key should prefer case insensitive full key matches over substring matches
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+items = [{"k": "a"}, {"k": "b"}]
+key = "k"
+search = "nomatch"
+
+result = lists.search_list_by_key(items, key, search)
+
+expect(result).to.be([])
+
+return "ok"
+---
+"ok"
+---
+name: search_list_by_key should return empty list when nothing matches
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+items = [{"name": "hello"}, {"id": 1}]
+key = "name"
+search = "ello"
+
+expect(lambda _ = None: lists.search_list_by_key(items, key, search)).to.raise_exception()
+
+return "ok"
+---
+"ok"
+---
+name: search_list_by_key should err when an item lacks the key

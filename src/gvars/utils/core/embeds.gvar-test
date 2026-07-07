@@ -1,0 +1,192 @@
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+title = "Hello World!"
+desc = "A really cool message!"
+expected_command = f'embed -title "{title}" -desc "{desc}"'
+
+embed_command = embeds.get_embed(title = title, desc = desc)
+
+expect(embed_command).to.be(expected_command)
+
+return "ok"
+---
+"ok"
+---
+name: get_embed should give an embed command string
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+title = "Hello World!"
+desc = "A really cool message!"
+fields = ["Field1", "Field2"]
+footer = "cool footer"
+image = "test"
+thumb = "test"
+color = "test"
+timeout = 60
+expected_command = f'embed -title "{title}" -desc "{desc}" -f {fields[0]} -f {fields[1]} -footer "{footer}" -image {image} -thumb {thumb} -color {color} -t {timeout}'
+
+embed_command = embeds.get_embed(title = title, desc = desc, fields = fields, footer = footer, image = image, thumb = thumb, color = color, timeout = timeout)
+
+expect(embed_command).to.be(expected_command)
+
+return "ok"
+---
+"ok"
+---
+name: get_embed should accept all valid embed args
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+title = "Hello World!"
+desc = "A really cool message!"
+footer = "footer message"
+expected_command = f'embed -title "{title}" -desc "{desc}" -footer "{footer}"'
+
+get_embed = embeds.configure_get_embed(title = title, desc = desc)
+embed_command = get_embed(footer = footer)
+
+expect(embed_command).to.be(expected_command)
+
+return "ok"
+---
+"ok"
+---
+name: configure_get_embed should used configured values as default
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+title = "Hello World!"
+desc = "A really cool message!"
+fields = ["Field1", "Field2"]
+footer = "cool footer"
+image = "test"
+thumb = "test"
+color = "test"
+timeout = 60
+expected_command = f'embed -title "{title}" -desc "{desc}" -f {fields[0]} -f {fields[1]} -footer "{footer}" -image {image} -thumb {thumb} -color {color} -t {timeout}'
+
+get_embed = embeds.configure_get_embed(title = title, desc = desc, fields = fields, footer = footer, image = image, thumb = thumb, color = color, timeout = timeout)
+embed_command = get_embed()
+
+expect(embed_command).to.be(expected_command)
+
+return "ok"
+---
+"ok"
+---
+name: configure_get_embed should accept all valid embed args
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+field_header = "Header"
+field_desc = "Desc  test"
+field_inline = True
+expected_field = f"{field_header}|{field_desc}|inline"
+
+field = embeds.get_field(field_header, field_desc, field_inline)
+
+expect(field).to.be(expected_field)
+
+return "ok"
+---
+"ok"
+---
+name: get_field Should give a properly formatted field
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+lots_of_text = "1234567890123456789012345678901234567890"
+length = 20
+expected_text = lots_of_text[0:17] + "..."
+
+cut_text = embeds.format_to_length(lots_of_text, length)
+
+expect(cut_text).to.be(expected_text)
+expect(cut_text).to.have.length(length)
+
+return "ok"
+---
+"ok"
+---
+name: format_to_length should give a string less than the given length
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+short = "hello"
+limit = 20
+
+result = embeds.format_to_length(short, limit)
+
+expect(result).to.be(short)
+
+return "ok"
+---
+"ok"
+---
+name: format_to_length should return content unchanged when shorter than limit
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+title = "T"
+text = "Body"
+
+field = embeds.get_field(title, text, False)
+
+expect(field).to.be("T|Body")
+
+return "ok"
+---
+"ok"
+---
+name: get_field should omit inline suffix when inline is false
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+title = "OnlyTitle"
+
+field = embeds.get_field(title)
+
+expect(field).to.be("OnlyTitle|")
+
+return "ok"
+---
+"ok"
+---
+name: get_field should use empty text by default
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+title = "T"
+desc = "Just a description"
+fields = ["A|B"]
+
+embed_command = embeds.get_embed(title = title, desc = desc, fields = fields)
+
+expect(embed_command).to.have_element("A|B")
+
+return "ok"
+---
+"ok"
+---
+name: get_embed should include field flags when fields are provided

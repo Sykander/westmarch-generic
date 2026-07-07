@@ -1,0 +1,484 @@
+expect = expect.expect
+
+def expect_to_raise_exception(func):
+    try:
+        func()
+    except:
+        return True
+    else:
+        err("Expected to raise exception")
+
+def expect_to_not_raise_exception(func):
+    try:
+        func()
+    except:
+        err("Expected to not raise exception")
+    else:
+        return True
+
+expect_to_raise_exception(lambda _ = None: expect("a").eq("b"))
+expect_to_not_raise_exception(lambda _ = None: expect("a").eq("a"))
+
+return "ok"
+---
+"ok"
+---
+name: expect.eq should throw an error if the values aren't equal
+
+expect = expect.expect
+
+def expect_to_raise_exception(func):
+    try:
+        func()
+    except:
+        return True
+    else:
+        err("Expected to raise exception")
+
+def expect_to_not_raise_exception(func):
+    try:
+        func()
+    except:
+        err("Expected to not raise exception")
+    else:
+        return True
+
+expect_to_raise_exception(lambda _ = None: expect("a").len(2))
+expect_to_not_raise_exception(lambda _ = None: expect("a").len(1))
+expect_to_raise_exception(lambda _ = None: expect(["a"]).len(2))
+expect_to_not_raise_exception(lambda _ = None: expect(["a"]).len(1))
+
+return "ok"
+---
+"ok"
+---
+name: expect.len should throw an error if the lengths aren't equal
+
+expect = expect.expect
+
+def expect_to_raise_exception(func):
+    try:
+        func()
+    except:
+        return True
+    else:
+        err("Expected to raise exception")
+
+def expect_to_not_raise_exception(func):
+    try:
+        func()
+    except:
+        err("Expected to not raise exception")
+    else:
+        return True
+
+obj = { "a": True }
+
+
+expect_to_raise_exception(lambda _ = None: expect("a").property("a"))
+expect_to_raise_exception(lambda _ = None: expect({}).property("a"))
+expect_to_raise_exception(lambda _ = None: expect(obj).property("a", False))
+expect_to_not_raise_exception(lambda _ = None: expect(obj).property("a", True))
+
+return "ok"
+---
+"ok"
+---
+name: expect.property should throw an error if the property doesn't match
+
+expect = expect.expect
+
+def expect_to_raise_exception(func):
+    try:
+        func()
+    except:
+        return True
+    else:
+        err("Expected to raise exception")
+
+def expect_to_not_raise_exception(func):
+    try:
+        func()
+    except:
+        err("Expected to not raise exception")
+    else:
+        return True
+
+throws_err = lambda _ = None: err("throw")
+no_op = lambda _ = None: None
+
+
+expect_to_raise_exception(lambda _ = None: expect(no_op).raise_exception())
+expect_to_raise_exception(lambda _ = None: expect(no_op).raise_exception(AssertionError))
+expect_to_raise_exception(lambda _ = None: expect(throws_err).raise_exception(AssertionError))
+expect_to_raise_exception(lambda _ = None: expect(no_op).raise_exception(AliasException))
+expect_to_not_raise_exception(lambda _ = None: expect(throws_err).raise_exception())
+
+return "ok"
+---
+"ok"
+---
+name: expect.raise_exception should throw an error if the func doesn't throw an error
+
+expect = expect.expect
+
+def expect_to_raise_exception(func):
+    try:
+        func()
+    except:
+        return True
+    else:
+        err("Expected to raise exception")
+
+def expect_to_not_raise_exception(func):
+    try:
+        func()
+    except:
+        err("Expected to not raise exception")
+    else:
+        return True
+
+obj = { "a": True }
+assertion_a = lambda _ = None: expect(obj).to.have.property("a")
+assertion_b = lambda _ = None: expect(obj).to.have.property("a")
+assertion_c = lambda _ = None: expect(obj).to_have_property("a")
+
+
+expect_to_not_raise_exception(assertion_a)
+expect_to_not_raise_exception(assertion_b)
+expect_to_not_raise_exception(assertion_c)
+
+return "ok"
+---
+"ok"
+---
+name: expect.to.have.property should route to the property assertion
+
+expect = expect.expect
+
+def expect_to_raise_exception(func):
+    try:
+        func()
+    except:
+        return True
+    else:
+        err("Expected to raise exception")
+
+def expect_to_not_raise_exception(func):
+    try:
+        func()
+    except:
+        err("Expected to not raise exception")
+    else:
+        return True
+
+obj = { "a": True, "b": [0, 1], "c": { "d": "e" } }
+assertion_a = lambda _ = None: expect(obj).to.have.property("a")
+assertion_b = lambda _ = None: expect(obj).to.have.property("a").and_to.have.property("b")
+assertion_c = lambda _ = None: expect(obj).to_have_property("b").which.has.length(2)
+assertion_d = lambda _ = None: expect(obj).to.have.property("c").which.has.property("d").which.equals("e")
+
+
+expect_to_not_raise_exception(assertion_a)
+expect_to_not_raise_exception(assertion_b)
+expect_to_not_raise_exception(assertion_c)
+expect_to_not_raise_exception(assertion_d)
+
+return "ok"
+---
+"ok"
+---
+name: expect should map to the correction assertions
+
+expect = expect.expect
+
+def expect_to_raise_exception(func):
+    try:
+        func()
+    except:
+        return True
+    else:
+        err("Expected to raise exception")
+
+def expect_to_not_raise_exception(func):
+    try:
+        func()
+    except:
+        err("Expected to not raise exception")
+    else:
+        return True
+
+container = ["a", "b", "c"]
+needle = "b"
+
+expect(needle).to.is_in(container)
+
+return "ok"
+---
+"ok"
+---
+name: expect.is_in should pass when value is in container
+
+expect = expect.expect
+
+def expect_to_raise_exception(func):
+    try:
+        func()
+    except:
+        return True
+    else:
+        err("Expected to raise exception")
+
+def expect_to_not_raise_exception(func):
+    try:
+        func()
+    except:
+        err("Expected to not raise exception")
+    else:
+        return True
+
+haystack = [1, 2, 3]
+needle = 2
+
+expect(haystack).to.have_element(needle)
+
+return "ok"
+---
+"ok"
+---
+name: expect.have_element should pass when collection contains value
+
+expect = expect.expect
+
+def expect_to_raise_exception(func):
+    try:
+        func()
+    except:
+        return True
+    else:
+        err("Expected to raise exception")
+
+def expect_to_not_raise_exception(func):
+    try:
+        func()
+    except:
+        err("Expected to not raise exception")
+    else:
+        return True
+
+seq = [10, 20, 30]
+
+
+expect_to_not_raise_exception(lambda _ = None: expect(seq).to.have_index(0, 10))
+expect_to_not_raise_exception(lambda _ = None: expect(seq).to.have_index(2, 30))
+expect_to_raise_exception(lambda _ = None: expect(seq).to.have_index(0, 99))
+expect_to_raise_exception(lambda _ = None: expect(seq).to.have_index(3, 10))
+
+return "ok"
+---
+"ok"
+---
+name: expect.have_index should pass when index exists and value matches
+
+expect = expect.expect
+
+def expect_to_raise_exception(func):
+    try:
+        func()
+    except:
+        return True
+    else:
+        err("Expected to raise exception")
+
+def expect_to_not_raise_exception(func):
+    try:
+        func()
+    except:
+        err("Expected to not raise exception")
+    else:
+        return True
+
+container = ["x"]
+needle = "y"
+
+expect_to_raise_exception(lambda _ = None: expect(needle).to.is_in(container))
+
+return "ok"
+---
+"ok"
+---
+name: expect.is_in should err when value is not in container
+
+expect = expect.expect
+
+def expect_to_raise_exception(func):
+    try:
+        func()
+    except:
+        return True
+    else:
+        err("Expected to raise exception")
+
+def expect_to_not_raise_exception(func):
+    try:
+        func()
+    except:
+        err("Expected to not raise exception")
+    else:
+        return True
+
+expect_to_not_raise_exception(lambda _ = None: expect(1).to.does_not.equal(2))
+expect_to_raise_exception(lambda _ = None: expect(1).to.does_not.equal(1))
+expect_to_not_raise_exception(lambda _ = None: expect(1).to["not"].equal(2))
+
+return "ok"
+---
+"ok"
+---
+name: expect.to.does_not.equal should pass when values differ and fail when equal
+
+expect = expect.expect
+
+def expect_to_raise_exception(func):
+    try:
+        func()
+    except:
+        return True
+    else:
+        err("Expected to raise exception")
+
+def expect_to_not_raise_exception(func):
+    try:
+        func()
+    except:
+        err("Expected to not raise exception")
+    else:
+        return True
+
+expect_to_not_raise_exception(lambda _ = None: expect(1).to_not.equal(2))
+expect_to_raise_exception(lambda _ = None: expect(1).to_not.equal(1))
+expect_to_not_raise_exception(lambda _ = None: expect(3).to_not.to_not.equal(3))
+
+return "ok"
+---
+"ok"
+---
+name: expect.to_not should mirror does_not for equality
+
+expect = expect.expect
+
+def expect_to_raise_exception(func):
+    try:
+        func()
+    except:
+        return True
+    else:
+        err("Expected to raise exception")
+
+def expect_to_not_raise_exception(func):
+    try:
+        func()
+    except:
+        err("Expected to not raise exception")
+    else:
+        return True
+
+expect_to_not_raise_exception(lambda _ = None: expect(3).does_not.does_not.to.equal(3))
+expect_to_raise_exception(lambda _ = None: expect(3).does_not.does_not.to.equal(2))
+
+return "ok"
+---
+"ok"
+---
+name: expect.does_not should toggle for double negation on equal
+
+expect = expect.expect
+
+def expect_to_raise_exception(func):
+    try:
+        func()
+    except:
+        return True
+    else:
+        err("Expected to raise exception")
+
+def expect_to_not_raise_exception(func):
+    try:
+        func()
+    except:
+        err("Expected to not raise exception")
+    else:
+        return True
+
+expect_to_not_raise_exception(lambda _ = None: expect("y").to.does_not.is_in(["x"]))
+expect_to_raise_exception(lambda _ = None: expect("x").to.does_not.is_in(["x"]))
+expect_to_not_raise_exception(lambda _ = None: expect([1, 2]).to.does_not.have_element(3))
+expect_to_raise_exception(lambda _ = None: expect([1, 2]).to.does_not.have_element(2))
+
+return "ok"
+---
+"ok"
+---
+name: expect.to.does_not.is_in and does_not.have_element should invert membership
+
+expect = expect.expect
+
+def expect_to_raise_exception(func):
+    try:
+        func()
+    except:
+        return True
+    else:
+        err("Expected to raise exception")
+
+def expect_to_not_raise_exception(func):
+    try:
+        func()
+    except:
+        err("Expected to not raise exception")
+    else:
+        return True
+
+obj = {"a": True, "b": 2}
+
+expect_to_not_raise_exception(lambda _ = None: expect(obj).to.does_not.have_property("missing"))
+expect_to_raise_exception(lambda _ = None: expect(obj).to.does_not.have_property("a"))
+expect_to_not_raise_exception(lambda _ = None: expect(obj).to.does_not.have_property("b", 3))
+expect_to_raise_exception(lambda _ = None: expect(obj).to.does_not.have_property("b", 2))
+
+return "ok"
+---
+"ok"
+---
+name: expect.to.does_not.have_property should reject present keys and matching values
+
+expect = expect.expect
+
+def expect_to_raise_exception(func):
+    try:
+        func()
+    except:
+        return True
+    else:
+        err("Expected to raise exception")
+
+def expect_to_not_raise_exception(func):
+    try:
+        func()
+    except:
+        err("Expected to not raise exception")
+    else:
+        return True
+
+quiet = lambda _ = None: None
+throws_err = lambda _ = None: err("throw")
+
+expect_to_not_raise_exception(lambda _ = None: expect(quiet).to.does_not.raise_exception())
+expect_to_raise_exception(lambda _ = None: expect(throws_err).to.does_not.raise_exception())
+expect_to_raise_exception(lambda _ = None: expect(throws_err).to.does_not.raise_exception(ValueError))
+
+return "ok"
+---
+"ok"
+---
+name: expect.to.does_not.raise_exception should pass when callable does not throw

@@ -1,0 +1,71 @@
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+timelib = time_utils
+
+expected_seconds_per_minute = 60
+
+seconds = timelib.MINUTE // timelib.SECOND
+
+expect(seconds).to.be(expected_seconds_per_minute)
+
+return "ok"
+---
+"ok"
+---
+name: time gvar loads
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+timelib = time_utils
+
+ts = 3661
+
+t = timelib.get_time(ts)
+
+expect(t).to.have.property("days", 0)
+expect(t).to.have.property("hours", 1)
+expect(t).to.have.property("minutes", 1)
+expect(t).to.have.property("seconds", 1)
+
+return "ok"
+---
+"ok"
+---
+name: get_time should break down a timestamp into components
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+timelib = time_utils
+
+ts = 1700000000
+
+out = timelib.get_discord_timestamp(ts)
+
+expect(out).to.be("<t:1700000000>")
+expect(timelib.get_discord_relative_timestamp(ts)).to.be("<t:1700000000:R>")
+expect(timelib.get_discord_date_timestamp(ts)).to.be("<t:1700000000:d>")
+
+return "ok"
+---
+"ok"
+---
+name: get_discord_timestamp should format relative and absolute markers
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+timelib = time_utils
+
+ts = timelib.get_ts_from_combat()
+is_non_negative = ts >= 0
+
+expect(is_non_negative).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: get_ts_from_combat should return non negative float

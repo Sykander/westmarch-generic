@@ -114,6 +114,9 @@
         "7442c996-c6cc-476c-bb9a-9dd670c1ae33": {
             "filePath": "src/gvars/utils/core/embeds.gvar"
         },
+        "0bc9c6e0-f655-43d4-8c42-bb5cb38479ee": {
+            "filePath": "src/gvars/utils/core/expect.gvar"
+        },
         "44bcd6a8-f546-4c94-ba10-0ccccaac796f": {
             "filePath": "src/gvars/utils/encounters/encounter_lists.gvar"
         },
@@ -349,7 +352,7 @@
             "filePath": "src/gvars/utils/core/strings.gvar"
         },
         "465c7c8c-8381-413d-a827-9040bfa850b8": {
-            "filePath": "src/gvars/utils/core/time.gvar"
+            "filePath": "src/gvars/utils/core/time_utils.gvar"
         },
         "4992c688-d343-4179-b64e-4bf1a268da76": {
             "filePath": "src/gvars/utils/core/tools.gvar"

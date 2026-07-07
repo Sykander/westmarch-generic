@@ -1,0 +1,255 @@
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+sample = "x"
+
+result = strings.is_str(sample)
+
+expect(result).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: strings gvar loads
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+empty_in = []
+single_in = ["a"]
+pair_in = ["a", "b"]
+triple_in = ["a", "b", "c"]
+expected_empty = ""
+expected_single = "a"
+expected_pair = "a and b"
+expected_triple = "a, b and c"
+
+out_empty = strings.get_readable_list(empty_in)
+out_single = strings.get_readable_list(single_in)
+out_pair = strings.get_readable_list(pair_in)
+out_triple = strings.get_readable_list(triple_in)
+
+expect(out_empty).to.be(expected_empty)
+expect(out_single).to.be(expected_single)
+expect(out_pair).to.be(expected_pair)
+expect(out_triple).to.be(expected_triple)
+
+return "ok"
+---
+"ok"
+---
+name: get_readable_list should format empty, single, and multiple items
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+n1 = 1
+n2 = 2
+n3 = 3
+n11 = 11
+n21 = 21
+
+r1 = strings.get_ordinal_index(n1)
+r2 = strings.get_ordinal_index(n2)
+r3 = strings.get_ordinal_index(n3)
+r11 = strings.get_ordinal_index(n11)
+r21 = strings.get_ordinal_index(n21)
+
+expect(r1).to.be("1st")
+expect(r2).to.be("2nd")
+expect(r3).to.be("3rd")
+expect(r11).to.be("11th")
+expect(r21).to.be("21st")
+
+return "ok"
+---
+"ok"
+---
+name: get_ordinal_index should return correct ordinals
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+result_str = strings.is_str("hello")
+result_int = strings.is_str(1)
+result_list = strings.is_str([])
+
+expect(result_str).to.be(True)
+expect(result_int).to.be(False)
+expect(result_list).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: is_str should distinguish strings from non-strings
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+given = "ab"
+search = "a"
+repl = "x"
+expected = "xb"
+
+result = strings.replace(given, search, repl)
+
+expect(result).to.be(expected)
+
+return "ok"
+---
+"ok"
+---
+name: replace should replace first occurrence only
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+given = "aba"
+search = "a"
+repl = "x"
+expected = "xbx"
+
+result = strings.replace_all(given, search, repl)
+
+expect(result).to.be(expected)
+
+return "ok"
+---
+"ok"
+---
+name: replace_all should replace every occurrence
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+items = ["x", "y", "z"]
+delim = "; "
+final_delim = " | "
+expected = "x; y | z"
+
+result = strings.get_readable_list(items, delim, final_delim)
+
+expect(result).to.be(expected)
+
+return "ok"
+---
+"ok"
+---
+name: get_readable_list should honor custom delimiters
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+twelfth = strings.get_ordinal_index(12)
+thirteenth = strings.get_ordinal_index(13)
+
+expect(twelfth).to.be("12th")
+expect(thirteenth).to.be("13th")
+
+return "ok"
+---
+"ok"
+---
+name: get_ordinal_index should handle 12th and 13th exceptions
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+given = "unchanged"
+search = "z"
+repl = "q"
+
+result = strings.replace(given, search, repl)
+
+expect(result).to.be(given)
+
+return "ok"
+---
+"ok"
+---
+name: replace should return original string when search is absent
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+given = "abc"
+search = "z"
+repl = "x"
+
+result = strings.replace_all(given, search, repl)
+
+expect(result).to.be(given)
+
+return "ok"
+---
+"ok"
+---
+name: replace_all should return original when search never appears
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+expect(strings.get_cardinal_text(0)).to.be("Zero")
+expect(strings.get_cardinal_text(1)).to.be("One")
+expect(strings.get_cardinal_text(21)).to.be("Twenty One")
+expect(strings.get_cardinal_text(100)).to.be("One Hundred")
+expect(strings.get_cardinal_text(193)).to.be("One Hundred and Ninety Three")
+
+return "ok"
+---
+"ok"
+---
+name: get_cardinal_text should spell small and hundreds numbers
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+expect(strings.get_ordinal_text(1)).to.be("First")
+expect(strings.get_ordinal_text(21)).to.be("Twenty First")
+expect(strings.get_ordinal_text(100)).to.be("One Hundredth")
+expect(strings.get_ordinal_text(193)).to.be("One Hundred and Ninety Third")
+
+return "ok"
+---
+"ok"
+---
+name: get_ordinal_text should spell ordinals including hundreds
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+expect(strings.get_ordinal_text(1000)).to.be("One Thousandth")
+expect(strings.get_ordinal_text(1000001)).to.be("One Million First")
+
+return "ok"
+---
+"ok"
+---
+name: get_ordinal_text should combine scales with lowest ordinal chunk
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+expect(strings.get_cardinal_text(1001)).to.be("One Thousand One")
+
+return "ok"
+---
+"ok"
+---
+name: get_cardinal_text should join thousand groups

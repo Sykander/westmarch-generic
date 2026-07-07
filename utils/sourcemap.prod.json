@@ -335,6 +335,11 @@
       "id": "d483bc13-362f-45c5-8596-efcab434123b"
     },
     {
+      "name": "expect",
+      "file": "src/gvars/utils/core/expect.gvar",
+      "id": "5bee18ae-625f-467d-a92b-ecbbf6ebfd74"
+    },
+    {
       "name": "encounter_lists",
       "file": "src/gvars/utils/encounters/encounter_lists.gvar",
       "id": "7497adbc-f942-44ad-aae5-7fc72eb162dc"
@@ -726,7 +731,7 @@
     },
     {
       "name": "time",
-      "file": "src/gvars/utils/core/time.gvar",
+      "file": "src/gvars/utils/core/time_utils.gvar",
       "id": "fbf9e239-21e4-4de3-a4f1-251e677fa5ea"
     },
     {

@@ -1,0 +1,110 @@
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+expected_prof_code = "pTools"
+
+actual_code = tools.tool_prof_code
+
+expect(actual_code).to.be(expected_prof_code)
+
+return "ok"
+---
+"ok"
+---
+name: tools gvar loads
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+query = "Smith's Tools"
+
+matches = tools.search_for_tool(query)
+
+expect(matches).to.have.length(1)
+expect(matches).to.have_element(query)
+
+return "ok"
+---
+"ok"
+---
+name: search_for_tool should find exact tool names
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+query = "herbal"
+
+matches = tools.search_for_tool(query)
+
+expect(matches).to.have_element("Herbalism Kit")
+
+return "ok"
+---
+"ok"
+---
+name: search_for_tool should fuzzy match case insensitively
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+result = tools.get_has_proficiency("Not A Real Tool Name")
+
+expect(result).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: get_has_proficiency should be false for unknown tools
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+known = "Dice Set"
+
+result = tools.get_has_proficiency(known)
+
+expect(result).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: get_has_proficiency should be false when cvars omit the tool
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+known = "Thieves' Tools"
+
+result = tools.get_has_expertise(known)
+
+expect(result).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: get_has_expertise should be false when cvars omit expertise
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+expected = "eTools"
+
+actual = tools.tool_exp_code
+
+expect(actual).to.be(expected)
+
+return "ok"
+---
+"ok"
+---
+name: tool_exp_code should match workshop cvar name

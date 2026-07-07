@@ -1,0 +1,195 @@
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+char_name = "Aelar Wyn"
+
+item = "Shortsword"
+count = 1
+bag = "Equipment"
+expected_modified = True
+expected_message = f"{item} added to {char_name}'s bag {bag}."
+
+modified, message = bags.modify_bag(item, count, bag)
+
+expect(modified).to.be(expected_modified)
+expect(message).to.be(expected_message)
+
+return "ok"
+---
+"ok"
+---
+name: modify_bag should run without error
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+char_name = "Aelar Wyn"
+
+item = "Shortsword"
+count = -100
+bag = "Equipment"
+expected_modified = False
+expected_message = f"Couldn't update {char_name}'s bag {bag} with {count}x {item} because the new count would be {count}."
+
+modified, message = bags.modify_bag(item, count, bag)
+
+expect(message).to.be(expected_message)
+expect(modified).to.be(expected_modified)
+
+return "ok"
+---
+"ok"
+---
+name: modify_bag should return false if it can't modify the bag
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+char_name = "Aelar Wyn"
+
+item = "Shortsword"
+count = 1
+bag = None
+expected_modified = True
+expected_message = f"{item} added to {char_name}'s bag Equipment."
+
+modified, message = bags.modify_bag(item, count, bag)
+
+expect(message).to.be(expected_message)
+expect(modified).to.be(expected_modified)
+
+return "ok"
+---
+"ok"
+---
+name: modify_bag should default to Equipment if bag not given
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+char_name = "Aelar Wyn"
+
+item = "Shortsword"
+count = None
+bag = "Equipment"
+expected_modified = True
+expected_message = f"{item} added to {char_name}'s bag {bag}."
+
+modified, message = bags.modify_bag(item, count, bag)
+
+expect(message).to.be(expected_message)
+expect(modified).to.be(expected_modified)
+
+return "ok"
+---
+"ok"
+---
+name: modify_bag should default to 1 if count not given
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+char_name = "Aelar Wyn"
+
+item = "Shortsword"
+count_a = 1
+count_b = 9
+count_c = -1
+count_d = -9
+bag = "Equipment"
+expected_modified_a = True
+expected_message_a = f"{item} added to {char_name}'s bag {bag}."
+expected_modified_b = True
+expected_message_b = f"{count_b}x {item} added to {char_name}'s bag {bag}."
+expected_modified_c = True
+expected_message_c = f"{item} removed from {char_name}'s bag {bag}."
+expected_modified_d = True
+expected_message_d = f"{abs(count_d)}x {item} removed from {char_name}'s bag {bag}."
+
+modified_a, message_a = bags.modify_bag(item, count_a, bag)
+modified_b, message_b = bags.modify_bag(item, count_b, bag)
+modified_c, message_c = bags.modify_bag(item, count_c, bag)
+modified_d, message_d = bags.modify_bag(item, count_d, bag)
+
+expect(message_a).to.be(expected_message_a)
+expect(modified_a).to.be(expected_modified_a)
+expect(message_b).to.be(expected_message_b)
+expect(modified_b).to.be(expected_modified_b)
+expect(message_c).to.be(expected_message_c)
+expect(modified_c).to.be(expected_modified_c)
+expect(message_d).to.be(expected_message_d)
+expect(modified_d).to.be(expected_modified_d)
+
+return "ok"
+---
+"ok"
+---
+name: modify_bag should add and remove items
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+char_name = "Aelar Wyn"
+
+missing_name = "ZZZ_BagDoesNotExist123"
+
+contents = bags.get_bag(missing_name)
+
+expect(contents).to.be({})
+
+return "ok"
+---
+"ok"
+---
+name: get_bag should return empty dict when bag name is not found
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+char_name = "Aelar Wyn"
+
+bag_name = "QA_IsolatedBag"
+payload = {"token": 42}
+
+bags.set_bag(bag_name, payload)
+read_back = bags.get_bag(bag_name)
+
+expect(read_back).to.have.property("token", 42)
+
+return "ok"
+---
+"ok"
+---
+name: set_bag should create a bag and get_bag should read it back
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+char_name = "Aelar Wyn"
+
+item = "Pebbles"
+count = 0
+bag = "QA_ZeroCountBag"
+char_name_local = char_name
+
+bags.set_bag(bag, {})
+expected_message = f"0x {item} removed from {char_name_local}'s bag {bag}."
+
+modified, message = bags.modify_bag(item, count, bag)
+
+expect(modified).to.be(True)
+expect(message).to.be(expected_message)
+
+return "ok"
+---
+"ok"
+---
+name: modify_bag should treat zero count as removal wording

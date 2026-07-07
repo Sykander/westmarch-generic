@@ -1,0 +1,51 @@
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+item_a = None
+item_b = []
+item_c = 1
+item_d = "hello world"
+item_e = {}
+expected_a = False
+expected_b = False
+expected_c = False
+expected_d = False
+expected_e = True
+
+result_a = dicts.is_dict(item_a)
+result_b = dicts.is_dict(item_b)
+result_c = dicts.is_dict(item_c)
+result_d = dicts.is_dict(item_d)
+result_e = dicts.is_dict(item_e)
+
+expect(result_a).to.be(expected_a)
+expect(result_b).to.be(expected_b)
+expect(result_c).to.be(expected_c)
+expect(result_d).to.be(expected_d)
+expect(result_e).to.be(expected_e)
+
+return "ok"
+---
+"ok"
+---
+name: is_dict should give a bool whether the item is a dict or not
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+non_empty = {"a": 1}
+tup = (1, 2)
+
+is_dict_nonempty = dicts.is_dict(non_empty)
+is_dict_tuple = dicts.is_dict(tup)
+
+expect(is_dict_nonempty).to.be(True)
+expect(is_dict_tuple).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: is_dict should return true for non empty dict and false for tuple

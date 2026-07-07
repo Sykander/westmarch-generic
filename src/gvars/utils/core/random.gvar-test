@@ -1,0 +1,121 @@
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+expected_current_key = "current"
+
+actual_current_key = random.SEED_CURRENT
+
+expect(actual_current_key).to.be(expected_current_key)
+
+return "ok"
+---
+"ok"
+---
+name: random gvar loads
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+start = 7
+stop = 7
+expected = 7
+
+result = random.get_random_integer(start, stop)
+
+expect(result).to.be(expected)
+
+return "ok"
+---
+"ok"
+---
+name: get_random_integer should return start when start equals stop
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+seed = 424242
+start = 1
+stop = 100
+
+a = random.get_random_integer(start, stop, seed=seed)
+b = random.get_random_integer(start, stop, seed=seed)
+
+expect(a).to.be(b)
+
+return "ok"
+---
+"ok"
+---
+name: get_random_integer should be deterministic with explicit seed
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+seed = 123456789
+first = random.xorShift(seed)
+second = random.xorShift(seed)
+
+expect(first).to.be(second)
+
+return "ok"
+---
+"ok"
+---
+name: xorShift should be deterministic for the same seed
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+high = 5
+low = 1
+seed = 777777
+
+a = random.get_random_integer(high, low, seed=seed)
+b = random.get_random_integer(low, high, seed=seed)
+
+expect(a).to.be(b)
+
+return "ok"
+---
+"ok"
+---
+name: get_random_integer should swap reversed bounds when using explicit seed
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+seed = 424242
+
+a = random.get_float(seed=seed)
+b = random.get_float(seed=seed)
+
+expect(a).to.be(b)
+
+return "ok"
+---
+"ok"
+---
+name: get_float should be deterministic with explicit seed
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+seed = 333333
+
+x = random.get_float(seed=seed)
+
+expect(x >= 0.0).to.be(True)
+expect(x <= 1.0).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: get_float should stay within zero and one inclusive with explicit seed

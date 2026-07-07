@@ -1,0 +1,636 @@
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+xs = languages.get_character_languages()
+
+expect(xs).to.have.length(0)
+
+return "ok"
+---
+"ok"
+---
+name: languages gvar loads
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+m = languages.COMMUNICATION_METHODS
+
+expect(m).to.have.length(4)
+expect(m).to.have_index(0, "vocal")
+expect(m).to.have_index(1, "script")
+expect(m).to.have_index(2, "telepathic")
+expect(m).to.have_index(3, "gestural")
+
+return "ok"
+---
+"ok"
+---
+name: COMMUNICATION_METHODS lists canonical channels
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+names = languages.LANGUAGE_NAMES
+
+expect(names).to.have_index(0, "Common")
+expect(names).to.have_element("Orc")
+expect(names).to.have_element("Thieves' Cant")
+expect(names).to.have_element("Common Sign Language")
+
+return "ok"
+---
+"ok"
+---
+name: LANGUAGE_NAMES matches catalog key order
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+expect(languages.language_comprehension_score("Common", None, "written")).to.be(100)
+expect(languages.language_comprehension_score("Common", None, "writing")).to.be(100)
+expect(languages.language_comprehension_score("Common", None, "sign")).to.be(100)
+expect(languages.language_comprehension_score("Common", None, "visual")).to.be(100)
+expect(languages.language_comprehension_score("Deep Speech", None, "telepathy")).to.be(100)
+
+return "ok"
+---
+"ok"
+---
+name: language_comprehension_score communication_method aliases match canonical
+character:
+  cvars:
+    languages: "Common, Deep Speech"
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+cm = languages.COMMUNICATION_METHODS
+expect(languages.language_comprehension_score("Common", None, cm[0])).to.be(100)
+expect(languages.language_comprehension_score("Common", None, cm[1])).to.be(100)
+expect(languages.language_comprehension_score("Common", None, cm[2])).to.be(0)
+expect(languages.language_comprehension_score("Common", None, cm[3])).to.be(100)
+
+return "ok"
+---
+"ok"
+---
+name: language_comprehension_score each COMMUNICATION_METHOD for known Common
+character:
+  cvars:
+    languages: "Common"
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+expect(languages.language_comprehension_score("Deep Speech", None, "vocal")).to.be(100)
+expect(languages.language_comprehension_score("Deep Speech", None, "telepathic")).to.be(100)
+expect(languages.language_comprehension_score("Deep Speech", None, "script")).to.be(0)
+expect(languages.language_comprehension_score("Deep Speech", None, "gestural")).to.be(0)
+
+return "ok"
+---
+"ok"
+---
+name: language_comprehension_score known Deep Speech supported and unsupported channels
+character:
+  cvars:
+    languages: "Deep Speech"
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+toks = languages.get_character_languages()
+
+expect(toks).to.have.length(3)
+expect(toks).to.have_element("Common")
+expect(toks).to.have_element("Elvish")
+expect(toks).to.have_element("Orc")
+
+return "ok"
+---
+"ok"
+---
+name: get_character_languages splits cvar and resolves tokens
+character:
+  cvars:
+    languages: " Common ; Elvish , Orc "
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+known = languages.get_character_languages()
+
+expect(known).to.have.length(2)
+expect(known).to.have_element("Common")
+expect(known).to.have_element("Undercommon")
+
+return "ok"
+---
+"ok"
+---
+name: get_character_languages resolves Undercommon alias Deep Common
+character:
+  cvars:
+    languages: "Common, Deep Common"
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+known = languages.get_character_languages()
+
+expect(known).to.have.length(1)
+expect(known).to.have_index(0, "Thieves' Cant")
+
+return "ok"
+---
+"ok"
+---
+name: get_character_languages resolves Thieves Cant alias
+character:
+  cvars:
+    languages: "Thieves Cant"
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+known = languages.get_character_languages()
+
+expect(known).to.have.length(1)
+expect(known).to.have_index(0, "Orc")
+
+return "ok"
+---
+"ok"
+---
+name: get_character_languages resolves Orcish sheet spelling
+character:
+  cvars:
+    languages: "orcish"
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+known = languages.get_character_languages()
+
+expect(known).to.have.length(1)
+expect(known).to.have_index(0, "Deep Speech")
+
+return "ok"
+---
+"ok"
+---
+name: get_character_languages fuzzy resolves deep speech
+character:
+  cvars:
+    languages: "speech"
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+known = languages.get_character_languages()
+
+expect(known).to.have.length(0)
+
+return "ok"
+---
+"ok"
+---
+name: get_character_languages empty when cvar unset
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+known = languages.get_character_languages()
+
+expect(known).to.have.length(2)
+expect(known).to.have_element("Common")
+expect(known).to.have_element("Orc")
+
+return "ok"
+---
+"ok"
+---
+name: get_character_languages dedupes repeated tokens on sheet
+character:
+  cvars:
+    languages: "Common, common, Orc"
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+known = languages.get_character_languages()
+
+expect(known).to.have.length(2)
+expect(known).to.have_element("Common")
+expect(known).to.have_element("Undercommon")
+
+return "ok"
+---
+"ok"
+---
+name: get_character_languages omits unknown sheet tokens
+character:
+  cvars:
+    languages: "Common, Klingon, undercommon"
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+known = languages.get_character_languages()
+
+expect(known).to.have.length(1)
+expect(known).to.have_element("Common")
+expect(known).does_not.to_have_element("Elvish")
+
+return "ok"
+---
+"ok"
+---
+name: get_character_languages excludes Elvish when not on sheet
+character:
+  cvars:
+    languages: "Common"
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+known = languages.get_character_languages()
+
+expect(known).to.have.length(2)
+expect(known).to.have_index(0, "Common")
+expect(known).to.have_index(1, "Elvish")
+
+return "ok"
+---
+"ok"
+---
+name: get_character_languages tolerates repeated commas and mixed separators
+character:
+  cvars:
+    languages: ",,,  common  ,,;  elvish  ,,,"
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+known = languages.get_character_languages()
+
+expect(known).to.have.length(3)
+expect(known).to.have_element("Common")
+expect(known).to.have_element("Orc")
+expect(known).to.have_element("Elvish")
+
+return "ok"
+---
+"ok"
+---
+name: get_character_languages messy spacing mixed case and trailing punctuation
+character:
+  cvars:
+    languages: "  commON ,  orc.  ; elvish"
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+known = languages.get_character_languages()
+
+expect(known).to.have.length(2)
+expect(known).to.have_element("Common")
+expect(known).to.have_element("Orc")
+
+return "ok"
+---
+"ok"
+---
+name: get_character_languages drops ambiguous deep token keeps neighbors
+character:
+  cvars:
+    languages: "Common, deep, Orc"
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+known = languages.get_character_languages()
+
+expect(known).to.have.length(0)
+
+return "ok"
+---
+"ok"
+---
+name: get_character_languages slash does not split tokens
+character:
+  cvars:
+    languages: "Goblin/Halfling"
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+known = languages.get_character_languages()
+
+expect(known).to.have.length(1)
+expect(known).to.have_index(0, "Primordial")
+
+return "ok"
+---
+"ok"
+---
+name: get_character_languages resolves Primordial dialect Ignan
+character:
+  cvars:
+    languages: "Ignan"
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+known = languages.get_character_languages()
+
+expect(known).to.have.length(1)
+expect(known).to.have_index(0, "Draconic")
+
+return "ok"
+---
+"ok"
+---
+name: get_character_languages resolves Draconic
+character:
+  cvars:
+    languages: "Draconic"
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+s = languages.language_comprehension_score("xyzzy")
+
+expect(s).to.be(0)
+
+return "ok"
+---
+"ok"
+---
+name: language_comprehension_score unknown name is 0
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+expect(languages.language_comprehension_score("Common", None, "vocal")).to.be(100)
+expect(languages.language_comprehension_score("Common", None, "telepathic")).to.be(0)
+
+return "ok"
+---
+"ok"
+---
+name: language_comprehension_score known Common vocal and script return 100
+character:
+  cvars:
+    languages: "Common"
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+s = languages.language_comprehension_score("common", None, "script")
+
+expect(s).to.be(100)
+
+return "ok"
+---
+"ok"
+---
+name: language_comprehension_score known Common script case insensitive returns 100
+character:
+  cvars:
+    languages: "Common"
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+s = languages.language_comprehension_score("Deep Speech", None, "telepathic")
+
+expect(s).to.be(100)
+
+return "ok"
+---
+"ok"
+---
+name: language_comprehension_score Deep Speech telepathic when known returns 100
+character:
+  cvars:
+    languages: "Deep Speech"
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+s = languages.language_comprehension_score("Undercommon", None, "vocal")
+
+expect(s).to.be(28)
+
+return "ok"
+---
+"ok"
+---
+name: language_comprehension_score similar language partial without sheet entry
+character:
+  cvars:
+    languages: "Elvish"
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+s = languages.language_comprehension_score("Common", None, "vocal")
+
+expect(s).to.be(100)
+
+return "ok"
+---
+"ok"
+---
+name: language_comprehension_score implicit Common when cvar omits it
+character:
+  cvars:
+    languages: ""
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+s = languages.language_comprehension_score("Undercommon", None, "vocal")
+
+expect(s).to.be(28)
+
+return "ok"
+---
+"ok"
+---
+name: language_comprehension_score crowd bonus multiple known overlaps
+character:
+  cvars:
+    languages: "Common, Elvish"
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+s = languages.language_comprehension_score("Orc", None, "vocal")
+
+expect(s).to.be(10)
+
+return "ok"
+---
+"ok"
+---
+name: language_comprehension_score heritage only empty sheet Half-Orc Orc
+character:
+  race: Half-Orc
+  cvars:
+    languages: ""
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+s = languages.language_comprehension_score("Common", None, "not_a_real_method_xyz")
+
+expect(s).to.be(100)
+
+return "ok"
+---
+"ok"
+---
+name: language_comprehension_score unknown communication_method falls back to vocal
+character:
+  cvars:
+    languages: "Common"
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+s = languages.language_comprehension_score("Deep Speech", None, "script")
+
+expect(s).to.be(0)
+
+return "ok"
+---
+"ok"
+---
+name: language_comprehension_score Deep Speech script unsupported when known returns 0
+character:
+  cvars:
+    languages: "Deep Speech"
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+s = languages.language_comprehension_score("Dwarvish", None, "vocal")
+
+expect(s).to.be(0)
+
+return "ok"
+---
+"ok"
+---
+name: language_comprehension_score no overlap is zero
+character:
+  race: Human
+  cvars:
+    languages: "Common"
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+s = languages.language_comprehension_score("Orc", None, "vocal")
+
+expect(s).to_not.be(0)
+
+return "ok"
+---
+"ok"
+---
+name: language_comprehension_score race hints Orc for Half-Orc
+character:
+  race: Half-Orc
+  cvars:
+    languages: "Common"
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+s = languages.language_comprehension_score("Common", None, "vocal")
+
+expect(s).to_not.be(0)
+
+return "ok"
+---
+"ok"
+---
+name: language_comprehension_score Rogue grants Thieves Cant overlap Common
+character:
+  levels:
+    Rogue: 3
+  cvars:
+    languages: ""
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+known = languages.get_character_languages()
+
+expect(known).to.have_length(1)
+expect(known).to.have_index(0, "Common Sign Language")
+
+return "ok"
+---
+"ok"
+---
+name: get_character_languages resolves Common Sign Language alias CSL
+character:
+  cvars:
+    languages: "CSL"
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+expect(languages.language_comprehension_score("Common Sign Language", None, "gestural")).to.be(100)
+expect(languages.language_comprehension_score("Common Sign Language", None, "vocal")).to.be(0)
+expect(languages.language_comprehension_score("CSL", None, "gestural")).to.be(100)
+
+return "ok"
+---
+"ok"
+---
+name: language_comprehension_score known Common Sign Language gestural not vocal
+character:
+  cvars:
+    languages: "Common Sign Language"

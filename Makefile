@@ -2,7 +2,7 @@ CATALOGUE_GENERATORS = generate-monsters generate-items generate-spells generate
 GENERATE_TARGETS = $(CATALOGUE_GENERATORS) generate-vars generate-env
 AVRAE_CONFIG_TEST_TARGETS = avrae-test-configs
 AVRAE_UTILS_GAMEPLAY_TEST_TARGETS = avrae-test-utils-gameplay-encounters avrae-test-utils-gameplay-exploration avrae-test-utils-gameplay-world
-AVRAE_UTILS_TEST_TARGETS = avrae-test-utils-config avrae-test-utils-catalogues $(AVRAE_UTILS_GAMEPLAY_TEST_TARGETS) avrae-test-utils-systems
+AVRAE_UTILS_TEST_TARGETS = avrae-test-utils-config avrae-test-utils-catalogues avrae-test-utils-core $(AVRAE_UTILS_GAMEPLAY_TEST_TARGETS) avrae-test-utils-systems
 AVRAE_ALIAS_EXPLORATION_TEST_TARGETS = avrae-test-aliases-exploration-enc avrae-test-aliases-exploration-creatures avrae-test-aliases-exploration-gathering-a avrae-test-aliases-exploration-gathering-b
 AVRAE_ALIAS_TEST_TARGETS = avrae-test-aliases-content avrae-test-aliases-crafting avrae-test-aliases-economy $(AVRAE_ALIAS_EXPLORATION_TEST_TARGETS) avrae-test-aliases-travel avrae-test-aliases-westmarch
 AVRAE_SHARD_TEST_TARGETS = $(AVRAE_CONFIG_TEST_TARGETS) $(AVRAE_UTILS_TEST_TARGETS) $(AVRAE_ALIAS_TEST_TARGETS)
@@ -113,6 +113,9 @@ avrae-test-utils-config: install_avrae_ls
 
 avrae-test-utils-catalogues: install_avrae_ls
 	npm run avrae:test-utils:catalogues
+
+avrae-test-utils-core: install_avrae_ls
+	npm run avrae:test-utils:core
 
 avrae-test-utils-gameplay-encounters: install_avrae_ls
 	npm run avrae:test-utils:gameplay:encounters

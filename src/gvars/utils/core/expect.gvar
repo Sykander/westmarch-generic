@@ -1,0 +1,236 @@
+"""Expect - chained assertions for alias and gvar tests.
+
+Vendored from drac2-tools src/gvars/utils/expect/expect.gvar and adapted for
+westmarch-generic.
+
+Negated checks: .to_not or .does_not or .to["not"]. The bare .not form is not
+valid Drac2 syntax because not is a keyword.
+"""
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(
+    dicts = env.gvars.dicts,
+)
+
+
+def to_equal(arg, val, message: str | None = None, negated: bool = False):
+    if negated:
+        if arg == val:
+            err(f"Expected {dump_json(arg)} not to equal {dump_json(val)}" if message == None else message)
+    else:
+        if arg != val:
+            err(f"Expected {dump_json(arg)} to equal {dump_json(val)}" if message == None else message)
+
+    return expect(arg)
+
+
+def to_have_property(arg, key: str, val: any | None = None, message: str | None = None, negated: bool = False):
+    if not dicts.is_dict(arg):
+        err(f"Expected {dump_json(arg)} to be a dict" if message == None else message)
+
+    has_key = key in arg
+    arg_val = arg.get(key, None)
+
+    if not negated:
+        if not has_key:
+            err(f"Expected {dump_json(arg)} to have property {dump_json(key)}" if message == None else message)
+
+        if val != None and arg_val != val:
+            err(
+                f"Expected {dump_json(arg)} to have property {dump_json(key)}={dump_json(val)}, got {dump_json(arg_val)}"
+                if message == None
+                else message
+            )
+
+        return expect(arg_val, and_context = expect(arg))
+
+    if val == None:
+        if has_key:
+            err(f"Expected {dump_json(arg)} not to have property {dump_json(key)}" if message == None else message)
+        return expect(arg)
+
+    if not has_key:
+        return expect(arg)
+
+    if arg_val == val:
+        err(
+            f"Expected {dump_json(arg)} not to have property {dump_json(key)}={dump_json(val)}"
+            if message == None
+            else message
+        )
+
+    return expect(arg)
+
+
+def to_have_length(arg, val: int | None = None, message: str | None = None, negated: bool = False):
+    try:
+        actual_length = len(arg)
+    except:
+        err(f"Expected {dump_json(arg)} to be enumerable" if message == None else message)
+
+    if not negated:
+        if val != None and val != actual_length:
+            err(
+                f"Expected {dump_json(arg)} to have length {val}, instead it has length {actual_length}"
+                if message == None
+                else message
+            )
+
+        return expect(actual_length, and_context = expect(arg))
+
+    if val == None:
+        err("expect().not.to.have_length requires an explicit length" if message == None else message)
+
+    if actual_length == val:
+        err(f"Expected {dump_json(arg)} not to have length {val}" if message == None else message)
+
+    return expect(arg)
+
+
+def to_raise_exception(arg, val: Exception | None = None, message: str | None = None, negated: bool = False):
+    if not negated:
+        if val == None:
+            try:
+                arg()
+            except:
+                return expect(arg)
+            else:
+                err(f"Expected {arg} to raise an exception, none raised" if message == None else message)
+        else:
+            try:
+                arg()
+            except val:
+                return expect(arg)
+            except:
+                err(
+                    f"Expected {arg} to raise a {val} exception, but a different type was thrown"
+                    if message == None
+                    else message
+                )
+            else:
+                err(f"Expected {arg} to raise an exception, none raised" if message == None else message)
+
+    if val == None:
+        try:
+            arg()
+            return expect(arg)
+        except:
+            err(f"Expected {arg} not to raise an exception" if message == None else message)
+    else:
+        try:
+            arg()
+            return expect(arg)
+        except val:
+            err(f"Expected {arg} not to raise {val}" if message == None else message)
+        except:
+            return expect(arg)
+
+
+def is_included_in(arg, val: any, message: str | None = None, negated: bool = False):
+    is_included = False
+    try:
+        is_included = arg in val
+    except:
+        err(f"Expected {dump_json(val)} to work under the in keyword" if message == None else message)
+
+    if negated:
+        if is_included:
+            err(f"Expected {dump_json(arg)} not to be included in {dump_json(val)}" if message == None else message)
+    else:
+        if not is_included:
+            err(f"Expected {dump_json(arg)} to be included in {dump_json(val)}" if message == None else message)
+
+    return expect(arg)
+
+
+def has_element(arg, val: any, message: str | None = None, negated: bool = False):
+    is_included = False
+    try:
+        is_included = val in arg
+    except:
+        err(f"Expected {dump_json(arg)} to work under the in keyword" if message == None else message)
+
+    if negated:
+        if is_included:
+            err(f"Expected {dump_json(val)} not to be included in {dump_json(arg)}" if message == None else message)
+    else:
+        if not is_included:
+            err(f"Expected {dump_json(val)} to be included in {dump_json(arg)}" if message == None else message)
+
+    return expect(val)
+
+
+def has_index(arg, index: int, val: any = None, message: str | None = None, negated: bool = False):
+    try:
+        length = len(arg)
+    except:
+        err(f"Expected {dump_json(arg)} to have a length" if message == None else message)
+
+    out_of_range = index < 0 or index >= length
+
+    if not negated:
+        if out_of_range:
+            err(f"Expected {dump_json(arg)} to have index {index}" if message == None else message)
+
+        if val != None and arg[index] != val:
+            err(f"Expected {dump_json(arg)}[{index}] to equal {dump_json(val)}" if message == None else message)
+
+        return expect(arg[index])
+
+    if out_of_range:
+        return expect(arg)
+
+    if val == None:
+        err(f"Expected {dump_json(arg)} not to have index {index}" if message == None else message)
+
+    if arg[index] == val:
+        err(f"Expected {dump_json(arg)}[{index}] not to equal {dump_json(val)}" if message == None else message)
+
+    return expect(arg[index])
+
+
+def _fill_ctx(box, arg, and_context, other, negated: bool):
+    n = negated
+    box["be"] = lambda val, message = None: to_equal(arg, val, message, n)
+    box["to_be"] = lambda val, message = None: to_equal(arg, val, message, n)
+    box["eq"] = lambda val, message = None: to_equal(arg, val, message, n)
+    box["equal"] = lambda val, message = None: to_equal(arg, val, message, n)
+    box["equals"] = lambda val, message = None: to_equal(arg, val, message, n)
+    box["to_equal"] = lambda val, message = None: to_equal(arg, val, message, n)
+    box["property"] = lambda key, val = None, message = None: to_have_property(arg, key, val, message, n)
+    box["have_property"] = lambda key, val = None, message = None: to_have_property(arg, key, val, message, n)
+    box["to_have_property"] = lambda key, val = None, message = None: to_have_property(arg, key, val, message, n)
+    box["len"] = lambda val = None, message = None: to_have_length(arg, val, message, n)
+    box["have_len"] = lambda val = None, message = None: to_have_length(arg, val, message, n)
+    box["to_have_len"] = lambda val = None, message = None: to_have_length(arg, val, message, n)
+    box["length"] = lambda val = None, message = None: to_have_length(arg, val, message, n)
+    box["have_length"] = lambda val = None, message = None: to_have_length(arg, val, message, n)
+    box["to_have_length"] = lambda val = None, message = None: to_have_length(arg, val, message, n)
+    box["raise_exception"] = lambda val = None, message = None: to_raise_exception(arg, val, message, n)
+    box["to_raise_exception"] = lambda val = None, message = None: to_raise_exception(arg, val, message, n)
+    box["is_in"] = lambda val, message = None: is_included_in(arg, val, message, n)
+    box["element"] = lambda val, message = None: has_element(arg, val, message, n)
+    box["have_element"] = lambda val, message = None: has_element(arg, val, message, n)
+    box["to_have_element"] = lambda val, message = None: has_element(arg, val, message, n)
+    box["index"] = lambda index, val = None, message = None: has_index(arg, index, val, message, n)
+    box["have_index"] = lambda index, val = None, message = None: has_index(arg, index, val, message, n)
+    box["to_have_index"] = lambda index, val = None, message = None: has_index(arg, index, val, message, n)
+
+    box["to"] = box
+    box["and_to"] = box if and_context == None else and_context
+    box["have"] = box
+    box["which"] = box
+    box["has"] = box
+    box["not"] = other
+    box["does_not"] = other
+    box["to_not"] = other
+
+
+def expect(arg, and_context = None):
+    pos = {}
+    neg = {}
+    pos["not"] = neg
+    neg["not"] = pos
+    _fill_ctx(pos, arg, and_context, neg, False)
+    _fill_ctx(neg, arg, and_context, pos, True)
+    return pos

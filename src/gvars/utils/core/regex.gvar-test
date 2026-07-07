@@ -1,0 +1,1514 @@
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("a")
+
+expect(rx.pattern).to.be("a")
+expect(rx.groups).to.be(0)
+expect(rx.full_match("a")).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: regex gvar loads
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile(r"\d+")
+
+expect(rx.full_match("42")).to.be(True)
+expect(rx.full_match("x")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: compile should accept raw string pattern with backslashes
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("\\d")
+
+expect(rx.full_match("7")).to.be(True)
+expect(rx.full_match("x")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should accept digit class
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("a?")
+
+expect(rx.full_match("")).to.be(True)
+expect(rx.full_match("a")).to.be(True)
+expect(rx.full_match("aa")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should handle optional quantifier
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("a*")
+
+expect(rx.full_match("")).to.be(True)
+expect(rx.full_match("aaa")).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should handle star quantifier
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("a+")
+
+expect(rx.full_match("a")).to.be(True)
+expect(rx.full_match("aaa")).to.be(True)
+expect(rx.full_match("")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should handle plus quantifier
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("a{2}")
+
+expect(rx.full_match("aa")).to.be(True)
+expect(rx.full_match("a")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should handle exact brace count
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("a{1,2}")
+
+expect(rx.full_match("a")).to.be(True)
+expect(rx.full_match("aa")).to.be(True)
+expect(rx.full_match("aaa")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should handle brace min max
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("(ab){2}")
+
+expect(rx.full_match("abab")).to.be(True)
+expect(rx.full_match("ab")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should handle grouped repeat
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("hello")
+hit = rx.search("xhelloy")
+
+expect(hit).to.have.property("start", 1)
+expect(hit).to.have.property("end", 6)
+
+return "ok"
+---
+"ok"
+---
+name: search_from should find substring
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("bc")
+end = rx.match_from("abcd", 1)
+
+expect(end).to.be(3)
+
+return "ok"
+---
+"ok"
+---
+name: match_from should return end index
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("[abc]")
+
+expect(rx.full_match("b")).to.be(True)
+expect(rx.full_match("x")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should accept positive character class
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("[^xyz]")
+
+expect(rx.full_match("a")).to.be(True)
+expect(rx.full_match("x")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should accept negated character class
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("[a-c]")
+
+expect(rx.full_match("b")).to.be(True)
+expect(rx.full_match("d")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should accept range inside class
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("[\\d]{2}")
+
+expect(rx.full_match("37")).to.be(True)
+expect(rx.full_match("3")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should combine class escape and quantifier
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("[^0-2]")
+
+expect(rx.full_match("5")).to.be(True)
+expect(rx.full_match("1")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should accept negated range
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("Hello World!?\\d\\d\\s")
+
+expect(rx.full_match("Hello World!37 ")).to.be(True)
+expect(rx.full_match("Hello World08\t")).to.be(True)
+expect(rx.full_match("Hello World!9 ")).to.be(False)
+expect(rx.full_match("Hello World!37")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should accept mixed literals escapes and optional
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("ab+")
+
+expect(rx.pattern).to.be("ab+")
+expect(rx.groups).to.be(0)
+expect(rx.fullmatch("abb")).to.be(True)
+expect(rx.fullmatch("a")).to.be(False)
+expect(rx.full_match("abb")).to.be(True)
+expect(rx.match("abb")).to.be(3)
+expect(rx.match("zabb")).to.be(None)
+hit = rx.search("xxaby")
+expect(hit.start).to.be(2)
+expect(hit.end).to.be(4)
+hit_pos = rx.search("xab", 1)
+expect(hit_pos.start).to.be(1)
+expect(hit_pos.end).to.be(3)
+expect(rx.match_from("zabc", 1)).to.be(3)
+expect(rx).to.have.property("match_from_captures")
+expect(rx).to.have.property("search_captures")
+
+return "ok"
+---
+"ok"
+---
+name: compile wrapper should expose python style pattern api
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+a = regex.compile("x")
+b = regex.compile("x")
+
+expect(a.pattern).to.be(b.pattern)
+expect(a.fullmatch("x")).to.be(b.fullmatch("x"))
+
+return "ok"
+---
+"ok"
+---
+name: compile should be deterministic for same pattern string
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("/\\d+/")
+
+expect(rx.full_match("404")).to.be(True)
+expect(rx.full_match("/404/")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: compile should strip js style slash delimiters
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("re:\\d+")
+
+expect(rx.full_match("9")).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: compile should strip re colon prefix
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("/abc")
+
+expect(rx.full_match("/abc")).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: compile should not strip single leading slash
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+pad = "x" * 250
+hay = pad + "needle" + pad
+rx = regex.compile("needle")
+
+hit = rx.search(hay)
+expect(hit.start).to.be(250)
+expect(hit.end).to.be(256)
+
+return "ok"
+---
+"ok"
+---
+name: compile should match long haystack with search
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+body = "abcdefghij"
+rx = regex.compile(body)
+
+expect(rx.full_match(body)).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: compile should full_match long fixed pattern
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile(".*")
+
+s = "a" * 120 + "!" * 60
+expect(rx.full_match(s)).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should accept dot star across long string
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("[^]")
+
+expect(rx.full_match("Z")).to.be(True)
+expect(rx.full_match("\n")).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should accept negated empty class any char
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("a{0}b")
+
+expect(rx.full_match("b")).to.be(True)
+expect(rx.full_match("ab")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should handle zero lower bound brace
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("a{2,}b")
+
+expect(rx.full_match("aab")).to.be(True)
+expect(rx.full_match("aaaaab")).to.be(True)
+expect(rx.full_match("ab")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should handle brace unbounded max
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("(a{1,2}){2}")
+
+expect(rx.full_match("aaaa")).to.be(True)
+expect(rx.full_match("aaa")).to.be(True)
+expect(rx.full_match("aa")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should handle nested quantified group
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("[.a]")
+
+expect(rx.full_match(".")).to.be(True)
+expect(rx.full_match("a")).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should handle class with literal dot
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("\\$\\d+")
+
+expect(rx.full_match("$12")).to.be(True)
+expect(rx.full_match("12")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should handle escaped metachar as literal
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("zzz")
+
+expect(rx.search("abcdef")).to.be(None)
+
+return "ok"
+---
+"ok"
+---
+name: search_from should return none when no match
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("abc")
+
+expect(rx.match_from("abx", 0)).to.be(None)
+
+return "ok"
+---
+"ok"
+---
+name: match_from should return none on failure
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+expect(lambda: regex.compile("(a")).to.raise_exception()
+
+return "ok"
+---
+"ok"
+---
+name: compile_program should err on unclosed group
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+expect(lambda: regex.compile("*a")).to.raise_exception()
+
+return "ok"
+---
+"ok"
+---
+name: compile_program should err on leading quantifier
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+expect(lambda: regex.compile("[]")).to.raise_exception()
+
+return "ok"
+---
+"ok"
+---
+name: compile_program should err on empty positive class
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+expect(lambda: regex.compile("(a")).to.raise_exception()
+expect(lambda: regex.compile("[]")).to.raise_exception()
+expect(lambda: regex.compile("/[]/")).to.raise_exception()
+
+return "ok"
+---
+"ok"
+---
+name: compile should err on invalid patterns like compile_program
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+def expect_idx(pat, want_idx):
+    errt, res = regex.diagnostic_compile(pat)
+    expect(res == None).to.be(True)
+    expect(errt != None).to.be(True)
+    expect(errt[1]).to.be(want_idx)
+
+expect_idx("a{", 1)
+expect_idx("a{,", 2)
+expect_idx("a{1x", 3)
+expect_idx("a{1,a", 4)
+expect_idx("a{1,2", 1)
+expect_idx("\\", 0)
+expect_idx("[\\D]", 1)
+expect_idx("[z-a]", 2)
+expect_idx("[a-9]", 2)
+expect_idx("[", 0)
+expect_idx("[a-\\]", 3)
+expect_idx("[ab", 0)
+expect_idx("[]", 1)
+expect_idx(")", 0)
+expect_idx("(ab", 0)
+expect_idx("(?P<x>)", 0)
+expect_idx("(?:ab", 0)
+expect_idx("*", 0)
+expect_idx("(", 0)
+
+en, pc = regex.diagnostic_compile("/[]/")
+expect(pc == None).to.be(True)
+expect(en[1]).to.be(1)
+
+ok_t, ok_rx = regex.diagnostic_compile("a")
+expect(ok_t == None).to.be(True)
+expect(ok_rx != None).to.be(True)
+expect(ok_rx.pattern).to.be("a")
+
+none_err, none_prog = regex.diagnostic_compile(None)
+expect(none_prog == None).to.be(True)
+expect(none_err[0]).to.be("pattern is None")
+expect(none_err[1] == None).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: compile_program parse errors report correct pattern indices
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("\\w\\w\\w")
+
+expect(rx.full_match("Ab_")).to.be(True)
+expect(rx.full_match("A-9")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should handle word class run
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("\\D+")
+
+expect(rx.full_match("abc-")).to.be(True)
+expect(rx.full_match("a1")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should handle non digit class
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("\\S{3}")
+
+expect(rx.full_match("aB!")).to.be(True)
+expect(rx.full_match("a B")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should handle non space class
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("\\W+")
+
+expect(rx.full_match("?! ")).to.be(True)
+expect(rx.full_match("a")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should handle non word class
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("(ID)-(\\d{4})")
+
+expect(rx.full_match("ID-0007")).to.be(True)
+expect(rx.full_match("ID-7")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should combine multiple groups and literals
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("aa")
+hit = rx.search("baaac")
+
+expect(hit.start).to.be(1)
+expect(hit.end).to.be(3)
+
+return "ok"
+---
+"ok"
+---
+name: search_from should find earliest double a
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("c")
+
+expect(rx.match_from("abc", 2)).to.be(3)
+expect(rx.match_from("abc", 3)).to.be(None)
+
+return "ok"
+---
+"ok"
+---
+name: match_from should respect start offset at end
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("[3-6]")
+
+expect(rx.full_match("5")).to.be(True)
+expect(rx.full_match("2")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should handle digit range in class
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("[M-O]")
+
+expect(rx.full_match("N")).to.be(True)
+expect(rx.full_match("P")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should handle uppercase range in class
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("x(abc)?y")
+
+expect(rx.full_match("xy")).to.be(True)
+expect(rx.full_match("xabcy")).to.be(True)
+expect(rx.full_match("xab")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should handle optional group
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("(ha)?ha")
+
+expect(rx.full_match("haha")).to.be(True)
+expect(rx.full_match("ha")).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should backtrack optional prefix for whole match
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("a*b")
+
+expect(rx.full_match("aaab")).to.be(True)
+expect(rx.full_match("b")).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should backtrack star to satisfy suffix
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("a|b")
+
+expect(rx.full_match("a")).to.be(True)
+expect(rx.full_match("b")).to.be(True)
+expect(rx.full_match("c")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should treat pipe as alternation
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("a\\|b")
+
+expect(rx.full_match("a|b")).to.be(True)
+expect(rx.full_match("a")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should treat escaped pipe as literal
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("(cat|dog)")
+
+expect(rx.full_match("cat")).to.be(True)
+expect(rx.full_match("dog")).to.be(True)
+expect(rx.full_match("cow")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should alternate grouped branches
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("foo|bar")
+hit = rx.search("xbarz")
+
+expect(hit.start).to.be(1)
+expect(hit.end).to.be(4)
+
+return "ok"
+---
+"ok"
+---
+name: search_from should find first alternation branch
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("1|22|333")
+
+expect(rx.full_match("1")).to.be(True)
+expect(rx.full_match("22")).to.be(True)
+expect(rx.full_match("333")).to.be(True)
+expect(rx.full_match("2")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should alternate three arms
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("aa|a")
+
+expect(rx.full_match("aa")).to.be(True)
+expect(rx.full_match("a")).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should use first matching alternation arm
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("(red|blue)fish")
+
+expect(rx.full_match("redfish")).to.be(True)
+expect(rx.full_match("bluefish")).to.be(True)
+expect(rx.full_match("greenfish")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should combine alternation with suffix
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("a")
+
+expect(rx.full_match("a")).to.be(True)
+expect(rx.full_match("a")).to.be(True)
+expect(rx.full_match("b")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: compile wrapper should reuse program for repeated checks
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("abc")
+
+expect(rx.groups).to.be(0)
+m = rx.match_from_captures("xabc", 1)
+expect(m != None).to.be(True)
+expect(m.end).to.be(4)
+expect(m.groups).to.have.length(1)
+expect(m.groups[0]).to.be("abc")
+expect(rx.match_from_captures("xab", 1)).to.be(None)
+
+hit = rx.search_captures("zzabcqq")
+expect(hit != None).to.be(True)
+expect(hit.start).to.be(2)
+expect(hit.end).to.be(5)
+expect(hit.groups).to.have.length(1)
+expect(hit.groups[0]).to.be("abc")
+expect(rx.search_captures("zzz")).to.be(None)
+
+return "ok"
+---
+"ok"
+---
+name: compile wrapper captures helpers should work with zero groups
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("[\\w.]+@[\\w]+")
+
+expect(rx.full_match("a.b@c")).to.be(True)
+expect(rx.full_match("@nope")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should handle complex email like token
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("")
+hit = rx.search("")
+
+expect(hit.start).to.be(0)
+expect(hit.end).to.be(0)
+
+return "ok"
+---
+"ok"
+---
+name: search should scan empty string for empty pattern
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("(ID)-(\\d{4})")
+m = rx.match_from_captures("ID-0007", 0)
+
+expect(m != None).to.be(True)
+expect(m.end).to.be(7)
+expect(m.groups[0]).to.be("ID-0007")
+expect(m.groups[1]).to.be("ID")
+expect(m.groups[2]).to.be("0007")
+
+return "ok"
+---
+"ok"
+---
+name: match_from_captures should return two groups
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("x(a)?y")
+m = rx.match_from_captures("xy", 0)
+
+expect(m != None).to.be(True)
+expect(m.groups[1]).to.be(None)
+
+return "ok"
+---
+"ok"
+---
+name: match_from_captures should leave optional group none
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("f(o+)(bar)")
+hit = rx.search_captures("xxfoooobary")
+
+expect(hit.start).to.be(2)
+expect(hit.end).to.be(10)
+expect(hit.groups[0]).to.be("foooobar")
+expect(hit.groups[1]).to.be("oooo")
+expect(hit.groups[2]).to.be("bar")
+
+return "ok"
+---
+"ok"
+---
+name: search_captures should include groups in hit
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("a(?:no)b(c)")
+
+expect(rx.groups).to.be(1)
+m = rx.match_from_captures("abnoc", 0)
+
+expect(m).to.be(None)
+m2 = rx.match_from_captures("anobc", 0)
+
+expect(m2 != None).to.be(True)
+expect(m2.groups[1]).to.be("c")
+
+return "ok"
+---
+"ok"
+---
+name: compiled dict groups key should skip noncapturing group
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("|ab")
+
+expect(rx.full_match("")).to.be(True)
+expect(rx.full_match("ab")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match with leading empty alternation arm should not try later arm
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+expect(lambda: regex.compile("(?P<x>a)")).to.raise_exception()
+
+return "ok"
+---
+"ok"
+---
+name: compile_program should err on unsupported question paren
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("a{1,1}")
+
+expect(rx.full_match("a")).to.be(True)
+expect(rx.full_match("")).to.be(False)
+rx2 = regex.compile("a{3,3}")
+
+expect(rx2.full_match("aaa")).to.be(True)
+expect(rx2.full_match("aa")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should treat brace min equal max as exact count
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("[-]")
+
+expect(rx.full_match("-")).to.be(True)
+expect(rx.full_match("a")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should accept hyphen only class
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("[-a]")
+
+expect(rx.full_match("-")).to.be(True)
+expect(rx.full_match("a")).to.be(True)
+rx2 = regex.compile("[a-]")
+
+expect(rx2.full_match("-")).to.be(True)
+expect(rx2.full_match("b")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should accept hyphen at class edge
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("[^-]")
+
+expect(rx.full_match("z")).to.be(True)
+expect(rx.full_match("-")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should accept negated hyphen class
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile(".")
+
+expect(rx.full_match("\n")).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should let dot match newline
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("(?:ab){2}")
+
+expect(rx.full_match("abab")).to.be(True)
+expect(rx.full_match("ab")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should repeat noncapturing group
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("a|")
+
+expect(rx.full_match("a")).to.be(True)
+expect(rx.full_match("")).to.be(True)
+expect(rx.full_match("b")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should accept trailing empty alternation arm
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("[\\]]")
+
+expect(rx.full_match("]")).to.be(True)
+expect(rx.full_match("a")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should accept escaped rbracket inside class
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("[^\\]]")
+
+expect(rx.full_match("a")).to.be(True)
+expect(rx.full_match("]")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should accept negated class excluding rbracket
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("[^^]")
+
+expect(rx.full_match("a")).to.be(True)
+expect(rx.full_match("^")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should accept negated caret literal in class
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile(".*c")
+hit = rx.search("xxxc")
+
+expect(hit.start).to.be(0)
+expect(hit.end).to.be(4)
+
+return "ok"
+---
+"ok"
+---
+name: search_from should backtrack dot star for suffix
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("((a|b)c|d)e")
+
+expect(rx.full_match("ace")).to.be(True)
+expect(rx.full_match("bce")).to.be(True)
+expect(rx.full_match("de")).to.be(True)
+expect(rx.full_match("ae")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should handle nested alternation with suffix
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("(a+)(b+)")
+m = rx.match_from_captures("aabbb", 0)
+
+expect(m != None).to.be(True)
+expect(m.groups[0]).to.be("aabbb")
+expect(m.groups[1]).to.be("aa")
+expect(m.groups[2]).to.be("bbb")
+
+return "ok"
+---
+"ok"
+---
+name: match_from_captures should split greedy plus groups
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("(x|(yz))")
+hit = rx.search_captures("qqyzz", 0)
+
+expect(hit != None).to.be(True)
+expect(hit.groups[0]).to.be("yz")
+expect(hit.groups[1]).to.be("yz")
+expect(hit.groups[2]).to.be("yz")
+
+return "ok"
+---
+"ok"
+---
+name: search_from_captures should find nested alt capture
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("^a$")
+
+expect(rx.full_match("a")).to.be(True)
+expect(rx.full_match("ab")).to.be(False)
+expect(rx.full_match("ba")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should accept string anchors ^ and $
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("^foo")
+hit = rx.search("foo", 0)
+
+expect(hit != None).to.be(True)
+expect(hit.start).to.be(0)
+expect(hit.end).to.be(3)
+expect(rx.search("xfoo", 0)).to.be(None)
+
+return "ok"
+---
+"ok"
+---
+name: search_from should respect ^ only at string index zero
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("^foo")
+
+expect(rx.search("foo", 1)).to.be(None)
+
+return "ok"
+---
+"ok"
+---
+name: search_from should return None for leading ^ when pos gt zero
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("^a|b")
+hit = rx.search("xb", 0)
+
+expect(hit != None).to.be(True)
+expect(hit.start).to.be(1)
+expect(hit.end).to.be(2)
+
+return "ok"
+---
+"ok"
+---
+name: search_from should find arm without ^ across offsets
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("\\^x")
+
+expect(rx.full_match("^x")).to.be(True)
+expect(rx.full_match("x")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should accept escaped caret as literal
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("^$")
+
+expect(rx.full_match("")).to.be(True)
+expect(rx.full_match("x")).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should accept empty string for ^$
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+errt, res = regex.diagnostic_compile("^?")
+
+expect(res).to.be(None)
+expect(errt != None).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: compile_program should err on quantified ^
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("^(a)$")
+m = rx.match_from_captures("a", 0)
+
+expect(m != None).to.be(True)
+expect(m.groups[0]).to.be("a")
+expect(m.groups[1]).to.be("a")
+
+return "ok"
+---
+"ok"
+---
+name: match_from_captures should work with leading ^ and captures
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("^a")
+
+expect(rx.match_from("aa", 1)).to.be(None)
+
+return "ok"
+---
+"ok"
+---
+name: match_from should fail ^ when start not at string zero even if suffix matches
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("^a|^bc")
+hit = rx.search_captures("bc", 0)
+
+expect(hit != None).to.be(True)
+expect(hit.start).to.be(0)
+expect(hit.groups[0]).to.be("bc")
+
+return "ok"
+---
+"ok"
+---
+name: search_from_captures should honor all arms leading ^
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("a")
+
+expect(rx.match_from("x", 2)).to.be(None)
+
+return "ok"
+---
+"ok"
+---
+name: match_from should return None when start past end
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("a")
+
+expect(rx.full_match("x", 2)).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: full_match should be false when pos past end
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+rx = regex.compile("a")
+
+expect(rx.search("x", 2)).to.be(None)
+
+return "ok"
+---
+"ok"
+---
+name: search_from should return None when pos past haystack end

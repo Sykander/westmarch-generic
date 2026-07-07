@@ -1,3 +1,0 @@
-"""Empty owner config — engine defaults only."""
-
-# Owner left all schema keys unset; config.gvar should deep-merge DEFAULTS.

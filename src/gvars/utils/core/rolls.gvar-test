@@ -1,0 +1,1268 @@
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+fragments = ["1d20"]
+
+joined = rolls.join_roll_strings(fragments)
+
+expect(joined).to.be("1d20")
+
+return "ok"
+---
+"ok"
+---
+name: rolls gvar loads
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parts_a = ["1d6", "+2"]
+parts_b = ["1d20", "3"]
+expected_a = "1d6+2"
+expected_b = "1d20+3"
+
+result_a = rolls.join_roll_strings(parts_a)
+result_b = rolls.join_roll_strings(parts_b)
+
+expect(result_a).to.be(expected_a)
+expect(result_b).to.be(expected_b)
+
+return "ok"
+---
+"ok"
+---
+name: join_roll_strings should join roll fragments with plus when needed
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parts = []
+expected = ""
+
+result = rolls.join_roll_strings(parts)
+
+expect(result).to.be(expected)
+
+return "ok"
+---
+"ok"
+---
+name: join_roll_strings should return empty string for empty input
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+skill = "athletics"
+expected = "Athletics Check"
+
+result = rolls.get_readable_name_for_skill(skill)
+
+expect(result).to.be(expected)
+
+return "ok"
+---
+"ok"
+---
+name: get_readable_name_for_skill should format default ability skill checks
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+skill_mapped = "athletics"
+skill_unknown = "unknown_skill"
+expected_mapped = "strength"
+expected_unknown = None
+
+result_mapped = rolls.get_default_ability_for_skill(skill_mapped)
+result_unknown = rolls.get_default_ability_for_skill(skill_unknown)
+
+expect(result_mapped).to.be(expected_mapped)
+expect(result_unknown).to.be(expected_unknown)
+
+return "ok"
+---
+"ok"
+---
+name: get_default_ability_for_skill should map skills to abilities
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parts = ["1d6", None, "", "+2"]
+expected = "1d6+2"
+
+result = rolls.join_roll_strings(parts)
+
+expect(result).to.be(expected)
+
+return "ok"
+---
+"ok"
+---
+name: join_roll_strings should skip None and empty fragments
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+dice = "2d6"
+bonuses = ["+3", "1d4"]
+
+damage_expr = rolls.get_damage_roll(dice, bonuses)
+
+expect(damage_expr).to.be("2d6+3+1d4")
+
+return "ok"
+---
+"ok"
+---
+name: get_damage_roll should join dice and bonuses
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+dice = "1d8"
+
+damage_expr = rolls.get_damage_roll(dice, None)
+
+expect(damage_expr).to.be("1d8")
+
+return "ok"
+---
+"ok"
+---
+name: get_damage_roll should default bonuses to empty
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+result = rolls.join_advantage(True, False)
+
+expect(result).to.be(None)
+
+return "ok"
+---
+"ok"
+---
+name: join_advantage should return None when advantage and disadvantage mix
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+result = rolls.join_advantage(None, True)
+
+expect(result).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: join_advantage should return True when any argument is True and none False
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+result = rolls.join_advantage(False, False)
+
+expect(result).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: join_advantage should return False when only False is present among bools
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+result = rolls.join_advantage()
+
+expect(result).to.be(None)
+
+return "ok"
+---
+"ok"
+---
+name: join_advantage should return None when no adv flags are given
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+result = rolls.get_d20(None)
+
+expect(result).to.be("1d20")
+
+return "ok"
+---
+"ok"
+---
+name: get_d20 should build plain d20 when adv is None
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+adv_only = rolls.get_d20(True)
+elven = rolls.get_d20(True, True)
+
+expect(adv_only).to.be("2d20kh1")
+expect(elven).to.be("3d20kh1")
+
+return "ok"
+---
+"ok"
+---
+name: get_d20 should build advantage and elven advantage strings
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+sleight = rolls.get_readable_name_for_skill("sleightOfHand")
+animal = rolls.get_readable_name_for_skill("animalHandling")
+
+expect(sleight).to.be("Sleight of Hand Check")
+expect(animal).to.be("Animal Handling Check")
+
+return "ok"
+---
+"ok"
+---
+name: get_readable_name_for_skill should expand sleight and animal handling
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+result = rolls.get_readable_name_for_skill("athletics", "dexterity")
+
+expect(result).to.be("Dexterity (Athletics) Check")
+
+return "ok"
+---
+"ok"
+---
+name: get_readable_name_for_skill should name non default ability overrides
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+default_save = rolls.get_readable_name_for_save("strength")
+overridden = rolls.get_readable_name_for_save("strength", "dexterity")
+
+expect(default_save).to.be("Strength Saving Throw")
+expect(overridden).to.be("Dexterity (Strength) Saving Throw")
+
+return "ok"
+---
+"ok"
+---
+name: get_readable_name_for_save should format default and overridden abilities
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+default_melee = rolls.get_readable_name_for_attack("melee", "strength")
+ranged_default = rolls.get_readable_name_for_attack("ranged", "dexterity")
+
+expect(default_melee).to.be("Melee Attack")
+expect(ranged_default).to.be("Ranged Attack")
+
+return "ok"
+---
+"ok"
+---
+name: get_readable_name_for_attack should format melee attacks
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+result = rolls.get_default_ability_for_save("death")
+
+expect(result).to.be(None)
+
+return "ok"
+---
+"ok"
+---
+name: get_default_ability_for_save should return None for death saves
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+melee_ability = rolls.get_default_ability_for_attack_type("melee")
+ranged_ability = rolls.get_default_ability_for_attack_type("ranged")
+
+expect(melee_ability).to.be("strength")
+expect(ranged_ability).to.be("dexterity")
+
+return "ok"
+---
+"ok"
+---
+name: get_default_ability_for_attack_type should map melee and ranged
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+luck = rolls.character_has_halfling_luck(None)
+talent = rolls.character_has_reliable_talent(None)
+observant = rolls.character_has_observant(None)
+might = rolls.character_has_indomitable_might(None)
+
+expect(luck).to.be(False)
+expect(talent).to.be(False)
+expect(observant).to.be(False)
+expect(might).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: character helpers should return false when character is None
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+result = rolls.get_mod_override(None, "strength", "dexterity")
+
+expect(result).to.be(0)
+
+return "ok"
+---
+"ok"
+---
+name: get_mod_override should return zero when character is None
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parsed = argparse("")
+result = rolls.get_roll(None, "1d1", parsed, "roll")
+
+expect(result).to.have.property("name", "Roll")
+expect(result).to.have.property("roll_string", "1d1")
+expect(result).to.have.property("total", 1)
+
+return "ok"
+---
+"ok"
+---
+name: get_roll should stringify flat roll_name for vroll
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parsed = argparse("")
+result = rolls.get_roll(None, 1, parsed, "roll")
+
+expect(result).to.have.property("roll_string", "1")
+expect(result).to.have.property("total", 1)
+
+return "ok"
+---
+"ok"
+---
+name: get_roll should coerce numeric flat roll_name to string for vroll
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+expect(rolls.resolve_save_input("dex")).to.be("dexterity")
+expect(rolls.resolve_save_input("STR")).to.be("strength")
+expect(rolls.resolve_save_input("death")).to.be("death")
+
+return "ok"
+---
+"ok"
+---
+name: resolve_save_input should map partial save names
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parsed = argparse("")
+result = rolls.get_roll(None, "1d1", parsed, "roll")
+
+expect(result).to.have.property("natural_roll", 1)
+expect(result).to.have.property("crit", False)
+expect(result).to.have.property("crit_fail", False)
+
+return "ok"
+---
+"ok"
+---
+name: get_roll flat should expose natural_roll when raw tree is simple
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parsed = argparse("")
+r_hi = rolls.get_roll(None, "1d20mi20ma20", parsed, "roll")
+r_lo = rolls.get_roll(None, "1d20mi1ma1", parsed, "roll")
+
+expect(r_hi).to.have.property("natural_roll", 20)
+expect(r_hi).to.have.property("crit", True)
+expect(r_hi).to.have.property("crit_fail", False)
+expect(r_lo).to.have.property("natural_roll", 1)
+expect(r_lo).to.have.property("crit", False)
+expect(r_lo).to.have.property("crit_fail", True)
+
+return "ok"
+---
+"ok"
+---
+name: get_roll flat d20 should set crit flags from natural_roll
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+dis = rolls.get_d20(False)
+mi = rolls.get_d20(None, False, 5, None, None)
+ma = rolls.get_d20(None, False, None, 2, None)
+ro = rolls.get_d20(None, False, None, None, [1, 2])
+combo = rolls.get_d20(True, False, 10, None, [1])
+
+expect(dis).to.be("2d20kl1")
+expect(mi).to.be("1d20mi5")
+expect(ma).to.be("1d20ma2")
+expect(ro).to.be("1d20ro1ro2")
+expect(combo).to.be("2d20kh1mi10ro1")
+
+return "ok"
+---
+"ok"
+---
+name: get_d20 should build disadvantage and mi ma ro snippets
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+expect(rolls.get_default_ability_for_save("intelligence")).to.be("intelligence")
+expect(rolls.get_default_ability_for_save("wisdom")).to.be("wisdom")
+
+return "ok"
+---
+"ok"
+---
+name: get_default_ability_for_save should map ability saves
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+expect(rolls.get_default_ability_for_skill("persuasion")).to.be("charisma")
+
+return "ok"
+---
+"ok"
+---
+name: get_default_ability_for_skill should map persuasion to charisma
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+expect(rolls.get_readable_name_for_attack("melee", "dexterity")).to.be("Melee Attack (dexterity)")
+
+return "ok"
+---
+"ok"
+---
+name: get_readable_name_for_attack should show ability when not default
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+expect(rolls.resolve_skill_input(character(), "letics")).to.be("athletics")
+expect(rolls.resolve_skill_input(character(), "PERC")).to.be("perception")
+
+return "ok"
+---
+"ok"
+---
+name: resolve_skill_input should map substring to skill key
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+expect(lambda: rolls.resolve_skill_input(character(), "   ")).to.raise_exception()
+
+return "ok"
+---
+"ok"
+---
+name: resolve_skill_input should err on empty input
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+expect(lambda: rolls.resolve_skill_input(character(), "zzqqnomatchxx")).to.raise_exception()
+
+return "ok"
+---
+"ok"
+---
+name: resolve_skill_input should err when no skill matches
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+expect(lambda: rolls.resolve_save_input("st")).to.raise_exception()
+
+return "ok"
+---
+"ok"
+---
+name: resolve_save_input should err on ambiguous partial
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+expect(lambda: rolls.resolve_save_input("")).to.raise_exception()
+
+return "ok"
+---
+"ok"
+---
+name: resolve_save_input should err on empty input
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+expect(rolls.resolve_save_input("hon")).to.be("honor")
+
+return "ok"
+---
+"ok"
+---
+name: resolve_save_input should map honor shorthand
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+expect(rolls.character_has_halfling_luck(character())).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: character_has_halfling_luck should be true for halfling race
+character:
+  race: Lightfoot Halfling
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+expect(rolls.character_has_reliable_talent(character())).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: character_has_reliable_talent should be true at rogue 11
+character:
+  levels:
+    Rogue: 11
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+expect(rolls.character_has_observant(character())).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: character_has_observant should read feats cvar
+character:
+  cvars:
+    feats: Observant
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+expect(rolls.character_has_indomitable_might(character())).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: character_has_indomitable_might should be true at barbarian 18
+character:
+  levels:
+    Barbarian: 18
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+ch = character()
+expect(rolls.get_mod_override(ch, "strength", "dexterity")).to.be(-1)
+expect(rolls.get_mod_override(ch, "strength", "strength")).to.be(0)
+expect(rolls.get_mod_override(ch, "wisdom", None)).to.be(0)
+expect(rolls.get_mod_override(ch, "dexterity", None)).to.be(0)
+
+return "ok"
+---
+"ok"
+---
+name: get_mod_override should return modifier delta for active character
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parsed = argparse("")
+perc = rolls.get_roll(None, "perception", parsed, "check")
+stl = rolls.get_roll(None, "stealth", parsed, "check")
+
+expect("1d20+5" in perc.roll_string).to.be(True)
+expect("1d20+5" in stl.roll_string).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: get_roll check uses full skill bonus when no ability override (perception stealth)
+character:
+  race: Human
+  stats:
+    strength: 8
+    dexterity: 16
+    constitution: 16
+    intelligence: 8
+    wisdom: 16
+    charisma: 8
+    prof_bonus: 2
+  skills:
+    perception:
+      value: 5
+      prof: 1
+      bonus: 0
+      adv: null
+    stealth:
+      value: 5
+      prof: 1
+      bonus: 0
+      adv: null
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parsed = argparse("")
+ath = rolls.get_roll(None, "athletics", parsed, "check")
+arc = rolls.get_roll(None, "arcana", parsed, "check")
+per = rolls.get_roll(None, "persuasion", parsed, "check")
+
+expect("1d20+5" in ath.roll_string).to.be(True)
+expect("1d20+4" in arc.roll_string).to.be(True)
+expect("1d20+4" in per.roll_string).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: get_roll check preset arcana persuasion athletics
+character:
+  race: Human
+  stats:
+    strength: 16
+    dexterity: 10
+    constitution: 10
+    intelligence: 14
+    wisdom: 10
+    charisma: 14
+    prof_bonus: 2
+  skills:
+    athletics:
+      value: 5
+      prof: 1
+      bonus: 0
+      adv: null
+    arcana:
+      value: 4
+      prof: 1
+      bonus: 0
+      adv: null
+    persuasion:
+      value: 4
+      prof: 1
+      bonus: 0
+      adv: null
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parsed = argparse("-guidance")
+extra = rolls.get_roll(None, "history", parsed, "check", bonuses=["+2[heroism]"])
+
+expect("1d20+3" in extra.roll_string).to.be(True)
+expect("1d4[Guidance]" in extra.roll_string).to.be(True)
+expect("+2[heroism]" in extra.roll_string).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: get_roll check preset history with guidance and bonus list
+character:
+  race: Human
+  stats:
+    strength: 10
+    dexterity: 10
+    constitution: 10
+    intelligence: 16
+    wisdom: 10
+    charisma: 10
+    prof_bonus: 2
+  skills:
+    history:
+      value: 3
+      prof: 0
+      bonus: 0
+      adv: null
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parsed = argparse("")
+pp = rolls.get_roll(None, "perception", parsed, "passive")
+pi = rolls.get_roll(None, "investigation", parsed, "passive")
+
+expect(pp).to.have.property("name", "Passive Perception Check")
+expect(pp).to.have.property("roll_string", "10+7+5[observant]")
+expect(pp).to.have.property("total", 22)
+expect(pi).to.have.property("name", "Passive Investigation Check")
+expect(pi).to.have.property("roll_string", "10+4+5[observant]")
+expect(pi).to.have.property("total", 19)
+
+return "ok"
+---
+"ok"
+---
+name: get_roll passive preset skill totals and strings
+character:
+  race: Human
+  stats:
+    strength: 10
+    dexterity: 10
+    constitution: 10
+    intelligence: 12
+    wisdom: 14
+    charisma: 10
+    prof_bonus: 2
+  cvars:
+    feats: Observant
+  skills:
+    perception:
+      value: 7
+      prof: 1
+      bonus: 0
+      adv: null
+    investigation:
+      value: 4
+      prof: 0
+      bonus: 0
+      adv: null
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parsed = argparse("")
+plain = rolls.get_roll(None, "perception", parsed, "passive")
+
+expect(plain).to.have.property("roll_string", "10+6")
+expect(plain).to.have.property("total", 16)
+
+return "ok"
+---
+"ok"
+---
+name: get_roll passive preset perception without observant
+character:
+  race: Human
+  stats:
+    strength: 10
+    dexterity: 10
+    constitution: 10
+    intelligence: 10
+    wisdom: 14
+    charisma: 10
+    prof_bonus: 2
+  skills:
+    perception:
+      value: 6
+      prof: 1
+      bonus: 0
+      adv: null
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parsed = argparse("-guidance")
+pg = rolls.get_roll(None, "survival", parsed, "passive")
+
+expect("10+5" in pg.roll_string).to.be(True)
+expect("1d4[Guidance]" in pg.roll_string).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: get_roll passive preset investigation with guidance flag
+character:
+  race: Human
+  stats:
+    strength: 10
+    dexterity: 10
+    constitution: 10
+    intelligence: 10
+    wisdom: 14
+    charisma: 10
+    prof_bonus: 2
+  skills:
+    survival:
+      value: 5
+      prof: 1
+      bonus: 0
+      adv: null
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parsed = argparse("")
+dis = rolls.get_roll(None, "insight", parsed, "passive", adv=False)
+
+expect("-5[disadvantage]" in dis.roll_string).to.be(True)
+expect(dis.roll_string.startswith("10+2")).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: get_roll passive disadvantage flat penalty in string
+character:
+  race: Human
+  stats:
+    strength: 10
+    dexterity: 10
+    constitution: 10
+    intelligence: 10
+    wisdom: 10
+    charisma: 10
+    prof_bonus: 2
+  skills:
+    insight:
+      value: 2
+      prof: 0
+      bonus: 0
+      adv: null
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parsed = argparse("")
+con_r = rolls.get_roll(None, "constitution", parsed, "save")
+wis_r = rolls.get_roll(None, "wisdom", parsed, "save")
+
+expect("1d20+7" in con_r.roll_string).to.be(True)
+expect("1d20+2" in wis_r.roll_string).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: get_roll save preset constitution and wisdom
+character:
+  race: Human
+  stats:
+    strength: 10
+    dexterity: 10
+    constitution: 18
+    intelligence: 10
+    wisdom: 14
+    charisma: 10
+    prof_bonus: 2
+  saves:
+    constitution:
+      value: 7
+      adv: null
+    wisdom:
+      value: 2
+      adv: null
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parsed = argparse("-cha")
+ovr = rolls.get_roll(None, "wisdom", parsed, "save")
+
+expect(ovr).to.have.property("name", "Charisma (Wisdom) Saving Throw")
+expect("1d20+0" in ovr.roll_string).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: get_roll save preset wisdom with charisma override from args
+character:
+  race: Human
+  stats:
+    strength: 10
+    dexterity: 10
+    constitution: 10
+    intelligence: 10
+    wisdom: 14
+    charisma: 10
+    prof_bonus: 2
+  saves:
+    wisdom:
+      value: 2
+      adv: null
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parsed = argparse("-bless -resistance")
+br = rolls.get_roll(None, "dexterity", parsed, "save")
+
+expect("1d20+5" in br.roll_string).to.be(True)
+expect("1d4[Bless]" in br.roll_string).to.be(True)
+expect("1d4[Resistance]" in br.roll_string).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: get_roll save preset dexterity with bless and resistance
+character:
+  race: Human
+  stats:
+    strength: 10
+    dexterity: 16
+    constitution: 10
+    intelligence: 10
+    wisdom: 10
+    charisma: 10
+    prof_bonus: 2
+  saves:
+    dexterity:
+      value: 5
+      adv: null
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parsed = argparse("")
+result = rolls.get_roll(None, "perception", parsed, "passive")
+
+expect(result).to.have.property("name", "Passive Perception Check")
+expect(result).to.have.property("natural_roll", None)
+expect(result).to.have.property("crit", False)
+expect(result).to.have.property("crit_fail", False)
+
+return "ok"
+---
+"ok"
+---
+name: get_roll passive should omit natural_roll and skip crit flags
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parsed = argparse("")
+result = rolls.get_roll(None, "letics", parsed, "check")
+
+expect(result).to.have.property("name", "Athletics Check")
+expect("1d20" in result.roll_string).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: get_roll check should resolve skill and build d20 string
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parsed = argparse("")
+result = rolls.get_roll(None, "dex", parsed, "save")
+
+expect(result).to.have.property("name", "Dexterity Saving Throw")
+expect("1d20" in result.roll_string).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: get_roll save should resolve shorthand save name
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parsed = argparse("")
+result = rolls.get_roll(None, "melee", parsed, "attack")
+
+expect(result).to.have.property("name", "Melee Attack")
+expect("1d20" in result.roll_string).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: get_roll attack melee should label and include d20
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parsed = argparse("")
+result = rolls.get_roll(None, "death", parsed, "save")
+
+expect(result).to.have.property("dc", 10)
+expect(result).to.have.property("name", "Death Saving Throw")
+
+return "ok"
+---
+"ok"
+---
+name: get_roll save death should default dc to ten
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parsed = argparse("-mc 12")
+result = rolls.get_roll(None, "acrobatics", parsed, "check")
+
+expect("mi12" in result.roll_string).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: get_roll check should honor explicit mc flag
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parsed = argparse("-guidance")
+result = rolls.get_roll(None, "history", parsed, "check")
+
+expect("1d4[Guidance]" in result.roll_string).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: get_roll check should add guidance bonus when flagged
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parsed = argparse("-resistance")
+result = rolls.get_roll(None, "wisdom", parsed, "save")
+
+expect("1d4[Resistance]" in result.roll_string).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: get_roll save should add resistance bonus when flagged
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parsed = argparse("-bless")
+result = rolls.get_roll(None, "melee", parsed, "attack")
+
+expect("1d4[Bless]" in result.roll_string).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: get_roll attack should add bless bonus when flagged
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parsed = argparse("-xb 2")
+aliases = {"b": "xb"}
+result = rolls.get_roll(None, "religion", parsed, "check", arg_aliases=aliases)
+
+expect("+2" in result.roll_string or "2" in result.roll_string).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: get_roll should remap bonus argparse key via arg_aliases
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parsed = argparse("")
+expect(lambda: rolls.get_roll(None, "1d20", parsed, "invalid_type")).to.raise_exception()
+
+return "ok"
+---
+"ok"
+---
+name: get_roll should err on unknown roll_type
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parsed = argparse("")
+result = rolls.get_roll(None, "nature", parsed, "check")
+
+expect("ro1" in result.roll_string).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: get_roll check should include halfling lucky reroll
+character:
+  race: Lightfoot Halfling
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parsed = argparse("")
+result = rolls.get_roll(None, "arcana", parsed, "check")
+
+expect("ro2" in result.roll_string).to.be(True)
+expect("ro1" in result.roll_string).to.be(False)
+
+return "ok"
+---
+"ok"
+---
+name: get_roll check should merge csettings reroll into d20
+character:
+  csettings:
+    reroll: 2
+    compact_coins: false
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parsed = argparse("")
+result = rolls.get_roll(None, "investigation", parsed, "check")
+
+expect("mi10" in result.roll_string).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: get_roll check should apply reliable talent floor on proficient skill
+character:
+  levels:
+    Rogue: 11
+  skills:
+    investigation:
+      prof: 1
+      value: 5
+      bonus: 0
+      adv: null
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parsed = argparse("")
+result = rolls.get_roll(None, "insight", parsed, "check")
+
+expect("mi10" in result.roll_string).to.be(True)
+
+return "ok"
+---
+"ok"
+---
+name: get_roll check should apply talent csetting floor when proficient
+character:
+  csettings:
+    talent: true
+    compact_coins: false
+  skills:
+    insight:
+      prof: 1
+      value: 4
+      bonus: 0
+      adv: null
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(assertions = env.gvars.expect)
+expect = assertions.expect
+
+parsed = argparse("-dex")
+result = rolls.get_roll(None, "athletics", parsed, "check")
+
+expect(result).to.have.property("name", "Dexterity (Athletics) Check")
+
+return "ok"
+---
+"ok"
+---
+name: get_roll check should use dexterity override from args

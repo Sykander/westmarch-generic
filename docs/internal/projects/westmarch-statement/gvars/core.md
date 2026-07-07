@@ -31,6 +31,7 @@ This satisfies the intent of [US-7.3](../user-stories.md) — reuse community li
 |--------|----------|-----------------|
 | **commands** | drac2-tools `utils/commands` | embeds, multiline flows |
 | **embeds** | drac2-tools `utils/embeds` | All player-facing aliases |
+| **expect** | drac2-tools `utils/expect` | readable `.gvar-test` and `.alias-test` assertions |
 | **rolls** | drac2-tools `utils/rolls` | encounters, loot, library, job |
 | **strings** | drac2-tools `utils/strings` | encounters, crafting |
 | **lists** | drac2-tools `utils/lists` | encounter pools, formatting |
@@ -46,7 +47,7 @@ This satisfies the intent of [US-7.3](../user-stories.md) — reuse community li
 
 - Avrae builtins (`character()`, `vroll()`, `time()`, …)
 - Server config or catalogue **data**
-- Test-only harness (**`expect`**) — stays beside alias-tests unless a gvar test alias needs it
+- Server-local test aliases that only wrap a core gvar. Use `.gvar-test` plus **`expect`** instead.
 
 ### 2. Domain engine modules — `src/gvars/<area>/`
 

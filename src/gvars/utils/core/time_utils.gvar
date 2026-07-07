@@ -1,4 +1,4 @@
-"""time.gvar - timestamp helpers.
+"""time_utils.gvar - timestamp helpers.
 
 Vendored from drac2-tools src/gvars/utils/time/time.gvar and adapted for
 westmarch-generic.

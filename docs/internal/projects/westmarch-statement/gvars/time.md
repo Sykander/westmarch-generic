@@ -1,6 +1,6 @@
-# time.gvar
+# time
 
-**Path:** `src/gvars/utils/core/time.gvar` · **Env key:** `env.gvars.time`
+**Path:** `src/gvars/utils/core/time_utils.gvar` · **Env key:** `env.gvars.time`
 
 Vendored timestamp helpers from drac2-tools, adapted for westmarch-generic.
 
