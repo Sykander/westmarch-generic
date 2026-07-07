@@ -1032,6 +1032,15 @@ def _display_journey_path(path, cfg, transport, prefix, progress_step, icon, bio
     return "\n".join(lines)
 
 
+def _display_compact_journey(title, legs):
+    leg_label = "leg" if len(legs) == 1 else "legs"
+    lines = [
+        f"## {title}",
+        f"-# {len(legs)} route {leg_label}.",
+    ]
+    return "\n".join(lines)
+
+
 def display_journey(config_override, journey_or_legs, mode="detailed", horse=False, boat=False, prefix="!", progress=None, transport_id=None):
     cfg = _cfg(config_override)
     legs = _journey_paths(journey_or_legs)
@@ -1056,6 +1065,8 @@ def display_journey(config_override, journey_or_legs, mode="detailed", horse=Fal
     elif dicts.is_dict(journey_or_legs):
         path_index = _read_field(journey_or_legs, "path_index")
         step_index = _read_field(journey_or_legs, "step_index")
+    if mode == "detailed" and len(legs) > 6:
+        return _display_compact_journey(title, legs)
     i = 0
     for leg in legs:
         completed_leg = False

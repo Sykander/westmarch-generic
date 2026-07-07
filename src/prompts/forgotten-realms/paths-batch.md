@@ -15,6 +15,7 @@ Paste **all location ids** (or the subgraph ids for this region). Optionally nam
 - [ ] Assigns to `world_data_paths` (list)
 - [ ] Every `from` / `to` is in your pasted id list
 - [ ] Every step `type` is `encounter`, `proceed`, or `cost`
+- [ ] Only shortest/fastest routes have fewer than 2 encounter steps; ordinary routes have 2–3, and long routes can have 4+
 - [ ] Encounter steps use allowed biome codes only
 - [ ] No duplicate `(from, to, transport)` — missing `requirements.transport` means unrestricted
 - [ ] Bidirectional routes have two entries if both directions are travelable

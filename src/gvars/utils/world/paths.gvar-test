@@ -185,6 +185,23 @@ True
 ---
 name: display_path respects activity-specific encounter steps
 
+path = {
+    "from": "river_town",
+    "to": "oakwood",
+    "steps": [
+        {"type": "encounter", "biome": "road", "description": "Follow the caravan road."},
+        {"type": "encounter", "biome": "road"},
+        {"type": "encounter", "biome": "road"},
+        {"type": "encounter", "biome": "road"},
+    ],
+}
+text = paths.display_path(path, {}, "detailed", "walk", "!")
+return "Follow the caravan road. Run `!enc road` (4 times)" in text
+---
+True
+---
+name: display_path compacts repeated encounter steps
+
 cfg_fixture = {
     "subsystems": {"exploration": {"config": {"enc_biome_source": "location"}}},
     "world_data": {

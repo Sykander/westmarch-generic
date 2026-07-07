@@ -1154,6 +1154,38 @@ def _step_text(step, path=None, prefix="!", completed=False):
     return _step_parts(step, None, prefix, completed)[0]
 
 
+def _fast_encounter_step_text(step, prefix="!", completed=False):
+    if not dicts.is_dict(step):
+        return None
+    try:
+        if step["type"] != "encounter":
+            return None
+    except:
+        return None
+    try:
+        biome = step["biome"]
+    except:
+        biome = None
+    if biome == None:
+        try:
+            biome = step["code"]
+        except:
+            biome = None
+    try:
+        activity = step["activity"]
+    except:
+        activity = "enc"
+    if activity == None or str(activity).strip() == "":
+        activity = "enc"
+    command = f"{prefix}{activity}"
+    if biome != None and str(biome).strip() != "":
+        command += f" {str(biome).strip()}"
+    text = f"Run `{command}`"
+    if completed:
+        text = f"~~{text}~~"
+    return text
+
+
 def _biome_source(cfg):
     subs = _read_field(cfg, "subsystems")
     exploration = _read_field(subs, "exploration")
@@ -1165,7 +1197,51 @@ def _biome_source(cfg):
 
 
 def display_step(step, path=None, prefix="!", completed=False):
+    fast = _fast_encounter_step_text(step, prefix, completed)
+    if fast != None:
+        return fast
     return _step_text(step, path, prefix, completed)
+
+
+def _step_group_key(step):
+    if not dicts.is_dict(step):
+        return None
+    biome = _read_field(step, "biome")
+    if biome == None:
+        biome = _read_field(step, "code")
+    return "|".join([
+        str(_read_field(step, "type")),
+        str(_read_field(step, "activity")),
+        str(biome),
+        str(_read_field(step, "gold")),
+        str(_read_field(step, "rations")),
+    ])
+
+
+def _steps_can_group(first, candidate):
+    if _step_group_key(first) == None:
+        return False
+    if _step_description(candidate) != None:
+        return False
+    return _step_group_key(first) == _step_group_key(candidate)
+
+
+def _step_completed(index, progress_step):
+    if progress_step == None:
+        return False
+    try:
+        return index < int(progress_step)
+    except:
+        return False
+
+
+def _with_step_count(text, count):
+    if count <= 1:
+        return text
+    suffix = f" ({count} times)"
+    if text.startswith("~~") and text.endswith("~~"):
+        return text[:len(text) - 2] + suffix + "~~"
+    return text + suffix
 
 
 def _path_transport_requirement(path):
@@ -1220,17 +1296,18 @@ def display_path(path, config_override=None, mode="short", transport_id="walk", 
     if len(subheading) > 0:
         lines.append(f"-# {' '.join(subheading)}")
     index = 0
-    for step in steps:
-        done = False
-        if progress_step != None:
-            try:
-                done = index < int(progress_step)
-            except:
-                done = False
+    while index < len(steps):
+        step = steps[index]
+        done = _step_completed(index, progress_step)
+        group_count = 1
+        next_index = index + 1
+        while next_index < len(steps) and _step_completed(next_index, progress_step) == done and _steps_can_group(step, steps[next_index]):
+            group_count += 1
+            next_index += 1
         parts = _step_parts(step, cfg, prefix, done)
-        lines.append(f"* {parts[0]}")
+        lines.append(f"* {_with_step_count(parts[0], group_count)}")
         warning = parts[1]
         if warning != None:
             lines.append(f"  -# {warning}")
-        index += 1
+        index = next_index
     return "\n".join(lines)

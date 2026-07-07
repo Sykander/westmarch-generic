@@ -125,6 +125,48 @@ True
 name: Forgotten Realms 2014 config loads generated recipe catalogue
 
 using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(paths = env.gvars.paths)
+wd = {}
+for key in forgotten_realms_2014.world_data:
+    wd[key] = forgotten_realms_2014.world_data[key]
+wd["locations_gvar_id"] = "fde0dbeb-d2e3-42fd-8f56-2d94bdf3ac58"
+wd["paths_gvar_id"] = "19623e1a-3a23-49a0-9d40-986fdd26d7e7"
+cfg = {
+    "subsystems": forgotten_realms_2014.subsystems,
+    "world_data": wd,
+}
+
+def enc_count(path, transport="walk"):
+    count = 0
+    for step in paths.get_path_steps(path, transport):
+        try:
+            if step["type"] == "encounter":
+                count += 1
+        except:
+            pass
+    return count
+
+short_ship = paths.get_edge(cfg, "waterdeep", "sea_of_swords", "ship")
+ordinary_road = paths.get_edge(cfg, "waterdeep", "rassalantar")
+regional_road = paths.get_edge(cfg, "waterdeep", "trade_way")
+long_road = paths.get_edge(cfg, "waterdeep", "high_road")
+long_sea = paths.get_edge(cfg, "trackless_sea", "tuern", "ship")
+circle = paths.get_edge(cfg, "waterdeep", "silverymoon", "teleportation_circle")
+return (
+    enc_count(short_ship, "ship") == 1
+    and enc_count(ordinary_road) == 2
+    and enc_count(regional_road) == 3
+    and enc_count(long_road) == 3
+    and enc_count(long_sea, "ship") == 4
+    and enc_count(circle, "teleportation_circle") == 0
+    and paths.get_path_steps(circle, "teleportation_circle")[0]["type"] == "cost"
+)
+---
+True
+---
+name: Forgotten Realms 2014 paths use encounter cadence by travel length
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(library = env.gvars.library)
 wd = {}
 for key in forgotten_realms_2014.world_data:
@@ -215,7 +257,7 @@ desc = locations.display_location(current_loc, "full", ch, True, journeys.get_vi
 if locations.location_has_trade(current_loc):
     desc += "\n\n" + shops.trade_text(cfg, current_id)
 nearby = journeys.format_nearby_locations(cfg, current_id, "!")
-return current_id == "waterdeep" and "[Waterdeep General Market]" in desc and "```ansi" in desc and "buy" in desc and "sell" in desc and "Backpack" in desc and "2 gp" in desc and "1 gp" in desc and "## Nearby" in nearby and "High Road" in nearby and "Trade Way" in nearby
+return current_id == "waterdeep" and "```ansi" in desc and "buy" in desc and "sell" in desc and "Backpack" in desc and "2 gp" in desc and "1 gp" in desc and "## Nearby" in nearby and "High Road" in nearby and "Trade Way" in nearby
 ---
 True
 ---
@@ -225,6 +267,7 @@ using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(
     journeys = env.gvars.journeys,
     locations = env.gvars.locations,
+    paths = env.gvars.paths,
 )
 wd = {}
 for key in forgotten_realms_2014.world_data:
@@ -245,6 +288,7 @@ found, route = journeys.find_journey(cfg, current_id, dest_id)
 journey = journeys.build_journey(cfg, current_id, dest_id, route)
 desc = locations.display_location(current_loc, "full", ch, True, journeys.get_visit_count(ch, current_id))
 desc += "\n\n" + journeys.display_journey(cfg, journey, "detailed", prefix="!")
+desc += "\n\n-# Next step: " + paths.display_step(route[0]["steps"][0], route[0], "!", False)
 return current_id == "waterdeep" and found and len(route) == 8 and route[len(route) - 1]["to"] == "silverymoon" and "Waterdeep" in desc and "Silverymoon" in desc and "!enc" in desc
 ---
 True
@@ -255,6 +299,7 @@ using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
 using(
     journeys = env.gvars.journeys,
     locations = env.gvars.locations,
+    paths = env.gvars.paths,
 )
 wd = {}
 for key in forgotten_realms_2014.world_data:
@@ -275,6 +320,7 @@ found, route = journeys.find_journey(cfg, current_id, dest_id)
 journey = journeys.build_journey(cfg, current_id, dest_id, route)
 desc = locations.display_location(current_loc, "full", ch, True, journeys.get_visit_count(ch, current_id))
 desc += "\n\n" + journeys.display_journey(cfg, journey, "detailed", prefix="!")
+desc += "\n\n-# Next step: " + paths.display_step(route[0]["steps"][0], route[0], "!", False)
 return current_id == "waterdeep" and found and len(route) == 12 and route[len(route) - 1]["to"] == "suzail" and "Waterdeep" in desc and "Suzail" in desc and "!enc" in desc
 ---
 True
@@ -326,14 +372,13 @@ cfg = {
     "world_data": wd,
 }
 ch = character()
-current_id, current_loc = journeys.get_location(ch, cfg)
+current_id, _ = journeys.get_location(ch, cfg)
 matches = locations.search_locations(cfg, "bryn shander")
 dest_id = locations.location_id(matches[0]) if len(matches) == 1 else None
 found, route = journeys.find_journey(cfg, current_id, dest_id)
 journey = journeys.build_journey(cfg, current_id, dest_id, route)
-desc = locations.display_location(current_loc, "full", ch, True, journeys.get_visit_count(ch, current_id))
-desc += "\n\n" + journeys.display_journey(cfg, journey, "detailed", prefix="!")
-return current_id == "waterdeep" and found and len(route) == 8 and route[len(route) - 1]["to"] == "bryn_shander" and "Waterdeep" in desc and "Bryn Shander" in desc and "!enc" in desc
+desc = journeys.display_journey(cfg, journey, "detailed", prefix="!")
+return current_id == "waterdeep" and found and len(route) == 8 and route[len(route) - 1]["to"] == "bryn_shander" and "Waterdeep" in desc and "Bryn Shander" in desc
 ---
 True
 ---

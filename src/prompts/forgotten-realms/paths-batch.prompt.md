@@ -61,7 +61,8 @@ world_data_paths = [
 ### Design rules
 
 - **Hub first:** if a hub is named, connect it to 4–8 nearby locations in this batch.
-- **Wild routes:** 1–3 encounter steps; **road/urban** routes: 0–1 encounter steps, often `road` or `urban` biome.
+- **Encounter cadence:** only the shortest or fastest routes should have fewer than 2 encounter steps. Use 2 encounter steps for ordinary one- to two-day legs, 3 for multi-day regional routes, and 4+ for long wilderness, sea, mountain, desert, or cross-region legs.
+- **Road/urban routes:** roads are safer than wild routes, but they still need travel actions on meaningful journeys. Use `road` or `urban` biome steps unless the route crosses a clearer terrain.
 - **Steps are not clock ticks:** use `distance_miles` / `travel_hours` for route length. Use `steps` only for meaningful player-resolved actions such as encounters, costs, hazards, or special activities.
 - **No duplicate edges:** same `from`, `to`, and `requirements.transport` (or both omitted) only once.
 - **Transport requirements:** omit requirements for normal roads and trails. Add a second path with `requirements.transport` only when a specific capability is actually required or makes a genuinely different route.

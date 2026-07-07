@@ -400,6 +400,31 @@ name: display_journey includes route names and steps
 cfg_fixture = {
     "world_data": {
         "locations": {
+            "a": {"name": "A"},
+            "h": {"name": "H"},
+        },
+    },
+}
+legs = [
+    {"from": "a", "to": "b", "steps": [{"type": "encounter", "biome": "road"}]},
+    {"from": "b", "to": "c", "steps": [{"type": "encounter", "biome": "road"}]},
+    {"from": "c", "to": "d", "steps": [{"type": "encounter", "biome": "road"}]},
+    {"from": "d", "to": "e", "steps": [{"type": "encounter", "biome": "road"}]},
+    {"from": "e", "to": "f", "steps": [{"type": "encounter", "biome": "road"}]},
+    {"from": "f", "to": "g", "steps": [{"type": "encounter", "biome": "road"}]},
+    {"from": "g", "to": "h", "steps": [{"type": "encounter", "biome": "road"}]},
+]
+journey = journeys.build_journey(cfg_fixture, "a", "h", legs)
+text = journeys.display_journey(cfg_fixture, journey, "detailed", prefix="!")
+return "7 route legs" in text and "Next:" not in text
+---
+True
+---
+name: display_journey compacts long detailed routes
+
+cfg_fixture = {
+    "world_data": {
+        "locations": {
             "river_town": {"name": "River Town"},
             "oakwood": {"name": "Oakwood Forest"},
         },
