@@ -123,7 +123,7 @@ How a server gets engine aliases ([US-1.1](user-stories.md)):
 | Model | Description | Pros | Cons |
 |-------|-------------|------|------|
 | **E1 — Public workshop subscription** | Server adds westmarch-generic workshop to Avrae bot | Single deploy benefits all ([US-4.5](user-stories.md)) | Requires published workshop + Avrae subscription UX |
-| **E2 — Self-deploy from repo** | Server owner runs `npm run deploy:dev` or `npm run deploy:prod` to their workshop | Full control for power users | Forked workshops, upgrade friction |
+| **E2 — Self-deploy from repo** | Server owner runs `npx nx run avrae-sourcemaps:deploy-dev` or `npx nx run avrae-sourcemaps:deploy-prod` to their workshop | Full control for power users | Forked workshops, upgrade friction |
 | **E3 — Hybrid** | Official workshop for most; repo deploy for contributors | Flexibility | Two support paths |
 
 **Recommendation:** **E1 primary, E3 for maintainers** — engine repo deploys to an official Development/Production workshop; server owners subscribe and set svars. Document E2 for self-hosters without blocking P0 on it.

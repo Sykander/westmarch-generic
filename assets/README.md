@@ -2,7 +2,7 @@
 
 Tab-separated value (`.tsv`) catalogues used to build config gvars and seed server workshops. Format matches [westmarch](https://github.com/Sykander/westmarch) `public/*.tsv` exports (Google Sheets → **Download → Tab-separated values**).
 
-**Build pipeline:** [content-pipeline.md](../docs/internal/projects/westmarch-statement/content-pipeline.md) · **Scripts:** [utils/README.md](../utils/README.md) — `npm run generate:*` / `make generate-catalogues`
+**Build pipeline:** [content-pipeline.md](../docs/internal/projects/westmarch-statement/content-pipeline.md) · **Targets:** [utils/README.md](../utils/README.md) — `npx nx run avrae-sourcemaps:generate-*` or `make generate-*`
 
 ## Files
 
@@ -66,7 +66,7 @@ The repo ships a small Forgotten Realms-flavoured starter catalogue. Owners add 
 
 **`craft`** mundane items may also use gp value bands from config ([CRAFT_PRICE_BANDS](../docs/internal/projects/westmarch-statement/aliases/crafting/craft.md)) without a **`recipes.tsv`** row.
 
-At config/build time, load **`recipes.tsv`** into config **`recipes`** (list or dict by `id`) alongside catalogues from **`items.tsv`**. Use **`npm run generate:recipes`** or **`make generate-catalogues`** — see [utils/README.md](../utils/README.md).
+At config/build time, load **`recipes.tsv`** into config **`recipes`** (list or dict by `id`) alongside catalogues from **`items.tsv`**. Use **`npx nx run avrae-sourcemaps:generate-recipes`** or **`make generate-recipes`** — see [utils/README.md](../utils/README.md).
 
 ## Updating from westmarch
 

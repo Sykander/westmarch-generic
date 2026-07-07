@@ -36,9 +36,9 @@ Cached upstream Avrae / avrae-ls docs, refresh scripts, and perf probes live in 
 
 ## Tooling
 
-- **Sourcemap tests:** `make sourcemap-test` or `npm run sourcemap:dev-check`, `npm run sourcemap:prod-check`, and `npm run sourcemap:compare-check`
-- **Drac2 tests:** `avrae-ls --run-tests src` (see `.github/workflows/test.yaml`)
-- **Generated files:** `src/gvars/env.*.gvar`, `.varfile.json` — from `make build`; do not hand-edit
+- **Sourcemap tests:** `make sourcemap-test` or `npx nx run avrae-sourcemaps:test`
+- **Drac2 tests:** `avrae-ls --run-tests src` or the relevant `npx nx run avrae-*:test` target (see `.github/workflows/ci.yml`)
+- **Generated files:** `src/gvars/env.*.gvar`, `.varfile.json`, generated catalogue/book/recipe shards, and `public/` — from `make build` / Nx build targets; ignored and do not hand-edit
 - **Workshop UUIDs:** take from **`unused_gvars.md`**; never invent ids (`drac2-tools-maintainer.mdc`)
 
 Template sourcemaps use **placeholder UUIDs** until real Avrae workshop slots are allocated.

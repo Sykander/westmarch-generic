@@ -6,8 +6,8 @@ Prefab **config gvar** bodies for tests and onboarding. Full spec: [docs/interna
 |---------------|---------|
 | **`starter.gvar`** | Minimal schema — all subsystems off, no world data |
 | **`biomes/`** | Preset biome **JSON row-list** bodies — **`engine:configs/biomes/<code>`** |
-| **`books/`** | Library corpora from TSV — Forgotten Realms shards are engine-registered as **`engine:configs/books/forgotten_realms_*`** / runtime UUIDs; **`real_*`** remains owner data (`npm run generate:books`) |
-| **`recipes/`** | Crafting catalogue — **`recipes_list.gvar.json`** (`npm run generate:recipes`) |
+| **`books/`** | Library corpora from TSV — Forgotten Realms shards are engine-registered as **`engine:configs/books/forgotten_realms_*`** / runtime UUIDs; **`real_*`** remains owner data (`npx nx run avrae-sourcemaps:generate-books`) |
+| **`recipes/`** | Crafting catalogue — **`recipes_list.gvar.json`** (`npx nx run avrae-sourcemaps:generate-recipes`) |
 | **`forgotten_realms_2014.gvar`** | Forgotten Realms · 2014 — Sword Coast starter baseline with travel, location, time, weather, economy, content, engine biome registry, and Forgotten Realms book shard UUIDs |
 | **`forgotten_realms_2014_locations.gvar.json`** | Location map referenced by **`forgotten_realms_2014.gvar`** via **`world_data.locations_gvar_id`**; includes starter location encounter quest hooks with stable quest IDs; the editor displays the shipped UUID as **`engine:configs/forgotten_realms_2014_locations`** |
 | **`forgotten_realms_2014_paths.gvar.json`** | Origin-indexed path graph referenced by **`forgotten_realms_2014.gvar`** via **`world_data.paths_gvar_id`**; the editor displays the shipped UUID as **`engine:configs/forgotten_realms_2014_paths`** |

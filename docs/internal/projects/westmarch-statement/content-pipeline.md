@@ -14,7 +14,7 @@ Maintainer scripts live in **[utils/README.md](../../../utils/README.md)**. This
 | Gvars stay under size limits | **Split shards** — same strategy as [westmarch](https://github.com/Sykander/westmarch), with grouped generic names (`monsters_a`, `items_list`, …) |
 | Lookups stay fast | **Lazy load** one shard per search — do not import every catalogue at alias start |
 | Server owners customize | Engine presets + optional owner overrides via config **`extensions.*`** or duplicated shards |
-| Reproducible builds | **`npm run generate:*`** from TSV — committed outputs, CI diff optional later |
+| Reproducible builds | **Nx generator targets** from TSV — ignored outputs rebuilt locally and in CI |
 
 **Not in scope for generate utils:** owner **`world_data`** (locations, paths, …) — authored in config gvar or example presets; biomes are separate lazy gvars ([biomes.md](gvars/biomes.md)), not inlined from TSV in MVP.
 
@@ -127,14 +127,14 @@ Location: **`utils/`** at repo root — see [utils/README.md](../../../utils/REA
 
 Shared library: **`utils/lib/`** — `read-tsv`, `write-json-gvar`, `shard-by`, `manifest`, `sourcemap-shards`.
 
-**npm scripts:**
+**Nx targets:**
 
 ```bash
-npm run generate:monsters   # one catalogue
-make build                  # all generators + env/var build
+npx nx run avrae-sourcemaps:generate-monsters   # one catalogue
+make build                                      # all generators + env/var build
 ```
 
-Generators auto-register shard slots in sourcemaps (UUIDs from **`unused_gvars.md`**). Run **`make build`** after.
+Generators verify shard slots in sourcemaps, but never allocate UUIDs or edit sourcemaps. Register new shard slots manually before running **`make build`**.
 
 ---
 
@@ -142,7 +142,7 @@ Generators auto-register shard slots in sourcemaps (UUIDs from **`unused_gvars.m
 
 Every **new shard file** needs a slot in **`utils/sourcemap.dev.json`** and **`utils/sourcemap.prod.json`**.
 
-Catalogue generators call **`utils/lib/sourcemap-shards.js`** automatically. For hand-added shards:
+Catalogue generators call **`utils/lib/sourcemap-shards.js`** only to verify required entries. For new shards:
 
 1. Take UUID from top of **`unused_gvars.md`**
 2. Add `{ "name": "monsters_a", "file": "src/gvars/utils/catalogues/monsters/monsters_a.gvar.json", "id": "…" }` to **both** sourcemaps (different ids)
@@ -168,12 +168,12 @@ Generate utils **do not** replace owner config — they refresh **engine referen
 
 | Change | Action |
 |--------|--------|
-| Updated TSV in **`assets/`** | Run affected **`npm run generate:*`**, commit shard outputs |
+| Updated TSV in **`assets/`** | Run the affected Nx generator target or `make build`; generated shard outputs are ignored |
 | New shard file | Sourcemap + **`unused_gvars.md`**, **`make build`** |
 | Facade search logic only | Edit Draconic facade; no regenerate |
 | Owner-specific catalogue | Edit owner workshop gvar — **no** repo generate |
 
-**CI *(future)*:** fail PR if TSV hash changed but generated JSON shards were not regenerated (`make build && git diff --exit-code`).
+**CI:** builds generated JSON shards once, uploads them as an artifact, and reuses them across test/deploy jobs.
 
 ---
 

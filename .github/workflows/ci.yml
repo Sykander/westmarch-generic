@@ -25,7 +25,7 @@ jobs:
       - name: Restore lint cache
         uses: actions/cache@v4
         with:
-          path: .cache
+          path: .cache/eslint
           key: ${{ runner.os }}-lint-cache-${{ hashFiles('package-lock.json', 'eslint.config.mjs', '.prettierrc.json') }}
           restore-keys: |
             ${{ runner.os }}-lint-cache-
@@ -36,7 +36,40 @@ jobs:
       - name: Lint
         run: npm run lint
 
-  sourcemap-test:
+  nx-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      target_matrix: ${{ steps.nx-targets.outputs.target_matrix }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Nx target matrix
+        id: nx-targets
+        run: |
+          TEST_PROJECTS="$(npx nx show projects --with-target test)"
+
+          TEST_PROJECTS="${TEST_PROJECTS}" node --input-type=module <<'NODE'
+          import { appendFileSync } from 'node:fs';
+
+          const outputFile = process.env.GITHUB_OUTPUT;
+          const testProjects = JSON.parse(process.env.TEST_PROJECTS);
+          const include = testProjects.map((project) => ({ project, target: 'test' }));
+
+          appendFileSync(outputFile, `target_matrix=${JSON.stringify({ include })}\n`);
+          NODE
+
+  generated-build:
     runs-on: ubuntu-latest
 
     steps:
@@ -52,46 +85,42 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Test sourcemaps
-        run: |
-          npm run sourcemap:dev-check
-          npm run sourcemap:prod-check
-          npm run sourcemap:compare-check
-
-  types:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24.x
-          cache: npm
-          cache-dependency-path: |
-            package-lock.json
-            editor/package-lock.json
-
-      - name: Restore TypeScript cache
+      - name: Restore Nx cache
         uses: actions/cache@v4
         with:
-          path: .cache
-          key: ${{ runner.os }}-typescript-cache-${{ hashFiles('package-lock.json', 'editor/package-lock.json', 'editor/tsconfig*.json') }}
+          path: |
+            .cache/nx/cache
+          key: ${{ runner.os }}-nx-generated-${{ hashFiles('package-lock.json', 'editor/package-lock.json', 'nx.json', '**/project.json') }}-${{ github.run_id }}
           restore-keys: |
-            ${{ runner.os }}-typescript-cache-
+            ${{ runner.os }}-nx-generated-${{ hashFiles('package-lock.json', 'editor/package-lock.json', 'nx.json', '**/project.json') }}-
+            ${{ runner.os }}-nx-generated-
+            ${{ runner.os }}-nx-
 
-      - name: Install dependencies
-        run: |
-          npm ci
-          npm --prefix editor ci
+      - name: Build generated Avrae files
+        run: npx nx run-many -t build --projects=avrae-sourcemaps,avrae-gvar-utils-catalogues,avrae-gvar-configs --parallel=3
 
-      - name: Typecheck
-        run: npm run types
+      - name: Upload generated Avrae artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-avrae
+          if-no-files-found: error
+          path: |
+            .varfile.json
+            src/gvars/env.dev.gvar
+            src/gvars/env.prod.gvar
+            src/gvars/configs/books/*.gvar.json
+            src/gvars/configs/recipes/*.gvar.json
+            src/gvars/utils/catalogues/**/*.gvar.json
 
-  editor-test:
+  nx-test:
+    name: nx ${{ matrix.project }}:${{ matrix.target }}
     runs-on: ubuntu-latest
+    needs:
+      - nx-matrix
+      - generated-build
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.nx-matrix.outputs.target_matrix) }}
 
     steps:
       - name: Checkout
@@ -106,77 +135,48 @@ jobs:
             package-lock.json
             editor/package-lock.json
 
-      - name: Install dependencies
-        run: |
-          npm ci
-          npm --prefix editor ci
-
-      - name: Test editor
-        run: npm run editor:test
-
-  avrae-test:
-    name: avrae-test (${{ matrix.shard }})
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - shard: utils-config
-            npm_script: avrae:test-utils:config
-          - shard: utils-catalogues
-            npm_script: avrae:test-utils:catalogues
-          - shard: utils-gameplay-encounters
-            npm_script: avrae:test-utils:gameplay:encounters
-          - shard: utils-gameplay-exploration
-            npm_script: avrae:test-utils:gameplay:exploration
-          - shard: utils-gameplay-world
-            npm_script: avrae:test-utils:gameplay:world
-          - shard: utils-systems
-            npm_script: avrae:test-utils:systems
-          - shard: aliases-content
-            npm_script: avrae:test-aliases:content
-          - shard: aliases-crafting
-            npm_script: avrae:test-aliases:crafting
-          - shard: aliases-economy
-            npm_script: avrae:test-aliases:economy
-          - shard: aliases-exploration-enc
-            npm_script: avrae:test-aliases:exploration:enc
-          - shard: aliases-exploration-creatures
-            npm_script: avrae:test-aliases:exploration:creatures
-          - shard: aliases-exploration-gathering-a
-            npm_script: avrae:test-aliases:exploration:gathering-a
-          - shard: aliases-exploration-gathering-b
-            npm_script: avrae:test-aliases:exploration:gathering-b
-          - shard: aliases-travel
-            npm_script: avrae:test-aliases:travel
-          - shard: aliases-westmarch
-            npm_script: avrae:test-aliases:westmarch
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
+      - name: Restore Nx cache
+        uses: actions/cache@v4
         with:
-          node-version: 24.x
-          cache: npm
+          path: |
+            .cache/nx/cache
+          key: ${{ runner.os }}-nx-${{ matrix.project }}-${{ matrix.target }}-${{ hashFiles('package-lock.json', 'editor/package-lock.json', 'nx.json', '**/project.json') }}-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-nx-${{ matrix.project }}-${{ matrix.target }}-${{ hashFiles('package-lock.json', 'editor/package-lock.json', 'nx.json', '**/project.json') }}-
+            ${{ runner.os }}-nx-${{ matrix.project }}-${{ matrix.target }}-
+            ${{ runner.os }}-nx-
 
       - name: Install dependencies
         run: npm ci
 
+      - name: Download generated Avrae artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: generated-avrae
+
+      - name: Install editor dependencies
+        if: matrix.project == 'editor'
+        run: npm --prefix editor ci
+
       - name: Install uv
+        if: startsWith(matrix.project, 'avrae-gvar') || startsWith(matrix.project, 'avrae-aliases')
         uses: astral-sh/setup-uv@v7
         with:
           version: '0.9.26'
 
       - name: Install avrae-ls
+        if: startsWith(matrix.project, 'avrae-gvar') || startsWith(matrix.project, 'avrae-aliases')
         run: uv tool install avrae-ls
 
-      - name: Test Avrae ${{ matrix.shard }}
-        run: npm run ${{ matrix.npm_script }}
+      - name: Run Nx target
         env:
           AVRAE_TOKEN: ${{ secrets.AVRAE_TOKEN }}
+        run: |
+          if [ "${{ matrix.project }}" = "editor" ]; then
+            npx nx run ${{ matrix.project }}:${{ matrix.target }}
+          else
+            npx nx run ${{ matrix.project }}:${{ matrix.target }} --excludeTaskDependencies
+          fi
 
   version:
     runs-on: ubuntu-latest
@@ -311,10 +311,8 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - lint
-      - sourcemap-test
-      - types
-      - editor-test
-      - avrae-test
+      - nx-test
+      - generated-build
       - version
 
     steps:
@@ -330,8 +328,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Download generated Avrae artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: generated-avrae
+
       - name: Deploy development
-        run: npm run deploy:dev
+        run: npx nx run avrae-sourcemaps:deploy-dev
         env:
           AVRAE_TOKEN: ${{ secrets.AVRAE_TOKEN }}
 
@@ -340,10 +343,8 @@ jobs:
     if: needs.version.outputs.should_deploy_production == 'true'
     needs:
       - lint
-      - sourcemap-test
-      - types
-      - editor-test
-      - avrae-test
+      - nx-test
+      - generated-build
       - version
     permissions:
       contents: write
@@ -372,13 +373,29 @@ jobs:
           npm ci
           npm --prefix editor ci
 
+      - name: Restore Nx cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .cache/nx/cache
+          key: ${{ runner.os }}-nx-deploy-prod-${{ hashFiles('package-lock.json', 'editor/package-lock.json', 'nx.json', '**/project.json') }}-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-nx-deploy-prod-${{ hashFiles('package-lock.json', 'editor/package-lock.json', 'nx.json', '**/project.json') }}-
+            ${{ runner.os }}-nx-deploy-prod-
+            ${{ runner.os }}-nx-
+
+      - name: Download generated Avrae artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: generated-avrae
+
       - name: Deploy production
-        run: npm run deploy:prod
+        run: npx nx run avrae-sourcemaps:deploy-prod
         env:
           AVRAE_TOKEN: ${{ secrets.AVRAE_TOKEN }}
 
       - name: Build editor
-        run: npm run editor:build
+        run: npx nx run editor:build
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

@@ -1,0 +1,34 @@
+{
+  "name": "avrae-aliases-crafting",
+  "projectType": "application",
+  "sourceRoot": "src/aliases/crafting",
+  "tags": ["scope:avrae", "type:aliases"],
+  "implicitDependencies": [
+    "avrae-sourcemaps",
+    "avrae-gvar-configs",
+    "avrae-gvar-utils-core",
+    "avrae-gvar-utils-config",
+    "avrae-gvar-utils-display",
+    "avrae-gvar-utils-catalogues",
+    "avrae-gvar-utils-crafting",
+    "avrae-gvar-utils-economy",
+    "avrae-gvar-utils-pc"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "avraeAliasBase",
+        "{workspaceRoot}/src/gvars/utils/catalogues/**/*",
+        "{workspaceRoot}/src/gvars/utils/crafting/**/*",
+        "{workspaceRoot}/src/gvars/utils/economy/**/*",
+        "{workspaceRoot}/src/gvars/utils/pc/**/*"
+      ],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/aliases/crafting"
+      }
+    }
+  }
+}

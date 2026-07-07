@@ -1,61 +1,67 @@
 CATALOGUE_GENERATORS = generate-monsters generate-items generate-spells generate-books generate-recipes
-GENERATE_TARGETS = $(CATALOGUE_GENERATORS) generate-vars generate-env
-AVRAE_CONFIG_TEST_TARGETS = avrae-test-configs
-AVRAE_UTILS_GAMEPLAY_TEST_TARGETS = avrae-test-utils-gameplay-encounters avrae-test-utils-gameplay-exploration avrae-test-utils-gameplay-world
-AVRAE_UTILS_TEST_TARGETS = avrae-test-utils-config avrae-test-utils-catalogues avrae-test-utils-core $(AVRAE_UTILS_GAMEPLAY_TEST_TARGETS) avrae-test-utils-systems
-AVRAE_ALIAS_EXPLORATION_TEST_TARGETS = avrae-test-aliases-exploration-enc avrae-test-aliases-exploration-creatures avrae-test-aliases-exploration-gathering-a avrae-test-aliases-exploration-gathering-b
-AVRAE_ALIAS_TEST_TARGETS = avrae-test-aliases-content avrae-test-aliases-crafting avrae-test-aliases-economy $(AVRAE_ALIAS_EXPLORATION_TEST_TARGETS) avrae-test-aliases-travel avrae-test-aliases-westmarch
-AVRAE_SHARD_TEST_TARGETS = $(AVRAE_CONFIG_TEST_TARGETS) $(AVRAE_UTILS_TEST_TARGETS) $(AVRAE_ALIAS_TEST_TARGETS)
-AVRAE_TEST_TARGETS = $(AVRAE_SHARD_TEST_TARGETS)
+GENERATE_TARGETS = $(CATALOGUE_GENERATORS) generate-vars generate-env generate-env-prod
 
-.PHONY: build test deploy editor editor-build types editor-test install_node install_editor install_avrae_ls sourcemap-test lint unit-tests $(AVRAE_TEST_TARGETS) $(GENERATE_TARGETS)
+.PHONY: build test deploy editor editor-build types editor-test nx-test nx-affected-test nx-graph install_node install_editor install_avrae_ls sourcemap-test lint unit-tests $(GENERATE_TARGETS)
 
 #
 # Useful
 #
-build: $(GENERATE_TARGETS) editor-build
+build: install_node install_editor
+	npm run build
 	npm run lint:fix
 
-test: lint sourcemap-test types editor-test $(AVRAE_SHARD_TEST_TARGETS)
+test: lint nx-test
 
 deploy: build
-	npm run deploy:dev
+	npx nx run avrae-sourcemaps:deploy-dev
 
 editor: install_editor
 	npm run editor
 
 editor-build: install_editor
-	npm run editor:build
+	npx nx run editor:build
 
-types: install_editor
+types: install_node install_editor
 	npm run types
 
-editor-test: install_editor
-	npm run editor:test
+editor-test: install_node install_editor
+	npx nx run editor:test
+
+nx-test: install_node install_editor install_avrae_ls
+	npm test
+
+nx-affected-test: install_node install_editor install_avrae_ls
+	npx nx affected -t test --parallel 4
+
+nx-graph: install_node
+	npx nx graph
 
 #
 # Generates
 #
 generate-env: install_node
-	npm run generate-env
+	npx nx run avrae-sourcemaps:generate-env
+
+generate-env-prod: install_node
+	npx nx run avrae-sourcemaps:generate-env-prod
 
 generate-vars: install_node
-	npm run generate-vars
+	npx nx run avrae-sourcemaps:generate-vars
 
 generate-monsters: install_node
-	npm run generate:monsters
+	npx nx run avrae-sourcemaps:generate-monsters
 
 generate-items: install_node
-	npm run generate:items
+	npx nx run avrae-sourcemaps:generate-items
 
 generate-spells: install_node
-	npm run generate:spells
+	npx nx run avrae-sourcemaps:generate-spells
 
 generate-books: install_node
-	npm run generate:books
+	npx nx run avrae-sourcemaps:generate-books
 
 generate-recipes: install_node
-	npm run generate:recipes
+	npx nx run avrae-sourcemaps:generate-recipes
 
 #
 # Installs
@@ -71,62 +77,9 @@ install_avrae_ls:
 	uv tool update avrae-ls
 
 sourcemap-test: install_node
-	npm run sourcemap:dev-check
-	npm run sourcemap:prod-check
-	npm run sourcemap:compare-check
+	npx nx run avrae-sourcemaps:test
 
 lint: install_node
 	npm run lint
 
-avrae-test-configs: install_avrae_ls
-	npm run avrae:test-configs
-
-avrae-test-aliases-content: install_avrae_ls
-	npm run avrae:test-aliases:content
-
-avrae-test-aliases-crafting: install_avrae_ls
-	npm run avrae:test-aliases:crafting
-
-avrae-test-aliases-economy: install_avrae_ls
-	npm run avrae:test-aliases:economy
-
-avrae-test-aliases-exploration-enc: install_avrae_ls
-	npm run avrae:test-aliases:exploration:enc
-
-avrae-test-aliases-exploration-creatures: install_avrae_ls
-	npm run avrae:test-aliases:exploration:creatures
-
-avrae-test-aliases-exploration-gathering-a: install_avrae_ls
-	npm run avrae:test-aliases:exploration:gathering-a
-
-avrae-test-aliases-exploration-gathering-b: install_avrae_ls
-	npm run avrae:test-aliases:exploration:gathering-b
-
-avrae-test-aliases-travel: install_avrae_ls
-	npm run avrae:test-aliases:travel
-
-avrae-test-aliases-westmarch: install_avrae_ls
-	npm run avrae:test-aliases:westmarch
-
-avrae-test-utils-config: install_avrae_ls
-	npm run avrae:test-utils:config
-
-avrae-test-utils-catalogues: install_avrae_ls
-	npm run avrae:test-utils:catalogues
-
-avrae-test-utils-core: install_avrae_ls
-	npm run avrae:test-utils:core
-
-avrae-test-utils-gameplay-encounters: install_avrae_ls
-	npm run avrae:test-utils:gameplay:encounters
-
-avrae-test-utils-gameplay-exploration: install_avrae_ls
-	npm run avrae:test-utils:gameplay:exploration
-
-avrae-test-utils-gameplay-world: install_avrae_ls
-	npm run avrae:test-utils:gameplay:world
-
-avrae-test-utils-systems: install_avrae_ls
-	npm run avrae:test-utils:systems
-
-unit-tests: $(AVRAE_SHARD_TEST_TARGETS)
+unit-tests: nx-test

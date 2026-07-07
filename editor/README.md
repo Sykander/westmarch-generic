@@ -14,8 +14,8 @@ The root build writes GitHub Pages-ready static files to `../public/`.
 Useful commands from the repo root:
 
 ```bash
-npm run editor:build
-npm run editor:serve
+npm run build
+npm run types
 make editor
 ```
 

@@ -9,7 +9,7 @@ const { readTsv } = require('./lib/read-tsv');
 const { writeJsonGvar } = require('./lib/write-json-gvar');
 const { LETTERS } = require('./lib/shard-by');
 const { printManifest } = require('./lib/manifest');
-const { ensureShardSlots } = require('./lib/sourcemap-shards');
+const { assertShardSlots } = require('./lib/sourcemap-shards');
 
 const INPUT = paths.assets('monsters.tsv');
 const OUT_DIR = 'src/gvars/utils/catalogues/monsters';
@@ -59,6 +59,6 @@ for (const letter of LETTERS) {
 
 printManifest('Monsters', manifest);
 
-const { added, skipped } = ensureShardSlots(sourcemapEntries);
-console.log(`Sourcemap: ${added} slot(s) added, ${skipped} already registered.`);
+const { registered } = assertShardSlots(sourcemapEntries);
+console.log(`Sourcemap: ${registered} slot(s) already registered.`);
 console.log('Monsters done.');

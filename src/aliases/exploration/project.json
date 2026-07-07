@@ -1,0 +1,153 @@
+{
+  "name": "avrae-aliases-exploration",
+  "projectType": "application",
+  "sourceRoot": "src/aliases/exploration",
+  "tags": ["scope:avrae", "type:aliases"],
+  "implicitDependencies": [
+    "avrae-sourcemaps",
+    "avrae-gvar-configs",
+    "avrae-gvar-utils-core",
+    "avrae-gvar-utils-config",
+    "avrae-gvar-utils-display",
+    "avrae-gvar-utils-catalogues",
+    "avrae-gvar-utils-encounters",
+    "avrae-gvar-utils-exploration",
+    "avrae-gvar-utils-pc",
+    "avrae-gvar-utils-world"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:noop",
+      "cache": true,
+      "dependsOn": [
+        "test-enc",
+        "test-fish",
+        "test-forage",
+        "test-hunt",
+        "test-loot",
+        "test-lumber",
+        "test-mine"
+      ],
+      "outputs": []
+    },
+    "test-enc": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": [
+        "avraeAliasBase",
+        "{workspaceRoot}/src/gvars/utils/catalogues/**/*",
+        "{workspaceRoot}/src/gvars/utils/encounters/**/*",
+        "{workspaceRoot}/src/gvars/utils/exploration/**/*",
+        "{workspaceRoot}/src/gvars/utils/pc/**/*",
+        "{workspaceRoot}/src/gvars/utils/world/**/*"
+      ],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/aliases/exploration/enc.alias-test"
+      }
+    },
+    "test-fish": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": [
+        "avraeAliasBase",
+        "{workspaceRoot}/src/gvars/utils/catalogues/**/*",
+        "{workspaceRoot}/src/gvars/utils/encounters/**/*",
+        "{workspaceRoot}/src/gvars/utils/exploration/**/*",
+        "{workspaceRoot}/src/gvars/utils/pc/**/*",
+        "{workspaceRoot}/src/gvars/utils/world/**/*"
+      ],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/aliases/exploration/fish.alias-test"
+      }
+    },
+    "test-forage": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": [
+        "avraeAliasBase",
+        "{workspaceRoot}/src/gvars/utils/catalogues/**/*",
+        "{workspaceRoot}/src/gvars/utils/encounters/**/*",
+        "{workspaceRoot}/src/gvars/utils/exploration/**/*",
+        "{workspaceRoot}/src/gvars/utils/pc/**/*",
+        "{workspaceRoot}/src/gvars/utils/world/**/*"
+      ],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/aliases/exploration/forage.alias-test"
+      }
+    },
+    "test-hunt": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": [
+        "avraeAliasBase",
+        "{workspaceRoot}/src/gvars/utils/catalogues/**/*",
+        "{workspaceRoot}/src/gvars/utils/encounters/**/*",
+        "{workspaceRoot}/src/gvars/utils/exploration/**/*",
+        "{workspaceRoot}/src/gvars/utils/pc/**/*",
+        "{workspaceRoot}/src/gvars/utils/world/**/*"
+      ],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/aliases/exploration/hunt.alias-test"
+      }
+    },
+    "test-loot": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": [
+        "avraeAliasBase",
+        "{workspaceRoot}/src/gvars/utils/catalogues/**/*",
+        "{workspaceRoot}/src/gvars/utils/encounters/**/*",
+        "{workspaceRoot}/src/gvars/utils/exploration/**/*",
+        "{workspaceRoot}/src/gvars/utils/pc/**/*",
+        "{workspaceRoot}/src/gvars/utils/world/**/*"
+      ],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/aliases/exploration/loot.alias-test"
+      }
+    },
+    "test-lumber": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": [
+        "avraeAliasBase",
+        "{workspaceRoot}/src/gvars/utils/catalogues/**/*",
+        "{workspaceRoot}/src/gvars/utils/encounters/**/*",
+        "{workspaceRoot}/src/gvars/utils/exploration/**/*",
+        "{workspaceRoot}/src/gvars/utils/pc/**/*",
+        "{workspaceRoot}/src/gvars/utils/world/**/*"
+      ],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/aliases/exploration/lumber.alias-test"
+      }
+    },
+    "test-mine": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": [
+        "avraeAliasBase",
+        "{workspaceRoot}/src/gvars/utils/catalogues/**/*",
+        "{workspaceRoot}/src/gvars/utils/encounters/**/*",
+        "{workspaceRoot}/src/gvars/utils/exploration/**/*",
+        "{workspaceRoot}/src/gvars/utils/pc/**/*",
+        "{workspaceRoot}/src/gvars/utils/world/**/*"
+      ],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/aliases/exploration/mine.alias-test"
+      }
+    }
+  }
+}

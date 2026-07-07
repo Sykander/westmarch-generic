@@ -1,0 +1,52 @@
+{
+  "name": "avrae-aliases-westmarch",
+  "projectType": "application",
+  "sourceRoot": "src/aliases/westmarch",
+  "tags": ["scope:avrae", "type:aliases"],
+  "implicitDependencies": [
+    "avrae-sourcemaps",
+    "avrae-gvar-configs",
+    "avrae-gvar-utils-auth",
+    "avrae-gvar-utils-core",
+    "avrae-gvar-utils-config",
+    "avrae-gvar-utils-display"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:noop",
+      "cache": true,
+      "dependsOn": ["test-setup", "test-show", "test-westmarch"],
+      "outputs": []
+    },
+    "test-setup": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": ["avraeAliasBase", "{workspaceRoot}/src/gvars/utils/auth/**/*"],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/aliases/westmarch/setup.alias-test"
+      }
+    },
+    "test-show": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": ["avraeAliasBase", "{workspaceRoot}/src/gvars/utils/auth/**/*"],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/aliases/westmarch/show.alias-test"
+      }
+    },
+    "test-westmarch": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": ["avraeAliasBase", "{workspaceRoot}/src/gvars/utils/auth/**/*"],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/aliases/westmarch/westmarch.alias-test"
+      }
+    }
+  }
+}

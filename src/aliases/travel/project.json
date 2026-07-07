@@ -1,0 +1,105 @@
+{
+  "name": "avrae-aliases-travel",
+  "projectType": "application",
+  "sourceRoot": "src/aliases/travel",
+  "tags": ["scope:avrae", "type:aliases"],
+  "implicitDependencies": [
+    "avrae-sourcemaps",
+    "avrae-gvar-configs",
+    "avrae-gvar-utils-core",
+    "avrae-gvar-utils-config",
+    "avrae-gvar-utils-display",
+    "avrae-gvar-utils-encounters",
+    "avrae-gvar-utils-exploration",
+    "avrae-gvar-utils-world"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:noop",
+      "cache": true,
+      "dependsOn": [
+        "test-location",
+        "test-time",
+        "test-travel",
+        "test-travel-forgotten-realms-2014",
+        "test-weather"
+      ],
+      "outputs": []
+    },
+    "test-location": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": [
+        "avraeAliasBase",
+        "{workspaceRoot}/src/gvars/utils/encounters/**/*",
+        "{workspaceRoot}/src/gvars/utils/exploration/**/*",
+        "{workspaceRoot}/src/gvars/utils/world/**/*"
+      ],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/aliases/travel/location.alias-test"
+      }
+    },
+    "test-time": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": [
+        "avraeAliasBase",
+        "{workspaceRoot}/src/gvars/utils/encounters/**/*",
+        "{workspaceRoot}/src/gvars/utils/exploration/**/*",
+        "{workspaceRoot}/src/gvars/utils/world/**/*"
+      ],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/aliases/travel/time.alias-test"
+      }
+    },
+    "test-travel": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": [
+        "avraeAliasBase",
+        "{workspaceRoot}/src/gvars/utils/encounters/**/*",
+        "{workspaceRoot}/src/gvars/utils/exploration/**/*",
+        "{workspaceRoot}/src/gvars/utils/world/**/*"
+      ],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/aliases/travel/travel.alias-test"
+      }
+    },
+    "test-travel-forgotten-realms-2014": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": [
+        "avraeAliasBase",
+        "{workspaceRoot}/src/gvars/utils/encounters/**/*",
+        "{workspaceRoot}/src/gvars/utils/exploration/**/*",
+        "{workspaceRoot}/src/gvars/utils/world/**/*"
+      ],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/aliases/travel/travel.forgotten-realms-2014.alias-test"
+      }
+    },
+    "test-weather": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": [
+        "avraeAliasBase",
+        "{workspaceRoot}/src/gvars/utils/encounters/**/*",
+        "{workspaceRoot}/src/gvars/utils/exploration/**/*",
+        "{workspaceRoot}/src/gvars/utils/world/**/*"
+      ],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/aliases/travel/weather.alias-test"
+      }
+    }
+  }
+}

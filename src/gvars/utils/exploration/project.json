@@ -1,0 +1,31 @@
+{
+  "name": "avrae-gvar-utils-exploration",
+  "projectType": "library",
+  "sourceRoot": "src/gvars/utils/exploration",
+  "tags": ["scope:avrae", "type:gvar-utils"],
+  "implicitDependencies": [
+    "avrae-sourcemaps",
+    "avrae-gvar-utils-core",
+    "avrae-gvar-utils-config",
+    "avrae-gvar-utils-catalogues",
+    "avrae-gvar-utils-encounters",
+    "avrae-gvar-utils-world"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "avraeGvarUtilBase",
+        "{workspaceRoot}/src/gvars/utils/config/**/*",
+        "{workspaceRoot}/src/gvars/utils/catalogues/**/*",
+        "{workspaceRoot}/src/gvars/utils/encounters/**/*",
+        "{workspaceRoot}/src/gvars/utils/world/**/*"
+      ],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/gvars/utils/exploration"
+      }
+    }
+  }
+}

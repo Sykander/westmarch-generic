@@ -1,68 +1,46 @@
-const { readFileSync, writeFileSync } = require('fs');
+const { readFileSync } = require('fs');
 const paths = require('./paths');
 
 /**
- * Ensure catalogue shard slots exist in dev + prod sourcemaps.
- * Consumes UUIDs from unused_gvars.md (two per new shard).
+ * Assert catalogue shard slots already exist in dev + prod sourcemaps.
  * @param {{ name: string, file: string }[]} entries — repo-relative file paths
  */
-function ensureShardSlots(entries) {
-  if (!entries.length) return { added: 0, skipped: 0 };
-
-  const pool = readFileSync(paths.unusedGvars, 'utf8')
-    .split('\n')
-    .map((l) => l.trim())
-    .filter(Boolean);
+function assertShardSlots(entries) {
+  if (!entries.length) return { registered: 0 };
 
   const dev = JSON.parse(readFileSync(paths.sourcemapDev, 'utf8'));
   const prod = JSON.parse(readFileSync(paths.sourcemapProd, 'utf8'));
-
-  let added = 0;
-  let skipped = 0;
+  const devByName = new Map(dev.gvars.map((gvar) => [gvar.name, gvar]));
+  const prodByName = new Map(prod.gvars.map((gvar) => [gvar.name, gvar]));
+  const errors = [];
 
   for (const { name, file } of entries) {
-    const inDev = dev.gvars.some((g) => g.name === name);
-    const inProd = prod.gvars.some((g) => g.name === name);
+    const devEntry = devByName.get(name);
+    const prodEntry = prodByName.get(name);
 
-    if (inDev && inProd) {
-      skipped++;
-      continue;
+    if (!devEntry) {
+      errors.push(`${name}: missing from utils/sourcemap.dev.json`);
+    } else if (devEntry.file !== file) {
+      errors.push(`${name}: dev sourcemap points at ${devEntry.file}, expected ${file}`);
     }
 
-    if (pool.length < 2) {
-      console.error(`unused_gvars.md: need 2 UUIDs for "${name}" but only ${pool.length} left`);
-      process.exit(1);
-    }
-
-    const devId = pool.shift();
-    const prodId = pool.shift();
-
-    if (!inDev) {
-      dev.gvars.push({ name, file, id: devId });
-      added++;
-    }
-    if (!inProd) {
-      prod.gvars.push({ name, file, id: prodId });
-      added++;
+    if (!prodEntry) {
+      errors.push(`${name}: missing from utils/sourcemap.prod.json`);
+    } else if (prodEntry.file !== file) {
+      errors.push(`${name}: prod sourcemap points at ${prodEntry.file}, expected ${file}`);
     }
   }
 
-  // Stable sort: env first, then alphabetical by name
-  const sortGvars = (gvars) =>
-    [...gvars].sort((a, b) => {
-      if (a.name === 'env') return -1;
-      if (b.name === 'env') return 1;
-      return a.name.localeCompare(b.name);
-    });
+  if (errors.length) {
+    console.error('Missing or mismatched sourcemap shard slots:');
+    for (const error of errors) {
+      console.error(`- ${error}`);
+    }
+    console.error('Allocate UUIDs from unused_gvars.md and edit both sourcemaps manually.');
+    process.exit(1);
+  }
 
-  dev.gvars = sortGvars(dev.gvars);
-  prod.gvars = sortGvars(prod.gvars);
-
-  writeFileSync(paths.sourcemapDev, `${JSON.stringify(dev, null, 2)}\n`);
-  writeFileSync(paths.sourcemapProd, `${JSON.stringify(prod, null, 2)}\n`);
-  writeFileSync(paths.unusedGvars, pool.length ? `${pool.join('\n')}\n` : '');
-
-  return { added, skipped };
+  return { registered: entries.length };
 }
 
 /**
@@ -75,4 +53,4 @@ function listMissingFromSourcemap(entries) {
   return entries.filter((e) => !names.has(e.name));
 }
 
-module.exports = { ensureShardSlots, listMissingFromSourcemap };
+module.exports = { assertShardSlots, listMissingFromSourcemap };

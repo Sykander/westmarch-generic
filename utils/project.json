@@ -1,0 +1,234 @@
+{
+  "name": "avrae-sourcemaps",
+  "projectType": "library",
+  "sourceRoot": "utils",
+  "tags": ["scope:avrae", "type:sourcemap"],
+  "targets": {
+    "deploy": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "publish-avrae deploy --sourcemap utils/sourcemap.dev.json"
+      }
+    },
+    "deploy-dev": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "publish-avrae deploy --sourcemap utils/sourcemap.dev.json"
+      }
+    },
+    "deploy-prod": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "publish-avrae deploy --sourcemap utils/sourcemap.prod.json"
+      }
+    },
+    "generate-env": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/sourcemap.dev.json",
+        "{workspaceRoot}/package.json",
+        "{workspaceRoot}/package-lock.json"
+      ],
+      "outputs": ["{workspaceRoot}/src/gvars/env.dev.gvar"],
+      "options": {
+        "command": "publish-avrae generate-env --sourcemap utils/sourcemap.dev.json --output src/gvars/env.dev.gvar --version $(node -p \"require('./package.json').version\") --environment Development"
+      }
+    },
+    "generate-env-prod": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/sourcemap.prod.json",
+        "{workspaceRoot}/package.json",
+        "{workspaceRoot}/package-lock.json"
+      ],
+      "outputs": ["{workspaceRoot}/src/gvars/env.prod.gvar"],
+      "options": {
+        "command": "publish-avrae generate-env --sourcemap utils/sourcemap.prod.json --output src/gvars/env.prod.gvar --version $(node -p \"require('./package.json').version\") --environment Production"
+      }
+    },
+    "generate-vars": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/sourcemap.dev.json",
+        "{projectRoot}/sourcemap.prod.json",
+        "{projectRoot}/generate-vars.js",
+        "{workspaceRoot}/package.json",
+        "{workspaceRoot}/package-lock.json"
+      ],
+      "outputs": ["{workspaceRoot}/.varfile.json"],
+      "options": {
+        "command": "node utils/generate-vars.js"
+      }
+    },
+    "generate-items": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/assets/items.tsv",
+        "{projectRoot}/generate-items.js",
+        "{projectRoot}/lib/**/*",
+        "{projectRoot}/sourcemap.dev.json",
+        "{projectRoot}/sourcemap.prod.json",
+        "{workspaceRoot}/package.json",
+        "{workspaceRoot}/package-lock.json"
+      ],
+      "outputs": [
+        "{workspaceRoot}/src/gvars/utils/catalogues/items/items_list.gvar.json",
+        "{workspaceRoot}/src/gvars/utils/catalogues/items/magic_items_list.gvar.json",
+        "{workspaceRoot}/src/gvars/utils/catalogues/items/potions_list.gvar.json"
+      ],
+      "options": {
+        "command": "node utils/generate-items.js"
+      }
+    },
+    "generate-monsters": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/assets/monsters.tsv",
+        "{projectRoot}/generate-monsters.js",
+        "{projectRoot}/lib/**/*",
+        "{projectRoot}/sourcemap.dev.json",
+        "{projectRoot}/sourcemap.prod.json",
+        "{workspaceRoot}/package.json",
+        "{workspaceRoot}/package-lock.json"
+      ],
+      "outputs": ["{workspaceRoot}/src/gvars/utils/catalogues/monsters/*.gvar.json"],
+      "options": {
+        "command": "node utils/generate-monsters.js"
+      }
+    },
+    "generate-spells": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/assets/spells.tsv",
+        "{projectRoot}/generate-spells.js",
+        "{projectRoot}/lib/**/*",
+        "{projectRoot}/sourcemap.dev.json",
+        "{projectRoot}/sourcemap.prod.json",
+        "{workspaceRoot}/package.json",
+        "{workspaceRoot}/package-lock.json"
+      ],
+      "outputs": ["{workspaceRoot}/src/gvars/utils/catalogues/spells/spells_list.gvar.json"],
+      "options": {
+        "command": "node utils/generate-spells.js"
+      }
+    },
+    "generate-books": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/assets/books-forgotten-realms.tsv",
+        "{workspaceRoot}/assets/books-real.tsv",
+        "{projectRoot}/generate-books.js",
+        "{projectRoot}/lib/**/*",
+        "{projectRoot}/sourcemap.dev.json",
+        "{projectRoot}/sourcemap.prod.json",
+        "{workspaceRoot}/package.json",
+        "{workspaceRoot}/package-lock.json"
+      ],
+      "outputs": ["{workspaceRoot}/src/gvars/configs/books/*.gvar.json"],
+      "options": {
+        "command": "node utils/generate-books.js"
+      }
+    },
+    "generate-recipes": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/assets/recipes.tsv",
+        "{projectRoot}/generate-recipes.js",
+        "{projectRoot}/lib/**/*",
+        "{projectRoot}/sourcemap.dev.json",
+        "{projectRoot}/sourcemap.prod.json",
+        "{workspaceRoot}/package.json",
+        "{workspaceRoot}/package-lock.json"
+      ],
+      "outputs": ["{workspaceRoot}/src/gvars/configs/recipes/*.gvar.json"],
+      "options": {
+        "command": "node utils/generate-recipes.js"
+      }
+    },
+    "build": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        {
+          "target": "generate-env"
+        },
+        {
+          "target": "generate-env-prod"
+        },
+        {
+          "target": "generate-vars"
+        },
+        {
+          "target": "generate-items"
+        },
+        {
+          "target": "generate-monsters"
+        },
+        {
+          "target": "generate-spells"
+        },
+        {
+          "target": "generate-books"
+        },
+        {
+          "target": "generate-recipes"
+        }
+      ],
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/assets/books-forgotten-realms.tsv",
+        "{workspaceRoot}/assets/books-real.tsv",
+        "{workspaceRoot}/assets/items.tsv",
+        "{workspaceRoot}/assets/monsters.tsv",
+        "{workspaceRoot}/assets/recipes.tsv",
+        "{workspaceRoot}/assets/spells.tsv",
+        "{projectRoot}/generate-books.js",
+        "{projectRoot}/generate-items.js",
+        "{projectRoot}/generate-monsters.js",
+        "{projectRoot}/generate-recipes.js",
+        "{projectRoot}/generate-spells.js",
+        "{projectRoot}/sourcemap.dev.json",
+        "{projectRoot}/sourcemap.prod.json",
+        "{projectRoot}/lib/**/*",
+        "{projectRoot}/generate-vars.js",
+        "{workspaceRoot}/package.json",
+        "{workspaceRoot}/package-lock.json"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.varfile.json",
+        "{workspaceRoot}/src/gvars/env.dev.gvar",
+        "{workspaceRoot}/src/gvars/env.prod.gvar",
+        "{workspaceRoot}/src/gvars/configs/books/*.gvar.json",
+        "{workspaceRoot}/src/gvars/configs/recipes/*.gvar.json",
+        "{workspaceRoot}/src/gvars/utils/catalogues/items/*.gvar.json",
+        "{workspaceRoot}/src/gvars/utils/catalogues/monsters/*.gvar.json",
+        "{workspaceRoot}/src/gvars/utils/catalogues/spells/*.gvar.json"
+      ]
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "cache": true,
+      "inputs": [
+        "avraeShared",
+        "{projectRoot}/README.md",
+        "{projectRoot}/sourcemap.dev.json",
+        "{projectRoot}/sourcemap.prod.json"
+      ],
+      "outputs": [],
+      "options": {
+        "command": "publish-avrae check-config --sourcemap utils/sourcemap.dev.json && publish-avrae check-config --sourcemap utils/sourcemap.prod.json && publish-avrae compare-config utils/sourcemap.dev.json utils/sourcemap.prod.json"
+      }
+    }
+  }
+}

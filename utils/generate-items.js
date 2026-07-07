@@ -7,7 +7,7 @@ const paths = require('./lib/paths');
 const { readTsv } = require('./lib/read-tsv');
 const { writeJsonGvar } = require('./lib/write-json-gvar');
 const { printManifest } = require('./lib/manifest');
-const { ensureShardSlots } = require('./lib/sourcemap-shards');
+const { assertShardSlots } = require('./lib/sourcemap-shards');
 
 const INPUT = paths.assets('items.tsv');
 const OUT_DIR = 'src/gvars/utils/catalogues/items';
@@ -70,6 +70,6 @@ for (const { name, type } of shards) {
 
 printManifest('Items', manifest, { failOnEmptyRequired: true });
 
-const { added, skipped } = ensureShardSlots(sourcemapEntries);
-console.log(`Sourcemap: ${added} slot(s) added, ${skipped} already registered.`);
+const { registered } = assertShardSlots(sourcemapEntries);
+console.log(`Sourcemap: ${registered} slot(s) already registered.`);
 console.log('Items done.');

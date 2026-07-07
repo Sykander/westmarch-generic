@@ -1,0 +1,54 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "defaultBase": "main",
+  "cacheDirectory": ".cache/nx/cache",
+  "namedInputs": {
+    "default": ["{projectRoot}/**/*"],
+    "editor": [
+      "{projectRoot}/**/*",
+      "{workspaceRoot}/package.json",
+      "{workspaceRoot}/package-lock.json",
+      "{workspaceRoot}/editor/package.json",
+      "{workspaceRoot}/editor/package-lock.json",
+      "{workspaceRoot}/editor/tsconfig*.json",
+      "{workspaceRoot}/editor/vite.config.ts",
+      "{workspaceRoot}/eslint.config.mjs",
+      "{workspaceRoot}/.prettierrc.json"
+    ],
+    "avraeShared": [
+      "{workspaceRoot}/package.json",
+      "{workspaceRoot}/package-lock.json",
+      "{workspaceRoot}/.avraels.json",
+      "{workspaceRoot}/utils/sourcemap.dev.json",
+      "{workspaceRoot}/utils/sourcemap.prod.json"
+    ],
+    "avraeGvarUtilBase": [
+      "avraeShared",
+      "{projectRoot}/**/*",
+      "{workspaceRoot}/src/gvars/utils/core/**/*"
+    ],
+    "avraeAliasBase": [
+      "avraeShared",
+      "{projectRoot}/**/*",
+      "{workspaceRoot}/src/gvars/configs/**/*",
+      "{workspaceRoot}/src/gvars/utils/core/**/*",
+      "{workspaceRoot}/src/gvars/utils/config/**/*",
+      "{workspaceRoot}/src/gvars/utils/display/**/*"
+    ]
+  },
+  "targetDefaults": {
+    "build": {
+      "cache": true
+    },
+    "types": {
+      "cache": true,
+      "outputs": ["{workspaceRoot}/.cache/tsbuildinfo"]
+    },
+    "test": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "outputs": []
+    }
+  },
+  "analytics": false
+}

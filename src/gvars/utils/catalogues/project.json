@@ -1,0 +1,55 @@
+{
+  "name": "avrae-gvar-utils-catalogues",
+  "projectType": "library",
+  "sourceRoot": "src/gvars/utils/catalogues",
+  "tags": ["scope:avrae", "type:gvar-utils"],
+  "implicitDependencies": ["avrae-sourcemaps", "avrae-gvar-utils-core"],
+  "targets": {
+    "build": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        {
+          "projects": ["avrae-sourcemaps"],
+          "target": "generate-items"
+        },
+        {
+          "projects": ["avrae-sourcemaps"],
+          "target": "generate-monsters"
+        },
+        {
+          "projects": ["avrae-sourcemaps"],
+          "target": "generate-spells"
+        }
+      ],
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/assets/items.tsv",
+        "{workspaceRoot}/assets/monsters.tsv",
+        "{workspaceRoot}/assets/spells.tsv",
+        "{workspaceRoot}/utils/generate-items.js",
+        "{workspaceRoot}/utils/generate-monsters.js",
+        "{workspaceRoot}/utils/generate-spells.js",
+        "{workspaceRoot}/utils/lib/**/*",
+        "{workspaceRoot}/utils/sourcemap.dev.json",
+        "{workspaceRoot}/utils/sourcemap.prod.json",
+        "{workspaceRoot}/package.json",
+        "{workspaceRoot}/package-lock.json"
+      ],
+      "outputs": [
+        "{workspaceRoot}/src/gvars/utils/catalogues/items/*.gvar.json",
+        "{workspaceRoot}/src/gvars/utils/catalogues/monsters/*.gvar.json",
+        "{workspaceRoot}/src/gvars/utils/catalogues/spells/*.gvar.json"
+      ]
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build", "^build"],
+      "cache": true,
+      "inputs": ["avraeGvarUtilBase"],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/gvars/utils/catalogues"
+      }
+    }
+  }
+}

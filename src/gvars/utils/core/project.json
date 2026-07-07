@@ -1,0 +1,159 @@
+{
+  "name": "avrae-gvar-utils-core",
+  "projectType": "library",
+  "sourceRoot": "src/gvars/utils/core",
+  "tags": ["scope:avrae", "type:gvar-utils"],
+  "implicitDependencies": ["avrae-sourcemaps"],
+  "targets": {
+    "test": {
+      "executor": "nx:noop",
+      "cache": true,
+      "dependsOn": [
+        "test-bags",
+        "test-commands",
+        "test-dicts",
+        "test-embeds",
+        "test-expect",
+        "test-languages",
+        "test-lists",
+        "test-random",
+        "test-regex",
+        "test-rolls",
+        "test-strings",
+        "test-time-utils",
+        "test-tools"
+      ],
+      "outputs": []
+    },
+    "test-bags": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": ["avraeShared", "{projectRoot}/**/*"],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/gvars/utils/core/bags.gvar-test"
+      }
+    },
+    "test-commands": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": ["avraeShared", "{projectRoot}/**/*"],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/gvars/utils/core/commands.gvar-test"
+      }
+    },
+    "test-dicts": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": ["avraeShared", "{projectRoot}/**/*"],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/gvars/utils/core/dicts.gvar-test"
+      }
+    },
+    "test-embeds": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": ["avraeShared", "{projectRoot}/**/*"],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/gvars/utils/core/embeds.gvar-test"
+      }
+    },
+    "test-expect": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": ["avraeShared", "{projectRoot}/**/*"],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/gvars/utils/core/expect.gvar-test"
+      }
+    },
+    "test-languages": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": ["avraeShared", "{projectRoot}/**/*"],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/gvars/utils/core/languages.gvar-test"
+      }
+    },
+    "test-lists": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": ["avraeShared", "{projectRoot}/**/*"],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/gvars/utils/core/lists.gvar-test"
+      }
+    },
+    "test-random": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": ["avraeShared", "{projectRoot}/**/*"],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/gvars/utils/core/random.gvar-test"
+      }
+    },
+    "test-regex": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": ["avraeShared", "{projectRoot}/**/*"],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/gvars/utils/core/regex.gvar-test"
+      }
+    },
+    "test-rolls": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": ["avraeShared", "{projectRoot}/**/*"],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/gvars/utils/core/rolls.gvar-test"
+      }
+    },
+    "test-strings": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": ["avraeShared", "{projectRoot}/**/*"],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/gvars/utils/core/strings.gvar-test"
+      }
+    },
+    "test-time-utils": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": ["avraeShared", "{projectRoot}/**/*"],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/gvars/utils/core/time_utils.gvar-test"
+      }
+    },
+    "test-tools": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": ["avraeShared", "{projectRoot}/**/*"],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/gvars/utils/core/tools.gvar-test"
+      }
+    }
+  }
+}

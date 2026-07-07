@@ -387,7 +387,7 @@ Both book TSV files share the same header (including **`content_link`**):
 
 `name`, `description`, `author`, `written`, `rarity`, `language`, `type`, `base_work`, `tags`, `read_bonus`, `image`, `content_link`
 
-Build: **`npm run generate:books`** → [configs/books/](../../../../src/gvars/configs/books/).
+Build: **`npx nx run avrae-sourcemaps:generate-books`** or **`npx nx run avrae-gvar-configs:build`** → [configs/books/](../../../../src/gvars/configs/books/).
 
 ### Forgotten Realms vs real catalogues
 

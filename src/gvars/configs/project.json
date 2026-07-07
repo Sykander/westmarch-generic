@@ -1,0 +1,51 @@
+{
+  "name": "avrae-gvar-configs",
+  "projectType": "library",
+  "sourceRoot": "src/gvars/configs",
+  "tags": ["scope:avrae", "type:gvar-configs"],
+  "implicitDependencies": ["avrae-sourcemaps", "avrae-gvar-utils-core", "avrae-gvar-utils-config"],
+  "targets": {
+    "build": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        {
+          "projects": ["avrae-sourcemaps"],
+          "target": "generate-books"
+        },
+        {
+          "projects": ["avrae-sourcemaps"],
+          "target": "generate-recipes"
+        }
+      ],
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/assets/books-forgotten-realms.tsv",
+        "{workspaceRoot}/assets/books-real.tsv",
+        "{workspaceRoot}/assets/recipes.tsv",
+        "{workspaceRoot}/utils/generate-books.js",
+        "{workspaceRoot}/utils/generate-recipes.js",
+        "{workspaceRoot}/utils/lib/**/*",
+        "{workspaceRoot}/utils/sourcemap.dev.json",
+        "{workspaceRoot}/utils/sourcemap.prod.json",
+        "{workspaceRoot}/package.json",
+        "{workspaceRoot}/package-lock.json"
+      ],
+      "outputs": ["{projectRoot}/books/*.gvar.json", "{projectRoot}/recipes/*.gvar.json"]
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build", "^build"],
+      "cache": true,
+      "inputs": [
+        "avraeShared",
+        "{projectRoot}/**/*",
+        "{workspaceRoot}/src/gvars/utils/core/**/*",
+        "{workspaceRoot}/src/gvars/utils/config/**/*"
+      ],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/gvars/configs"
+      }
+    }
+  }
+}

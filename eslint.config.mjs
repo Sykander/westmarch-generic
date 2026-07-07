@@ -23,6 +23,7 @@ export default defineConfig([
       'editor/node_modules/**',
       '.cursor/**',
       '.cache/**',
+      '.nx/**',
       'public/**',
       'coverage/**',
       'dist/**',

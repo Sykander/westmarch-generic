@@ -1,0 +1,79 @@
+{
+  "name": "avrae-aliases-economy",
+  "projectType": "application",
+  "sourceRoot": "src/aliases/economy",
+  "tags": ["scope:avrae", "type:aliases"],
+  "implicitDependencies": [
+    "avrae-sourcemaps",
+    "avrae-gvar-configs",
+    "avrae-gvar-utils-core",
+    "avrae-gvar-utils-config",
+    "avrae-gvar-utils-display",
+    "avrae-gvar-utils-economy",
+    "avrae-gvar-utils-pc"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:noop",
+      "cache": true,
+      "dependsOn": ["test-buy", "test-job", "test-sell", "test-wallet"],
+      "outputs": []
+    },
+    "test-buy": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": [
+        "avraeAliasBase",
+        "{workspaceRoot}/src/gvars/utils/economy/**/*",
+        "{workspaceRoot}/src/gvars/utils/pc/**/*"
+      ],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/aliases/economy/buy.alias-test"
+      }
+    },
+    "test-job": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": [
+        "avraeAliasBase",
+        "{workspaceRoot}/src/gvars/utils/economy/**/*",
+        "{workspaceRoot}/src/gvars/utils/pc/**/*"
+      ],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/aliases/economy/job.alias-test"
+      }
+    },
+    "test-sell": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": [
+        "avraeAliasBase",
+        "{workspaceRoot}/src/gvars/utils/economy/**/*",
+        "{workspaceRoot}/src/gvars/utils/pc/**/*"
+      ],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/aliases/economy/sell.alias-test"
+      }
+    },
+    "test-wallet": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": [
+        "avraeAliasBase",
+        "{workspaceRoot}/src/gvars/utils/economy/**/*",
+        "{workspaceRoot}/src/gvars/utils/pc/**/*"
+      ],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/aliases/economy/wallet.alias-test"
+      }
+    }
+  }
+}

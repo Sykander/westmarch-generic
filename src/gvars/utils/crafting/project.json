@@ -1,0 +1,31 @@
+{
+  "name": "avrae-gvar-utils-crafting",
+  "projectType": "library",
+  "sourceRoot": "src/gvars/utils/crafting",
+  "tags": ["scope:avrae", "type:gvar-utils"],
+  "implicitDependencies": [
+    "avrae-sourcemaps",
+    "avrae-gvar-utils-core",
+    "avrae-gvar-utils-config",
+    "avrae-gvar-utils-catalogues",
+    "avrae-gvar-utils-economy",
+    "avrae-gvar-utils-pc"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "avraeGvarUtilBase",
+        "{workspaceRoot}/src/gvars/utils/config/**/*",
+        "{workspaceRoot}/src/gvars/utils/catalogues/**/*",
+        "{workspaceRoot}/src/gvars/utils/economy/**/*",
+        "{workspaceRoot}/src/gvars/utils/pc/**/*"
+      ],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/gvars/utils/crafting"
+      }
+    }
+  }
+}

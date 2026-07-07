@@ -1,4 +1,13 @@
 node_modules/
 .cache/
+.nx/
+__pycache__/
+*.py[cod]
+/.varfile.json
+/public/
+src/gvars/env.*.gvar
+src/gvars/configs/books/*.gvar.json
+src/gvars/configs/recipes/*.gvar.json
+src/gvars/utils/catalogues/**/*.gvar.json
 src/gvars/**/_probe.*.alias-test
 src/gvars/**/_probe.*.gvar-test

@@ -1,0 +1,30 @@
+{
+  "name": "avrae-gvar-utils-misc",
+  "projectType": "library",
+  "sourceRoot": "src/gvars/utils/misc",
+  "tags": ["scope:avrae", "type:gvar-utils"],
+  "implicitDependencies": [
+    "avrae-sourcemaps",
+    "avrae-gvar-configs",
+    "avrae-gvar-utils-core",
+    "avrae-gvar-utils-config",
+    "avrae-gvar-utils-catalogues",
+    "avrae-gvar-utils-content"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "avraeGvarUtilBase",
+        "{workspaceRoot}/src/gvars/utils/config/**/*",
+        "{workspaceRoot}/src/gvars/utils/catalogues/**/*",
+        "{workspaceRoot}/src/gvars/utils/content/**/*"
+      ],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/gvars/utils/misc"
+      }
+    }
+  }
+}

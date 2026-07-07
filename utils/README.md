@@ -8,30 +8,31 @@ Architecture: [docs/internal/projects/westmarch-statement/content-pipeline.md](.
 
 ## Existing scripts
 
-| Script | npm command | Purpose |
-|--------|-------------|---------|
-| `publish-avrae generate-env` | `npm run generate-env` | Write `src/gvars/env.{dev,prod}.gvar` from sourcemaps |
-| [generate-vars.js](generate-vars.js) | `npm run generate-vars` | Write `.varfile.json` for alias-tests |
-| `publish-avrae check-config` / `compare-config` | `make sourcemap-test` | Dev/prod sourcemap validation and parity |
-| `publish-avrae deploy` | `npm run deploy:dev`, `npm run deploy:prod` | Publish workshop via sourcemap |
-| [minify-gvar-json.js](minify-gvar-json.js) | `npm run lint:fix` | Compact `src/gvars/**/*.gvar.json` after JSON lint/fix so Avrae bodies stay under size limits |
+| Script                                          | Nx target                                                                 | Purpose                                                                                       |
+| ----------------------------------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `publish-avrae generate-env`                    | `npx nx run avrae-sourcemaps:generate-env`                                | Write `src/gvars/env.dev.gvar` from the dev sourcemap                                         |
+| `publish-avrae generate-env`                    | `npx nx run avrae-sourcemaps:generate-env-prod`                           | Write `src/gvars/env.prod.gvar` from the prod sourcemap                                       |
+| [generate-vars.js](generate-vars.js)            | `npx nx run avrae-sourcemaps:generate-vars`                               | Write `.varfile.json` for alias-tests                                                         |
+| `publish-avrae check-config` / `compare-config` | `npx nx run avrae-sourcemaps:test`                                        | Dev/prod sourcemap validation and parity                                                      |
+| `publish-avrae deploy`                          | `npx nx run avrae-sourcemaps:deploy-dev`, `npx nx run avrae-sourcemaps:deploy-prod` | Publish workshop via sourcemap                                                                |
+| [minify-gvar-json.js](minify-gvar-json.js)      | `npm run lint:fix`                                                        | Compact `src/gvars/**/*.gvar.json` after JSON lint/fix so Avrae bodies stay under size limits |
 
 ```bash
 make build     # run all generators, lint/fix, minify gvar JSON, build env gvars, and refresh .varfile.json
-make test      # lint + types + sourcemap checks + editor tests + avrae-ls alias tests
+make test      # lint + Nx test targets; Avrae test targets build ignored generated inputs first
 ```
 
 ---
 
-## Catalogue generators *(TSV → gvar shards)*
+## Catalogue generators _(TSV → gvar shards)_
 
-| Script | npm command | Input | Output |
-|--------|-------------|-------|--------|
-| [generate-monsters.js](generate-monsters.js) | `npm run generate:monsters` | [monsters.tsv](../assets/monsters.tsv) | `monsters_{a-z}.gvar.json` |
-| [generate-items.js](generate-items.js) | `npm run generate:items` | [items.tsv](../assets/items.tsv) | `items_list.gvar.json`, `potions_list.gvar.json`, `magic_items_list.gvar.json` |
-| [generate-spells.js](generate-spells.js) | `npm run generate:spells` | [spells.tsv](../assets/spells.tsv) | `spells_list.gvar.json` |
-| **`generate-books.js`** | `npm run generate:books` | books-forgotten-realms/real.tsv | `configs/books/forgotten_realms_{a-o,pq,r-t,v,w}.gvar.json`, plus corpus `*_all`/letter shards as needed |
-| [generate-recipes.js](generate-recipes.js) | `npm run generate:recipes` | [recipes.tsv](../assets/recipes.tsv) | `configs/recipes/recipes_list.gvar.json` |
+| Script                                       | Nx target                                             | Input                                  | Output                                                                                                   |
+| -------------------------------------------- | ----------------------------------------------------- | -------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| [generate-monsters.js](generate-monsters.js) | `avrae-sourcemaps:generate-monsters`                  | [monsters.tsv](../assets/monsters.tsv) | `monsters_{a-z}.gvar.json`                                                                               |
+| [generate-items.js](generate-items.js)       | `avrae-sourcemaps:generate-items`                     | [items.tsv](../assets/items.tsv)       | `items_list.gvar.json`, `potions_list.gvar.json`, `magic_items_list.gvar.json`                           |
+| [generate-spells.js](generate-spells.js)     | `avrae-sourcemaps:generate-spells`                    | [spells.tsv](../assets/spells.tsv)     | `spells_list.gvar.json`                                                                                  |
+| **`generate-books.js`**                      | `avrae-sourcemaps:generate-books`                     | books-forgotten-realms/real.tsv        | `configs/books/forgotten_realms_{a-o,pq,r-t,v,w}.gvar.json`, plus corpus `*_all`/letter shards as needed |
+| [generate-recipes.js](generate-recipes.js)   | `avrae-sourcemaps:generate-recipes`                   | [recipes.tsv](../assets/recipes.tsv)   | `configs/recipes/recipes_list.gvar.json`                                                                 |
 
 ```bash
 make build     # run all generators, build env gvars, and refresh .varfile.json
@@ -39,21 +40,21 @@ make build     # run all generators, build env gvars, and refresh .varfile.json
 
 ### Shared library — [utils/lib/](lib/)
 
-| Module | Role |
-|--------|------|
-| [read-tsv.js](lib/read-tsv.js) | Parse TSV; skip blanks; warn on column mismatch |
-| [write-json-gvar.js](lib/write-json-gvar.js) | Write JSON array shard body |
-| [shard-by.js](lib/shard-by.js) | Letter / group helpers |
-| [manifest.js](lib/manifest.js) | Log row counts per shard |
-| [sourcemap-shards.js](lib/sourcemap-shards.js) | Auto-register shards in dev/prod sourcemaps |
+| Module                                         | Role                                            |
+| ---------------------------------------------- | ----------------------------------------------- |
+| [read-tsv.js](lib/read-tsv.js)                 | Parse TSV; skip blanks; warn on column mismatch |
+| [write-json-gvar.js](lib/write-json-gvar.js)   | Write JSON array shard body                     |
+| [shard-by.js](lib/shard-by.js)                 | Letter / group helpers                          |
+| [manifest.js](lib/manifest.js)                 | Log row counts per shard                        |
+| [sourcemap-shards.js](lib/sourcemap-shards.js) | Verify generated shards already have dev/prod sourcemap slots |
 
-Generators register sourcemap slots automatically (two UUIDs per shard from **`unused_gvars.md`**). Then **`make build`**.
+Generators never allocate UUIDs or edit sourcemaps. New generated shards must be registered manually in both sourcemaps before `make build`.
 
 ### Output format
 
 Shard files are **raw JSON arrays** — loaded at runtime with `load_json(get_gvar(uuid))`. Facade gvars map shard keys to **`env.gvars.*`** and lazy-load per lookup.
 
-`*.gvar.json` files are linted as JSON, but `npm run lint:fix` minifies them instead of applying Prettier formatting. These files are Avrae gvar bodies, so whitespace counts against the workshop payload size.
+Generated shard `*.gvar.json` files are ignored and rebuilt from tracked TSV/generator sources. `npm run lint:fix` minifies JSON gvar bodies instead of applying Prettier formatting because whitespace counts against the workshop payload size.
 
 ---
 
@@ -63,9 +64,9 @@ Shard files are **raw JSON arrays** — loaded at runtime with `load_json(get_gv
 2. **Shard rule** — letter, type, or separate file per corpus; document in [content-pipeline.md](../docs/internal/projects/westmarch-statement/content-pipeline.md).
 3. **Implement** `utils/generate-<name>.js` using **`utils/lib/read-tsv.js`** + **`write-json-gvar.js`**.
 4. **Output paths** under `src/gvars/utils/catalogues/` for engine catalogues, or `src/gvars/configs/` for setting-specific data (biomes, books, recipes).
-5. **Sourcemap** — engine catalogue generators call **`lib/sourcemap-shards.js`**. Engine biome presets, deployable split preset JSON gvars, and the Forgotten Realms book shards are sourcemapped; owner-only books and recipes are not registered. Ensure enough UUIDs in **`unused_gvars.md`** before generated shard changes, then **`make build`**.
+5. **Sourcemap** — manually register engine catalogue shards, deployable split preset JSON gvars, and Forgotten Realms book shards in both sourcemaps using UUIDs from **`unused_gvars.md`**. Generators only verify those slots; they do not edit sourcemaps or consume UUIDs.
 6. **Facade** — engine gvar with lazy cache; document API in `docs/internal/projects/westmarch-statement/gvars/`.
-7. **npm script** — add to `package.json`; add a matching target to the Makefile's Generates section.
+7. **Nx target** — add a target to the owning `project.json`; add a matching Make generate target and aggregate `build` target when tests or deploys need the generated output.
 
 ---
 
@@ -73,12 +74,12 @@ Shard files are **raw JSON arrays** — loaded at runtime with `load_json(get_gv
 
 Reference implementations:
 
-| westmarch | Notes |
-|-----------|--------|
+| westmarch                    | Notes                                                            |
+| ---------------------------- | ---------------------------------------------------------------- |
 | `utils/generate-monsters.js` | 26 letter shards; filter `name.toLowerCase().startsWith(letter)` |
-| `utils/generate-items.js` | Split on **`type`**: Item / Potion / Magic Item |
-| `utils/generate-spells.js` | Single list; coerce **`level`** to number |
-| `utils/generate-books.js` | Row shape for library; adapt to forgotten-realms + real TSVs |
+| `utils/generate-items.js`    | Split on **`type`**: Item / Potion / Magic Item                  |
+| `utils/generate-spells.js`   | Single list; coerce **`level`** to number                        |
+| `utils/generate-books.js`    | Row shape for library; adapt to forgotten-realms + real TSVs     |
 
 Path layout:
 
@@ -96,7 +97,7 @@ Same rules as `.cursor/rules/drac2-tools-maintainer.mdc`:
 
 - Never invent UUIDs
 - New gvar slot → **`unused_gvars.md`** → sourcemap → **`make build`**
-- Do not hand-edit **`env.*.gvar`**
+- Do not hand-edit ignored generated outputs such as **`env.*.gvar`**, `.varfile.json`, generated catalogue/book/recipe shards, or `public/`
 
 ---
 

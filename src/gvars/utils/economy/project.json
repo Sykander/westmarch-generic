@@ -1,0 +1,27 @@
+{
+  "name": "avrae-gvar-utils-economy",
+  "projectType": "library",
+  "sourceRoot": "src/gvars/utils/economy",
+  "tags": ["scope:avrae", "type:gvar-utils"],
+  "implicitDependencies": [
+    "avrae-sourcemaps",
+    "avrae-gvar-utils-core",
+    "avrae-gvar-utils-config",
+    "avrae-gvar-utils-pc"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "avraeGvarUtilBase",
+        "{workspaceRoot}/src/gvars/utils/config/**/*",
+        "{workspaceRoot}/src/gvars/utils/pc/**/*"
+      ],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/gvars/utils/economy"
+      }
+    }
+  }
+}

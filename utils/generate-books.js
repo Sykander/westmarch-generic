@@ -10,7 +10,7 @@ const { readTsv } = require('./lib/read-tsv');
 const { writeJsonGvar } = require('./lib/write-json-gvar');
 const { LETTERS, letterFromName } = require('./lib/shard-by');
 const { printManifest } = require('./lib/manifest');
-const { ensureShardSlots } = require('./lib/sourcemap-shards');
+const { assertShardSlots } = require('./lib/sourcemap-shards');
 
 const OUT_DIR = 'src/gvars/configs/books';
 const LETTER_SHARD_THRESHOLD = 100;
@@ -150,6 +150,6 @@ printManifest('Books (forgotten realms)', forgottenRealms.manifest);
 console.log(`  (${forgottenRealms.total} total forgotten realms rows)`);
 printManifest('Books (real)', real.manifest);
 console.log(`  (${real.total} total real rows)`);
-const { added, skipped } = ensureShardSlots(forgottenRealms.sourcemapEntries);
-console.log(`Sourcemap: ${added} slot(s) added, ${skipped} already registered.`);
+const { registered } = assertShardSlots(forgottenRealms.sourcemapEntries);
+console.log(`Sourcemap: ${registered} slot(s) already registered.`);
 console.log('Books done.');

@@ -1,0 +1,32 @@
+{
+  "name": "avrae-aliases-misc",
+  "projectType": "application",
+  "sourceRoot": "src/aliases/misc",
+  "tags": ["scope:avrae", "type:aliases"],
+  "implicitDependencies": [
+    "avrae-sourcemaps",
+    "avrae-gvar-configs",
+    "avrae-gvar-utils-core",
+    "avrae-gvar-utils-config",
+    "avrae-gvar-utils-display",
+    "avrae-gvar-utils-catalogues",
+    "avrae-gvar-utils-content",
+    "avrae-gvar-utils-misc"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "avraeAliasBase",
+        "{workspaceRoot}/src/gvars/utils/catalogues/**/*",
+        "{workspaceRoot}/src/gvars/utils/content/**/*",
+        "{workspaceRoot}/src/gvars/utils/misc/**/*"
+      ],
+      "outputs": [],
+      "options": {
+        "command": "avrae-ls --log-level INFO --run-tests src/aliases/misc"
+      }
+    }
+  }
+}

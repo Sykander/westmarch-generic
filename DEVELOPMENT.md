@@ -56,7 +56,7 @@ After **TSV catalogue** changes:
 make build
 ```
 
-This writes `src/gvars/env.dev.gvar`, `src/gvars/env.prod.gvar`, and `.varfile.json`. Do not hand-edit those outputs. Shard bodies under `src/gvars/utils/catalogues/` are **committed JSON** produced by generate scripts — see [content-pipeline.md](docs/internal/projects/westmarch-statement/content-pipeline.md).
+This writes ignored build outputs: `src/gvars/env.dev.gvar`, `src/gvars/env.prod.gvar`, `.varfile.json`, TSV-driven catalogue shards, generated book shards, generated recipe shards, and the editor `public/` build. Do not hand-edit those outputs. Static config JSON bodies without generators, such as biome presets and location/path fixtures, remain source files.
 
 ### 4. Verify
 
@@ -64,10 +64,25 @@ This writes `src/gvars/env.dev.gvar`, `src/gvars/env.prod.gvar`, and `.varfile.j
 make test
 ```
 
-- `npm run lint` — ESLint/Prettier checks for the repo, including the editor.
-- `make sourcemap-test` — runs dev/prod sourcemap validation plus `compare-config`.
-- `npm run types` and `npm run editor:test` — editor typecheck and component/domain tests.
-- `npm run avrae:test-utils:config`, `catalogues`, `gameplay`, `systems`, plus `npm run avrae:test-aliases:{content,crafting,economy,exploration,travel,westmarch}` — the Avrae test shards used by CI.
+- `make test` — runs lint, installs editor and `avrae-ls` dependencies, then runs the full Nx verification set.
+- `npm run build` — runs all Nx `build` targets: sourcemaps/env vars, generated catalogues/configs, and the editor static build.
+- `npm run types` — runs all Nx `types` targets; currently this is `editor:types`.
+- `npm test` — runs all Nx `test` targets. Local Avrae tests build their generated dependencies first; the editor `test` target depends on `editor:types`, so typechecking is included.
+- `npx nx affected -t test --parallel 4 --base=origin/main` — runs only affected Nx `test` targets.
+
+Nx is also available as an incremental wrapper around the same checks:
+
+```bash
+npm run build
+npm run types
+npm test
+npx nx affected -t test --parallel 4 --base=origin/main
+npx nx run editor:test
+npx nx run avrae-aliases-travel:test
+npx nx graph
+```
+
+Nx project files live beside the editor, alias, gvar utility, config, and sourcemap folders. Avrae targets explicitly list sourcemaps plus the relevant config and utility folders as cache inputs because Drac2/gvar dependencies are not normal TypeScript imports. Use `make sourcemap-test`, `make editor-test`, or `npx nx run <project>:test` for focused debugging. The Nx task cache lives in `.cache/nx/cache`; Nx workspace data stays in its default `.nx/workspace-data`.
 
 ### Refresh cached Avrae / avrae-ls docs
 
@@ -82,11 +97,11 @@ See **`.cursor/README.md`** and **`.cursor/reference-cache.json`**. After valida
 
 ### 5. Deploy
 
-Uses [publish-avrae](https://www.npmjs.com/package/publish-avrae) through CLI scripts:
+Uses [publish-avrae](https://www.npmjs.com/package/publish-avrae) through Nx targets:
 
 ```bash
 make deploy      # Development
-npm run deploy:prod
+npx nx run avrae-sourcemaps:deploy-prod
 ```
 
 Before first deploy:
@@ -118,16 +133,16 @@ CI creates a GitHub Release only when the production tag has a matching `docs/in
 
 The unified CI workflow (`.github/workflows/ci.yml`) runs on pushes to `main` only. It does not expose a manual `workflow_dispatch` trigger.
 
-CI runs lint, sourcemap checks, editor typecheck/tests, `avrae-ls` shards, and a live version check against the dev/prod `env` gvars. If checks pass, CI deploys Development.
+CI runs lint, builds generated Avrae files once into a workflow artifact, runs an Nx `test` target matrix for sourcemap checks, editor typecheck/tests, and `avrae-ls` project shards, plus a live version check against the dev/prod `env` gvars. Avrae matrix jobs download the generated artifact and skip Nx task dependencies so generated files are not rebuilt per shard. CI restores `.cache/nx/cache` with broad `main`-branch restore keys and saves a fresh run-keyed task cache after generated-build, test matrix, and production editor build jobs. If checks pass, CI deploys Development.
 
 If `package.json` is higher than the deployed Production `version`, CI then:
 
-1. Deploys Production through `npm run deploy:prod`.
+1. Deploys Production through `npx nx run avrae-sourcemaps:deploy-prod`.
 2. Builds and deploys the editor to GitHub Pages.
 3. Tags the commit with the package version.
 4. Creates a GitHub Release from `docs/internal/releases/<version>.md` when that file exists.
 
-Before tagging a release, run `make build`, run `make test`, and commit generated files only from the build pipeline.
+Before tagging a release, run `make build` and `make test`. Generated outputs are ignored and should not be committed.
 
 ## Sourcemaps
 
@@ -137,12 +152,17 @@ Use `docs_file` for Avrae help text. Alias docs live beside their alias sources 
 
 **Hand-edit:** `utils/sourcemap.dev.json`, `utils/sourcemap.prod.json`, sources under `src/`, `unused_gvars.md`, docs, tests.
 
-**Generated (do not hand-edit):**
+**Generated and ignored (do not hand-edit):**
 
-| Output                                              | Command                 |
-| --------------------------------------------------- | ----------------------- |
-| `src/gvars/env.dev.gvar`, `src/gvars/env.prod.gvar` | `npm run generate-env`  |
-| `.varfile.json`                                     | `npm run generate-vars` |
+| Output                                              | Command / target                               |
+| --------------------------------------------------- | ---------------------------------------------- |
+| `src/gvars/env.dev.gvar`                           | `npx nx run avrae-sourcemaps:generate-env`     |
+| `src/gvars/env.prod.gvar`                          | `npx nx run avrae-sourcemaps:generate-env-prod` |
+| `.varfile.json`                                     | `npx nx run avrae-sourcemaps:generate-vars`    |
+| `src/gvars/utils/catalogues/**/*.gvar.json`         | `npx nx run avrae-gvar-utils-catalogues:build` |
+| `src/gvars/configs/books/*.gvar.json`               | `npx nx run avrae-gvar-configs:build`          |
+| `src/gvars/configs/recipes/*.gvar.json`             | `npx nx run avrae-gvar-configs:build`          |
+| `public/`                                           | `npx nx run editor:build`                      |
 
 See `.cursor/rules/drac2-tools-maintainer.mdc` for UUID hygiene, doc sync, and `.cursor/` reference refresh.
 
