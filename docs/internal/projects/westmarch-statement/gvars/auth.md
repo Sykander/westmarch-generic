@@ -34,7 +34,7 @@ if not ok:
 using(config = env.gvars.config)
 
 ADMIN_ROLES = ["Dragonspeaker", "Server Aliaser"]
-# Avrae aliasing permissions — not in-game GM/DM roles.
+# Avrae aliasing permissions for workshop aliases, gvars, and svars.
 
 COMMAND_MAP = {
     "enc": ("exploration", "enc", False),
@@ -48,7 +48,7 @@ COMMAND_MAP = {
 
 **Setup hub entries:** **`setup`** and **`show`** use **`requires_admin=True`** — Avrae aliasing role check only; **`_check_command_enabled`** is **skipped**. Bare **`westmarch`** is not admin-gated and handles its own configured player setup checks.
 
-**`ADMIN_ROLES`:** **`Dragonspeaker`** and **`Server Aliaser`** — Discord roles for editing Avrae workshop aliases, gvars, and svars. Not campaign GM/DM authority.
+**`ADMIN_ROLES`:** **`Dragonspeaker`** and **`Server Aliaser`** — Discord roles for editing Avrae workshop aliases, gvars, and svars.
 
 **Post-MVP `COMMAND_MAP` entries:** **`diary`**, **`journal`**, and hub routing for **`journal` + subcommand** → target misc command toggle.
 
@@ -60,7 +60,7 @@ Each step: on failure **return `(False, message)`**; on pass, continue. Final st
 |------|------|-----------------|
 | 1 | **`_resolve_invocation()`** — map the explicit command key to subsystem, command, `requires_admin` | `(False, "Unknown command.")` |
 | 2 | **Guild** — player commands need a guild (`ctx.guild`); admin same | `(False, "This command cannot be run in DMs.")` |
-| 3 | **Avrae aliasing roles** *(only if `requires_admin`)* — engine **`ADMIN_ROLES`** only | `(False, "You need Dragonspeaker or Server Aliaser (Avrae aliasing permissions — not a GM/DM role).")` |
+| 3 | **Avrae aliasing roles** *(only if `requires_admin`)* — engine **`ADMIN_ROLES`** only | `(False, "You need the Dragonspeaker or Server Aliaser role to run this command.")` |
 | 4 | **Config** — `get_config()` (cached); `subsystems[subsystem].enabled`; command toggle *(player commands only — skipped for admin subsystem entries)* | `(False, "This server is not configured yet. …")` / disabled messages |
 | 5 | **Character** *(player commands when **`policies.auth.require_character`**)* — active Avrae character selected | `(False, "Select a character first.")` |
 | 6 | **Channel** — `_check_channel(cfg, …)` using `ctx.channel` | `(False, "Run bot commands in #commands, not in RP channels.")` |

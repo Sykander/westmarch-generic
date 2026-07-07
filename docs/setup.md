@@ -9,7 +9,7 @@ For architecture and config schema detail, see [internal westmarch-statement](in
 ## Prerequisites
 
 - Avrae bot on your Discord server
-- **Dragonspeaker** or **Server Aliaser** — Avrae aliasing permissions to edit workshop aliases, gvars, and svars (required to set svars and run `!westmarch setup` / `!westmarch show`). Not the same as being campaign GM or DM.
+- **Dragonspeaker** or **Server Aliaser** — required to set svars and run `!westmarch setup` / `!westmarch show`.
 - An Avrae workshop slot for your server’s config gvar
 
 ---

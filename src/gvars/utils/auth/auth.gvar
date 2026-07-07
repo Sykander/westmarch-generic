@@ -9,7 +9,7 @@ using(
 )
 
 ADMIN_ROLES = ["Dragonspeaker", "Server Aliaser"]
-# Avrae aliasing permissions (workshop aliases, gvars, svars) — not in-game GM/DM roles.
+# Avrae aliasing permissions for workshop aliases, gvars, and svars.
 
 MSG_UNKNOWN = "Unknown command."
 MSG_NO_GUILD = "This command cannot be run in DMs."
@@ -114,10 +114,7 @@ def _author_is_admin():
 def _check_admin_roles():
     if _author_is_admin():
         return True, MSG_ALLOWED
-    return False, (
-        f"You need **Dragonspeaker** or **Server Aliaser** "
-        f"(Avrae aliasing permissions — not a GM/DM role)."
-    )
+    return False, "You need the **Dragonspeaker** or **Server Aliaser** role to run this command."
 
 
 def _read_subsystem(cfg, subsystem):

@@ -25,7 +25,7 @@ Avrae routes `!westmarch <sub>` to nested aliases in the workshop sourcemap. Ali
 | `!westmarch setup` | `setup` | [setup.md](setup.md) | Onboarding — create gvar, wire svar, recommendations |
 | `!westmarch show [section]` | `show` | [show.md](show.md) | Summarize loaded config with field glossary |
 
-**Who may run:** anyone may run bare **`!westmarch`**. **`setup`** and **`show`** require **`Dragonspeaker`** or **`Server Aliaser`** (Avrae aliasing permissions — not GM/DM). See [README.md](README.md).
+**Who may run:** anyone may run bare **`!westmarch`**. **`setup`** and **`show`** require **`Dragonspeaker`** or **`Server Aliaser`**. See [README.md](README.md).
 
 ### Explicit non-goals (MVP)
 
@@ -55,7 +55,7 @@ When **`westmarch_config`** is set and loadable, the default embed:
 
 ## Access
 
-Bare **`!westmarch`** is open. **`setup`** and **`show`** are enforced through their explicit **`auth.is_allowed("setup")`** / **`auth.is_allowed("show")`** gates with Avrae aliasing roles only. These roles gate workshop/svar setup, not narrative GM authority.
+Bare **`!westmarch`** is open. **`setup`** and **`show`** are enforced through their explicit **`auth.is_allowed("setup")`** / **`auth.is_allowed("show")`** gates with the configured admin roles.
 
 ## Sourcemap layout (planned)
 

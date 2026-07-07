@@ -13,7 +13,7 @@
 !westmarch setup -p <page-number-or-title>
 ```
 
-- **Who may run:** same gate as [westmarch.md](westmarch.md) — **`Dragonspeaker`** or **`Server Aliaser`** (Avrae aliasing permissions; not GM/DM).
+- **Who may run:** same gate as [westmarch.md](westmarch.md) — **`Dragonspeaker`** or **`Server Aliaser`**.
 - **Output:** one setup page at a time with numbered page index and **copy-paste-ready** Avrae commands.
 - **Does not mutate** svars or gvars — displays instructions only.
 - **Default page:** page 1 (**Initial Setup**) when `westmarch_config` is unset; page 2 (**General Configuration**) when it is set and loadable.

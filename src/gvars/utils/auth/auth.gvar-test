@@ -36,6 +36,34 @@ name: explicit show override requires admin
 
 return auth.is_allowed("setup")[0]
 ---
+False
+---
+name: explicit admin setup denied without admin role
+profile: player
+
+return auth.is_allowed("setup")[1]
+---
+"You need the **Dragonspeaker** or **Server Aliaser** role to run this command."
+---
+name: explicit admin setup denied message is concise
+profile: player
+
+return auth.is_allowed("show")[0]
+---
+False
+---
+name: explicit admin show denied without admin role
+profile: player
+
+return auth.is_allowed("show")[1]
+---
+"You need the **Dragonspeaker** or **Server Aliaser** role to run this command."
+---
+name: explicit admin show denied message is concise
+profile: player
+
+return auth.is_allowed("setup")[0]
+---
 True
 ---
 name: explicit admin setup allowed for dragonspeaker

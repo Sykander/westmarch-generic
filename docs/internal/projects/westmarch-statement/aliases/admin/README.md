@@ -4,9 +4,9 @@
 
 Server setup tooling under **`!westmarch`**. Uses engine [gvars/config.md](../../gvars/config.md) and [gvars/auth.md](../../gvars/auth.md).
 
-## Avrae aliasing roles *(not GM/DM)*
+## Avrae aliasing roles
 
-**`Dragonspeaker`** and **`Server Aliaser`** are Discord roles Avrae uses for **workshop and server-variable permissions** — editing aliases, gvars, and svars. They do **not** mean someone is the campaign GM or DM. A player can hold either role to wire engine config; a GM without those roles cannot run **`!westmarch setup`** or **`!westmarch show`**.
+**`Dragonspeaker`** and **`Server Aliaser`** are the roles required to run **`!westmarch setup`** and **`!westmarch show`**.
 
 ## Config storage (validated architecture)
 
