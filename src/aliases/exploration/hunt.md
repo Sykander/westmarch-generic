@@ -1,8 +1,8 @@
-# Hunt
+Runs a Survival check to find a configured creature trail.
 
-`!hunt <creature> [-p party_size] [bonuses]`
+Usage: `!hunt <creature> [-p party_size] [bonuses]`
 
-Runs a Survival check to find a creature trail. Successful hunts include the combat init suggestion and, when configured, monster art from the catalogue.
+Successful hunts include the combat init suggestion and, when configured, monster art from the catalogue.
 
 Location behavior is controlled by `subsystems.exploration.config.hunt_location_policy`:
 `off` lets players hunt any resolved catalogue creature, `location` requires the current location to expose `commands.hunt`, and `monsters` also requires that the creature is listed in `location.huntable_monsters`.

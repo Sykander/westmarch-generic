@@ -1,6 +1,6 @@
-# westmarch show
+Shows the loaded `westmarch_config` summary for server configurers.
 
-Shows the loaded `westmarch_config` for server configurers.
+Usage:
 
 ```text
 !westmarch show

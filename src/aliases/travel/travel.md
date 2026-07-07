@@ -1,6 +1,4 @@
-# Travel
-
-Route planning and character travel state for the travel subsystem.
+Plans routes and manages character travel state for the travel subsystem.
 
 ## Usage
 

@@ -1,4 +1,6 @@
-# Loot
+Starts and resolves loot sessions for configured monster catalogue entries.
+
+Usage: `!loot <creature>`, `!loot <item>`, `!loot`, or `!loot clear`
 
 `!loot <creature>` starts a loot session. `!loot <item>` attempts one lootable entry. `!loot` shows the current session; `!loot clear` ends it.
 

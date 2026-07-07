@@ -1,7 +1,4 @@
-# Location
-
-Read-only current-place view for the travel subsystem, including nearby direct
-routes, local activities, configured jobs, and visible shop trade prices.
+Shows the current-place view for the travel subsystem, including nearby direct routes, local activities, configured jobs, and visible shop trade prices.
 
 ## Usage
 

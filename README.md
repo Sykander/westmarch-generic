@@ -37,6 +37,13 @@ This repo is the **generic engine**. Per-server content lives in workshop gvars 
 
 Workshop layout includes player aliases plus **`westmarch setup`** and **`westmarch show`** admin subcommands, dev/prod sourcemaps with UUIDs from **`unused_gvars.md`**, and source-adjacent workshop help docs. The web config editor at <https://sykander.github.io/westmarch-generic/> is the config validation surface.
 
+## Links
+
+- [Production Avrae workshop](https://avrae.io/dashboard/workshop/6a1a4e9a65f5e47e3a890691)
+- [Development Avrae workshop](https://avrae.io/dashboard/workshop/6a1a4ebe65f5e47e3a890692)
+- [Westmarch config editor](https://sykander.github.io/westmarch-generic/)
+- [westmarch-generic developer Discord](https://discord.gg/Y2M8wZuhDN)
+
 ## Documentation
 
 - [docs/setup.md](docs/setup.md) — server-owner adoption guide
