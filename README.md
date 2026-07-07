@@ -40,6 +40,7 @@ Workshop layout includes player aliases plus **`westmarch setup`** and **`westma
 ## Documentation
 
 - [docs/setup.md](docs/setup.md) — server-owner adoption guide
+- [docs/guides/initial-channel-texts.md](docs/guides/initial-channel-texts.md) — initial Discord channel text templates
 - [docs/README.md](docs/README.md) — concept and configuration model
 - [DEVELOPMENT.md](DEVELOPMENT.md) — local setup, sourcemaps, deploy workflow
 - [unused_gvars.md](unused_gvars.md) — spare workshop gvar UUIDs (empty until you allocate real ids)

@@ -58,6 +58,7 @@ The **`westmarch`** hub uses admin sub-aliases (`setup`, `show`) plus a player-f
 ## Further reading
 
 - [guides/server-setup.md](guides/server-setup.md) — Discord server bootstrap guide
+- [guides/initial-channel-texts.md](guides/initial-channel-texts.md) — first public posts for #westmarch, #character-creation, and onboarding channels
 - [setup.md](setup.md) — server-owner adoption guide
 - [README.md](../README.md) — project overview and outline
 - [DEVELOPMENT.md](../DEVELOPMENT.md) — setup, tests, deploy
