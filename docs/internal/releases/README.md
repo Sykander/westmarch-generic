@@ -18,7 +18,7 @@ This folder tracks intended release scope. It is a planning index, not a generat
 | Release | Status | Scope |
 |---------|--------|-------|
 | [1.0.0](1.0.0.md) | Planned | First public release; current engine, editor, starter configs, docs, tests, and release hardening |
-| [1.x.x](1.x.md) | Planned | Additive features after `1.0.0`, starting with the factions project |
+| [1.x.x](1.x.md) | Planned | Additive features after `1.0.0`, including factions, combat handoff/maps, and economy progression commands |
 
 ## Related project docs
 
@@ -26,3 +26,4 @@ This folder tracks intended release scope. It is a planning index, not a generat
 - [web-config-editor](../projects/web-config-editor/) - browser config editor and validation surface.
 - [forgotten-realms-config](../projects/forgotten-realms-config/) - richer Forgotten Realms starter preset.
 - [factions](../projects/factions/) - post-`1.0.0` faction subsystem.
+- [exploration-enrichment](../projects/exploration-enrichment/) - combat handoff, pending encounter, hunt, and loot enrichment planning.
