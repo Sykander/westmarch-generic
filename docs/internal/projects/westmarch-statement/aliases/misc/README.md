@@ -61,5 +61,5 @@ Server owners enable each command independently via **`subsystems.misc.commands.
 | [crafting/](../crafting/README.md) | `crafting` | craft, brew, enchant, scribe |
 | [economy/](../economy/README.md) | `economy` | job, buy, sell, wallet |
 | [content/](../content/README.md) | `content` | library, read |
-| [admin/](../admin/README.md) | `admin` | westmarch (`setup`, `check`, `show`) |
+| [admin/](../admin/README.md) | `admin` | westmarch (`setup`, `show`) |
 | [gvars/](../../gvars/README.md) | — | config, auth, encounter engine |

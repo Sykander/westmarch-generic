@@ -161,26 +161,26 @@ flowchart TD
 | Tier | Commands | Goal |
 |------|----------|------|
 | **A** | Config loader + **forage** or **enc** | Prove svar → `get_config()` pipeline |
-| **A′** | **`westmarch`** hub (`setup`, `check`, `show`) | Admin onboarding/validation/display — [aliases/admin/](aliases/admin/README.md); ship with loader |
+| **A′** | **`westmarch`** hub (`setup`, `show`) + editor Check page | Admin onboarding/display and config validation — [aliases/admin/](aliases/admin/README.md); ship with loader |
 | **B** | enc, forage, fish, mine, lumber | Activity cluster |
 | **C** | travel, **location**, **time**, **weather**, hunt, loot | World movement, status, combat loop |
 | **D** | downtime | Character workdays |
 | **E** | craft, brew, scribe, enchant | Crafting; items/spells config — [aliases/crafting/](aliases/crafting/README.md) |
-| **F** | job, **buy**, **sell**, **wallet** | Economy — [economy/](economy/README.md) |
-| **G** | **library**, **read** | Content — [content/](content/README.md) |
-| **H** | **quest**, **recipe** | Misc — [misc/](misc/README.md) |
+| **F** | job, **buy**, **sell**, **wallet** | Economy — [economy/](aliases/economy/README.md) |
+| **G** | **library**, **read** | Content — [content/](aliases/content/README.md) |
+| **H** | **quest**, **recipe** | Misc — [misc/](aliases/misc/README.md) |
 
-**Tier A′** — **`!westmarch setup`** / **`check`** / **`show`** alongside Phase 0 loader ([US-1.1](user-stories.md), [US-1.6](user-stories.md), [US-1.7](user-stories.md)).
+**Tier A′** — **`!westmarch setup`** / **`!westmarch show`** alongside Phase 0 loader, with config validation in the web editor Check page ([US-1.1](user-stories.md), [US-1.6](user-stories.md), [US-1.7](user-stories.md)).
 
 **Tier C** — Port **travel** + **journeys** engine first, then **location**, **time**, **weather** (see [aliases/travel/](aliases/travel/README.md)), then **hunt** + **loot** ([aliases/exploration/](aliases/exploration/README.md)).
 
-**Tier E** — Port **craft** first, then **brew**, **scribe**, **enchant** — see [crafting/](crafting/README.md). Shared **`crafting.gvar`** + config catalogues; requires Tier D **downtime** docs for player workflow.
+**Tier E** — Port **craft** first, then **brew**, **scribe**, **enchant** — see [crafting/](aliases/crafting/README.md). Shared **`crafting.gvar`** + config catalogues; requires Tier D **downtime** docs for player workflow.
 
-**Tier F** — **job** can land before **buy** / **sell** / **wallet** — [economy/](economy/README.md). **wallet** + **`currencies`** config can ship before shops; **buy**/**sell** share shop config and may price in gp or wallet currency ids.
+**Tier F** — **job** can land before **buy** / **sell** / **wallet** — [economy/](aliases/economy/README.md). **wallet** + **`currencies`** config can ship before shops; **buy**/**sell** share shop config and may price in gp or wallet currency ids.
 
-**Tier G** — Port **library** + **read** together — [content/](content/README.md). Reference: [westmarch library architecture](https://github.com/Sykander/westmarch/blob/main/docs/library/library-architecture.md).
+**Tier G** — Port **library** + **read** together — [content/](aliases/content/README.md). Reference: [westmarch library architecture](https://github.com/Sykander/westmarch/blob/main/docs/library/library-architecture.md).
 
-**Tier H** — **quest**, **recipe** — see [misc/](misc/README.md). **recipe** depends on Tier E catalogues; **quest** is mostly cvar storage.
+**Tier H** — **quest**, **recipe** — see [misc/](aliases/misc/README.md). **recipe** depends on Tier E catalogues; **quest** is mostly cvar storage.
 
 ---
 
@@ -215,7 +215,7 @@ flowchart LR
   content --> read
 ```
 
-- **location**, **time**, and **weather** read shared world/place state; **weather** no-arg uses the same location as **enc** area context ([travel/location.md](travel/location.md)).
+- **location**, **time**, and **weather** read shared world/place state; **weather** no-arg uses the same location as **enc** area context ([travel/location.md](aliases/travel/location.md)).
 - **buy** / **sell** may require location or shop context from **travel** / **location** config (configurable per server).
 - **read** follows **library** topic discovery (`library` quick skim → `read` deep study).
 - **recipe** indexes the same item/potion/magic-item tables as **craft** / **brew** / **enchant**; filter by character-known recipes where applicable.
@@ -234,7 +234,7 @@ flowchart LR
 | **sell** | Sell items to configured vendors; credit coinpurse; optional buyback rules |
 | **quest** | View quest log (active/completed); drill into a quest; add journal entries under a quest; optional nested sub-quests. Player progress stored in character cvars; config may define categories, display names, and who may assign quests |
 | **recipe** | Search and browse recipes (craft, brew, enchant) by name, ingredient, or tag; show ingredients, downtime, DCs, and prerequisites. Read-only companion to crafting commands—does not consume materials or start downtime |
-| **westmarch** | *(admin hub)* **`setup`** — onboarding (gvar create + svar wire); **`check`** — validate; **`show`** — summarize loaded config |
+| **westmarch** | *(admin hub)* **`setup`** — onboarding (gvar create + svar wire); **`show`** — summarize loaded config; web editor Check page validates config |
 
 **Not planned:** server-wide **`stats`** / usage analytics; westmarch **`nexus`** (+ brand/moon/star Discord structure); combat targeting snippets **`-tl`** / **`-tc`** — see [aliases/admin/README.md](aliases/admin/README.md).
 

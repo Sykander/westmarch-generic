@@ -168,7 +168,7 @@ policies = {
 }
 ```
 
-**Commands available:** `!westmarch setup` / `check` / `show` for GMs (role-gated — not in **`subsystems`**). Player aliases respond “not configured” or “feature disabled”.
+**Commands available:** `!westmarch setup` and `!westmarch show` for GMs (role-gated — not in **`subsystems`**). Config validation lives in the web editor Check page. Player aliases respond “not configured” or “feature disabled”.
 
 ---
 

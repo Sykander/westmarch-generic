@@ -106,7 +106,7 @@ This project uses SemVer-style `MAJOR.MINOR.PATCH` versions from `package.json`.
 | `1.x.0` where `x > 0` | Additive feature releases after the public baseline                             |
 | `2.0.0`               | Reserved for breaking config or command contract changes                        |
 
-Release planning lives in `docs/internal/releases/`. Keep the next concrete release doc updated as work lands. Version-specific release docs must follow the template in `docs/internal/releases/README.md`: release tag/link/date, overview, upgrade steps, breaking changes, new features, bug fixes, performance improvements, and other changes.
+Release planning lives in `docs/internal/releases/`. Keep the next concrete release doc updated as work lands. Version-specific release docs must follow the template in `docs/internal/releases/README.md`: release tag/link, overview, upgrade steps, breaking changes, new features, bug fixes, performance improvements, and other changes.
 
 Release notes are for server owners, config maintainers, and developers adopting a release. Maintainer-only runbook steps belong in `DEVELOPMENT.md`, not in release-note `Upgrade Steps`.
 
@@ -127,7 +127,7 @@ If `package.json` is higher than the deployed Production `version`, CI then:
 3. Tags the commit with the package version.
 4. Creates a GitHub Release from `docs/internal/releases/<version>.md` when that file exists.
 
-Before tagging a release, replace any `TBD` date in the matching release doc, run `make build`, run `make test`, and commit generated files only from the build pipeline.
+Before tagging a release, run `make build`, run `make test`, and commit generated files only from the build pipeline.
 
 ## Sourcemaps
 

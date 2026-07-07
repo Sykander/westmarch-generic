@@ -10,12 +10,12 @@ Release docs are for server owners, config maintainers, and developers adopting 
 
 ## Release doc template
 
-Every version-specific release doc must use this structure. Planned docs may use `TBD` for the date, but the final release doc should replace it with the release date before tagging.
+Every version-specific release doc must use this structure. Do not include a release date in the document; GitHub records the release timestamp when the release is created.
 
 Optional release artwork may appear after the high-level description and before `Upgrade Steps`. Prefer GitHub Pages URLs for assets under `editor/public`, for example `https://sykander.github.io/westmarch-generic/westmarch-assets/releases/<tag>/banner.png`, so the GitHub Release body renders the same deployed asset as the editor site.
 
 ```md
-## [<tag>](https://github.com/Sykander/westmarch-generic/releases/tag/<tag>) (YYYY-MM-DD)
+## [<tag>](https://github.com/Sykander/westmarch-generic/releases/tag/<tag>)
 
 > High-level release description.
 

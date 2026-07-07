@@ -1,6 +1,6 @@
 # westmarch-generic
 
-A **configurable Avrae workshop** derived from [westmarch](../westmarch), but designed so server-specific data, areas, and logic are **not baked into the codebase**. Instead, each Discord server configures the bot through **svars** that reference **gvar ids**; loading that gvar loads the corresponding server setup.
+A **configurable Avrae workshop** derived from [westmarch](https://github.com/Sykander/westmarch), but designed so server-specific data, areas, and logic are **not baked into the codebase**. Instead, each Discord server configures the bot through **svars** that reference **gvar ids**; loading that gvar loads the corresponding server setup.
 
 This repo is the **generic engine**. Per-server content lives in workshop gvars that server owners maintain (or import from templates).
 
@@ -10,7 +10,7 @@ This repo is the **generic engine**. Per-server content lives in workshop gvars 
 
 - Ship a reusable westmarch-style ruleset without hard-coded server identity.
 - Let server owners opt in via svars (unset = feature off; set to a gvar id = load that server's config).
-- Keep the same Avrae / Drac2 tooling patterns as westmarch and [drac2-tools](../drac2-tools).
+- Keep the same Avrae / Drac2 tooling patterns as westmarch and [drac2-tools](https://github.com/Sykander/drac2-tools).
 
 ### Repository layout
 

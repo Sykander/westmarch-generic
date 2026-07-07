@@ -20,28 +20,29 @@ At runtime, the owner’s **`westmarch_config`** svar points at **their** worksh
 ## Purpose
 
 1. **Testing** — `.varfile.json` / `.alias-test` fixtures load a known config UUID or inline module derived from a preset file.
-2. **Onboarding** — owners duplicate a published workshop gvar or paste from repo instead of authoring from [starter.gvar](../../../../src/gvars/configs/starter.gvar) alone.
+2. **Onboarding** — owners paste or export from repo/editor starter sources instead of authoring from [starter.gvar](../../../../../src/gvars/configs/starter.gvar) alone.
 3. **Parity** — reference westmarch extraction can target a preset (e.g. Forgotten Realms 2014) as the canonical migration fixture.
 4. **Documentation** — worked examples of [data-shapes.md](../data-shapes.md) in a coherent world.
 
-Presets ship in the **same westmarch-generic repo** as source; workshop UUIDs for each preset are listed in [docs/setup.md](../../../../docs/setup.md) when published (one slot per preset in sourcemaps, same pattern as engine gvars).
+Presets ship in the **same westmarch-generic repo** as source and in the web editor starter list. Split preset data, such as large location/path JSON bodies, uses production UUIDs recorded in the sourcemap and generated env gvar.
 
-**Bulk content authoring:** copy-paste prompts for external LLMs live in [`src/prompts/`](../../../../src/prompts/README.md). Full build guide: [prompt-generation/](../../prompt-generation/README.md) (locations → paths → shops → biomes → …). Generate there → validate → paste into Cursor for repo integration.
+**Bulk content authoring:** copy-paste prompts for external LLMs live in [`src/prompts/`](../../../../../src/prompts/README.md). Full build guide: [prompt-generation/](../../prompt-generation/README.md) (locations → paths → shops → biomes → …). Generate there → validate → paste into Cursor for repo integration.
 
 ---
 
-## Planned presets
+## Preset status
 
-Each file is one Draconic module (`.gvar`) — same shape as an owner config gvar. **Rules edition is not a config field**; each preset is **authored for** either 2014 or 2024 table data. The server owner must set Avrae’s rules setting to match ([solution-statement.md § Rules edition](../solution-statement.md#rules-edition-2014-vs-2024)).
+Each top-level `.gvar` file is one Draconic module with the same shape as an owner config gvar. Presets may set optional `rules_version`; when omitted, runtime resolution falls back to the Avrae server setting and then `"2014"` ([data-shapes.md § rules_version](../data-shapes.md#rules_version)).
 
-| File *(planned)* | Setting | Intended rules | Summary |
-|------------------|---------|----------------|---------|
-| **`forgotten_realms_2014.gvar`** | Forgotten Realms | **2014** | Sword Coast–style FR names, factions, and tone; catalogues and DC bands aligned to 2014 SRD-era tables. Large locations/paths live in sibling JSON gvars referenced by UUID. |
-| **`westmarch_2014.gvar`** | Westmarch | **2014** | Reference westmarch server starter with Nexus, Base Camp, Oakwood, Four Bridges, Mistcloak Mountain, copied path graph, small economy seed, and `wm-*` biome modules. Large locations/paths live in sibling JSON gvars referenced by UUID. |
-| **`forgotten_realms_2024.gvar`** | Forgotten Realms | **2024** | Same FR identity as 2014 preset where lore allows; spells, skills, and item lists aligned to 2024 revised rules |
-| **`generic_fantasy_2014.gvar`** | Generic fantasy | **2014** | Setting-neutral placeholders — no FR-specific proper nouns; usable for homebrew worlds without retagging lore |
-| **`generic_fantasy_2024.gvar`** | Generic fantasy | **2024** | Same as generic 2014 structurally; 2024-aligned catalogues and mechanics |
-| **`spelljammer_2014.gvar`** | Spelljammer | **2014** | Wildspace / spelljamming ports, astral routes, and setting-appropriate locations; **2014 only** (no 2024 Spelljammer preset planned) |
+| File | Status | Setting | Intended rules | Summary |
+|------|--------|---------|----------------|---------|
+| **`starter.gvar`** | Shipped in 1.0.0 | Generic blank starter | Config/Avrae default | Minimal schema; all subsystems off; no world data |
+| **`forgotten_realms_2014.gvar`** | Shipped in 1.0.0 | Forgotten Realms | **2014** | Sword Coast starter with travel, location, time, weather, economy, content, engine biome registry, and Forgotten Realms book shards. Large locations/paths live in sibling JSON gvars referenced by UUID. |
+| **`westmarch_2014.gvar`** | Shipped in 1.0.0 | Westmarch | **2014** | Reference westmarch server starter with Nexus, Base Camp, Oakwood, Four Bridges, Mistcloak Mountain, copied path graph, small economy seed, and `wm-*` biome modules. Large locations/paths live in sibling JSON gvars referenced by UUID. |
+| **`forgotten_realms_2024.gvar`** | Planned | Forgotten Realms | **2024** | Same FR identity as 2014 preset where lore allows; spells, skills, and item lists aligned to 2024 revised rules |
+| **`generic_fantasy_2014.gvar`** | Planned | Generic fantasy | **2014** | Setting-neutral placeholders — no FR-specific proper nouns; usable for homebrew worlds without retagging lore |
+| **`generic_fantasy_2024.gvar`** | Planned | Generic fantasy | **2024** | Same as generic 2014 structurally; 2024-aligned catalogues and mechanics |
+| **`spelljammer_2014.gvar`** | Planned | Spelljammer | **2014** | Wildspace / spelljamming ports, astral routes, and setting-appropriate locations; **2014 only** (no 2024 Spelljammer preset planned) |
 
 ### Setting guidelines *(authoring)*
 
@@ -67,7 +68,7 @@ Do **not** add ad-hoc top-level keys beyond [data-shapes.md § Top-level config 
 
 ---
 
-## Layout *(planned)*
+## Layout
 
 ```
 src/gvars/configs/
@@ -75,7 +76,8 @@ src/gvars/configs/
   starter.gvar                   # minimal schema — all subsystems off
   biomes/                        # preset JSON row-list bodies — engine:configs/biomes/<code>
     README.md
-    biome_forest.gvar            # … (planned)
+    biome_forest.gvar.json
+    ...
   forgotten_realms_2014.gvar
   forgotten_realms_2014_locations.gvar.json
   forgotten_realms_2014_paths.gvar.json
@@ -88,30 +90,28 @@ src/gvars/configs/
   spelljammer_2014.gvar
 ```
 
-**Status:** Folder and files are **planned** — content lands incrementally as subsystems port (exploration rows first, then travel, catalogues, etc.). Early Phase 0 tests may use **`src/gvars/configs/starter.gvar`** or a thin slice of **`generic_fantasy_2014.gvar`** only.
+Files listed as planned above are not part of the 1.0.0 starter set.
 
 ---
 
 ## Sourcemaps and deploy
 
-Example configs and split preset data get **workshop gvar slots** in dev/prod sourcemaps when ready to publish (UUIDs from **`unused_gvars.md`**). Split locations/paths JSON gvars are referenced by literal production UUID from the config body, not through **`env.gvars`**. The engine loader does not `using()` preset configs directly; server owners still point **`westmarch_config`** at their active config gvar.
+Split preset data and engine-owned config shards get **workshop gvar slots** in dev/prod sourcemaps when ready to publish (UUIDs from **`unused_gvars.md`**). Split locations/paths JSON gvars are referenced by literal production UUID from the config body, not through **`env.gvars`**. The engine loader does not `using()` top-level preset configs directly; server owners still point **`westmarch_config`** at their active config gvar.
 
 | Consumer | How preset is used |
 |----------|-------------------|
-| **Server owner** | Duplicate published preset in Avrae workshop → `!svar westmarch_config <uuid>` |
+| **Server owner** | Start from the editor/source preset, save a config gvar in their own workshop, then `!svar westmarch_config <uuid>` |
 | **Alias-tests** | `.varfile.json` references preset UUID or embeds minimal excerpt |
-| **`!westmarch setup`** | Links to preset list in [docs/setup.md](../../../../docs/setup.md) |
+| **`!westmarch setup`** | Links to preset list in [docs/setup.md](../../../../setup.md) |
 | **CI** | Fixture config for subsystem tiers (document which preset exercises which vertical) |
 
 ---
 
-## Growth order *(suggested)*
+## Planned growth
 
-1. **`generic_fantasy_2014.gvar`** — first vertical slice (exploration + minimal biome rows); simplest test fixture.
-2. **`forgotten_realms_2014.gvar`** — broad published-setting starter.
-3. **`westmarch_2014.gvar`** — reference westmarch extraction target.
-4. **`generic_fantasy_2024.gvar`** / **`forgotten_realms_2024.gvar`** — when 2024 catalogue branches exist.
-5. **`spelljammer_2014.gvar`** — after travel/journeys and location model are stable.
+1. **Generic fantasy 2014/2024** — setting-neutral starters for homebrew owners.
+2. **Forgotten Realms 2024** — when 2024 catalogue branches and validation are complete.
+3. **Spelljammer 2014** — after astral/wildspace location, route, and weather assumptions are documented.
 
 Each preset should pass the web config editor checks for the subsystems it enables.
 
@@ -121,6 +121,6 @@ Each preset should pass the web config editor checks for the subsystems it enabl
 
 - [server-config.md](../server-config.md) — config layers and owner workflow
 - [config.md](config.md) — engine loader (not preset bodies)
-- [src/gvars/configs/starter.gvar](../../../../src/gvars/configs/starter.gvar) — minimal empty template
-- [docs/setup.md](../../../../docs/setup.md) — adoption and preset links
+- [src/gvars/configs/starter.gvar](../../../../../src/gvars/configs/starter.gvar) — minimal empty template
+- [docs/setup.md](../../../../setup.md) — adoption and preset links
 - [mvp-commands.md](../mvp-commands.md) — which subsystems each preset may enable

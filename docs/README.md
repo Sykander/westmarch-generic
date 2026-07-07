@@ -2,7 +2,7 @@
 
 ## What is westmarch-generic?
 
-**westmarch-generic** is a configurable version of the [westmarch](../westmarch) Avrae ruleset. The original westmarch project encodes one server's areas, loot tables, encounters, and bespoke logic directly in the repository. This project separates:
+**westmarch-generic** is a configurable version of the [westmarch](https://github.com/Sykander/westmarch) Avrae ruleset. The original westmarch project encodes one server's areas, loot tables, encounters, and bespoke logic directly in the repository. This project separates:
 
 - **Engine** — aliases, snippets, and shared libraries that implement game mechanics.
 - **Configuration** — per-server data loaded at runtime from workshop gvars.
@@ -63,8 +63,8 @@ The **`westmarch`** hub uses admin sub-aliases (`setup`, `show`) plus a player-f
 - [README.md](../README.md) — project overview and outline
 - [DEVELOPMENT.md](../DEVELOPMENT.md) — setup, tests, deploy
 - [internal/](internal/) — developer-only docs (project framing, design notes)
-- [westmarch](../westmarch) — reference implementation
-- [drac2-tools](../drac2-tools) — Drac2 utilities and Avrae project conventions
+- [westmarch](https://github.com/Sykander/westmarch) — reference implementation
+- [drac2-tools](https://github.com/Sykander/drac2-tools) — Drac2 utilities and Avrae project conventions
 
 ## Planned documentation
 

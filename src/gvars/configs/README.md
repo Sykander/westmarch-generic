@@ -1,6 +1,6 @@
 # Example server configs
 
-Prefab **config gvar** bodies for tests and onboarding. Full spec: [docs/internal/projects/westmarch-statement/gvars/configs.md](../../docs/internal/projects/westmarch-statement/gvars/configs.md).
+Prefab **config gvar** bodies for tests and onboarding. Full spec: [docs/internal/projects/westmarch-statement/gvars/configs.md](../../../docs/internal/projects/westmarch-statement/gvars/configs.md).
 
 | File / folder | Purpose |
 |---------------|---------|

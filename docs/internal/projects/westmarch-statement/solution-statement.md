@@ -404,15 +404,15 @@ MVP scope is fixed in [mvp-commands.md](mvp-commands.md). Order within and after
 ### MVP (Phase 0–1)
 
 1. **forage** or **enc** — Tier A; proves encounter pipeline
-2. **`!westmarch`** (`setup`, `check`, `show`) — Tier A′ ([aliases/admin/](aliases/admin/README.md))
+2. **`!westmarch`** (`setup`, `show`) plus editor Check page — Tier A′ ([aliases/admin/](aliases/admin/README.md))
 3. **forage, fish, mine, lumber, enc** — Tier B; activity cluster
 4. **travel**, **location**, **time**, **weather** — Tier C; [aliases/travel/](aliases/travel/README.md)
 5. **hunt**, **loot** — Tier C; [aliases/exploration/](aliases/exploration/README.md)
-6. **downtime** — Tier D; [downtime/](downtime/README.md)
-7. **craft**, **brew**, **scribe**, **enchant** — Tier E; [crafting/](crafting/README.md)
-8. **job**, **wallet**, **buy**, **sell** — Tier F; [economy/](economy/README.md)
-9. **library**, **read** — Tier G; [content/](content/README.md)
-10. **quest**, **recipe** — Tier H; [misc/](misc/README.md)
+6. **downtime** — Tier D; [downtime/](aliases/downtime/README.md)
+7. **craft**, **brew**, **scribe**, **enchant** — Tier E; [crafting/](aliases/crafting/README.md)
+8. **job**, **wallet**, **buy**, **sell** — Tier F; [economy/](aliases/economy/README.md)
+9. **library**, **read** — Tier G; [content/](aliases/content/README.md)
+10. **quest**, **recipe** — Tier H; [misc/](aliases/misc/README.md)
 
 ### After MVP (Phase 2+)
 

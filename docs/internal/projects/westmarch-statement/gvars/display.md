@@ -201,7 +201,7 @@ get_embed = display.get_display("library")
 library.run_search(cfg, get_embed, query)
 ```
 
-**Admin hub** (`!westmarch show`, `check`, `setup`) — pass the canonical admin command key. Admin commands still resolve to subsystem **`admin`**, so only base world **`display`** applies.
+**Admin hub** (`!westmarch show`, `setup`) — pass the canonical admin command key. Admin commands still resolve to subsystem **`admin`**, so only base world **`display`** applies.
 
 ## Not in this module
 
