@@ -292,7 +292,7 @@ shops = {
 
 `!wallet` needs `currencies`. `!buy` and `!sell` need `shops`, and `!sell` needs at least one shop with `accepts_sells: True`. Leave `ask_to_confirm_purchases` true to require a preview first and a trailing `yes` confirmation before `!buy` spends currency; set it false only if immediate purchases are desired. Stock rows can use `display_name` when the shop-facing name differs from the delivered `item`, and `fulfillment: "service"` when a purchase should charge without adding a bag item. Location rows still use boolean availability (`"commands": {"job": True, "buy": True, "sell": True}`); named job rows live under `subsystems.economy.config.jobs`.
 
-Quest setup is mostly data-driven. To try quest-flavoured exploration, add quest-tagged encounter rows to a biome pool such as `enc.quest`; to use `policies.quest.self_assign`, also enable `subsystems.misc.commands.quest` so the quest journal command is available.
+Quest setup is mostly data-driven. To try quest-flavoured exploration, add `enc.quest` rows to a named location's `encounters` pool or its `encounters_gvar_id` module, and include a quest outcome with a stable `quest_id`. To use `policies.quest.self_assign`, also enable `subsystems.misc.commands.quest` so the quest journal command is available.
 
 Add world data (`locations`, encounter pools, shops, …) as you enable each vertical. Shapes: [data-shapes](internal/projects/westmarch-statement/data-shapes.md).
 

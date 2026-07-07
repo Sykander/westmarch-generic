@@ -5,6 +5,7 @@ using(
     biomes = env.gvars.biomes,
     config = env.gvars.config,
     dicts = env.gvars.dicts,
+    location_encounters = env.gvars.location_encounters,
     lists = env.gvars.lists,
     random = env.gvars.random,
     stats = env.gvars.stats,
@@ -130,17 +131,32 @@ def _encounter_value(enc):
     return {"name": str(enc)}
 
 
+def _pool_entries(biome, activity, kind, cfg, location_id=None):
+    biome_entries = biomes.get_pool_entries(biome, activity, kind, cfg)
+    location_entries = []
+    if location_id != None and str(location_id).strip() != "":
+        location_entries = location_encounters.get_pool_entries(location_id, activity, kind, cfg)
+    if str(kind).strip().lower() == "quest" and len(location_entries) > 0:
+        return location_entries
+    entries = []
+    for entry in location_entries:
+        entries.append(entry)
+    for entry in biome_entries:
+        entries.append(entry)
+    return entries
+
+
 def get_encounter_pick(biome, activity, character, config=None, location_id=None):
     """Return {kind, encounter}, or None if no pool entries."""
     cfg = _cfg(config)
     cmd = activity
     kind = _choose_kind(character, cmd, cfg)
-    entries = biomes.get_pool_entries(biome, activity, kind, cfg)
+    entries = _pool_entries(biome, activity, kind, cfg, location_id)
     if len(entries) == 0:
         for fallback in KINDS:
             if fallback == kind:
                 continue
-            entries = biomes.get_pool_entries(biome, activity, fallback, cfg)
+            entries = _pool_entries(biome, activity, fallback, cfg, location_id)
             if len(entries) > 0:
                 kind = fallback
                 break

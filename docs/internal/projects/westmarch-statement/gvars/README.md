@@ -17,10 +17,10 @@ Shared **engine workshop** modules under `src/gvars/`. Aliases `using()` these v
 | **pc** | [pc.md](pc.md) | 0–1 | Player character state — gp, wallet, bags, downtime; cooldown reads from stats |
 | **stats** | [stats.md](stats.md) | 0–1 | **`add_log()`** — per-command usage, cooldown timestamps, exploration aggregates |
 | **encounter_templates** | [encounter_templates.md](encounter_templates.md) | 0–1 | Build [encounter](../data-shapes.md#encounter-input) dicts |
-| **encounter_lists** | [encounter_lists.md](encounter_lists.md) | 0–1 | Kind-first pick + random encounter from biome row tags |
+| **encounter_lists** | [encounter_lists.md](encounter_lists.md) | 0–1 | Kind-first pick + random encounter from biome row tags and location pools |
 | **encounters** | [encounters.md](encounters.md) | 0–1 | Rolls, `ectx` callables, outcomes, `encounter_result` |
 | **biomes** | [biomes.md](biomes.md) | 0–1 | Lazy-load biome gvar bodies from **`world_data.biomes`** |
-| **location_encounters** | [location_encounters.md](location_encounters.md) | 1 | Lazy-load place-specific pools from **`encounters_gvar_id`** |
+| **location_encounters** | [location_encounters.md](location_encounters.md) | 1 | Load place-specific pools from **`encounters_gvar_id`** or inline location **`encounters`** |
 | **locations** | [locations.md](locations.md) | 1 | **`world_data.locations`** / **`locations_gvar_id`** lookup + `display_location` |
 | **paths** | [paths.md](paths.md) | 1 | **`world_data.paths`** / **`paths_gvar_id`**, transport-aware steps |
 | **journeys** | [journeys.md](journeys.md) | 1 | Shortest route, journey/location cvars, `next_step` |

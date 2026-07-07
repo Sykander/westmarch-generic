@@ -166,7 +166,8 @@ def run_activity(activity, argslist, get_embed):
     if resolve_err != None:
         return get_embed(desc=resolve_err, error=True)
 
-    pick = encounter_lists.get_encounter_pick(biome, activity, ch, cfg)
+    loc_id, loc = journeys.get_location(ch, cfg)
+    pick = encounter_lists.get_encounter_pick(biome, activity, ch, cfg, loc_id)
     if pick == None:
         return get_embed(
             desc=_missing_pool_message(biome, activity, resolve_context),
@@ -177,7 +178,6 @@ def run_activity(activity, argslist, get_embed):
     if kind == None:
         kind = "gather"
     enc = _field(pick, "encounter")
-    loc_id, loc = journeys.get_location(ch, cfg)
     parsed_args = argparse(argslist)
     result = encounters.process_encounter(
         enc,

@@ -62,7 +62,7 @@ policies = {
 }
 ```
 
-To try quest-flavoured exploration content, add encounter rows tagged with `enc.quest` to a biome pool. `policies.quest.self_assign = True` is reserved for encounter outcomes with `quest_id`; when enabled, the editor also requires `subsystems.misc.commands.quest`.
+To try quest-flavoured exploration content, add `enc.quest` rows to a named location's `encounters` pool or `encounters_gvar_id` module. `policies.quest.self_assign = True` uses encounter outcomes with `quest_id`; when enabled, the editor also requires `subsystems.misc.commands.quest`.
 
 ### Cvar schema *(sketch)*
 

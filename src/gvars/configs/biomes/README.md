@@ -46,13 +46,13 @@ Not to be confused with **`src/gvars/utils/config/`** — the engine **`config.g
 
 Each `.gvar.json` body is a raw **JSON row list**. Rows are `[pool_tags_or_null, "template_name", ...args]`, where pool tags look like `enc.gather` or `forage.gather`. See [data-shapes.md § Biome gvar body](../../../../docs/internal/projects/westmarch-statement/data-shapes.md#biome-gvar-body-separate-workshop-module).
 
-Baseline presets include three entries per pool for each enabled exploration activity: **`enc.combat`**, **`enc.gather`**, **`enc.quest`**, **`forage.gather`**, **`fish.gather`**, **`mine.gather`**, and **`lumber.gather`**. Forest is the richer reference preset and may contain more.
+Baseline presets include entries for generic wilderness activity pools: **`enc.combat`**, **`enc.gather`**, **`forage.gather`**, **`fish.gather`**, **`mine.gather`**, and **`lumber.gather`**. Quest hooks belong on named locations through location encounter pools so they can carry stable quest IDs and source-specific context.
 
 ## westmarch port notes
 
 Reference westmarch `src/gvars/utils/encounters/biomes/*.gvar` for flavour and encounter ideas. When porting:
 
-- Split legacy **`encounters`** + **`combat_encounters`** into compact rows tagged **`enc.combat`** / **`enc.gather`** / **`enc.quest`**
+- Split legacy **`encounters`** + **`combat_encounters`** into compact rows tagged **`enc.combat`** / **`enc.gather`**
 - Route **generic wilderness** beats to biome rows; **named-place** hints (merchants, libraries, jobs) to **location encounter gvars** — see [biome-data-shape-investigation.md §4–5](../../../../docs/internal/projects/westmarch-statement/biome-data-shape-investigation.md)
 - Drop d100 list-builder weights — kind mix comes from **`subsystems.exploration.config.distribution`**
 - **`enc_encounters`** in westmarch is often empty; **`encounters`** was the real pool — do not copy that structure literally
@@ -61,7 +61,7 @@ Reference westmarch `src/gvars/utils/encounters/biomes/*.gvar` for flavour and e
 
 The non-forest baseline rows use the [Realms Helps Faerunian Random Encounters by Region and Locale](https://www.realmshelps.net/adventuring/faerun_encounters.shtml) index as broad inspiration for terrain coverage only. Keep copied prose, table weights, and location-specific rows out of these biome presets. The same index is useful later for location encounter modules because it breaks Forgotten Realms encounters out by named regions, roads, marshes, mountains, caves, aquatic zones, frostfell, wastes, and Underdark locales.
 
-Quest-hook rows should stay original, compact, and biome-scoped. Broad adventure structure may be inspired by freely accessible official D&D material such as [*Lost Mine of Phandelver*](https://www.dndbeyond.com/sources/dnd/lmop) and [*Spelljammer Academy*](https://www.dndbeyond.com/sources/dnd/sja), but do not copy adventure text, boxed text, maps, room keys, NPC blocks, or sequence-specific encounter details into these presets.
+Do not add quest-hook rows to biome presets. Broad adventure structure may be referenced by location encounter pools, but keep copied adventure text, boxed text, maps, room keys, NPC blocks, and sequence-specific encounter details out of engine presets.
 
 ## Related
 

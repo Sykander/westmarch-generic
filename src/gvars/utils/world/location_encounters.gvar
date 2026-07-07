@@ -1,0 +1,327 @@
+"""location_encounters.gvar - optional place-specific encounter pools."""
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(
+    config = env.gvars.config,
+    dicts = env.gvars.dicts,
+    lists = env.gvars.lists,
+    locations = env.gvars.locations,
+    templates = env.gvars.encounter_templates,
+)
+
+_cache = {}
+
+
+def _read_field(obj, key):
+    if obj == None:
+        return None
+    try:
+        if key in obj:
+            return obj[key]
+    except:
+        pass
+    try:
+        return obj.get(key)
+    except:
+        pass
+    attrs = {
+        "pools": lambda o: o.pools,
+        "encounters": lambda o: o.encounters,
+        "encounters_gvar_id": lambda o: o.encounters_gvar_id,
+        "location_encounters_gvar_id": lambda o: o.location_encounters_gvar_id,
+        "enc": lambda o: o.enc,
+        "forage": lambda o: o.forage,
+        "fish": lambda o: o.fish,
+        "mine": lambda o: o.mine,
+        "lumber": lambda o: o.lumber,
+        "hunt": lambda o: o.hunt,
+        "loot": lambda o: o.loot,
+        "combat": lambda o: o.combat,
+        "quest": lambda o: o.quest,
+        "gather": lambda o: o.gather,
+        "kind": lambda o: o.kind,
+    }
+    if key in attrs:
+        try:
+            return attrs[key](obj)
+        except:
+            pass
+    return None
+
+
+def _cfg(config_override=None):
+    if config_override != None:
+        return config_override
+    return config.get_config()
+
+
+def _normalize_id(value):
+    if value == None:
+        return None
+    text = str(value).strip().lower()
+    if text == "":
+        return None
+    return text
+
+
+def _load_payload(addr):
+    if addr == None:
+        return None
+    key = str(addr).strip()
+    if key == "":
+        return None
+    if key in _cache:
+        return _cache[key]
+    body = get_gvar(key)
+    if body == None or str(body).strip() == "":
+        _cache[key] = None
+        return None
+    try:
+        payload = load_json(body)
+        _cache[key] = payload
+        return payload
+    except:
+        pass
+    try:
+        using(_location_encounter_module=key)
+        _cache[key] = _location_encounter_module
+        return _location_encounter_module
+    except:
+        _cache[key] = None
+        return None
+
+
+def _location_payloads(location_id, cfg):
+    loc_id = _normalize_id(location_id)
+    if loc_id == None:
+        return []
+    loc = locations.get_location(cfg, loc_id)
+    if loc == None:
+        return []
+    payloads = []
+    gvar_id = _read_field(loc, "encounters_gvar_id")
+    if gvar_id == None:
+        gvar_id = _read_field(loc, "location_encounters_gvar_id")
+    external = _load_payload(gvar_id)
+    if external != None:
+        payloads.append(external)
+    inline = _read_field(loc, "encounters")
+    if inline == None:
+        inline = _read_field(loc, "pools")
+    if inline != None:
+        payloads.append(inline)
+    return payloads
+
+
+def _pools_from_payload(payload, location_id):
+    if payload == None:
+        return {}
+    if lists.is_list(payload):
+        return {"*": payload}
+    pools = _read_field(payload, "pools")
+    if pools != None and dicts.is_dict(pools):
+        return pools
+    loc_id = _normalize_id(location_id)
+    if loc_id != None:
+        location_payload = _read_field(payload, loc_id)
+        if location_payload != None:
+            if lists.is_list(location_payload):
+                return {"*": location_payload}
+            pools = _read_field(location_payload, "pools")
+            if pools != None and dicts.is_dict(pools):
+                return pools
+            pools = _read_field(location_payload, "encounters")
+            if pools != None and dicts.is_dict(pools):
+                return pools
+            if dicts.is_dict(location_payload):
+                return location_payload
+    if dicts.is_dict(payload):
+        return payload
+    return {}
+
+
+def _as_list(value):
+    if value == None:
+        return []
+    if lists.is_list(value):
+        return value
+    return [value]
+
+
+def _merge_values(left, right):
+    merged = []
+    for entry in _as_list(left):
+        merged.append(entry)
+    for entry in _as_list(right):
+        merged.append(entry)
+    return merged
+
+
+def _merge_activity(left, right):
+    if left == None:
+        return right
+    if right == None:
+        return left
+    if dicts.is_dict(left) and dicts.is_dict(right):
+        merged = {}
+        for key in left:
+            merged[key] = left[key]
+        for key in right:
+            merged[key] = _merge_values(merged[key] if key in merged else None, right[key])
+        return merged
+    return _merge_values(left, right)
+
+
+def get_location_encounters(location_id, config_override=None):
+    """Return merged encounter pools for a location, or {} when none exist."""
+    cfg = _cfg(config_override)
+    merged = {}
+    for payload in _location_payloads(location_id, cfg):
+        pools = _pools_from_payload(payload, location_id)
+        if pools == None or not dicts.is_dict(pools):
+            continue
+        for activity in pools:
+            merged[activity] = _merge_activity(merged[activity] if activity in merged else None, pools[activity])
+    return merged
+
+
+def _activity_entries(pools, activity, kind):
+    activity_pool = _read_field(pools, activity)
+    if activity_pool == None:
+        activity_pool = _read_field(pools, "*")
+    if activity_pool == None:
+        return []
+    if lists.is_list(activity_pool):
+        return activity_pool
+    if not dicts.is_dict(activity_pool):
+        return [activity_pool]
+    entries = []
+    for key in [kind, "*", "any"]:
+        for entry in _as_list(_read_field(activity_pool, key)):
+            entries.append(entry)
+    return entries
+
+
+def _clean_encounter(enc):
+    if enc == None or not dicts.is_dict(enc):
+        return enc
+    result = {}
+    for key in enc:
+        if str(key) != "kind":
+            result[key] = enc[key]
+    return result
+
+
+def _pool_token_matches(token, activity, kind):
+    text = str(token).strip().lower()
+    act = str(activity).strip().lower()
+    branch = str(kind).strip().lower()
+    if text in ["*", "any"]:
+        return True
+    if text == act:
+        return True
+    if text == branch:
+        return True
+    if text == f"{act}.{branch}":
+        return True
+    if text == f"{act}.*":
+        return True
+    if text == f"*.{branch}":
+        return True
+    return False
+
+
+def _row_pool_matches(pool_tags, activity, kind):
+    if pool_tags == None:
+        return True
+    if lists.is_list(pool_tags):
+        for token in pool_tags:
+            if _pool_token_matches(token, activity, kind):
+                return True
+        return False
+    return _pool_token_matches(pool_tags, activity, kind)
+
+
+def _normal_kind(value):
+    if value == None:
+        return None
+    text = str(value).strip().lower()
+    if text in ["combat", "quest", "gather"]:
+        return text
+    return None
+
+
+def _row_template_kind(row):
+    key = str(row[1]).strip().lower()
+    if key in ["combat", "ambush", "damage_combat", "combat_damage", "hazard_combat"]:
+        return "combat"
+    if key in ["quest", "hook"]:
+        return "quest"
+    if key in ["flavour", "flavor", "static", "story"]:
+        if len(row) > 4:
+            legacy_kind = _normal_kind(row[4])
+            if legacy_kind != None:
+                return legacy_kind
+        return "gather"
+    if key in ["gather_item", "gather", "skill_check", "check", "saving_throw", "save"]:
+        return "gather"
+    if key in ["gold", "gp", "healing", "heal", "healing_check", "heal_check", "damage", "hazard"]:
+        return "gather"
+    if key in ["raw", "encounter"] and len(row) > 2:
+        return _normal_kind(_read_field(row[2], "kind"))
+    return None
+
+
+def _row_matches(row, activity, kind):
+    if row == None or not lists.is_list(row) or len(row) < 2:
+        return False
+    if not _row_pool_matches(row[0], activity, kind):
+        return False
+    row_kind = _row_template_kind(row)
+    if row_kind == None:
+        return True
+    return row_kind == str(kind).strip().lower()
+
+
+def _kind_matches(enc, wanted_kind):
+    row_kind = _read_field(enc, "kind")
+    if row_kind == None:
+        return True
+    return str(row_kind).strip().lower() == str(wanted_kind).strip().lower()
+
+
+def _expand_entry(entry, cfg, activity, wanted_kind):
+    if entry == None:
+        return None
+    if dicts.is_dict(entry):
+        if not _kind_matches(entry, wanted_kind):
+            return None
+        return _clean_encounter(entry)
+    if lists.is_list(entry):
+        if not _row_matches(entry, activity, wanted_kind):
+            return None
+        expanded = templates.expand_row(entry, cfg)
+        if expanded == None or not dicts.is_dict(expanded):
+            return None
+        if not _kind_matches(expanded, wanted_kind):
+            return None
+        return _clean_encounter(expanded)
+    text = str(entry).strip()
+    if text == "":
+        return None
+    return {"name": text}
+
+
+def get_pool_entries(location_id, activity, kind, config_override=None):
+    """Expanded encounter dicts for a location/activity/kind."""
+    cfg = _cfg(config_override)
+    pools = get_location_encounters(location_id, cfg)
+    if pools == None or not dicts.is_dict(pools):
+        return []
+    entries = []
+    for entry in _activity_entries(pools, activity, kind):
+        enc = _expand_entry(entry, cfg, activity, kind)
+        if enc == None or not dicts.is_dict(enc):
+            continue
+        entries.append(enc)
+    return entries

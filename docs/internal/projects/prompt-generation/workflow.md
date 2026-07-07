@@ -85,7 +85,7 @@ Optional: [`world-transport.prompt.md`](../../../../src/prompts/forgotten-realms
 - Custom pools → separate `.gvar` per biome; update registry `gvar_id` from `engine:…` to workshop UUID after publish.
 - Engine presets are enough for smoke tests; custom rows add setting flavour.
 
-Target per biome (first pass): **5–10** rows each for `enc.combat`, `enc.gather`, `enc.quest`, plus rows for enabled biome-backed activity tags (`forage.gather`, `fish.gather`, `mine.gather`, `lumber.gather`). A row may list multiple tags when the same encounter belongs in several pools.
+Target per biome (first pass): **5–10** rows each for `enc.combat` and `enc.gather`, plus rows for enabled biome-backed activity tags (`forage.gather`, `fish.gather`, `mine.gather`, `lumber.gather`). Do not generate `enc.quest` rows for biome presets; put quest hooks in location encounter pools with stable `quest_id` outcomes. A row may list multiple tags when the same encounter belongs in several pools.
 
 ---
 

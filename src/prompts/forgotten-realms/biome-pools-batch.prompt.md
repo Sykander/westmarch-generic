@@ -18,7 +18,7 @@ Replace `[BIOME_CODE]` above with one allowed code before sending.
 
 [PASTE e.g. enc, forage, lumber - or "enc, forage" only]
 
-Always include **`enc`** with all three kinds unless brief says otherwise.
+Always include **`enc.combat`** and **`enc.gather`** unless brief says otherwise. Do not create `enc.quest` rows for biome presets; quest hooks belong on named locations with stable quest IDs.
 
 ### Output format (strict)
 
@@ -37,7 +37,6 @@ Use exact pool tags such as:
 
 - `enc.combat`
 - `enc.gather`
-- `enc.quest`
 - `forage.gather`
 - `fish.gather`
 - `mine.gather`
@@ -46,7 +45,7 @@ Use exact pool tags such as:
 First row value rules:
 
 - A list of tags means the row can appear in those pools.
-- `null` means every compatible pool. Compatibility follows the built-in template branch before expansion, so a `combat` row only appears in combat selections, a `quest` row only in quest selections, and a `gather` row only in gather selections.
+- `null` means every compatible pool. Compatibility follows the built-in template branch before expansion, so a `combat` row only appears in combat selections and a `gather` row only in gather selections.
 
 Do **not** include `loot`; it uses the loot session engine, not biome pools. Do **not** include `hunt` unless the brief explicitly says this server branch has biome-backed hunt pools.
 
@@ -59,7 +58,6 @@ Use these templates:
 | `combat` | combat | name, description, cr, optional monster, optional difficulty |
 | `ambush` | combat | name, description, cr, optional monster, optional difficulty, optional dc |
 | `damage_combat` | combat | name, description, cr, optional monster, optional difficulty, optional damage |
-| `quest` | quest | name, description, optional reward_hint |
 | `flavour` | gather | name, description |
 | `gather_item` | gather | name, description, check_name, dc, item_name, total, optional bag |
 | `skill_check` | gather | name, description, check_name, dc |
@@ -77,7 +75,6 @@ Prefer `gather_item` for forage/lumber finds with item outcomes. Use `flavour` f
 |------|-------|
 | `enc.combat` | 6–8 |
 | `enc.gather` | 5–7 |
-| `enc.quest` | 4–6 |
 | each other activity `.gather` | 5–8 |
 
 ### Content rules
@@ -91,6 +88,7 @@ Prefer `gather_item` for forage/lumber finds with item outcomes. Use `flavour` f
 - Combat CR mostly 0–2 for frontier; one 3–4 entry allowed.
 - Gather outcomes use generic items (Herbs, Timber, Iron ore, Trout, …).
 - Keep entries generally true of this biome and climate, not a named town, shop, library, or job site.
+- Do not add adventure hooks, named campaign beats, or quest rows here. Put those in location encounter pools with `outcomes: [{ "type": "quest", "quest_id": ... }]`.
 - Reuse rows across pools where sensible by listing multiple tags, e.g. one berry row can appear in both `enc.gather` and `forage.gather`.
 - Do not duplicate example rows, seed rows, or any pasted existing titles. If continuing a batch, output only new rows unless explicitly asked for the full array.
 
@@ -98,7 +96,6 @@ Prefer `gather_item` for forage/lumber finds with item outcomes. Use `flavour` f
 
     [["enc.gather", "forage.gather"], "gather_item", "Storm-bent berry hollow", "A night storm has dropped branches across a berry hollow, scattering tracks from deer, wolves, and something heavier. Careful work can recover clean fruit before rain turns the hollow into sucking mud.", "Wisdom (Survival)", 13, "Berries", 2, "Forage"]
     [["enc.combat"], "ambush", "Stag trail ambush", "The easiest trail narrows between mossy boulders where snapped twigs and an unnatural silence reveal hunters using a fresh carcass as bait. Pressing forward gives them the angle they have been waiting for.", 2, "Bandit", "medium", 13]
-    [["enc.quest"], "quest", "Wrong-way pilgrim bells", "Faint bells ring from deeper in the trees, always from the direction the map says leads away from the road. Following them reveals a lost traveler’s trail, but ignoring them leaves the sound moving after the party until dusk.", "Safe passage or local goodwill"]
 
 ### Your task
 

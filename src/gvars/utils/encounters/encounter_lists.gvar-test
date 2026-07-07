@@ -89,3 +89,49 @@ vars:
       [
         [["enc.combat"], "combat", "Forest ambush", "", 1]
       ]
+
+cfg_fixture = {
+    "subsystems": {
+        "exploration": {
+            "enabled": True,
+            "commands": {"enc": True},
+            "config": {
+                "enc_biome_source": "location",
+                "distribution": {"combat": 0, "quest": 100, "gather": 0},
+            },
+        },
+    },
+    "world_data": {
+        "default_location": "waterdeep",
+        "locations": {
+            "waterdeep": {
+                "name": "Waterdeep",
+                "biome": "urban",
+                "encounters": {
+                    "enc": {
+                        "quest": [
+                            {
+                                "name": "Blue Alley commission",
+                                "description": "A city patron wants a dangerous alley mapped.",
+                                "outcomes": [{"type": "quest", "quest_id": "blue-alley-commission", "title": "Blue Alley commission"}],
+                            },
+                        ],
+                    },
+                },
+            },
+        },
+        "biomes": {"urban": {"gvar_id": "eeee5555-5555-5555-5555-555555555556"}},
+    },
+}
+pick = encounter_lists.get_encounter_pick("urban", "enc", character(), cfg_fixture, "waterdeep")
+return pick != None and pick["kind"] == "quest" and pick["encounter"]["name"] == "Blue Alley commission"
+---
+True
+---
+name: location quest entries replace biome quest entries for current location
+vars:
+  gvars:
+    eeee5555-5555-5555-5555-555555555556: |
+      [
+        [["enc.quest"], "quest", "Generic lost parcel", "A parcel needs a destination.", "Small favor"]
+      ]

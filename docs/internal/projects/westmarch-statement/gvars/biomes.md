@@ -123,14 +123,13 @@ Biome gvars are raw JSON row lists:
 ```json
 [
   [["enc.combat"], "combat", "Wolf sign", "Fresh tracks cross the wet leaves.", 1, "Wolf"],
-  [["enc.gather", "forage.gather"], "gather_item", "Wild berries", "You find ripe berries among the undergrowth.", "Wisdom (Survival)", 12, "Berries", 1],
-  [["enc.quest"], "quest", "Lost waymarker", "A marker points toward a trail absent from your map."]
+  [["enc.gather", "forage.gather"], "gather_item", "Wild berries", "You find ripe berries among the undergrowth.", "Wisdom (Survival)", 12, "Berries", 1]
 ]
 ```
 
 See [data-shapes.md § Biome gvar body](../data-shapes.md#biome-gvar-body-separate-workshop-module).
 
-The first row value is a pool tag list, or `null` for every compatible pool. Tags use `activity.kind`, such as `enc.gather`, `forage.gather`, or `enc.combat`. The second value is an encounter template id from [encounter_templates.md](encounter_templates.md); remaining values are template args. Pool and built-in template compatibility are checked before expansion.
+The first row value is a pool tag list, or `null` for every compatible pool. Tags use `activity.kind`, such as `enc.gather`, `forage.gather`, or `enc.combat`. Quest hooks should be authored in [location_encounters.md](location_encounters.md), not biome presets, so they can carry stable quest IDs. The second value is an encounter template id from [encounter_templates.md](encounter_templates.md); remaining values are template args. Pool and built-in template compatibility are checked before expansion.
 
 westmarch **`encounters`** mega-pool + d100 **`get_encounter_list`** — **not** ported. Place-specific service content → [location encounter module](../data-shapes.md#location-encounter-module-separate-workshop-gvar).
 

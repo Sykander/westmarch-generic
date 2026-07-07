@@ -755,7 +755,6 @@ Biome gvars are **raw JSON**, not Drac2 modules. The body is one list of compact
 [
   [["enc.gather", "forage.gather"], "gather_item", "Wild berries", "You find a patch of ripe berries under thorny leaves.", "Wisdom (Survival)", 12, "Berries", 1],
   [["enc.combat"], "combat", "Wolf sign", "Fresh tracks and a low growl warn you that a hungry pack is close.", 1, "Wolf"],
-  [["enc.quest"], "quest", "Lost waymarker", "A weathered marker points toward a trail that is not on any current map."],
   [null, "flavour", "Old campsite", "You find a cold fire ring and bootprints softened by rain."]
 ]
 ```
@@ -768,11 +767,11 @@ Each row is:
 
 | Row part | Required | Notes |
 |----------|----------|-------|
-| `pool_tags_or_null` | yes | `null` = every compatible pool; otherwise list pool tags such as `enc.combat`, `enc.quest`, `enc.gather`, `forage.gather`, `fish.gather`, `mine.gather`, `lumber.gather` |
+| `pool_tags_or_null` | yes | `null` = every compatible pool; otherwise list pool tags such as `enc.combat`, `enc.gather`, `forage.gather`, `fish.gather`, `mine.gather`, `lumber.gather` |
 | `template_name` | yes | Engine encounter template id from [encounter_templates.gvar](gvars/encounter_templates.md) |
 | `template_args` | no | Positional JSON values passed to that template |
 
-Compatibility is checked before the template expands: pool tags must match the selected branch, and built-in template ids provide their branch (`combat`, `quest`, or `gather`) for `null` rows. This lets a single row appear in multiple pools without duplicating the encounter body, while keeping routing out of the encounter dict.
+Compatibility is checked before the template expands: pool tags must match the selected branch, and built-in template ids provide their branch (`combat` or `gather` for biome presets) for `null` rows. This lets a single row appear in multiple pools without duplicating the encounter body, while keeping routing out of the encounter dict.
 
 | westmarch | westmarch-generic |
 |-----------|-------------------|
@@ -790,10 +789,10 @@ Expanded template output matches [Encounter *(input)*](#encounter-input). The se
 1. Resolve biome code → load biome gvar if needed
 2. Resolve character location → load location encounter gvar when **`encounters_gvar_id`** set
 3. Choose **`kind`** ∈ **`{ combat, quest, gather }`** using **`distribution_policy`** + **`distribution`** *(exploration activities)*
-4. Build candidate list — biome rows whose pool tags match **`activity.kind`** ∪ location pools (exploration); service activities use location pool only
+4. Build candidate list — biome rows whose pool tags match **`activity.kind`** ∪ location pools (exploration); for **`quest`**, location quest rows replace biome quest rows when present; service activities use location pool only
 5. Empty list → player-facing error; else uniform random pick — **not** d100
 
-**Biome rows** — exploration & gathering only. Economy, crafting, content, dungeons — **location-scoped** ([investigation §3–5](biome-data-shape-investigation.md)).
+**Biome rows** — generic combat/gather exploration only. Quest hooks with stable `quest_id`, economy, crafting, content, and dungeons are **location-scoped** ([investigation §3–5](biome-data-shape-investigation.md)).
 
 #### Engine preset biomes
 
@@ -853,6 +852,9 @@ location = {
     "services": [ "general_store", "inn" ],  # optional — ids into shop/service config
     "library_topics": [ "nature", "history" ],  # optional — topic hints for !library inference
     "encounters_gvar_id": "<uuid>",             # optional — lazy-loaded place-specific encounter module
+    "encounters": {                             # optional — inline place-specific encounter pools
+        "enc": {"quest": []},
+    },
     "dungeon_ids": [ "whispering_hollow" ],     # optional — post-MVP; dungeons enterable here
     "calendar_id": "primary",                   # optional — override world_data.calendars key
 }
@@ -872,6 +874,7 @@ location = {
 | `services` | no | Shop / service ids — vendors, crafting benches ([Shop](#shop) **`location_id`**) |
 | `library_topics` | no | Topics for **`!library`** when **`library_topic_source`** is **`inferred`** or **`balanced`** |
 | `encounters_gvar_id` | no | Workshop UUID — lazy-loaded [location encounter module](#location-encounter-module-separate-workshop-gvar) |
+| `encounters` | no | Inline [location encounter pools](#location-encounter-module-separate-workshop-gvar), useful for starter configs and small owner configs |
 | `dungeon_ids` | no | **Post-MVP** — dungeon registry keys enterable at this place ([investigation §5](biome-data-shape-investigation.md)) |
 
 ### Commands map
@@ -932,9 +935,9 @@ world_data = {
 
 ## Location encounter module *(separate workshop gvar)*
 
-Place-specific encounter prose — jobs, shops, library scenes, unique exploration beats, and *(post-MVP)* dungeon hooks. **Not** stored on biome gvars.
+Place-specific encounter prose — jobs, shops, library scenes, unique exploration beats, quest hooks with stable `quest_id`, and *(post-MVP)* dungeon hooks. **Not** stored on biome gvars.
 
-**Pointer:** optional **`encounters_gvar_id`** on [Location](#location) — workshop UUID, lazy-loaded like biome bodies.
+**Pointer:** optional **`encounters_gvar_id`** on [Location](#location) — workshop UUID, lazy-loaded like biome bodies. External bodies may be a Drac2 `pools` module, JSON `{ "pools": ... }`, or a raw JSON row list. Small configs may use inline **`encounters`** on the location with the same pool shape.
 
 ```py
 # Owner workshop — e.g. oakwood_settlement_encounters.gvar
@@ -953,9 +956,9 @@ pools = {
 | Concern | Biome gvar | Location encounter gvar |
 |---------|------------|---------------------------|
 | Scope | Generic archetype (*a* forest) | Named place (*Oakwood Village*) |
-| Activities | `enc`, `forage`, `mine`, `fish`, `lumber`, `hunt` only | Any command enabled on location — economy, crafting, content, plus optional **`enc`** supplements |
+| Activities | `enc`, `forage`, `mine`, `fish`, `lumber`, `hunt` combat/gather only | Any command enabled on location — economy, crafting, content, plus optional **`enc`** supplements and quest hooks |
 | Mechanics | Encounter outcomes only | Encounter prose only — **`shops`**, recipes, payout bands stay in config |
-| Required? | Yes when location lists biome codes | Optional — omit **`encounters_gvar_id`** for config-only places |
+| Required? | Yes when location lists biome codes | Optional — omit **`encounters_gvar_id`** and **`encounters`** for config-only places |
 
 Loader: [location_encounters.gvar](gvars/location_encounters.md). Design rationale: [biome-data-shape-investigation.md §4–6](biome-data-shape-investigation.md).
 

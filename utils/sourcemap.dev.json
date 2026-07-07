@@ -460,6 +460,11 @@
       "id": "14c4b92c-dc53-47fb-bcba-5627bb258a67"
     },
     {
+      "name": "location_encounters",
+      "file": "src/gvars/utils/world/location_encounters.gvar",
+      "id": "d9a97e75-c555-43ef-a2a3-be2b5be2bdd1"
+    },
+    {
       "name": "locations",
       "file": "src/gvars/utils/world/locations.gvar",
       "id": "8e1d0e1c-2e8b-46c0-a76d-4a34dc41b6d7"

@@ -13,7 +13,7 @@ using(
 )
 ```
 
-## API *(planned)*
+## API
 
 ```py
 def get_encounter(biome, activity, character, config, location_id=None):
@@ -26,6 +26,7 @@ def get_encounter(biome, activity, character, config, location_id=None):
        — exploration activities only; service commands skip to step 2 with kind gather
     2. entries = biomes.get_pool_entries(biome, activity, kind)
        + location_encounters.get_pool_entries(location_id, activity, kind)
+       For quest rolls, location entries replace biome entries when present.
     3. Uniform random choice within combined list
     4. Return encounter dict for encounters.process_encounter
     """
@@ -49,6 +50,7 @@ Reads **`config.subsystems.exploration.config`**:
 **After** kind is chosen, build the candidate list:
 
 - **Exploration & gathering** — **`biomes.get_pool_entries`** ∪ **`location_encounters.get_pool_entries`**
+- **Quest rolls** — location quest pools replace biome quest pools when present, so named hooks with `quest_id` take priority
 - **Service commands** (`job`, `buy`, `library`, …) — location module only
 
 Pick one entry at random. Error if list empty.
@@ -61,7 +63,7 @@ Pick one entry at random. Error if list empty.
 
 **Biome gvar** — raw JSON row list for exploration activities only ([data-shapes § Biome gvar body](../data-shapes.md#biome-gvar-body-separate-workshop-module)). Candidate rows match the selected `activity.kind` tag, or `null` when the built-in template branch is compatible. This filtering happens before template expansion.
 
-**Location encounter gvar** — any activity enabled on that place ([data-shapes § Location encounter module](../data-shapes.md#location-encounter-module-separate-workshop-gvar)).
+**Location encounter pools** — inline `locations[id].encounters` or a loaded `encounters_gvar_id`; any activity enabled on that place ([data-shapes § Location encounter module](../data-shapes.md#location-encounter-module-separate-workshop-gvar)).
 
 ## westmarch differences
 

@@ -4120,8 +4120,8 @@ function LocationEncounterGvarField({
       <span>
         Location encounters gvar id
         <HelpTip label="Encounter gvar id help">
-          Optional place-specific JSON row-list gvar. These rows are layered on top of the selected
-          biome gvar rows when rolling encounters for this location and area.
+          Optional place-specific encounter gvar. These rows supplement the selected biome rows;
+          quest rows take priority over biome quest hooks.
         </HelpTip>
       </span>
       <div className="field-with-three-actions">
@@ -4182,7 +4182,7 @@ function LocationEncounterGvarField({
       {builderOpen && source ? (
         <EncounterRowsModal
           title={`${titleFromSlug(locationId)} location encounters`}
-          description={`Editing separate location encounter gvar ${source.id}. These rows layer on top of biome gvar rows at this location.`}
+          description={`Editing separate location encounter gvar ${source.id}. These rows supplement biome rows at this location; quest rows take priority over biome quest hooks.`}
           rows={compactRowsFromSource(source.value)}
           onRowsChange={(rows) => updateRelatedGvarSource(source.id, JSON.stringify(rows, null, 2))}
           templates={templates}

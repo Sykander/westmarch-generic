@@ -1,0 +1,73 @@
+cfg_fixture = {
+    "world_data": {
+        "locations": {
+            "oakwood": {
+                "name": "Oakwood",
+                "encounters": {
+                    "enc": {
+                        "quest": [
+                            {
+                                "name": "Recover the charter",
+                                "description": "A torn charter points to a nearby ruin.",
+                                "outcomes": [{"type": "quest", "quest_id": "recover-charter", "title": "Recover the charter"}],
+                            },
+                        ],
+                    },
+                },
+            },
+        },
+    },
+}
+entries = location_encounters.get_pool_entries("oakwood", "enc", "quest", cfg_fixture)
+return len(entries) == 1 and entries[0]["name"] == "Recover the charter" and entries[0]["outcomes"][0]["quest_id"] == "recover-charter"
+---
+True
+---
+name: location encounters reads inline location quest pools
+
+cfg_fixture = {
+    "world_data": {
+        "locations": {
+            "river_town": {
+                "name": "River Town",
+                "encounters_gvar_id": "eeee2222-2222-2222-2222-222222222222",
+            },
+        },
+    },
+}
+pools = location_encounters.get_location_encounters("river_town", cfg_fixture)
+entries = location_encounters.get_pool_entries("river_town", "enc", "quest", cfg_fixture)
+return "enc" in pools and len(entries) == 1 and entries[0]["name"] == "Find the missing ferry"
+---
+True
+---
+name: location encounters loads external json pools
+vars:
+  gvars:
+    eeee2222-2222-2222-2222-222222222222: |
+      {"pools":{"enc":{"quest":[{"name":"Find the missing ferry","description":"The ferry rope was cut at dusk.","outcomes":[{"type":"quest","quest_id":"missing-ferry","title":"Find the missing ferry"}]}]}}}
+
+cfg_fixture = {
+    "world_data": {
+        "locations": {
+            "roadside": {
+                "name": "Roadside",
+                "encounters_gvar_id": "eeee3333-3333-3333-3333-333333333333",
+            },
+        },
+    },
+}
+quest_entries = location_encounters.get_pool_entries("roadside", "enc", "quest", cfg_fixture)
+gather_entries = location_encounters.get_pool_entries("roadside", "enc", "gather", cfg_fixture)
+return len(quest_entries) == 1 and quest_entries[0]["name"] == "Missing satchel" and len(gather_entries) == 1 and gather_entries[0]["name"] == "Old mile marker"
+---
+True
+---
+name: location encounters loads external row list pools
+vars:
+  gvars:
+    eeee3333-3333-3333-3333-333333333333: |
+      [
+        [["enc.quest"], "raw", {"kind": "quest", "name": "Missing satchel", "description": "A satchel lies under a wheel rut.", "outcomes": [{"type": "quest", "quest_id": "missing-satchel", "title": "Missing satchel"}]}],
+        [["enc.gather"], "flavour", "Old mile marker", "A mossy marker gives distance in a forgotten hand."]
+      ]
