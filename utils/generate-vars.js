@@ -1,29 +1,53 @@
 /**
- * This script takes the gvars listed in the sourcemap
- * and quickly converts them all into a dictionary for use in the
- * var file
+ * Convert dev and prod sourcemap gvars into a local var file for tests.
  */
 const { writeFileSync } = require('fs');
 const prodSourceMap = require('./sourcemap.prod.json');
 const devSourceMap = require('./sourcemap.dev.json');
 
-const environmentName = Object.entries(process.env).find(
-  ([key]) => key.toLowerCase() === 'environment',
-)?.[1];
-const environmentToUpdate = environmentName === 'Production' ? 'Production' : 'Development';
-
-console.log(`${environmentToUpdate} starting update of var file.`);
-
 const varFile = '.varfile.json';
+const sources = [
+  ['Development', devSourceMap],
+  ['Production', prodSourceMap],
+];
 
-const { gvars } = environmentToUpdate === 'Production' ? prodSourceMap : devSourceMap;
+console.log('Development + Production starting update of var file.');
 
-const varDict = gvars.reduce((acc, { file, id }) => {
-  acc[id] = { filePath: file };
-  return acc;
-}, {});
+const varDict = {};
+const collisions = [];
+let sourceEntryCount = 0;
 
-const newVarFileContents = JSON.stringify({ gvars: varDict }, null, 4);
+for (const [environment, { gvars }] of sources) {
+  for (const { file, id, name } of gvars) {
+    sourceEntryCount++;
+    const existing = varDict[id];
+
+    if (existing && existing.filePath !== file) {
+      collisions.push(
+        `${id}: ${existing.environment} ${existing.name} -> ${existing.filePath}; ${environment} ${name} -> ${file}`,
+      );
+      continue;
+    }
+
+    varDict[id] = { filePath: file, environment, name };
+  }
+}
+
+if (collisions.length) {
+  console.error('Cannot generate .varfile.json: sourcemap ids point at multiple files.');
+  for (const collision of collisions) {
+    console.error(`- ${collision}`);
+  }
+  process.exit(1);
+}
+
+const gvars = Object.fromEntries(
+  Object.entries(varDict).map(([id, { filePath }]) => [id, { filePath }]),
+);
+
+const newVarFileContents = JSON.stringify({ gvars }, null, 4);
 writeFileSync(varFile, newVarFileContents);
 
-console.log(`${environmentToUpdate} var file updated.`);
+console.log(
+  `Development + Production var file updated with ${Object.keys(gvars).length} ids from ${sourceEntryCount} sourcemap entries.`,
+);

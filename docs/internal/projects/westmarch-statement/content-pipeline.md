@@ -38,7 +38,7 @@ flowchart LR
 
 1. **Edit** TSV (or copy from westmarch — see [assets/README.md](../../../../assets/README.md)).
 2. **Run** generate script(s) — writes shard **bodies** to `src/gvars/`.
-3. **Register** new shard files in **`utils/sourcemap.*.json`** with UUIDs from **`unused_gvars.md`**; **`make build`**.
+3. **Register** new deployable shard files in **`utils/sourcemap.*.json`** with UUIDs from **`unused_gvars.md`**; **`make sourcemap-test`**.
 4. **Deploy** workshop — facades resolve shards via **`env.gvars.*`** at runtime.
 
 Generate scripts are **Node** (repo root), same toolchain as **`publish-avrae generate-env`**. They do **not** run inside Avrae.
@@ -125,7 +125,7 @@ Location: **`utils/`** at repo root — see [utils/README.md](../../../utils/REA
 | **`generate-books.js`** | `books-forgotten-realms.tsv`, `books-real.tsv` | Forgotten Realms engine shards plus corpus `*_all`/letter shards as needed |
 | **`generate-recipes.js`** | `assets/recipes.tsv` | `configs/recipes/recipes_list.gvar.json` |
 
-Shared library: **`utils/lib/`** — `read-tsv`, `write-json-gvar`, `shard-by`, `manifest`, `sourcemap-shards`.
+Shared library: **`utils/lib/`** — `read-tsv`, `write-json-gvar`, `shard-by`, `manifest`.
 
 **npm scripts:**
 
@@ -134,7 +134,7 @@ npm run generate:monsters   # one catalogue
 make build                  # all generators + env/var build
 ```
 
-Generators auto-register shard slots in sourcemaps (UUIDs from **`unused_gvars.md`**). Run **`make build`** after.
+Catalogue generators only write shard bodies. They do not read or write **`unused_gvars.md`** or **`utils/sourcemap.*.json`**.
 
 ---
 
@@ -142,12 +142,10 @@ Generators auto-register shard slots in sourcemaps (UUIDs from **`unused_gvars.m
 
 Every **new shard file** needs a slot in **`utils/sourcemap.dev.json`** and **`utils/sourcemap.prod.json`**.
 
-Catalogue generators call **`utils/lib/sourcemap-shards.js`** automatically. For hand-added shards:
-
 1. Take UUID from top of **`unused_gvars.md`**
 2. Add `{ "name": "monsters_a", "file": "src/gvars/utils/catalogues/monsters/monsters_a.gvar.json", "id": "…" }` to **both** sourcemaps (different ids)
 3. Delete used lines from **`unused_gvars.md`**
-4. **`make build`**
+4. **`make sourcemap-test`**
 
 ---
 
@@ -169,7 +167,7 @@ Generate utils **do not** replace owner config — they refresh **engine referen
 | Change | Action |
 |--------|--------|
 | Updated TSV in **`assets/`** | Run affected **`npm run generate:*`**, commit shard outputs |
-| New shard file | Sourcemap + **`unused_gvars.md`**, **`make build`** |
+| New deployable shard file | Sourcemap + **`unused_gvars.md`**, **`make sourcemap-test`**, **`npm run generate-env`** |
 | Facade search logic only | Edit Draconic facade; no regenerate |
 | Owner-specific catalogue | Edit owner workshop gvar — **no** repo generate |
 

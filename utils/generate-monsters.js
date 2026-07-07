@@ -9,7 +9,6 @@ const { readTsv } = require('./lib/read-tsv');
 const { writeJsonGvar } = require('./lib/write-json-gvar');
 const { LETTERS } = require('./lib/shard-by');
 const { printManifest } = require('./lib/manifest');
-const { ensureShardSlots } = require('./lib/sourcemap-shards');
 
 const INPUT = paths.assets('monsters.tsv');
 const OUT_DIR = 'src/gvars/utils/catalogues/monsters';
@@ -45,7 +44,6 @@ const processed = rows
   .filter(({ name }) => name && String(name).trim());
 
 const manifest = [];
-const sourcemapEntries = [];
 
 for (const letter of LETTERS) {
   const name = `monsters_${letter}`;
@@ -54,11 +52,8 @@ for (const letter of LETTERS) {
   const contents = processed.filter(({ name: n }) => String(n).toLowerCase().startsWith(letter));
   writeJsonGvar(abs, contents);
   manifest.push({ name, file, count: contents.length });
-  sourcemapEntries.push({ name, file });
 }
 
 printManifest('Monsters', manifest);
 
-const { added, skipped } = ensureShardSlots(sourcemapEntries);
-console.log(`Sourcemap: ${added} slot(s) added, ${skipped} already registered.`);
 console.log('Monsters done.');

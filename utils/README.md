@@ -11,7 +11,7 @@ Architecture: [docs/internal/projects/westmarch-statement/content-pipeline.md](.
 | Script | npm command | Purpose |
 |--------|-------------|---------|
 | `publish-avrae generate-env` | `npm run generate-env` | Write `src/gvars/env.{dev,prod}.gvar` from sourcemaps |
-| [generate-vars.js](generate-vars.js) | `npm run generate-vars` | Write `.varfile.json` for alias-tests |
+| [generate-vars.js](generate-vars.js) | `npm run generate-vars` | Write `.varfile.json` mapping both dev and prod gvar IDs for alias-tests |
 | `publish-avrae check-config` / `compare-config` | `make sourcemap-test` | Dev/prod sourcemap validation and parity |
 | `publish-avrae deploy` | `npm run deploy:dev`, `npm run deploy:prod` | Publish workshop via sourcemap |
 | [minify-gvar-json.js](minify-gvar-json.js) | `npm run lint:fix` | Compact `src/gvars/**/*.gvar.json` after JSON lint/fix so Avrae bodies stay under size limits |
@@ -45,9 +45,8 @@ make build     # run all generators, build env gvars, and refresh .varfile.json
 | [write-json-gvar.js](lib/write-json-gvar.js) | Write JSON array shard body |
 | [shard-by.js](lib/shard-by.js) | Letter / group helpers |
 | [manifest.js](lib/manifest.js) | Log row counts per shard |
-| [sourcemap-shards.js](lib/sourcemap-shards.js) | Auto-register shards in dev/prod sourcemaps |
 
-Generators register sourcemap slots automatically (two UUIDs per shard from **`unused_gvars.md`**). Then **`make build`**.
+Catalogue generators only write shard bodies. They must not read or write **`unused_gvars.md`** or **`utils/sourcemap.*.json`**.
 
 ### Output format
 
@@ -63,7 +62,7 @@ Shard files are **raw JSON arrays** — loaded at runtime with `load_json(get_gv
 2. **Shard rule** — letter, type, or separate file per corpus; document in [content-pipeline.md](../docs/internal/projects/westmarch-statement/content-pipeline.md).
 3. **Implement** `utils/generate-<name>.js` using **`utils/lib/read-tsv.js`** + **`write-json-gvar.js`**.
 4. **Output paths** under `src/gvars/utils/catalogues/` for engine catalogues, or `src/gvars/configs/` for setting-specific data (biomes, books, recipes).
-5. **Sourcemap** — engine catalogue generators call **`lib/sourcemap-shards.js`**. Engine biome presets, deployable split preset JSON gvars, and the Forgotten Realms book shards are sourcemapped; owner-only books and recipes are not registered. Ensure enough UUIDs in **`unused_gvars.md`** before generated shard changes, then **`make build`**.
+5. **Sourcemap** — if generated shards are deployable engine artifacts, manually register them in both sourcemaps with UUIDs from **`unused_gvars.md`**. Owner-only books and recipes are not registered. Run **`make sourcemap-test`** after sourcemap edits.
 6. **Facade** — engine gvar with lazy cache; document API in `docs/internal/projects/westmarch-statement/gvars/`.
 7. **npm script** — add to `package.json`; add a matching target to the Makefile's Generates section.
 
@@ -95,7 +94,7 @@ Runtime improvement: westmarch **`items.gvar`** loads all three lists at import 
 Same rules as `.cursor/rules/drac2-tools-maintainer.mdc`:
 
 - Never invent UUIDs
-- New gvar slot → **`unused_gvars.md`** → sourcemap → **`make build`**
+- New gvar slot → **`unused_gvars.md`** → sourcemap → **`make sourcemap-test`** → **`npm run generate-env`**
 - Do not hand-edit **`env.*.gvar`**
 
 ---

@@ -365,6 +365,372 @@
         },
         "62c882d0-3cd7-481a-ac10-4eaffcefb361": {
             "filePath": "src/gvars/configs/westmarch_2014_paths.gvar.json"
+        },
+        "c9028316-9197-4da5-9fd3-bbb040563c05": {
+            "filePath": "src/gvars/env.prod.gvar"
+        },
+        "a3126246-4c37-42a6-b9e3-df2d1c57e821": {
+            "filePath": "src/gvars/utils/auth/auth.gvar"
+        },
+        "dfc7333d-ebba-4cb9-9408-954f54084b24": {
+            "filePath": "src/gvars/utils/core/bags.gvar"
+        },
+        "856b1c4a-3605-41a3-9a5a-78dca4834550": {
+            "filePath": "src/gvars/configs/biomes/biome_astral.gvar.json"
+        },
+        "d1560630-749a-413a-96de-1503473ea1cf": {
+            "filePath": "src/gvars/configs/biomes/biome_beach.gvar.json"
+        },
+        "23aa3400-8454-43cb-84f7-3dca02e7792d": {
+            "filePath": "src/gvars/configs/biomes/biome_cave.gvar.json"
+        },
+        "68952141-d94d-408e-b674-c8048dad5c56": {
+            "filePath": "src/gvars/configs/biomes/biome_deep_seas.gvar.json"
+        },
+        "20bf41a5-f3f4-497a-9568-6b267e51d465": {
+            "filePath": "src/gvars/configs/biomes/biome_desert.gvar.json"
+        },
+        "dead1004-4dcf-4424-8562-800301b8563c": {
+            "filePath": "src/gvars/configs/biomes/biome_forest.gvar.json"
+        },
+        "818a8ed9-b651-439c-a481-fa83e933b647": {
+            "filePath": "src/gvars/configs/biomes/biome_jungle.gvar.json"
+        },
+        "e1187779-dfc3-4f5e-bbe5-3b186ed402f3": {
+            "filePath": "src/gvars/configs/biomes/biome_mountain.gvar.json"
+        },
+        "fffff9be-cb04-4cb8-a0cf-93b6c93244e9": {
+            "filePath": "src/gvars/configs/biomes/biome_plains.gvar.json"
+        },
+        "06d1bbd7-1acb-47d9-90f2-0e3adee7e3af": {
+            "filePath": "src/gvars/configs/biomes/biome_river.gvar.json"
+        },
+        "1f9b5428-1490-4ace-bd1f-7bc264a792f0": {
+            "filePath": "src/gvars/configs/biomes/biome_road.gvar.json"
+        },
+        "5cbc8bf2-e7ab-440b-ac11-bb1879e844aa": {
+            "filePath": "src/gvars/configs/biomes/biome_ruins.gvar.json"
+        },
+        "e74e7d44-daa6-44df-8f06-2d85e9a49b70": {
+            "filePath": "src/gvars/configs/biomes/biome_sea.gvar.json"
+        },
+        "d8d67f87-4b64-4cd7-921a-aecb2879c649": {
+            "filePath": "src/gvars/configs/biomes/biome_sky.gvar.json"
+        },
+        "200659a1-3149-4b03-b5a5-eaed3cfbd39a": {
+            "filePath": "src/gvars/configs/biomes/biome_swamp.gvar.json"
+        },
+        "ac804553-dc07-475f-b2ef-2780eb605616": {
+            "filePath": "src/gvars/configs/biomes/biome_tundra.gvar.json"
+        },
+        "e27d2c2a-1436-4966-86ea-48ea20899cdc": {
+            "filePath": "src/gvars/configs/biomes/biome_underdark.gvar.json"
+        },
+        "e1e3d2f3-cfa8-481e-8169-c0c7cc018f0a": {
+            "filePath": "src/gvars/configs/biomes/biome_urban.gvar.json"
+        },
+        "f935b7c3-87ee-4eb8-a84d-5b5a25532834": {
+            "filePath": "src/gvars/configs/biomes/biome_volcanic.gvar.json"
+        },
+        "f8a09d7e-6c04-4f75-ad6f-c506817767a4": {
+            "filePath": "src/gvars/configs/biomes/biome_wm_cave.gvar.json"
+        },
+        "c8a02a38-20c5-414a-be1d-1167af38753d": {
+            "filePath": "src/gvars/configs/biomes/biome_wm_forest.gvar.json"
+        },
+        "5c74dc75-e92d-4dc3-9b19-32ac99795033": {
+            "filePath": "src/gvars/configs/biomes/biome_wm_mountain.gvar.json"
+        },
+        "1b0a9dc1-3c3d-453b-8c47-950caf08da36": {
+            "filePath": "src/gvars/configs/biomes/biome_wm_plains.gvar.json"
+        },
+        "b35d2f3c-527b-43ae-aaa4-593c82eccded": {
+            "filePath": "src/gvars/configs/biomes/biome_wm_river.gvar.json"
+        },
+        "5df5f0ca-23c8-4368-a624-efb1da7061b0": {
+            "filePath": "src/gvars/configs/biomes/biome_wm_road.gvar.json"
+        },
+        "1c8ec498-a9a6-4a14-a687-15a8cf7e7c63": {
+            "filePath": "src/gvars/configs/biomes/biome_wm_sea.gvar.json"
+        },
+        "e44ca71f-7bcd-4e4b-9b4a-e7d459a90a39": {
+            "filePath": "src/gvars/configs/biomes/biome_wm_urban.gvar.json"
+        },
+        "e5871a1f-2dfa-4a5e-b556-75dbbf8d27bd": {
+            "filePath": "src/gvars/utils/world/biomes.gvar"
+        },
+        "5533ed6a-4483-45f3-b7ef-2a336fa7ddfe": {
+            "filePath": "src/gvars/utils/world/clock.gvar"
+        },
+        "58dd877f-b654-4f80-a9be-1e3dd0450d56": {
+            "filePath": "src/gvars/utils/core/commands.gvar"
+        },
+        "1d810d47-af5b-47d5-9595-0ff9900a00bf": {
+            "filePath": "src/gvars/utils/config/config.gvar"
+        },
+        "5bd54705-0f1a-46b9-9e8b-eef559cddb8e": {
+            "filePath": "src/gvars/utils/crafting/crafting.gvar"
+        },
+        "8d7b2b26-8026-4855-bc69-e55617dd95a9": {
+            "filePath": "src/gvars/utils/core/dicts.gvar"
+        },
+        "8dc8aae7-deb0-4f21-8f8a-2a101c33cc32": {
+            "filePath": "src/gvars/utils/display/display.gvar"
+        },
+        "d483bc13-362f-45c5-8596-efcab434123b": {
+            "filePath": "src/gvars/utils/core/embeds.gvar"
+        },
+        "5bee18ae-625f-467d-a92b-ecbbf6ebfd74": {
+            "filePath": "src/gvars/utils/core/expect.gvar"
+        },
+        "7497adbc-f942-44ad-aae5-7fc72eb162dc": {
+            "filePath": "src/gvars/utils/encounters/encounter_lists.gvar"
+        },
+        "5e41f89b-91f8-4554-8bed-440ff3781e4b": {
+            "filePath": "src/gvars/utils/encounters/encounter_templates.gvar"
+        },
+        "2aabdcdb-3510-431b-8f35-afd06ff04224": {
+            "filePath": "src/gvars/utils/encounters/encounters.gvar"
+        },
+        "6b51c53f-3db9-49cd-8f24-e35866226fa2": {
+            "filePath": "src/gvars/utils/exploration/exploration.gvar"
+        },
+        "6c50e5a7-e36b-49fe-96e7-7e82e157bd31": {
+            "filePath": "src/gvars/configs/forgotten_realms_2014_locations.gvar.json"
+        },
+        "40403500-be2c-4b1a-8170-6176adf87aa5": {
+            "filePath": "src/gvars/configs/forgotten_realms_2014_paths.gvar.json"
+        },
+        "db6387b7-6856-4346-8601-8a326d856885": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_a.gvar.json"
+        },
+        "02119878-36c4-4f9d-8aa7-468a440521a5": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_b.gvar.json"
+        },
+        "e0ef1522-71ab-41f0-929b-71c397af8615": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_c.gvar.json"
+        },
+        "725818d3-b318-4e3f-ae7d-cf31f1209cf7": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_d.gvar.json"
+        },
+        "c4750f55-7874-4b82-b006-36b93859aa4c": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_e.gvar.json"
+        },
+        "5b25fbcb-9308-45a4-8ba0-8c1b8c4ca4d3": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_f.gvar.json"
+        },
+        "3bcf6923-b626-491d-a655-0a9c1634ba2c": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_g.gvar.json"
+        },
+        "aedf732b-75e5-465a-aef9-6bfbc75cf260": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_h.gvar.json"
+        },
+        "396f9804-c1c4-46d2-a99a-c77f82ad6418": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_i.gvar.json"
+        },
+        "68f0c308-318a-446c-a0ad-c9d92ad0c779": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_j.gvar.json"
+        },
+        "dd39c394-f150-48e2-8500-22f0417f331a": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_k.gvar.json"
+        },
+        "5d9b408c-1b2d-4acd-947d-212dec6d41f9": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_l.gvar.json"
+        },
+        "82f08053-8f69-4a07-ad7d-4cbec703cac9": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_m.gvar.json"
+        },
+        "083b1b68-fa3c-491b-b726-9ce13d4c9568": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_n.gvar.json"
+        },
+        "08b9df10-df71-44dc-aede-89c402e11abc": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_o.gvar.json"
+        },
+        "55de7183-afd4-443d-8acb-4b1804f1ca45": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_pq.gvar.json"
+        },
+        "bc9c0712-c675-4c8a-9826-1e40959f61a5": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_r.gvar.json"
+        },
+        "b4e96cb2-7ff8-49a0-9cec-8aaa51a7fba9": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_s.gvar.json"
+        },
+        "ea9c7fab-8538-42c2-a0df-e537a20531be": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_t.gvar.json"
+        },
+        "c5eef426-8036-41cf-8c7b-cf6e0d57eaf8": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_v.gvar.json"
+        },
+        "ea8973e5-0590-4252-9a1d-b6121f8ebd0f": {
+            "filePath": "src/gvars/configs/books/forgotten_realms_w.gvar.json"
+        },
+        "573a61f9-8b12-40e2-b296-cb5445c61edd": {
+            "filePath": "src/gvars/utils/catalogues/items/items.gvar"
+        },
+        "d1021306-0d9e-4874-8105-9003b81bdfef": {
+            "filePath": "src/gvars/utils/catalogues/items/items_list.gvar.json"
+        },
+        "48d231dd-a0a9-496a-8834-38b062e063e4": {
+            "filePath": "src/gvars/utils/world/journeys.gvar"
+        },
+        "37e8d5c2-ac58-4811-a395-e1a475e66130": {
+            "filePath": "src/gvars/utils/core/languages.gvar"
+        },
+        "43a10f5e-dd24-445d-b82d-f10ed989eff5": {
+            "filePath": "src/gvars/utils/content/library.gvar"
+        },
+        "ec3ed4c1-527f-40a8-9352-36cfeb7d59d6": {
+            "filePath": "src/gvars/utils/core/lists.gvar"
+        },
+        "1b255e81-db11-4c9e-9e4d-01660f7cbdda": {
+            "filePath": "src/gvars/utils/world/location_encounters.gvar"
+        },
+        "f4cc9003-4fb4-41cb-8e06-98199b60d96b": {
+            "filePath": "src/gvars/utils/world/locations.gvar"
+        },
+        "bbb9da79-aa74-40ec-9868-2075900bbfca": {
+            "filePath": "src/gvars/utils/exploration/loot.gvar"
+        },
+        "7d85da39-507e-466f-bd53-e57ff42558fb": {
+            "filePath": "src/gvars/utils/catalogues/items/magic_items_list.gvar.json"
+        },
+        "64f20a33-f431-47c5-8a97-ca8abb0d3c9d": {
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters.gvar"
+        },
+        "3251f862-418c-4ec4-b216-951439677f34": {
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_a.gvar.json"
+        },
+        "d513b5f7-3af2-4b07-b9cc-7724f1515e3b": {
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_b.gvar.json"
+        },
+        "a8027d7d-19b8-4e20-b433-1e92cce119fc": {
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_c.gvar.json"
+        },
+        "d3d2428b-5527-443a-b07c-c265292ad113": {
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_d.gvar.json"
+        },
+        "19177b4c-6d86-4b6b-9382-4861de76548a": {
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_e.gvar.json"
+        },
+        "a2165486-155c-4577-afb3-abbb216cbe44": {
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_f.gvar.json"
+        },
+        "84d6ba9a-0003-4ff6-aa09-d814ad4b9221": {
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_g.gvar.json"
+        },
+        "bc99078e-5c7c-4967-9324-c6c8dc39663b": {
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_h.gvar.json"
+        },
+        "b63dbe3b-44df-4885-8a57-ef5d61d98e89": {
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_i.gvar.json"
+        },
+        "18be1a3a-4345-4787-9e59-b9cf5570f1d6": {
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_j.gvar.json"
+        },
+        "b78b899b-20e5-47f8-8fa9-df8d39a4689a": {
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_k.gvar.json"
+        },
+        "3ea53d40-bdcf-48da-9c94-460fb9865ef7": {
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_l.gvar.json"
+        },
+        "2c9afcd4-e811-4e4d-8093-cfb36ec23a0c": {
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_m.gvar.json"
+        },
+        "f8a462b7-39a3-4dfb-8735-0423578ea83e": {
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_n.gvar.json"
+        },
+        "dfa9b97e-5141-44e4-869b-f60fceaa32dc": {
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_o.gvar.json"
+        },
+        "6dfb76b0-7793-4149-b209-9c3bcc5e60be": {
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_p.gvar.json"
+        },
+        "f36fdf90-8d35-4e6c-add2-f68bc37cbd1e": {
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_q.gvar.json"
+        },
+        "4eb2ec86-4bb4-4884-952b-c822c5320c84": {
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_r.gvar.json"
+        },
+        "56fab4ee-0246-4441-b5a7-556b563daba9": {
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_s.gvar.json"
+        },
+        "04710412-6914-422d-ab2b-5574ccbe0b77": {
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_t.gvar.json"
+        },
+        "23fef75b-997b-40b7-9630-ef45a8ae67a2": {
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_u.gvar.json"
+        },
+        "23820b8e-c725-45fa-9a27-4005931059bc": {
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_v.gvar.json"
+        },
+        "f8449119-206a-4a05-8140-2bebc25eb8ee": {
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_w.gvar.json"
+        },
+        "2149d241-dd11-401c-8757-0cfa308a44a7": {
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_x.gvar.json"
+        },
+        "cf7e2fd2-6be9-44f7-bb1d-e71b720e42c9": {
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_y.gvar.json"
+        },
+        "6f366ec0-1337-43ac-a325-d9316c1cfe94": {
+            "filePath": "src/gvars/utils/catalogues/monsters/monsters_z.gvar.json"
+        },
+        "c6875cce-8c86-486e-ba75-7c0f8963b889": {
+            "filePath": "src/gvars/utils/world/paths.gvar"
+        },
+        "a6dab2a6-dd73-4ee4-a6d9-668236faab04": {
+            "filePath": "src/gvars/utils/pc/pc.gvar"
+        },
+        "2ed21b7e-cb0f-46dd-bb2c-31a4b05df641": {
+            "filePath": "src/gvars/utils/catalogues/items/potions_list.gvar.json"
+        },
+        "46ee044d-1b95-437a-8cf5-66f9320e04e0": {
+            "filePath": "src/gvars/utils/misc/quests.gvar"
+        },
+        "f7184e4a-95e0-4ef1-83ad-b2dc6ca57e89": {
+            "filePath": "src/gvars/utils/core/random.gvar"
+        },
+        "d667bf05-88ad-4379-9ae6-bc91466eb3ea": {
+            "filePath": "src/gvars/utils/misc/recipe.gvar"
+        },
+        "58a8ab6d-1441-44a6-baef-f7e3f089583a": {
+            "filePath": "src/gvars/configs/recipes/recipes_list.gvar.json"
+        },
+        "20ad4399-8662-4ea6-afb5-339bed44acbe": {
+            "filePath": "src/gvars/utils/core/regex.gvar"
+        },
+        "d769f5a0-fbf9-4bde-88d0-b8de49bb9936": {
+            "filePath": "src/gvars/utils/core/rolls.gvar"
+        },
+        "8b5f6144-89d4-4bac-b28f-551158f510bb": {
+            "filePath": "src/gvars/utils/economy/shops.gvar"
+        },
+        "7ebd040c-28de-4304-9c49-f16242d3e261": {
+            "filePath": "src/gvars/utils/catalogues/spells/spells.gvar"
+        },
+        "bc60c8c7-df51-4e28-8e9b-51ad5438edf4": {
+            "filePath": "src/gvars/utils/catalogues/spells/spells_list.gvar.json"
+        },
+        "c0b0f9c3-23ed-437e-a248-98bb448dcd96": {
+            "filePath": "src/gvars/utils/pc/stats.gvar"
+        },
+        "1094cf3c-8b5f-4ea7-b5d6-ae18bc66680a": {
+            "filePath": "src/gvars/utils/core/strings.gvar"
+        },
+        "fbf9e239-21e4-4de3-a4f1-251e677fa5ea": {
+            "filePath": "src/gvars/utils/core/time_utils.gvar"
+        },
+        "d1e91227-938b-4c65-a8fd-b3d98ed32fb7": {
+            "filePath": "src/gvars/utils/core/tools.gvar"
+        },
+        "d074b25e-9d6b-4588-ac0c-07bdff78eed5": {
+            "filePath": "src/gvars/utils/world/weather.gvar"
+        },
+        "97a48b87-f253-4feb-90ae-4e4675ba533d": {
+            "filePath": "src/gvars/configs/westmarch_2014_locations.gvar.json"
+        },
+        "f0243c7a-79af-4ecf-a81b-c9a8df266bb3": {
+            "filePath": "src/gvars/configs/westmarch_2014_paths.gvar.json"
         }
     }
 }

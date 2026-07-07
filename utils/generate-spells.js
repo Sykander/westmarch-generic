@@ -7,7 +7,6 @@ const paths = require('./lib/paths');
 const { readTsv } = require('./lib/read-tsv');
 const { writeJsonGvar } = require('./lib/write-json-gvar');
 const { printManifest } = require('./lib/manifest');
-const { ensureShardSlots } = require('./lib/sourcemap-shards');
 
 const INPUT = paths.assets('spells.tsv');
 const name = 'spells_list';
@@ -31,6 +30,4 @@ printManifest('Spells', [{ name, file, count: spells.length, required: true }], 
   failOnEmptyRequired: true,
 });
 
-const { added, skipped } = ensureShardSlots([{ name, file }]);
-console.log(`Sourcemap: ${added} slot(s) added, ${skipped} already registered.`);
 console.log('Spells done.');

@@ -142,7 +142,7 @@ Use `docs_file` for Avrae help text. Alias docs live beside their alias sources 
 | Output                                              | Command                 |
 | --------------------------------------------------- | ----------------------- |
 | `src/gvars/env.dev.gvar`, `src/gvars/env.prod.gvar` | `npm run generate-env`  |
-| `.varfile.json`                                     | `npm run generate-vars` |
+| `.varfile.json`                                     | `npm run generate-vars` from both dev/prod sourcemaps |
 
 See `.cursor/rules/drac2-tools-maintainer.mdc` for UUID hygiene, doc sync, and `.cursor/` reference refresh.
 
