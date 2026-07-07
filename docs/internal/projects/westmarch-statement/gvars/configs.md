@@ -37,6 +37,7 @@ Each file is one Draconic module (`.gvar`) — same shape as an owner config gva
 | File *(planned)* | Setting | Intended rules | Summary |
 |------------------|---------|----------------|---------|
 | **`forgotten_realms_2014.gvar`** | Forgotten Realms | **2014** | Sword Coast–style FR names, factions, and tone; catalogues and DC bands aligned to 2014 SRD-era tables. Large locations/paths live in sibling JSON gvars referenced by UUID. |
+| **`westmarch_2014.gvar`** | Westmarch | **2014** | Reference westmarch server starter with Nexus, Base Camp, Oakwood, Four Bridges, Mistcloak Mountain, copied path graph, small economy seed, and `wm-*` biome modules. Large locations/paths live in sibling JSON gvars referenced by UUID. |
 | **`forgotten_realms_2024.gvar`** | Forgotten Realms | **2024** | Same FR identity as 2014 preset where lore allows; spells, skills, and item lists aligned to 2024 revised rules |
 | **`generic_fantasy_2014.gvar`** | Generic fantasy | **2014** | Setting-neutral placeholders — no FR-specific proper nouns; usable for homebrew worlds without retagging lore |
 | **`generic_fantasy_2024.gvar`** | Generic fantasy | **2024** | Same as generic 2014 structurally; 2024-aligned catalogues and mechanics |
@@ -78,6 +79,9 @@ src/gvars/configs/
   forgotten_realms_2014.gvar
   forgotten_realms_2014_locations.gvar.json
   forgotten_realms_2014_paths.gvar.json
+  westmarch_2014.gvar
+  westmarch_2014_locations.gvar.json
+  westmarch_2014_paths.gvar.json
   forgotten_realms_2024.gvar
   generic_fantasy_2014.gvar
   generic_fantasy_2024.gvar
@@ -104,9 +108,10 @@ Example configs and split preset data get **workshop gvar slots** in dev/prod so
 ## Growth order *(suggested)*
 
 1. **`generic_fantasy_2014.gvar`** — first vertical slice (exploration + minimal biome rows); simplest test fixture.
-2. **`forgotten_realms_2014.gvar`** — reference westmarch extraction target.
-3. **`generic_fantasy_2024.gvar`** / **`forgotten_realms_2024.gvar`** — when 2024 catalogue branches exist.
-4. **`spelljammer_2014.gvar`** — after travel/journeys and location model are stable.
+2. **`forgotten_realms_2014.gvar`** — broad published-setting starter.
+3. **`westmarch_2014.gvar`** — reference westmarch extraction target.
+4. **`generic_fantasy_2024.gvar`** / **`forgotten_realms_2024.gvar`** — when 2024 catalogue branches exist.
+5. **`spelljammer_2014.gvar`** — after travel/journeys and location model are stable.
 
 Each preset should pass the web config editor checks for the subsystems it enables.
 

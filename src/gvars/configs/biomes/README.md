@@ -41,6 +41,14 @@ Not to be confused with **`src/gvars/utils/config/`** — the engine **`config.g
 | `jungle` | Tropical forest |
 | `volcanic` | Lava fields, calderas |
 | `astral` | Spelljammer / wildspace |
+| `wm-cave` | Reference Westmarch cave rows |
+| `wm-forest` | Reference Westmarch forest rows |
+| `wm-mountain` | Reference Westmarch mountain rows |
+| `wm-plains` | Reference Westmarch plains rows |
+| `wm-river` | Reference Westmarch river rows |
+| `wm-road` | Reference Westmarch road rows |
+| `wm-sea` | Reference Westmarch sea rows |
+| `wm-urban` | Reference Westmarch urban rows |
 
 ## Body shape
 
@@ -50,7 +58,7 @@ Baseline presets include entries for generic wilderness activity pools: **`enc.c
 
 ## westmarch port notes
 
-Reference westmarch `src/gvars/utils/encounters/biomes/*.gvar` for flavour and encounter ideas. When porting:
+Reference westmarch `src/gvars/utils/encounters/biomes/*.gvar` for flavour and encounter ideas. The first migrated set ships as `wm-*` biome presets for `westmarch_2014.gvar`. When porting more:
 
 - Split legacy **`encounters`** + **`combat_encounters`** into compact rows tagged **`enc.combat`** / **`enc.gather`**
 - Route **generic wilderness** beats to biome rows; **named-place** hints (merchants, libraries, jobs) to **location encounter gvars** — see [biome-data-shape-investigation.md §4–5](../../../../docs/internal/projects/westmarch-statement/biome-data-shape-investigation.md)

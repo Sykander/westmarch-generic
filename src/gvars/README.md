@@ -21,6 +21,9 @@ src/gvars/
     forgotten_realms_2014.gvar
     forgotten_realms_2014_locations.gvar.json
     forgotten_realms_2014_paths.gvar.json
+    westmarch_2014.gvar
+    westmarch_2014_locations.gvar.json
+    westmarch_2014_paths.gvar.json
     biomes/                # biome_<code>.gvar.json -> env.gvars.biome_<code>
     books/                 # generate-books.js — setting-specific library corpora
     recipes/               # generate-recipes.js — setting-specific crafting list

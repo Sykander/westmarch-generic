@@ -40,7 +40,7 @@ Previously named `initial-statement`; renamed to reflect that this is the **west
 | Folder | Modules |
 |--------|---------|
 | [gvars/](gvars/README.md) | `config`, `auth`, `pc`, encounters, journeys, catalogues, … |
-| [gvars/configs.md](gvars/configs.md) | Example server presets — FR, generic fantasy, Spelljammer (`src/gvars/configs/`) |
+| [gvars/configs.md](gvars/configs.md) | Example server presets — FR, Westmarch, generic fantasy, Spelljammer (`src/gvars/configs/`) |
 
 **Read order for newcomers:** PS → US → SS → MVP → review.
 

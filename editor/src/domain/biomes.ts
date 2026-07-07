@@ -20,6 +20,14 @@ export const ENGINE_BIOMES = [
   'jungle',
   'volcanic',
   'astral',
+  'wm-cave',
+  'wm-forest',
+  'wm-mountain',
+  'wm-plains',
+  'wm-river',
+  'wm-road',
+  'wm-sea',
+  'wm-urban',
 ];
 
 export const ENGINE_BIOME_NOTES: Record<string, string> = {
@@ -42,6 +50,14 @@ export const ENGINE_BIOME_NOTES: Record<string, string> = {
   jungle: 'Tropical forest',
   volcanic: 'Lava fields, calderas',
   astral: 'Spelljammer or wildspace',
+  'wm-cave': 'Westmarch cave rows',
+  'wm-forest': 'Westmarch forest rows',
+  'wm-mountain': 'Westmarch mountain rows',
+  'wm-plains': 'Westmarch plains rows',
+  'wm-river': 'Westmarch river rows',
+  'wm-road': 'Westmarch road rows',
+  'wm-sea': 'Westmarch sea rows',
+  'wm-urban': 'Westmarch urban rows',
 };
 
 const ENGINE_BIOME_PREFIX = 'engine:configs/biomes/';
@@ -52,7 +68,7 @@ export function engineBiomeGvarId(code: string) {
 
 export function formatBiomeName(code: string) {
   return code
-    .split('_')
+    .split(/[_-]/g)
     .map((part) => `${part.slice(0, 1).toUpperCase()}${part.slice(1)}`)
     .join(' ');
 }

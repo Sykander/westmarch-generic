@@ -1,0 +1,491 @@
+"""Example config - Westmarch, 2014 rules.
+
+Duplicate into your workshop; point !svar westmarch_config at your UUID.
+This preset mirrors the reference westmarch server map and encounter flavour,
+with split locations/paths gvars and wm-* biome modules.
+"""
+
+config_version = "1.0"
+rules_version = "2014"
+
+display = {
+    "name": "Westmarch",
+    "description": "A classic frontier westmarch centered on Nexus, Base Camp, Oakwood Forest, Four Bridges Town, Mistcloak Mountain, and the routes between them.",
+    "footer": "Westmarch",
+    "colour": "#2F6B4F",
+}
+
+subsystems = {
+    "exploration": {
+        "enabled": True,
+        "commands": {
+            "enc": True,
+            "forage": True,
+            "fish": True,
+            "mine": True,
+            "lumber": True,
+            "hunt": False,
+            "loot": True,
+        },
+        "config": {
+            "enc_biome_source": "auto",
+            "distribution_policy": "random",
+            "distribution": {"combat": 25, "quest": 15, "gather": 60},
+            "avoid_repeat_encounters": "off",
+            "repeat_exclude_window": 5,
+            "hunt_location_policy": "off",
+            "monster_images": {"hunt": "thumbnail", "loot": "thumbnail"},
+            "show_check_dcs": {"hunt": True, "loot": True},
+        },
+    },
+    "travel": {
+        "enabled": True,
+        "commands": {
+            "travel": True,
+            "location": True,
+            "time": True,
+            "weather": True,
+        },
+        "config": {
+            "location_biome_override": True,
+            "path_biome_policy": "off",
+            "route_priority": "least_encs",
+            "show_arrival_time": True,
+            "show_arrival_weather": True,
+            "show_shops_on_travel": False,
+            "combat_add_prompt": "madd_commands",
+            "transport_icons": {
+                "walk": "🚶",
+                "fly": "🪽",
+                "horse": "🐎",
+                "boat": "⛵",
+                "cart": "🛞",
+                "ship": "⛵",
+                "swim": "🌊",
+                "portal": "🌀",
+                "teleportation_circle": "🌀",
+            },
+        },
+    },
+    "downtime": {
+        "enabled": True,
+        "commands": {"downtime": True},
+        "config": {
+            "mode": "tracked",
+            "acquisition": "manual",
+            "max_workdays": 30,
+            "workday_hours": 8,
+            "workweek_days": 5,
+            "labels": {"singular": "workday", "plural": "workdays"},
+        },
+    },
+    "crafting": {
+        "enabled": True,
+        "commands": {
+            "craft": True,
+            "brew": True,
+            "enchant": True,
+            "scribe": True,
+        },
+        "config": {
+            "recipe_mode": "mixed",
+            "require_known_spell": True,
+            "catalogues": {
+                "items": {
+                    "include_engine": True,
+                    "entries": [
+                        {"name": "Carriage Passage", "rarity": "mundane", "type": "Service", "value": "2 gp"},
+                        {"name": "River Passage", "rarity": "mundane", "type": "Service", "value": "3 gp"},
+                        {"name": "Small Boat Hire", "rarity": "mundane", "type": "Service", "value": "10 gp"},
+                        {"name": "Common Lodging", "rarity": "mundane", "type": "Service", "value": "5 sp"},
+                        {"name": "Stabling (1 day)", "rarity": "mundane", "type": "Service", "value": "5 sp"},
+                    ],
+                },
+                "potions": "engine:catalogues/potions",
+                "spells": "engine:catalogues/spells",
+                "magic_items": "engine:catalogues/magic_items",
+                "recipes": "engine:configs/recipes/recipes_list",
+            },
+            "resources": {
+                "gold": "manual",
+                "materials": "manual",
+                "items": "manual",
+                "downtime": "deduct",
+                "spell_slot": "manual",
+            },
+            "item_handling": {
+                "mode": "manual",
+                "default_bag": "Equipment",
+                "equipment_bag": "Equipment",
+                "crafted_bag": "Equipment",
+                "potions_bag": "Potions",
+                "scrolls_bag": "Scrolls",
+                "magic_items_bag": "Equipment",
+                "materials_bag": "Materials",
+            },
+        },
+    },
+    "economy": {
+        "enabled": True,
+        "commands": {
+            "job": True,
+            "buy": True,
+            "sell": True,
+            "wallet": True,
+        },
+        "config": {
+            "job_location_policy": "check",
+            "ask_to_confirm_purchases": True,
+            "jobs": [
+                {
+                    "id": "camp_labor",
+                    "name": "Camp Labor",
+                    "skills": ["athletics", "survival", "animal handling"],
+                    "locations": ["nexus", "basecamp", "four_bridges", "fishing_hamlet"],
+                    "description": "Haul supplies, repair camp works, and help local crews keep the frontier moving.",
+                },
+                {
+                    "id": "market_work",
+                    "name": "Market Work",
+                    "skills": ["investigation", "persuasion", "performance", "sleight of hand"],
+                    "locations": ["nexus", "basecamp", "four_bridges", "cornelius"],
+                    "description": "Run errands, handle trade stalls, compare prices, and move messages between towns.",
+                },
+                {
+                    "id": "field_healer",
+                    "name": "Field Healer",
+                    "skills": ["medicine", "nature", "religion"],
+                    "locations": ["basecamp", "four_bridges", "cornelius", "monastery"],
+                    "description": "Support healers, herbalists, shrines, and wounded travellers.",
+                },
+                {
+                    "id": "monastery_scribe",
+                    "name": "Monastery Scribe",
+                    "skills": ["arcana", "history", "investigation", "religion"],
+                    "locations": ["monastery"],
+                    "description": "Copy records, sort lore, and assist the monastery with research.",
+                },
+            ],
+        },
+        "command_config": {
+            "job": {
+                "cooldown_seconds": 28800,
+                "workdays_cost": 0,
+                "allowed_skills": [
+                    "animal handling",
+                    "arcana",
+                    "athletics",
+                    "history",
+                    "investigation",
+                    "medicine",
+                    "nature",
+                    "perception",
+                    "performance",
+                    "persuasion",
+                    "religion",
+                    "sleight of hand",
+                    "survival",
+                ],
+                "payout_bands": [
+                    {"max": 0, "roll": "0"},
+                    {"max": 5, "roll": "1d4-1"},
+                    {"max": 10, "roll": "1d4+1"},
+                    {"max": 15, "roll": "1d6+1"},
+                    {"max": 20, "roll": "1d8+2"},
+                    {"roll": "1d8+3"},
+                ],
+            },
+        },
+    },
+    "content": {
+        "enabled": False,
+        "commands": {
+            "library": False,
+            "read": False,
+        },
+        "config": {
+            "library_topic_source": "manual",
+            "allowed_topics": [],
+            "books": None,
+        },
+    },
+    "misc": {
+        "enabled": True,
+        "commands": {
+            "quest": True,
+            "recipe": True,
+        },
+    },
+}
+
+currencies = {
+    "runes": {
+        "name": "Rune",
+        "plural": "Runes",
+        "symbol": "R",
+        "description": "A Westmarch server reward currency used for special purchases and progression.",
+    },
+    "runic_shards": {
+        "name": "Runic Shard",
+        "plural": "Runic Shards",
+        "symbol": "RS",
+        "description": "Fragments of rune value from old Westmarch encounter rewards.",
+    },
+}
+
+world_data = {
+    "default_location": "nexus",
+    "locations_gvar_id": "97a48b87-f253-4feb-90ae-4e4675ba533d",
+    "paths_gvar_id": "f0243c7a-79af-4ecf-a81b-c9a8df266bb3",
+    "transport": {
+        "walk": {
+            "name": "Walking",
+            "description": "Default overland travel for roads, forest tracks, riversides, caves, and mountain paths.",
+            "category": "land",
+            "terrain": ["wm-road", "wm-urban", "wm-forest", "wm-plains", "wm-mountain", "wm-cave", "wm-river", "wm-sea"],
+            "default": True,
+            "aliases": ["walking", "foot", "on_foot"],
+        },
+        "horse": {
+            "name": "Horse or mount",
+            "description": "Mounted travel for the horse routes inherited from the reference westmarch map.",
+            "category": "mount",
+            "terrain": ["wm-road", "wm-urban", "wm-forest", "wm-plains", "wm-mountain"],
+            "aliases": ["riding_horse", "riding horse", "mount", "pony", "mule"],
+        },
+        "boat": {
+            "name": "Boat",
+            "description": "Small craft for Oakwood River, coastal, and fishing-hamlet routes.",
+            "category": "water",
+            "terrain": ["wm-river", "wm-sea"],
+            "aliases": ["small_boat", "small boat", "rowboat", "row boat", "ferry"],
+        },
+        "portal": {
+            "name": "Nexus stone",
+            "description": "Fixed magical route through the Nexus stone network.",
+            "category": "special",
+            "terrain": ["wm-urban"],
+            "aliases": ["nexus", "nexus_stone", "nexus stone", "stone"],
+        },
+    },
+    "calendars": {
+        "primary": {
+            "id": "primary",
+            "name": "Westmarch Calendar",
+            "epoch_unix": 1704067200,
+            "tick_rate": 1,
+            "seconds_per_day": 86400,
+            "start_year": 1492,
+            "months": [
+                {"name": "New Dawn", "days": 30},
+                {"name": "Greening", "days": 30},
+                {"name": "High Sun", "days": 30},
+                {"name": "Harvest", "days": 30},
+                {"name": "Duskfall", "days": 30},
+                {"name": "Deepfrost", "days": 30},
+            ],
+            "weekdays": ["Firstday", "Secondday", "Thirdday", "Fourthday", "Fifthday", "Sixthday", "Seventhday"],
+            "seasons": [
+                {"name": "spring", "start_day_of_year": 1},
+                {"name": "summer", "start_day_of_year": 61},
+                {"name": "autumn", "start_day_of_year": 121},
+                {"name": "winter", "start_day_of_year": 151},
+            ],
+            "display_format": "{weekday}, {day} {month} {year} WM {hour}:{minute}",
+        },
+    },
+    "weather": {
+        "by_area": {
+            "cave": {"default": ["Still air carries mineral damp and the sound of water far below.", "Cold drafts move through unseen cracks while grit shifts underfoot.", "The cavern dark stays heavy, broken only by echoes and distant dripping."]},
+            "forest": {"default": ["Oakwood shade gathers thick around the trail, full of wet leaves and birdcall.", "A soft rain taps through the canopy and turns the forest floor dark.", "Sun shafts break through the boughs while undergrowth steams from earlier showers."]},
+            "mountain": {"default": ["Thin wind scrapes over the Mistcloak slopes and makes every ledge feel exposed.", "Clouds snag on the peaks and spill cold mist down the trail.", "Clear mountain light shows distant ridges, but shadow brings a quick chill."]},
+            "plains": {"default": ["Open farmland wind bends the grass and carries the smell of worked earth.", "A broad fair sky hangs over the fields with only distant weather at the edge.", "Fast showers sweep across the open ground and leave the road shining."]},
+            "river": {"default": ["The river runs high and brown, pushing foam against roots and stones.", "Cool mist rises off the water while reeds whisper along the bank.", "Bright light flashes across the current and hides sudden depth."]},
+            "road": {"default": ["Dust lifts under passing boots and wheels, then settles into old ruts.", "Cloud cover dulls the road while distant tree lines blur in damp air.", "The track is clear for now, but every bend hides the next bit of trouble."]},
+            "sea": {"default": ["Salt wind rolls in with gull cries and a cold bite of spray.", "Gray chop breaks against the shore while rain hangs over the water.", "Clear weather opens the horizon, bright above and dark blue below."]},
+            "urban": {"default": ["Busy streets hold the day's warmth while smoke, rainwater, and cooking scents mix in the air.", "Cloud cover dulls rooftops and turns every alley sound close.", "Fair weather brings open shutters, market noise, and dust under cart wheels."]},
+        },
+    },
+    "biomes": {
+        "wm-cave": {"gvar_id": "engine:configs/biomes/wm-cave", "name": "WM Cave"},
+        "wm-forest": {"gvar_id": "engine:configs/biomes/wm-forest", "name": "WM Forest"},
+        "wm-mountain": {"gvar_id": "engine:configs/biomes/wm-mountain", "name": "WM Mountain"},
+        "wm-plains": {"gvar_id": "engine:configs/biomes/wm-plains", "name": "WM Plains"},
+        "wm-river": {"gvar_id": "engine:configs/biomes/wm-river", "name": "WM River"},
+        "wm-road": {"gvar_id": "engine:configs/biomes/wm-road", "name": "WM Road"},
+        "wm-sea": {"gvar_id": "engine:configs/biomes/wm-sea", "name": "WM Sea"},
+        "wm-urban": {"gvar_id": "engine:configs/biomes/wm-urban", "name": "WM Urban"},
+    },
+}
+
+shops = {
+    "nexus_market": {
+        "id": "nexus_market",
+        "name": "Nexus Market",
+        "location_id": "nexus",
+        "accepts_sells": True,
+        "buyback": 0.5,
+        "stock": [
+            {"item": "Backpack", "price": {"gold": 2}},
+            {"item": "Bedroll", "price": {"gold": 1}},
+            {"item": "Rations (1 day)", "price": {"gold": 0.5}},
+            {"item": "Rope, Hemp (50 ft)", "price": {"gold": 1}},
+            {"item": "Torch", "price": {"gold": 0.01}},
+            {"item": "Waterskin", "price": {"gold": 0.2}},
+            {"item": "Carriage Passage", "price": {"gold": 2}, "fulfillment": "service"},
+        ],
+    },
+    "basecamp_supplies": {
+        "id": "basecamp_supplies",
+        "name": "Base Camp Supplies",
+        "location_id": "basecamp",
+        "accepts_sells": True,
+        "buyback": 0.5,
+        "stock": [
+            {"item": "Backpack", "price": {"gold": 2}},
+            {"item": "Bedroll", "price": {"gold": 1}},
+            {"item": "Rations (1 day)", "price": {"gold": 0.5}},
+            {"item": "Rope, Hemp (50 ft)", "price": {"gold": 1}},
+            {"item": "Torch", "price": {"gold": 0.01}},
+            {"item": "Healer's Kit", "price": {"gold": 5}},
+            {"item": "Potion of Healing", "price": {"gold": 50}, "qty": 6},
+            {"item": "Common Lodging", "price": {"gold": 0.5}, "fulfillment": "service"},
+        ],
+    },
+    "basecamp_stables": {
+        "id": "basecamp_stables",
+        "name": "Base Camp Stables",
+        "location_id": "basecamp",
+        "accepts_sells": True,
+        "buyback": 0.5,
+        "stock": [
+            {"item": "Riding Horse", "price": {"gold": 75}},
+            {"item": "Mule", "price": {"gold": 8}},
+            {"item": "Saddle, Riding", "price": {"gold": 5}},
+            {"item": "Saddlebags", "price": {"gold": 2}},
+            {"item": "Animal Feed", "price": {"gold": 1}},
+            {"item": "Stabling (1 day)", "price": {"gold": 0.5}, "fulfillment": "service"},
+        ],
+    },
+    "four_bridges_market": {
+        "id": "four_bridges_market",
+        "name": "Four Bridges Market",
+        "location_id": "four_bridges",
+        "accepts_sells": True,
+        "buyback": 0.5,
+        "stock": [
+            {"item": "Rations (1 day)", "price": {"gold": 0.5}},
+            {"item": "Rope, Hemp (50 ft)", "price": {"gold": 1}},
+            {"item": "Lantern - Hooded", "price": {"gold": 5}},
+            {"item": "Fishing Tackle", "price": {"gold": 1}},
+            {"item": "Healer's Kit", "price": {"gold": 5}},
+            {"item": "Small Boat Hire", "price": {"gold": 10}, "fulfillment": "service"},
+        ],
+    },
+    "cornelius_cottage": {
+        "id": "cornelius_cottage",
+        "name": "Cornelius' Cottage",
+        "location_id": "cornelius",
+        "accepts_sells": True,
+        "buyback": 0.5,
+        "stock": [
+            {"item": "Potion of Healing", "price": {"gold": 50}, "qty": 4},
+            {"item": "Herbalism kit", "price": {"gold": 5}},
+            {"item": "Alchemist's supplies", "price": {"gold": 50}},
+            {"item": "Book", "price": {"gold": 25}},
+            {"item": "Ink (1 oz)", "price": {"gold": 10}},
+        ],
+    },
+    "monastery_store": {
+        "id": "monastery_store",
+        "name": "Monastery Store",
+        "location_id": "monastery",
+        "accepts_sells": True,
+        "buyback": 0.5,
+        "stock": [
+            {"item": "Book", "price": {"gold": 25}},
+            {"item": "Ink (1 oz)", "price": {"gold": 10}},
+            {"item": "Paper (1 sheet)", "price": {"gold": 0.2}},
+            {"item": "Parchment (1 sheet)", "price": {"gold": 0.1}},
+            {"item": "Holy Symbol", "price": {"gold": 5}},
+            {"item": "Healer's Kit", "price": {"gold": 5}},
+            {"item": "Common Lodging", "price": {"gold": 0.5}, "fulfillment": "service"},
+        ],
+    },
+    "fishing_hamlet_docks": {
+        "id": "fishing_hamlet_docks",
+        "name": "Fishing Hamlet Docks",
+        "location_id": "fishing_hamlet",
+        "accepts_sells": True,
+        "buyback": 0.45,
+        "stock": [
+            {"item": "Fishing Tackle", "price": {"gold": 1}},
+            {"item": "Rations (1 day)", "price": {"gold": 0.5}},
+            {"item": "Rope, Hemp (50 ft)", "price": {"gold": 1}},
+            {"item": "Small Boat Hire", "price": {"gold": 8}, "fulfillment": "service"},
+            {"item": "River Passage", "price": {"gold": 3}, "fulfillment": "service"},
+        ],
+    },
+}
+
+policies = {
+    "auth": {"require_character": True},
+    "travel": {
+        "apply_path_costs": False,
+        "consume_rations": False,
+        "rations_item": "Rations (1 day)",
+    },
+    "economy": {
+        "enforce_cooldowns": True,
+        "enforce_wallet_caps": False,
+        "starting_gold": None,
+    },
+    "inventory": {
+        "track_encumbrance": False,
+        "enforce_encumbrance": False,
+        "attunement_limit": None,
+        "enforce_attunement": False,
+        "magic_items_carry_limit": None,
+        "enforce_magic_item_limit": False,
+    },
+    "exploration": {
+        "enforce_cooldowns": True,
+    },
+    "combat": {
+        "scale_encounters_to_level": False,
+        "roll_monster_hp": True,
+        "scale_mode": "party_average",
+        "max_cr_delta": None,
+        "min_cr": None,
+    },
+    "quest": {
+        "self_assign": False,
+        "max_active": None,
+    },
+    "content": {
+        "enforce_read_cooldowns": False,
+        "enforce_library_cooldowns": True,
+    },
+    "languages": {"allowed": []},
+    "display": {
+        "footer_behaviour": "balanced",
+        "command_thumbnail": "default",
+        "error_embeds": {"auto_delete": True, "timeout_seconds": 60},
+        "helpful_tips": [],
+        "credits": None,
+    },
+    "player_setup": {
+        "enabled": True,
+        "require_character": True,
+        "hud": {"enabled": True, "fields": ["coinpurse", "wallet", "location", "time", "weather"]},
+        "checks": [
+            {
+                "type": "cvar",
+                "key": "wg_downtime",
+                "label": "Downtime",
+                "message": "Run `!downtime` to view tracked downtime.",
+                "when_subsystem": "downtime",
+            },
+        ],
+    },
+}

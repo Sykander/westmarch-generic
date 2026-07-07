@@ -3,6 +3,8 @@ import test from 'node:test';
 import {
   ENGINE_FORGOTTEN_REALMS_LOCATIONS,
   ENGINE_FORGOTTEN_REALMS_PATHS,
+  ENGINE_WESTMARCH_LOCATIONS,
+  ENGINE_WESTMARCH_PATHS,
   findLoadedGvarSource,
   isReadOnlyWorldGvarId,
   locationsFromGvarSource,
@@ -18,6 +20,8 @@ import type { LoadedGvarSource } from '../lib/gvarSources';
 
 const LOCATIONS_ID = '6c50e5a7-e36b-49fe-96e7-7e82e157bd31';
 const PATHS_ID = '40403500-be2c-4b1a-8170-6176adf87aa5';
+const WESTMARCH_LOCATIONS_ID = '97a48b87-f253-4feb-90ae-4e4675ba533d';
+const WESTMARCH_PATHS_ID = 'f0243c7a-79af-4ecf-a81b-c9a8df266bb3';
 const CUSTOM_ID = '11111111-1111-1111-1111-111111111111';
 
 function source(id: string, value: unknown): LoadedGvarSource {
@@ -36,6 +40,10 @@ test('world data helpers mark shipped location and path gvars read-only', () => 
   assert.equal(isReadOnlyWorldGvarId(PATHS_ID), true);
   assert.equal(isReadOnlyWorldGvarId(ENGINE_FORGOTTEN_REALMS_LOCATIONS), true);
   assert.equal(isReadOnlyWorldGvarId(ENGINE_FORGOTTEN_REALMS_PATHS), true);
+  assert.equal(isReadOnlyWorldGvarId(WESTMARCH_LOCATIONS_ID), true);
+  assert.equal(isReadOnlyWorldGvarId(WESTMARCH_PATHS_ID), true);
+  assert.equal(isReadOnlyWorldGvarId(ENGINE_WESTMARCH_LOCATIONS), true);
+  assert.equal(isReadOnlyWorldGvarId(ENGINE_WESTMARCH_PATHS), true);
   assert.equal(isReadOnlyWorldGvarId(CUSTOM_ID), false);
 });
 
@@ -45,6 +53,19 @@ test('world data helpers expose shipped presets without loaded related gvars', (
 
   assert.equal(String((locations.waterdeep as Record<string, unknown>).name), 'Waterdeep');
   assert.ok(paths.length > 120);
+
+  const westmarchLocations = locationsFromPreset(ENGINE_WESTMARCH_LOCATIONS);
+  const westmarchPaths = pathsFromPreset(ENGINE_WESTMARCH_PATHS);
+
+  assert.equal(
+    String((westmarchLocations.oakwood as Record<string, unknown>).name),
+    'Oakwood Forest',
+  );
+  assert.equal(
+    String((westmarchLocations.four_bridges as Record<string, unknown>).name),
+    'Four Bridges Town',
+  );
+  assert.ok(westmarchPaths.length >= 80);
 });
 
 test('world data helpers resolve loaded gvar sources by configured id', () => {

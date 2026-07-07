@@ -103,6 +103,14 @@ const VALID_ENGINE_BIOMES = [
   'jungle',
   'volcanic',
   'astral',
+  'wm-cave',
+  'wm-forest',
+  'wm-mountain',
+  'wm-plains',
+  'wm-river',
+  'wm-road',
+  'wm-sea',
+  'wm-urban',
 ];
 const VALID_CRAFTING_ENGINE_CATALOGUES: Record<string, string> = {
   items: 'engine:catalogues/items',
@@ -245,6 +253,8 @@ const FORGOTTEN_REALMS_BOOK_UUID_TO_ENGINE = Object.fromEntries(
 const VALID_WORLD_ENGINE_GVARS = [
   'engine:configs/forgotten_realms_2014_locations',
   'engine:configs/forgotten_realms_2014_paths',
+  'engine:configs/westmarch_2014_locations',
+  'engine:configs/westmarch_2014_paths',
 ];
 const VALID_BOOK_ENGINE_GVARS = Object.keys(FORGOTTEN_REALMS_BOOK_ENGINE_TO_RUNTIME_UUID);
 const WORLD_GVAR_UUID_TO_ENGINE: Record<string, string> = {
@@ -252,11 +262,17 @@ const WORLD_GVAR_UUID_TO_ENGINE: Record<string, string> = {
   'fde0dbeb-d2e3-42fd-8f56-2d94bdf3ac58': 'engine:configs/forgotten_realms_2014_locations',
   '40403500-be2c-4b1a-8170-6176adf87aa5': 'engine:configs/forgotten_realms_2014_paths',
   '19623e1a-3a23-49a0-9d40-986fdd26d7e7': 'engine:configs/forgotten_realms_2014_paths',
+  '97a48b87-f253-4feb-90ae-4e4675ba533d': 'engine:configs/westmarch_2014_locations',
+  '63722be3-1012-47ea-9262-88bfd26089bb': 'engine:configs/westmarch_2014_locations',
+  'f0243c7a-79af-4ecf-a81b-c9a8df266bb3': 'engine:configs/westmarch_2014_paths',
+  '62c882d0-3cd7-481a-ac10-4eaffcefb361': 'engine:configs/westmarch_2014_paths',
   ...FORGOTTEN_REALMS_BOOK_UUID_TO_ENGINE,
 };
 const WORLD_ENGINE_TO_RUNTIME_UUID: Record<string, string> = {
   'engine:configs/forgotten_realms_2014_locations': '6c50e5a7-e36b-49fe-96e7-7e82e157bd31',
   'engine:configs/forgotten_realms_2014_paths': '40403500-be2c-4b1a-8170-6176adf87aa5',
+  'engine:configs/westmarch_2014_locations': '97a48b87-f253-4feb-90ae-4e4675ba533d',
+  'engine:configs/westmarch_2014_paths': 'f0243c7a-79af-4ecf-a81b-c9a8df266bb3',
   ...FORGOTTEN_REALMS_BOOK_ENGINE_TO_RUNTIME_UUID,
 };
 

@@ -98,7 +98,8 @@ def _resolve_gvar_addr(gvar_id):
         code = addr[len(ENGINE_BIOME_PREFIX) :].strip().lower()
         if code == "":
             return None
-        for key in [f"biome_{code}", addr, code]:
+        safe_code = code.replace("-", "_")
+        for key in [f"biome_{code}", f"biome_{safe_code}", addr, code, safe_code]:
             resolved = _read_field(env.gvars, key)
             if resolved != None:
                 return resolved

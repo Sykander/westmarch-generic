@@ -277,6 +277,93 @@ test('forgotten realms starter has travel, economy, content, and media baseline'
   );
 });
 
+test('westmarch starter has migrated map, economy, and wm biome baseline', () => {
+  const starterSource = STARTER_SOURCES.find((source) => source.id === 'westmarch-2014');
+  assert.ok(starterSource);
+
+  const parsed = parseConfig(starterSource.source);
+  assert.ok(parsed.model);
+
+  const issues = validateConfig(parsed.model, parsed.issues);
+  const errorCodes = issues
+    .filter((entry) => entry.severity === 'error')
+    .map((entry) => entry.code);
+  assert.deepEqual(errorCodes, []);
+
+  const model = parsed.model as ConfigModel;
+  assert.equal(model.rules_version, '2014');
+  assert.equal(model.display.name, 'Westmarch');
+
+  const exploration = model.subsystems.exploration as Record<string, unknown>;
+  const explorationCommands = exploration.commands as Record<string, unknown>;
+  assert.equal(exploration.enabled, true);
+  assert.equal(explorationCommands.enc, true);
+  assert.equal(explorationCommands.loot, true);
+  assert.equal(explorationCommands.hunt, false);
+
+  const travel = model.subsystems.travel as Record<string, unknown>;
+  const travelConfig = travel.config as Record<string, unknown>;
+  assert.equal(travel.enabled, true);
+  assert.equal(travelConfig.path_biome_policy, 'off');
+  assert.equal(travelConfig.show_arrival_time, true);
+  assert.equal(travelConfig.show_arrival_weather, true);
+
+  const worldData = model.world_data as Record<string, unknown>;
+  assert.equal(worldData.default_location, 'nexus');
+  assert.equal(worldData.locations_gvar_id, 'engine:configs/westmarch_2014_locations');
+  assert.equal(worldData.paths_gvar_id, 'engine:configs/westmarch_2014_paths');
+  const biomes = worldData.biomes as Record<string, Record<string, unknown>>;
+  assert.equal(biomes['wm-forest'].gvar_id, 'engine:configs/biomes/wm-forest');
+  assert.equal(biomes['wm-cave'].gvar_id, 'engine:configs/biomes/wm-cave');
+  assert.equal(biomes['wm-urban'].gvar_id, 'engine:configs/biomes/wm-urban');
+
+  const economy = model.subsystems.economy as Record<string, unknown>;
+  const economyCommands = economy.commands as Record<string, unknown>;
+  const economyConfig = economy.config as Record<string, unknown>;
+  assert.equal(economy.enabled, true);
+  assert.equal(economyCommands.job, true);
+  assert.equal(economyCommands.buy, true);
+  assert.equal(economyCommands.sell, true);
+  assert.equal(economyConfig.job_location_policy, 'check');
+  assert.ok((economyConfig.jobs as unknown[]).length >= 4);
+  assert.equal((model.currencies?.runes as Record<string, unknown>).symbol, 'R');
+  assert.equal((model.shops?.basecamp_supplies as Record<string, unknown>).location_id, 'basecamp');
+
+  const locations = JSON.parse(
+    readFileSync(
+      new URL('../../../src/gvars/configs/westmarch_2014_locations.gvar.json', import.meta.url),
+      'utf8',
+    ),
+  ) as Record<string, unknown>;
+  assert.equal((locations.oakwood as Record<string, unknown>).name, 'Oakwood Forest');
+  assert.equal((locations.four_bridges as Record<string, unknown>).name, 'Four Bridges Town');
+  assert.equal((locations.deep_caverns as Record<string, unknown>).biome, 'wm-cave');
+  assert.equal(Object.keys(locations).length, 20);
+
+  const pathsPayload = JSON.parse(
+    readFileSync(
+      new URL('../../../src/gvars/configs/westmarch_2014_paths.gvar.json', import.meta.url),
+      'utf8',
+    ),
+  ) as Record<string, unknown>;
+  const pathsByFrom = pathsPayload.paths_by_from as Record<string, Record<string, unknown>[]>;
+  const paths = Object.values(pathsByFrom).flat();
+  assert.equal(paths.length, 80);
+  assert.ok(paths.some((path) => path.from === 'nexus' && path.to === 'basecamp'));
+  assert.ok(
+    paths.some(
+      (path) =>
+        path.from === 'four_bridges' &&
+        path.to === 'oakwood_river' &&
+        (path.requirements as Record<string, unknown> | undefined)?.transport === 'boat',
+    ),
+  );
+
+  const serialized = serializeConfig(model);
+  assert.match(serialized, /"locations_gvar_id": "97a48b87-f253-4feb-90ae-4e4675ba533d"/);
+  assert.match(serialized, /"paths_gvar_id": "f0243c7a-79af-4ecf-a81b-c9a8df266bb3"/);
+});
+
 test('starter-style exploration config validates cleanly for phase 0 checks', () => {
   const codes = issueCodes(`
 display = {"name": "Test March", "colour": "#5865F2"}
@@ -476,6 +563,16 @@ world_data = {
 
   assert.equal(codes.includes('world.locations_gvar_id.invalid'), false);
   assert.equal(codes.includes('world.paths_gvar_id.invalid'), false);
+
+  const westmarchCodes = issueCodes(`
+world_data = {
+    "locations_gvar_id": "engine:configs/westmarch_2014_locations",
+    "paths_gvar_id": "engine:configs/westmarch_2014_paths",
+}
+`);
+
+  assert.equal(westmarchCodes.includes('world.locations_gvar_id.invalid'), false);
+  assert.equal(westmarchCodes.includes('world.paths_gvar_id.invalid'), false);
 });
 
 test('content accepts engine book gvar preset pointers', () => {

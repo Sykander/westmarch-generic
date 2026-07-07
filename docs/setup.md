@@ -43,7 +43,7 @@ Your **config gvar** is a workshop module in **your** workshop. It holds toggles
 **Recommended:** create a new gvar, open the editor, and paste from one of:
 
 - [src/gvars/configs/starter.gvar](../src/gvars/configs/starter.gvar) — minimal schema, all subsystems off
-- **Example presets** — Forgotten Realms, generic fantasy, or Spelljammer ([configs doc](internal/projects/westmarch-statement/gvars/configs.md))
+- **Example presets** — Forgotten Realms, Westmarch, generic fantasy, or Spelljammer ([configs doc](internal/projects/westmarch-statement/gvars/configs.md))
 
 You can edit exported or pasted config bodies in the [Westmarch config editor](https://sykander.github.io/westmarch-generic/). After your `westmarch_config` svar exists, use `?westmarch_config=<your-gvar-uuid>` to prefill the gvar id.
 
@@ -61,6 +61,7 @@ Optional starting worlds (duplicate into your workshop, then set **`westmarch_co
 | Preset | Setting | Set Avrae rules to |
 |--------|---------|-------------------|
 | Forgotten Realms (2014) | Sword Coast travel, time, weather, trade, shops, and libraries | **2014** |
+| Westmarch (2014) | Reference westmarch server starter with Nexus, Base Camp, Oakwood, Four Bridges, Mistcloak Mountain, travel, shops, and `wm-*` biomes | **2014** |
 | Forgotten Realms (2024) | FR lore; 2024 tables | **2024** |
 | Generic fantasy (2014) | Setting-neutral | **2014** |
 | Generic fantasy (2024) | Setting-neutral; 2024 tables | **2024** |

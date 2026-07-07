@@ -52,7 +52,7 @@ Embed sections in order:
 
 **Option A — duplicate template *(recommended)***
 - Minimal: [src/gvars/configs/starter.gvar](../../../../src/gvars/configs/starter.gvar)
-- Prefab worlds: [gvars/configs.md](../../gvars/configs.md) — Forgotten Realms, generic fantasy, Spelljammer (duplicate published UUID or paste from repo)
+- Prefab worlds: [gvars/configs.md](../../gvars/configs.md) — Forgotten Realms, Westmarch, generic fantasy, Spelljammer (duplicate published UUID or paste from repo)
 - Open the template or preset in the workshop (UUID in [docs/setup.md](../../../../../docs/setup.md) when published / engine env `TEMPLATE_CONFIG_GVAR`).
 - **Duplicate** it into your workshop, then edit subsystem toggles.
 

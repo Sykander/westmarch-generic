@@ -36,7 +36,7 @@ Shared **engine workshop** modules under `src/gvars/`. Aliases `using()` these v
 | **recipe** | [recipe.md](recipe.md) | 1 | Recipe search / format — **`!recipe`** |
 | **diary** | [diary.md](diary.md) | post-MVP | Personal RP journal cvars — **`!diary`** |
 | **crafting** | [crafting.md](crafting.md) | 1 | Shared crafting catalogue, rules-edition, resource, and output helper |
-| **configs/** *(example server configs)* | [configs.md](configs.md) | 1+ | Prefab setting modules — FR, generic, Spelljammer; tests + onboarding |
+| **configs/** *(example server configs)* | [configs.md](configs.md) | 1+ | Prefab setting modules — FR, Westmarch, generic, Spelljammer; tests + onboarding |
 
 Shared shapes: [data-shapes.md](../data-shapes.md).
 

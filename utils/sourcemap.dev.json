@@ -255,6 +255,46 @@
       "id": "50db5717-77cf-445c-ab6f-0e103567d075"
     },
     {
+      "name": "biome_wm_cave",
+      "file": "src/gvars/configs/biomes/biome_wm_cave.gvar.json",
+      "id": "ed44bef1-18b4-44d1-b2b2-9324fe4b36de"
+    },
+    {
+      "name": "biome_wm_forest",
+      "file": "src/gvars/configs/biomes/biome_wm_forest.gvar.json",
+      "id": "177a9f52-427d-4b74-ac99-470826ce7175"
+    },
+    {
+      "name": "biome_wm_mountain",
+      "file": "src/gvars/configs/biomes/biome_wm_mountain.gvar.json",
+      "id": "1e927873-391c-40c1-9ada-7448e25e8a9b"
+    },
+    {
+      "name": "biome_wm_plains",
+      "file": "src/gvars/configs/biomes/biome_wm_plains.gvar.json",
+      "id": "01fa7668-cf28-4588-8f26-3174a71866ad"
+    },
+    {
+      "name": "biome_wm_river",
+      "file": "src/gvars/configs/biomes/biome_wm_river.gvar.json",
+      "id": "90029e12-ff5d-4bf3-8327-acb1ea3daca9"
+    },
+    {
+      "name": "biome_wm_road",
+      "file": "src/gvars/configs/biomes/biome_wm_road.gvar.json",
+      "id": "ebbc5306-fb95-4ddd-a0c3-053c348c142a"
+    },
+    {
+      "name": "biome_wm_sea",
+      "file": "src/gvars/configs/biomes/biome_wm_sea.gvar.json",
+      "id": "d1ba33bd-f8f5-44d5-80b0-ac0ad16a2c93"
+    },
+    {
+      "name": "biome_wm_urban",
+      "file": "src/gvars/configs/biomes/biome_wm_urban.gvar.json",
+      "id": "32c42505-e6ef-4338-b93c-0365b8b23af9"
+    },
+    {
       "name": "biomes",
       "file": "src/gvars/utils/world/biomes.gvar",
       "id": "9db668e3-5743-4ab8-b610-69877abce4a8"
@@ -698,6 +738,16 @@
       "name": "weather",
       "file": "src/gvars/utils/world/weather.gvar",
       "id": "596c3b37-1e9f-4fd3-9a6c-52ad33086405"
+    },
+    {
+      "name": "westmarch_2014_locations",
+      "file": "src/gvars/configs/westmarch_2014_locations.gvar.json",
+      "id": "63722be3-1012-47ea-9262-88bfd26089bb"
+    },
+    {
+      "name": "westmarch_2014_paths",
+      "file": "src/gvars/configs/westmarch_2014_paths.gvar.json",
+      "id": "62c882d0-3cd7-481a-ac10-4eaffcefb361"
     }
   ]
 }

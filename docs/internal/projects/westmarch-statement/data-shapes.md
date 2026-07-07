@@ -819,6 +819,14 @@ Placed at **`src/gvars/configs/biomes/`** (not under **`src/gvars/utils/config/`
 | **`jungle`** | Tropical dense forest |
 | **`volcanic`** | Lava, ash, fire elementals |
 | **`astral`** | Spelljammer / wildspace |
+| **`wm-cave`** | Reference Westmarch cave rows |
+| **`wm-forest`** | Reference Westmarch forest rows |
+| **`wm-mountain`** | Reference Westmarch mountain rows |
+| **`wm-plains`** | Reference Westmarch plains rows |
+| **`wm-river`** | Reference Westmarch river rows |
+| **`wm-road`** | Reference Westmarch road rows |
+| **`wm-sea`** | Reference Westmarch sea rows |
+| **`wm-urban`** | Reference Westmarch urban rows |
 
 Preset bodies start minimal (MVP smoke entries per kind) and grow with vertical ports. See [biomes/README.md](../../../../src/gvars/configs/biomes/README.md).
 

@@ -255,6 +255,46 @@
       "id": "f935b7c3-87ee-4eb8-a84d-5b5a25532834"
     },
     {
+      "name": "biome_wm_cave",
+      "file": "src/gvars/configs/biomes/biome_wm_cave.gvar.json",
+      "id": "f8a09d7e-6c04-4f75-ad6f-c506817767a4"
+    },
+    {
+      "name": "biome_wm_forest",
+      "file": "src/gvars/configs/biomes/biome_wm_forest.gvar.json",
+      "id": "c8a02a38-20c5-414a-be1d-1167af38753d"
+    },
+    {
+      "name": "biome_wm_mountain",
+      "file": "src/gvars/configs/biomes/biome_wm_mountain.gvar.json",
+      "id": "5c74dc75-e92d-4dc3-9b19-32ac99795033"
+    },
+    {
+      "name": "biome_wm_plains",
+      "file": "src/gvars/configs/biomes/biome_wm_plains.gvar.json",
+      "id": "1b0a9dc1-3c3d-453b-8c47-950caf08da36"
+    },
+    {
+      "name": "biome_wm_river",
+      "file": "src/gvars/configs/biomes/biome_wm_river.gvar.json",
+      "id": "b35d2f3c-527b-43ae-aaa4-593c82eccded"
+    },
+    {
+      "name": "biome_wm_road",
+      "file": "src/gvars/configs/biomes/biome_wm_road.gvar.json",
+      "id": "5df5f0ca-23c8-4368-a624-efb1da7061b0"
+    },
+    {
+      "name": "biome_wm_sea",
+      "file": "src/gvars/configs/biomes/biome_wm_sea.gvar.json",
+      "id": "1c8ec498-a9a6-4a14-a687-15a8cf7e7c63"
+    },
+    {
+      "name": "biome_wm_urban",
+      "file": "src/gvars/configs/biomes/biome_wm_urban.gvar.json",
+      "id": "e44ca71f-7bcd-4e4b-9b4a-e7d459a90a39"
+    },
+    {
       "name": "biomes",
       "file": "src/gvars/utils/world/biomes.gvar",
       "id": "e5871a1f-2dfa-4a5e-b556-75dbbf8d27bd"
@@ -698,6 +738,16 @@
       "name": "weather",
       "file": "src/gvars/utils/world/weather.gvar",
       "id": "d074b25e-9d6b-4588-ac0c-07bdff78eed5"
+    },
+    {
+      "name": "westmarch_2014_locations",
+      "file": "src/gvars/configs/westmarch_2014_locations.gvar.json",
+      "id": "97a48b87-f253-4feb-90ae-4e4675ba533d"
+    },
+    {
+      "name": "westmarch_2014_paths",
+      "file": "src/gvars/configs/westmarch_2014_paths.gvar.json",
+      "id": "f0243c7a-79af-4ecf-a81b-c9a8df266bb3"
     }
   ]
 }

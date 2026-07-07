@@ -1,0 +1,112 @@
+wd = westmarch_2014.world_data
+exploration = westmarch_2014.subsystems["exploration"]
+travel = westmarch_2014.subsystems["travel"]
+downtime = westmarch_2014.subsystems["downtime"]
+crafting = westmarch_2014.subsystems["crafting"]
+economy = westmarch_2014.subsystems["economy"]
+misc = westmarch_2014.subsystems["misc"]
+currencies = westmarch_2014.currencies
+return (
+    westmarch_2014.rules_version == "2014"
+    and westmarch_2014.display["name"] == "Westmarch"
+    and wd["default_location"] == "nexus"
+    and wd["locations_gvar_id"] == "97a48b87-f253-4feb-90ae-4e4675ba533d"
+    and wd["paths_gvar_id"] == "f0243c7a-79af-4ecf-a81b-c9a8df266bb3"
+    and wd["biomes"]["wm-forest"]["gvar_id"] == "engine:configs/biomes/wm-forest"
+    and wd["biomes"]["wm-cave"]["gvar_id"] == "engine:configs/biomes/wm-cave"
+    and exploration["enabled"] == True
+    and exploration["commands"]["enc"] == True
+    and exploration["commands"]["hunt"] == False
+    and travel["enabled"] == True
+    and travel["commands"]["travel"] == True
+    and travel["config"]["path_biome_policy"] == "off"
+    and downtime["enabled"] == True
+    and downtime["config"]["mode"] == "tracked"
+    and crafting["enabled"] == True
+    and crafting["config"]["catalogues"]["recipes"] == "engine:configs/recipes/recipes_list"
+    and economy["enabled"] == True
+    and economy["config"]["job_location_policy"] == "check"
+    and len(economy["config"]["jobs"]) >= 4
+    and misc["enabled"] == True
+    and currencies["runes"]["symbol"] == "R"
+    and len(westmarch_2014.shops) >= 7
+)
+---
+True
+---
+name: Westmarch 2014 config enables migrated map, economy, and wm biome registry
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(paths = env.gvars.paths)
+wd = {}
+for key in westmarch_2014.world_data:
+    wd[key] = westmarch_2014.world_data[key]
+wd["locations_gvar_id"] = "63722be3-1012-47ea-9262-88bfd26089bb"
+wd["paths_gvar_id"] = "62c882d0-3cd7-481a-ac10-4eaffcefb361"
+cfg = {
+    "subsystems": westmarch_2014.subsystems,
+    "world_data": wd,
+}
+basecamp = paths.get_edge(cfg, "nexus", "basecamp")
+forest = paths.get_edge(cfg, "basecamp", "oakwood")
+river_walk = paths.get_edge(cfg, "four_bridges", "oakwood_river")
+river_boat = paths.get_edge(cfg, "four_bridges", "oakwood_river", "boat")
+return (
+    basecamp["to"] == "basecamp"
+    and paths.get_path_steps(basecamp)[0]["type"] == "proceed"
+    and forest["to"] == "oakwood"
+    and len(paths.get_path_steps(river_walk)) == 5
+    and len(paths.get_path_steps(river_boat, "boat")) == 1
+    and paths.get_path_steps(river_boat, "boat")[0]["biome"] == "wm-river"
+)
+---
+True
+---
+name: Westmarch 2014 paths load migrated Nexus, Oakwood, and Four Bridges routes
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(biomes = env.gvars.biomes)
+cfg = {
+    "subsystems": westmarch_2014.subsystems,
+    "world_data": westmarch_2014.world_data,
+}
+forest = biomes.get_pool_entries("wm-forest", "forage", "gather", cfg)
+return len(forest) > 20
+---
+True
+---
+name: Westmarch 2014 wm-forest engine slug resolves through env biome_wm_forest
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(biomes = env.gvars.biomes)
+cfg = {
+    "subsystems": westmarch_2014.subsystems,
+    "world_data": westmarch_2014.world_data,
+}
+cave = biomes.get_pool_entries("wm-cave", "enc", "combat", cfg)
+return len(cave) > 20
+---
+True
+---
+name: Westmarch 2014 wm-cave engine slug resolves through env biome_wm_cave
+
+using(env="d83fd033-128f-4b1c-a32c-7a9984ccf766")
+using(shops = env.gvars.shops)
+cfg = {
+    "subsystems": westmarch_2014.subsystems,
+    "world_data": westmarch_2014.world_data,
+    "shops": westmarch_2014.shops,
+}
+basecamp_text = shops.trade_text(cfg, "basecamp")
+four_bridges_text = shops.trade_text(cfg, "four_bridges")
+return (
+    "Base Camp Supplies" in basecamp_text
+    and "Potion of Healing" in basecamp_text
+    and "Base Camp Stables" in basecamp_text
+    and "Four Bridges Market" in four_bridges_text
+    and "Small Boat Hire" in four_bridges_text
+)
+---
+True
+---
+name: Westmarch 2014 shops expose starter town trade lists
