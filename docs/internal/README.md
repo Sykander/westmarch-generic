@@ -8,7 +8,7 @@ This is not player- or server-owner-facing documentation. For the public model a
 
 | Release docs          | Status  | Description                                                                                    |
 | --------------------- | ------- | ---------------------------------------------------------------------------------------------- |
-| [releases](releases/) | Planned | Release roadmap, including `1.0.0` as the first public release and `2.x.x` next-major planning |
+| [releases](releases/) | Planned | Release roadmap, including `1.0.0` as the first public release and `2.0.0` next-major planning |
 | [research](research/) | Active  | Compatibility reviews, implementation audits, and evidence notes that are not release notes    |
 
 ## Projects
@@ -19,6 +19,7 @@ This is not player- or server-owner-facing documentation. For the public model a
 | [factions](projects/factions/)                                             | Planned next-major | Config-owned factions that players can join, with membership, rank/renown, requirements, and integrations                                                   |
 | [forgotten-realms-config](projects/forgotten-realms-config/)               | In progress        | Richer Forgotten Realms starter config for Sword Coast travel, locations, transport, shops, weather, and services                                           |
 | [manual-testing-initial-release](projects/manual-testing-initial-release/) | Planning           | Manual and exploratory test notes for first public release hardening                                                                                        |
+| [onboarding-experience](projects/onboarding-experience/)                   | Planned 1.1.0      | First-run starter fallback, setup/show unwired messaging, starter quest, public configurer guides, and editor-assisted first config creation                |
 | [prompt-generation](projects/prompt-generation/)                           | Planning           | Prompt workflow and assets for generated config content                                                                                                     |
 | [web-config-editor](projects/web-config-editor/)                           | Planned            | GitHub Pages editor for loading, validating, editing, exporting, and optionally publishing server config gvars                                              |
 | [westmarch-statement](projects/westmarch-statement/)                       | Complete           | PS, US, SS, MVP, review + [aliases/](projects/westmarch-statement/aliases/) (by subsystem) + [gvars/](projects/westmarch-statement/gvars/) (engine modules) |

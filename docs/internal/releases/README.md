@@ -67,9 +67,10 @@ Backwards compatibility starts at `1.0.0`. Patch and minor releases in the `1.x`
 | Release           | Status                  | Scope                                                                                                                             |
 | ----------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | [1.0.0](1.0.0.md) | Release-candidate scope | First public release; implemented engine, editor, starter configs, docs, tests, and release hardening                             |
-| [2.x.x](2.x.md)   | Planned                 | Next-major planning after the `1.x` compatibility line, including factions, combat handoff/maps, and economy progression commands |
+| [1.1.0](1.1.0.md) | Planned                 | Onboarding improvements: starter fallback, unwired setup/show messaging, starter quest investigation, public guides, and editor first-config flow |
+| [2.0.0](2.0.0.md) | Planned                 | Next-major planning after the `1.x` compatibility line, including factions, combat handoff/maps, and economy progression commands |
 
-For future public releases, add a version-specific file such as `1.1.0.md` or `2.0.0.md` when the target version becomes concrete. Use broad roadmap files only while the exact tag is undecided.
+For future public releases, add a version-specific file such as `1.2.0.md` or `2.1.0.md` when the target version becomes concrete. Use broad roadmap files only while the exact tag is undecided.
 
 Pre-tag compatibility reviews live under [research](../research/). For `1.0.0`, see [1.0.0 command contract review](../research/1.0.0-command-contract-review.md).
 
@@ -78,5 +79,6 @@ Pre-tag compatibility reviews live under [research](../research/). For `1.0.0`, 
 - [westmarch-statement](../projects/westmarch-statement/) - foundational product and command scope.
 - [web-config-editor](../projects/web-config-editor/) - browser config editor and validation surface.
 - [forgotten-realms-config](../projects/forgotten-realms-config/) - richer Forgotten Realms starter preset.
+- [onboarding-experience](../projects/onboarding-experience/) - planned `1.1.0` first-run and server onboarding improvements.
 - [factions](../projects/factions/) - next-major faction subsystem planning.
 - [exploration-enrichment](../projects/exploration-enrichment/) - combat handoff, pending encounter, hunt, and loot enrichment planning.

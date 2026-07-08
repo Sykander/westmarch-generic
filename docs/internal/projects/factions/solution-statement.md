@@ -11,7 +11,7 @@ The first implementation should be deliberately small:
 - membership state is stored on the character;
 - other systems can read a shared requirement shape later.
 
-Do not ship this in `1.0.0`. Track the work on the `2.x.x` roadmap unless the final design is strictly additive.
+Do not ship this in `1.0.0`. Track the work on the `2.0.0` roadmap unless the final design is strictly additive.
 
 ## Target config shape
 

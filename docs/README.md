@@ -57,6 +57,8 @@ The **`westmarch`** hub uses admin sub-aliases (`setup`, `show`) plus a player-f
 
 ## Further reading
 
+- [guides/README.md](guides/README.md) — public guide index for server owners and configurers
+- [guides/glossary.md](guides/glossary.md) — westmarch-generic terms and config concepts
 - [guides/server-setup.md](guides/server-setup.md) — Discord server bootstrap guide
 - [guides/initial-channel-texts.md](guides/initial-channel-texts.md) — first public posts for #westmarch, #character-creation, and onboarding channels
 - [setup.md](setup.md) — server-owner adoption guide
@@ -68,6 +70,8 @@ The **`westmarch`** hub uses admin sub-aliases (`setup`, `show`) plus a player-f
 
 ## Planned documentation
 
+- Configurer guides for Avrae `servsettings`, config display, policies, world data, encounters, encounter templates, and publishing
+- Public GitHub Pages exposure for `docs/guides/` under `/westmarch-generic/docs/guides/`
 - Svar naming convention and registry
-- Config gvar schema (areas, encounters, economy, etc.) — see [westmarch-statement MVP](internal/projects/westmarch-statement/mvp-commands.md)
+- Config gvar schema (locations, encounters, economy, etc.) — see [westmarch-statement MVP](internal/projects/westmarch-statement/mvp-commands.md)
 - Migration notes from monolithic westmarch

@@ -18,7 +18,7 @@ Forgotten Realms has obvious examples such as the Harpers, the Order of the Gaun
 
 Without a shared factions subsystem, each feature that wants faction behavior would invent its own small rule. That would make configs harder to validate and would encourage server-specific constants in aliases.
 
-The first public release should stay focused on the current command surface and release hardening. Factions are useful, but they are not required for `1.0.0`. They are tracked on the `2.x.x` roadmap until the final target version is decided.
+The first public release should stay focused on the current command surface and release hardening. Factions are useful, but they are not required for `1.0.0`. They are tracked on the `2.0.0` roadmap until the final target version is decided.
 
 ## Users
 
@@ -33,7 +33,7 @@ The first public release should stay focused on the current command surface and 
 ## Constraints
 
 - Do not include factions in the `1.0.0` first public release scope.
-- Implement factions in a later release, currently tracked on the `2.x.x` roadmap.
+- Implement factions in a later release, currently tracked on the `2.0.0` roadmap.
 - Keep all faction lore in config gvars, not generic aliases.
 - Use `lists.search_list` style lookup behavior for user-entered faction names: 0 matches, 1 match, many matches.
 - Avoid requiring a mutable server database. Character-specific membership should use character state unless a later storage design is deliberately added.

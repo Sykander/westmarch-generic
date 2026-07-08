@@ -5,7 +5,7 @@ Status: planned for a later release. Do not implement before the first public re
 ## Phase 0 - Release placement
 
 - Keep factions out of the `1.0.0` release blocker list.
-- Add factions to the `2.x.x` roadmap until the final target version is decided.
+- Add factions to the `2.0.0` roadmap until the final target version is decided.
 - Revisit this plan after `1.0.0` manual release testing is complete.
 
 Acceptance:
