@@ -13,7 +13,8 @@ The strongest onboarding path is likely a layered approach:
 3. Add a short starter quest to the Forgotten Realms starter config that teaches command loops in play.
 4. Improve the editor's first-config flow so a server configurator can create or export a base config gvar and gets a clear final reminder to set the svar.
 5. Add a public guide library and glossary so configurators know what is possible and which concepts matter.
-6. Expose `docs/guides/` through GitHub Pages at `/westmarch-generic/docs/guides/` so the hosted experience is not editor-only.
+6. Add companion-bot setup guides for common first-server tools such as Dyno, Tupperbox, and Bard Bot.
+7. Expose `docs/guides/` through GitHub Pages at `/westmarch-generic/docs/guides/` so the hosted experience is not editor-only.
 
 These ideas complement each other. The fallback makes the workshop immediately usable, the admin messaging preserves correctness, the starter quest teaches by doing, the editor closes the handoff from example world to server-owned config, and the guide library gives configurators a stable learning path.
 
@@ -38,6 +39,7 @@ These ideas complement each other. The fallback makes the workshop immediately u
 | Config gvar creation is a separate Avrae/editor handoff | Configurators can edit/export but miss the final svar step |
 | Starter data lacks a guided activity | Players have data to query, but no obvious first journey |
 | Public guide coverage is thin | Configurators must infer how display, policies, encounters, templates, and publishing fit together |
+| Companion bot setup is separate from engine setup | First-time server owners still need moderation logs, proxy rules, and ambience bot boundaries to launch cleanly |
 | No single public glossary | Terms like biome, location, encounter pool, template, gvar, and svar require context from scattered docs |
 | Guides are repository-first | GitHub Pages hosts the editor, but `docs/guides/` is not yet browseable from the hosted surface |
 | Troubleshooting depends on knowing gvar/svar concepts | First-time users need vocabulary before they can diagnose setup |
@@ -203,6 +205,8 @@ Open checks:
 
 Add focused guides under `docs/guides/` for the configuration jobs a server configurator naturally wants to do.
 
+Detailed guide inventory and prioritization: [guide-library-investigation.md](guide-library-investigation.md).
+
 Initial guide set:
 
 | Guide | Goal |
@@ -215,6 +219,10 @@ Initial guide set:
 | Encounters | Explain how to create encounter pools and rows for exploration, quest, combat, and gathering |
 | Encounter templates | Explain template ids, args, compact rows, built-ins, and when custom templates are worth adding |
 | Config publishing | Explain export, publish, gvar ownership, and setting `westmarch_config` after the editor creates or updates a gvar |
+| Companion bots | Explain when to add optional bots and how to keep them from conflicting with Avrae |
+| Dyno setup | Explain moderation logs, automod, channel scope, permissions, and diagnostics |
+| Tupperbox setup | Explain proxy channels, moderation expectations, and player-facing setup |
+| Bard Bot setup | Explain Avrae-triggered sound effects, custom sounds, voice/channel permissions, and support boundaries |
 
 Benefits:
 

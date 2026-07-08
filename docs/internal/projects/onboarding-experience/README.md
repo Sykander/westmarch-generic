@@ -8,6 +8,7 @@ Project docs:
 
 - [Problem statement](problem-statement.md)
 - [Investigation](investigation.md)
+- [Guide library investigation](guide-library-investigation.md)
 
 ## Initial Goals
 
@@ -18,6 +19,7 @@ Project docs:
 - Add a starter quest in the Forgotten Realms starter config that teaches the main command loops through a short Waterdeep to Silverymoon journey.
 - Let the web editor create or export a first config gvar from inside the editor flow, then remind the configurator to set `!svar westmarch_config <gvar-id>`.
 - Build a public configurer guide library under `docs/guides/`, starting with a glossary and focused guides for server settings, display, policies, encounters, encounter templates, and publishing.
+- Add companion-bot setup guides for common first-server tools such as Dyno, Tupperbox, and Bard Bot.
 - Expose `docs/guides/` through GitHub Pages at `/westmarch-generic/docs/guides/` so configurators can browse guides from the hosted editor/docs surface.
 
 ## Scope

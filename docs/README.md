@@ -70,7 +70,8 @@ The **`westmarch`** hub uses admin sub-aliases (`setup`, `show`) plus a player-f
 
 ## Planned documentation
 
-- Configurer guides for Avrae `servsettings`, config display, policies, world data, encounters, encounter templates, and publishing
+- Configurer guides for Avrae `servsettings`, config display, policies, world data, encounters, encounter templates, publishing, validation, troubleshooting, and launch checks
+- Companion-bot setup guides for common first-server tools such as Dyno, Tupperbox, and Bard Bot
 - Public GitHub Pages exposure for `docs/guides/` under `/westmarch-generic/docs/guides/`
 - Svar naming convention and registry
 - Config gvar schema (locations, encounters, economy, etc.) — see [westmarch-statement MVP](internal/projects/westmarch-statement/mvp-commands.md)
